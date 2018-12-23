@@ -1,6 +1,6 @@
 package cn.cerc.core;
 
-public interface IHandle {
+public interface IHandle extends AutoCloseable {
 
     // 帐套代码（公司别）
     public String getCorpNo();
