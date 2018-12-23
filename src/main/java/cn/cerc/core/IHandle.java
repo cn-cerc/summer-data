@@ -1,6 +1,6 @@
 package cn.cerc.core;
 
-public interface IHandle extends AutoCloseable {
+public interface IHandle {
 
     // 帐套代码（公司别）
     public String getCorpNo();
@@ -26,6 +26,7 @@ public interface IHandle extends AutoCloseable {
     // 返回当前是否为已登入状态
     public boolean logon();
 
+    void close();
     // // 关闭资源
     // default public void closeConnections() {
     // }
