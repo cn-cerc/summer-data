@@ -27,34 +27,4 @@ public interface IHandle {
     public boolean logon();
 
     void close();
-    // // 关闭资源
-    // default public void closeConnections() {
-    // }
-    //
-    // // 用户姓名
-    // default public String getUserName() {
-    // return getUserCode();
-    // }
-    //
-    // // 设置自定义参数
-    // default public void setProperty(String key, Object value) {
-    // throw new RuntimeException("调用了未被实现的接口");
-    // }
-    //
-    // // 直接设置成登录成功状态，用于定时服务时初始化等，会生成内存临时的token
-    // default public boolean init(String bookNo, String userCode, String
-    // clientCode) {
-    // throw new RuntimeException("调用了未被实现的接口");
-    // }
-    //
-    // // 在登录成功并生成token后，传递token值进行初始化
-    // default public boolean init(String token) {
-    // throw new RuntimeException("调用了未被实现的接口");
-    // }
-    //
-    // // 返回当前是否为已登入状态
-    // default boolean logon() {
-    // return false;
-    // }
-
 }
