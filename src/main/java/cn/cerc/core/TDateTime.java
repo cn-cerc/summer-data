@@ -90,6 +90,10 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         return format("yyyyMM");
     }
 
+    public String getMonthDay() {
+        return format("MM-dd");
+    }
+
     public String getYear() {
         return format("yyyy");
     }
