@@ -35,18 +35,35 @@ public class DataSet implements IRecord, Serializable, Iterable<Record>, AutoClo
     private Record head = null;
     private FieldDefs head_defs = null;
 
-    public DataSet append() {
-        return append(-1);
-    }
-
-    public DataSet append(int index) {
-        if (search != null) {
-            search.clear();
-        }
-
+    public Record newRecord() {
         Record record = new Record(this.fieldDefs);
         record.setDataSet(this);
         record.setState(DataSetState.dsInsert);
+        return record;
+    }
+
+    public DataSet append(Record record) {
+        if (search != null)
+            search.clear();
+
+        this.records.add(record);
+        recNo = records.size();
+
+        if (onAfterAppend != null)
+            onAfterAppend.execute(this);
+        return this;
+    }
+
+    public DataSet append() {
+        return append(newRecord());
+    }
+
+    @Deprecated
+    public DataSet append(int index) {
+        if (search != null)
+            search.clear();
+
+        Record record = newRecord();
 
         if (index == -1 || index == records.size()) {
             this.records.add(record);
