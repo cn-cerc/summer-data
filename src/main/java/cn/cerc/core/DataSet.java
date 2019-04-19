@@ -579,4 +579,12 @@ public class DataSet implements IRecord, Serializable, Iterable<Record>, AutoClo
         String json = new String(strBytes, Charset.forName("UTF-8"));
         this.setJSON(json);
     }
+
+    public DataSetBeforeAppendEvent getOnBeforeAppend() {
+        return onBeforeAppend;
+    }
+
+    public void setOnBeforeAppend(DataSetBeforeAppendEvent onBeforeAppend) {
+        this.onBeforeAppend = onBeforeAppend;
+    }
 }
