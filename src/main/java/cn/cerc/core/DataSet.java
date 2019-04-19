@@ -28,6 +28,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record>, AutoClo
     private int fetchNo = -1;
     private FieldDefs fieldDefs = new FieldDefs();
     private List<Record> records = new ArrayList<Record>();
+    private DataSetBeforeAppendEvent onBeforeAppend;
     private DataSetEvent onAfterAppend;
     private DataSetEvent onBeforePost;
     private SearchDataSet search;
@@ -43,6 +44,11 @@ public class DataSet implements IRecord, Serializable, Iterable<Record>, AutoClo
     }
 
     public DataSet append(Record record) {
+        if (onBeforeAppend != null) {
+            record = onBeforeAppend.filter(this, record);
+            if (record == null)
+                return this;
+        }
         if (search != null)
             search.clear();
 
