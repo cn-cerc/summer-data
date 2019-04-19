@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class SearchDataSet {
     // private static final Logger log = Logger.getLogger(SearchDataSet.class);
-    private CustomDataSet dataSet;
+    private DataSet dataSet;
     private Map<String, Record> items;
     private List<String> fields = new ArrayList<>();
     private String keyFields;
@@ -16,11 +16,11 @@ public class SearchDataSet {
 
     }
 
-    public SearchDataSet(CustomDataSet dataSet) {
+    public SearchDataSet(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
-    public SearchDataSet add(CustomDataSet dataSet) {
+    public SearchDataSet add(DataSet dataSet) {
         for (int i = dataSet.size(); i > 0; i--)
             add(dataSet.getRecords().get(i - 1));
         return this;
