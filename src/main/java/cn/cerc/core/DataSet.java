@@ -21,7 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-public class DataSet implements IRecord, Serializable, Iterable<Record>, AutoCloseable {
+public class DataSet implements IRecord, Serializable, Iterable<Record> {
 // private static final Logger log = Logger.getLogger(DataSet.class);
     private static final long serialVersionUID = 873159747066855363L;
     private int recNo = 0;
@@ -64,7 +64,6 @@ public class DataSet implements IRecord, Serializable, Iterable<Record>, AutoClo
         return append(newRecord());
     }
 
-    @Deprecated
     public DataSet append(int index) {
         if (search != null)
             search.clear();
@@ -399,7 +398,6 @@ public class DataSet implements IRecord, Serializable, Iterable<Record>, AutoClo
         this.onBeforePost = onBeforePost;
     }
 
-    @Override
     public void close() {
         if (this.head != null)
             this.head.clear();
