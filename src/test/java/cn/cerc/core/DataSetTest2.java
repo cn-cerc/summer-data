@@ -10,8 +10,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class CustomDataSetTest {
-    private CustomDataSet ds = new CustomDataSet();;
+public class DataSetTest2 {
+    private DataSet ds = new DataSet();;
     private static final int MAX = 10000;
 
     @Test

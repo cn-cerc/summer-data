@@ -338,7 +338,7 @@ public class Utils {
     }
 
     // 将内容转成 Map
-    public static <T> Map<String, T> dataSetAsMap(CustomDataSet dataSet, Class<T> clazz, String... keys) {
+    public static <T> Map<String, T> dataSetAsMap(DataSet dataSet, Class<T> clazz, String... keys) {
         Map<String, T> items = new HashMap<String, T>();
         for (Record rs : dataSet) {
             String key = "";
@@ -354,7 +354,7 @@ public class Utils {
     }
 
     // 将内容转成 List
-    public static <T> List<T> dataSetAsList(CustomDataSet dataSet, Class<T> clazz) {
+    public static <T> List<T> dataSetAsList(DataSet dataSet, Class<T> clazz) {
         List<T> items = new ArrayList<T>();
         for (Record rs : dataSet)
             items.add(recordAsObject(rs, clazz));

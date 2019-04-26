@@ -30,7 +30,7 @@ public class Record implements IRecord, Serializable {
     private FieldDefs defs = null;
     private Map<String, Object> items = new LinkedHashMap<String, Object>();
     private Map<String, Object> delta = new HashMap<String, Object>();
-    private CustomDataSet dataSet;
+    private DataSet dataSet;
 
     public Record() {
         this.defs = new FieldDefs();
@@ -405,8 +405,7 @@ public class Record implements IRecord, Serializable {
     /**
      * 防止注入攻击
      * 
-     * @param field
-     *            字段名
+     * @param field 字段名
      * @return 返回安全的字符串
      */
     @Deprecated
@@ -464,15 +463,15 @@ public class Record implements IRecord, Serializable {
         return defs.exists(field) && !"".equals(getString(field));
     }
 
-    public CustomDataSet getDataSet() {
+    public DataSet getDataSet() {
         return dataSet;
     }
 
-    public void setDataSet(CustomDataSet dataSet) {
+    public void setDataSet(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
-    public CustomDataSet locate() {
+    public DataSet locate() {
         int recNo = dataSet.getRecords().indexOf(this) + 1;
         dataSet.setRecNo(recNo);
         return dataSet;

@@ -5,8 +5,8 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-public class CustomDataSetTest_delete {
-    private CustomDataSet ds = new CustomDataSet();
+public class DataSetTest_delete {
+    private DataSet ds = new DataSet();
 
     @Before
     public void setUp() throws Exception {
