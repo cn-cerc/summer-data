@@ -1,5 +1,11 @@
 package cn.cerc.core;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.internal.LinkedTreeMap;
+import com.google.gson.reflect.TypeToken;
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -14,20 +20,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.internal.LinkedTreeMap;
-import com.google.gson.reflect.TypeToken;
-
+@Slf4j
 public class Record implements IRecord, Serializable {
-    private static final Logger log = LoggerFactory.getLogger(Record.class);
 
     private static final long serialVersionUID = 4454304132898734723L;
     private DataSetState state = DataSetState.dsNone;
-    private FieldDefs defs = null;
+    private FieldDefs defs;
     private Map<String, Object> items = new LinkedHashMap<String, Object>();
     private Map<String, Object> delta = new HashMap<String, Object>();
     private DataSet dataSet;
@@ -38,6 +36,38 @@ public class Record implements IRecord, Serializable {
 
     public Record(FieldDefs defs) {
         this.defs = defs;
+    }
+
+    public static void main(String[] args) {
+        Record record = new Record();
+        // record.getFieldDefs().add("num", new DoubleField(18, 4));
+        record.setField("num", 12345);
+        record.setState(DataSetState.dsEdit);
+        record.setField("num", 0);
+        record.setField("num", 123452);
+
+        // 增加对BigInteger的测试
+        record.setField("num2", 123);
+        System.out.println(record.getBigInteger("num2"));
+        record.setField("num2", 123452L);
+        System.out.println(record.getBigInteger("num2"));
+        record.setField("num2", 123452d);
+        System.out.println(record.getBigInteger("num2"));
+        record.setField("num2", "123452");
+        System.out.println(record.getBigInteger("num2"));
+        record.setField("num2", new Object());
+        System.out.println(record.getBigInteger("num2"));
+
+        if (record.isModify()) {
+            System.out.println("num old: " + record.getOldField("num"));
+            System.out.println("num new: " + record.getField("num"));
+        }
+        System.out.println(record);
+        record.delete("num2");
+        record.getFieldDefs().add("num3");
+        System.out.println(record);
+        record.delete("num3");
+        System.out.println(record);
     }
 
     public DataSetState getState() {
@@ -72,8 +102,9 @@ public class Record implements IRecord, Serializable {
             if (compareValue(value, oldValue)) {
                 return this;
             } else {
-                if (!delta.containsKey(field))
+                if (!delta.containsKey(field)) {
                     setValue(delta, field, oldValue);
+                }
             }
         }
         setValue(items, field, value);
@@ -186,7 +217,7 @@ public class Record implements IRecord, Serializable {
             String field = defs.getFields().get(i);
             Object obj = this.getField(field);
             if (obj instanceof TDateTime) {
-                items.put(field, ((TDateTime) obj).toString());
+                items.put(field, obj.toString());
             } else if (obj instanceof Date) {
                 items.put(field, (new TDateTime((Date) obj)).toString());
             } else {
@@ -242,14 +273,10 @@ public class Record implements IRecord, Serializable {
             return (Boolean) obj;
         } else if (obj instanceof String) {
             String str = (String) obj;
-            if ("".equals(str) || "0".equals(str) || "false".equals(str)) {
-                return false;
-            } else {
-                return true;
-            }
+            return !"".equals(str) && !"0".equals(str) && !"false".equals(str);
         } else if (obj instanceof Integer) {
             int value = (Integer) obj;
-            return value > 0 ? true : false;
+            return value > 0;
         } else {
             return false;
         }
@@ -274,7 +301,7 @@ public class Record implements IRecord, Serializable {
             if ("".equals(str)) {
                 return 0;
             }
-            double val = Double.valueOf(str);
+            double val = Double.parseDouble(str);
             return (int) val;
         } else if (obj instanceof Long) {
             return ((Long) obj).intValue();
@@ -355,7 +382,7 @@ public class Record implements IRecord, Serializable {
         } else if (obj == null) {
             return 0.0;
         } else if (obj instanceof BigInteger) {
-            return Double.valueOf(((BigInteger) obj).doubleValue());
+            return ((BigInteger) obj).doubleValue();
         } else if (obj instanceof Long) {
             Long tmp = (Long) obj;
             return tmp * 1.0;
@@ -404,7 +431,7 @@ public class Record implements IRecord, Serializable {
 
     /**
      * 防止注入攻击
-     * 
+     *
      * @param field 字段名
      * @return 返回安全的字符串
      */
@@ -479,26 +506,27 @@ public class Record implements IRecord, Serializable {
 
     public boolean isModify() {
         switch (this.state) {
-        case dsInsert:
-            return true;
-        case dsEdit: {
-            if (delta.size() == 0)
-                return false;
-            List<String> delList = new ArrayList<>();
-            for (String field : delta.keySet()) {
-                Object value = items.get(field);
-                Object oldValue = delta.get(field);
-                if (compareValue(value, oldValue)) {
-                    delList.add(field);
+            case dsInsert:
+                return true;
+            case dsEdit: {
+                if (delta.size() == 0) {
+                    return false;
                 }
+                List<String> delList = new ArrayList<>();
+                for (String field : delta.keySet()) {
+                    Object value = items.get(field);
+                    Object oldValue = delta.get(field);
+                    if (compareValue(value, oldValue)) {
+                        delList.add(field);
+                    }
+                }
+                for (String field : delList) {
+                    delta.remove(field);
+                }
+                return delta.size() > 0;
             }
-            for (String field : delList) {
-                delta.remove(field);
-            }
-            return delta.size() > 0;
-        }
-        default:
-            return false;
+            default:
+                return false;
         }
     }
 
@@ -518,39 +546,8 @@ public class Record implements IRecord, Serializable {
     public void delete(String field) {
         delta.remove(field);
         items.remove(field);
-        if (defs != null)
+        if (defs != null) {
             defs.delete(field);
-    }
-
-    public static void main(String[] args) {
-        Record record = new Record();
-        // record.getFieldDefs().add("num", new DoubleField(18, 4));
-        record.setField("num", 12345);
-        record.setState(DataSetState.dsEdit);
-        record.setField("num", 0);
-        record.setField("num", 123452);
-
-        // 增加对BigInteger的测试
-        record.setField("num2", 123);
-        System.out.println(record.getBigInteger("num2"));
-        record.setField("num2", 123452L);
-        System.out.println(record.getBigInteger("num2"));
-        record.setField("num2", 123452d);
-        System.out.println(record.getBigInteger("num2"));
-        record.setField("num2", "123452");
-        System.out.println(record.getBigInteger("num2"));
-        record.setField("num2", new Object());
-        System.out.println(record.getBigInteger("num2"));
-
-        if (record.isModify()) {
-            System.out.println("num old: " + record.getOldField("num"));
-            System.out.println("num new: " + record.getField("num"));
         }
-        System.out.println(record);
-        record.delete("num2");
-        record.getFieldDefs().add("num3");
-        System.out.println(record);
-        record.delete("num3");
-        System.out.println(record);
     }
 }

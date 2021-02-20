@@ -1,13 +1,24 @@
 package cn.cerc.core;
 
+import lombok.extern.slf4j.Slf4j;
+
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Transient;
+import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,21 +27,25 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Transient;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+@Slf4j
 public class Utils {
-    private static final Logger log = LoggerFactory.getLogger(Utils.class);
+
+    /**
+     * 不允许创建对象，只能作为工具类使用
+     */
+    private Utils() {
+    }
+
     public static final String vbCrLf = "\r\n";
 
     /**
+     * 空串
+     */
+    public static final String EMPTY = "";
+
+    /**
      * 保障查询安全，防范注入攻击
-     * 
+     *
      * @param value 用户输入值
      * @return 经过处理后的值
      */
@@ -39,8 +54,9 @@ public class Utils {
     }
 
     public static String serializeToString(Object obj) throws IOException {
-        if (obj == null)
+        if (obj == null) {
             return null;
+        }
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
         ObjectOutputStream objOut = new ObjectOutputStream(byteOut);
         objOut.writeObject(obj);
@@ -48,16 +64,50 @@ public class Utils {
     }
 
     public static Object deserializeToObject(String str) throws IOException, ClassNotFoundException {
-        if (str == null)
+        if (str == null) {
             return null;
-        ByteArrayInputStream byteIn = new ByteArrayInputStream(str.getBytes("ISO-8859-1"));
+        }
+        ByteArrayInputStream byteIn = new ByteArrayInputStream(str.getBytes(StandardCharsets.ISO_8859_1));
         ObjectInputStream objIn = new ObjectInputStream(byteIn);
         return objIn.readObject();
     }
 
+    /**
+     * 按照指定的编码格式进行url编码
+     *
+     * @param value 原始字符串
+     * @param enc   编码格式
+     *              StandardCharsets.UTF_8.name()
+     * @return 编码后的字符串
+     */
+    public static String encode(String value, String enc) {
+        try {
+            return URLEncoder.encode(value, enc);
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex.getCause());
+        }
+    }
+
+    /**
+     * 按照指定的编码格式进行url解码
+     *
+     * @param value 原始字符串
+     * @param enc   编码格式
+     *              StandardCharsets.UTF_8.name()
+     * @return 解码后的字符串
+     */
+    public static String decode(String value, String enc) {
+        try {
+            return URLDecoder.decode(value, enc);
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex.getCause());
+        }
+    }
+
     public static String encode(Object obj) {
-        if (obj == null)
+        if (obj == null) {
             return null;
+        }
         try {
             ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
             ObjectOutputStream objOut = new ObjectOutputStream(byteOut);
@@ -69,10 +119,11 @@ public class Utils {
     }
 
     public static Object decode(String str) {
-        if (str == null)
+        if (str == null) {
             return null;
+        }
         try {
-            ByteArrayInputStream byteIn = new ByteArrayInputStream(str.getBytes("ISO-8859-1"));
+            ByteArrayInputStream byteIn = new ByteArrayInputStream(str.getBytes(StandardCharsets.ISO_8859_1));
             ObjectInputStream objIn = new ObjectInputStream(byteIn);
             return objIn.readObject();
         } catch (ClassNotFoundException | IOException e) {
@@ -90,10 +141,9 @@ public class Utils {
             String str = val + "";
             int pointPosition = str.indexOf(".");
             String tempStr = str.substring(0, pointPosition - scale + 1);
-            Double tempD = Double.parseDouble(tempStr) / 10;
-            int tempInt = Math.round(tempD.floatValue());
-            double ret = tempInt * Math.pow(10, scale);
-            return ret;
+            double tempD = Double.parseDouble(tempStr) / 10;
+            int tempInt = Math.round((float) tempD);
+            return tempInt * Math.pow(10, scale);
         }
     }
 
@@ -145,19 +195,28 @@ public class Utils {
         return '{' + uuid.toString() + '}';
     }
 
+    /**
+     * @return 生成token字符串
+     */
+    public static String generateToken() {
+        String uuid = UUID.randomUUID().toString();
+        return uuid.replaceAll("-", "");
+    }
+
     // 兼容 delphi 代码
     public static String copy(String text, int iStart, int iLength) {
-        if (text == null)
+        if (text == null) {
             return "";
-        if (text != null && iLength >= text.length()) {
+        }
+        if (iLength >= text.length()) {
             if (iStart > text.length()) {
                 return "";
             }
             if (iStart - 1 < 0) {
                 return "";
             }
-            return text.substring(iStart - 1, text.length());
-        } else if (text.equals("")) {
+            return text.substring(iStart - 1);
+        } else if ("".equals(text)) {
             return "";
         }
         return text.substring(iStart - 1, iStart - 1 + iLength);
@@ -168,35 +227,92 @@ public class Utils {
         return text.replace(sub, rpl);
     }
 
-    // 兼容 delphi 代码
+    /**
+     * <pre>
+     * Utils.trim(null)          = null
+     * Utils.trim("")            = ""
+     * Utils.trim("     ")       = ""
+     * Utils.trim("abc")         = "abc"
+     * Utils.trim("    abc    ") = "abc"
+     * </pre>
+     *
+     * @param str 目标字符串
+     * @return 去除字符串前后的空格
+     */
     public static String trim(String str) {
-        return str.trim();
+        return str == null ? null : str.trim();
     }
 
-    // 兼容 delphi 代码
-    // 取得大于等于X的最小的整数，即：进一法
+    /**
+     * <pre>
+     * Utils.trimToNull(null)          = null
+     * Utils.trimToNull("")            = null
+     * Utils.trimToNull("     ")       = null
+     * Utils.trimToNull("abc")         = "abc"
+     * Utils.trimToNull("    abc    ") = "abc"
+     * </pre>
+     *
+     * @param str 目标字符串
+     * @return 字符串为空(null)或者空串都转化为 null
+     */
+    public static String trimToNull(final String str) {
+        final String ts = trim(str);
+        return isEmpty(ts) ? null : ts;
+    }
+
+    /**
+     * <pre>
+     * Utils.trimToEmpty(null)          = ""
+     * Utils.trimToEmpty("")            = ""
+     * Utils.trimToEmpty("     ")       = ""
+     * Utils.trimToEmpty("abc")         = "abc"
+     * Utils.trimToEmpty("    abc    ") = "abc"
+     * </pre>
+     *
+     * @param str 目标字符串
+     * @return 字符串为空(null)或者空串都转化为空串
+     */
+    public static String trimToEmpty(final String str) {
+        return str == null ? EMPTY : str.trim();
+    }
+
+    /**
+     * 取得大于等于X的最小的整数，即：进一法
+     *
+     * @param val 参数
+     * @return 大于等于Val最小的整数
+     */
     public static int ceil(double val) {
         int result = (int) val;
         return (val > result) ? result + 1 : result;
     }
 
-    // 兼容 delphi 代码
-    // 取得X的整数部分，即：去尾法
+    /**
+     * 取得X的整数部分，即：去尾法
+     *
+     * @param val 参数
+     * @return 整数部分
+     */
     public static double trunc(double val) {
         return (int) val;
     }
 
-    // 兼容 delphi 代码
     /**
-     * @param text=要检测的文本
+     * @param text 要检测的文本
      * @return 判断字符串是否全部为数字
      */
     public static boolean isNumeric(String text) {
-        if (text == null)
+        if (text == null) {
             return false;
-        if (".".equals(text))
+        }
+        if (".".equals(text)) {
             return false;
+        }
         return text.matches("[0-9,.]*");
+    }
+
+    public static boolean isNotNumeric(String text) {
+        return !Utils.isNumeric(text);
     }
 
     // 兼容 delphi 代码
@@ -207,7 +323,7 @@ public class Utils {
     // 兼容 delphi 代码
     public static String isNull(String text, String def) {
         // 判断是否为空如果为空就返回。
-        return text.equals("") ? def : text;
+        return "".equals(text) ? def : text;
     }
 
     // 兼容 delphi 代码
@@ -217,7 +333,12 @@ public class Utils {
         return fmt;
     }
 
-    // 创建指定长度的随机数
+    /**
+     * 创建指定长度的随机数
+     *
+     * @param len 长度
+     * @return 随机数
+     */
     public static String getNumRandom(int len) {
         Random random = new Random();
         String verify = "";
@@ -225,6 +346,19 @@ public class Utils {
             verify = verify + random.nextInt(10);
         }
         return verify;
+    }
+
+    /**
+     * @param min 最小值
+     * @param max 最大值
+     * @return 获取指定范围内的随机整数
+     */
+    public static int random(int min, int max) {
+        if (max < min) {
+            throw new RuntimeException("最大值范围不允许小于最小值");
+        }
+        Random random = new Random();
+        return random.nextInt((max - min) + 1) + min;
     }
 
     // 转成指定类型的对象
@@ -237,13 +371,15 @@ public class Utils {
             throw new RuntimeException(e.getMessage());
         }
         for (Field method : clazz.getDeclaredFields()) {
-            if (method.getAnnotation(Transient.class) != null)
+            if (method.getAnnotation(Transient.class) != null) {
                 continue;
+            }
             Column column = method.getAnnotation(Column.class);
             String dbField = method.getName();
             String field = method.getName().substring(0, 1).toUpperCase() + method.getName().substring(1);
-            if (column != null && !"".equals(column.name()))
+            if (column != null && !"".equals(column.name())) {
                 dbField = column.name();
+            }
             if (record.exists(dbField)) {
                 try {
                     if (method.getType().equals(Integer.class)) {
@@ -312,17 +448,20 @@ public class Utils {
     public static <T> void objectAsRecord(Record record, T object) {
         Class<?> clazz = object.getClass();
         for (Field method : clazz.getDeclaredFields()) {
-            if (method.getAnnotation(Transient.class) != null)
+            if (method.getAnnotation(Transient.class) != null) {
                 continue;
+            }
             GeneratedValue generatedValue = method.getAnnotation(GeneratedValue.class);
-            if (generatedValue != null && generatedValue.strategy().equals(GenerationType.IDENTITY))
+            if (generatedValue != null && generatedValue.strategy().equals(GenerationType.IDENTITY)) {
                 continue;
+            }
 
             String field = method.getName();
             Column column = method.getAnnotation(Column.class);
             String dbField = field;
-            if (column != null && !"".equals(column.name()))
+            if (column != null && !"".equals(column.name())) {
                 dbField = column.name();
+            }
 
             Method get;
             try {
@@ -339,14 +478,15 @@ public class Utils {
 
     // 将内容转成 Map
     public static <T> Map<String, T> dataSetAsMap(DataSet dataSet, Class<T> clazz, String... keys) {
-        Map<String, T> items = new HashMap<String, T>();
+        Map<String, T> items = new HashMap<>();
         for (Record rs : dataSet) {
             String key = "";
             for (String field : keys) {
-                if ("".equals(key))
+                if ("".equals(key)) {
                     key = rs.getString(field);
-                else
+                } else {
                     key += ";" + rs.getString(field);
+                }
             }
             items.put(key, recordAsObject(rs, clazz));
         }
@@ -355,13 +495,21 @@ public class Utils {
 
     // 将内容转成 List
     public static <T> List<T> dataSetAsList(DataSet dataSet, Class<T> clazz) {
-        List<T> items = new ArrayList<T>();
-        for (Record rs : dataSet)
+        List<T> items = new ArrayList<>();
+        for (Record rs : dataSet) {
             items.add(recordAsObject(rs, clazz));
+        }
         return items;
     }
 
-    // 混淆字符串指定位置
+    /**
+     * Utils.confused("13927470636", 2, 4)      = 13*****0636
+     *
+     * @param mobile     手机号码
+     * @param fromLength 起始显示位数
+     * @param endLength  倒数显示位数
+     * @return 混淆字符串指定位置
+     */
     public static String confused(String mobile, int fromLength, int endLength) {
         int length = mobile.length();
         if (length < (fromLength + endLength)) {
@@ -375,29 +523,27 @@ public class Utils {
         return mobile.substring(0, fromLength) + star + mobile.substring(mobile.length() - endLength);
     }
 
-    public static String guidFixStr() {
-        String guid = newGuid();
-        String str = guid.substring(1, guid.length() - 1);
-        return str.replaceAll("-", "");
-    }
-
-    // 获取数字和字母的混合字符串
+    /**
+     * 获取数字和字母的混合字符串
+     *
+     * @param length 长度
+     * @return 混合字符串
+     */
     public static String getStrRandom(int length) {
-        String result = "";
+        StringBuilder result = new StringBuilder();
         Random random = new Random();
-
         for (int i = 0; i < length; i++) {
             String symbol = random.nextInt(2) % 2 == 0 ? "char" : "num";
 
             if ("char".equalsIgnoreCase(symbol)) {
                 // 随机获取大小写字母
                 int letterIndex = random.nextInt(2) % 2 == 0 ? 65 : 97;
-                result += (char) (random.nextInt(26) + letterIndex);
-            } else if ("num".equalsIgnoreCase(symbol)) {
-                result += String.valueOf(random.nextInt(10));
+                result.append((char) (random.nextInt(26) + letterIndex));
+            } else {
+                result.append(random.nextInt(10));
             }
         }
-        return result;
+        return result.toString();
     }
 
     // 兼容 delphi 代码
@@ -421,8 +567,102 @@ public class Utils {
     }
 
     // 兼容 delphi 代码
-    @Deprecated
     public static int round(double d) {
         return (int) Math.round(d);
     }
+
+    /**
+     * <pre>
+     * Utils.isEmpty(null)      = true
+     * Utils.isEmpty("")        = true
+     * Utils.isEmpty(" ")       = false
+     * Utils.isEmpty("bob")     = false
+     * Utils.isEmpty("  bob  ") = false
+     * </pre>
+     *
+     * @param str 目标字符串
+     * @return 判断字符串是否为空
+     */
+    public static boolean isEmpty(String str) {
+        return str == null || str.length() == 0;
+    }
+
+    /**
+     * <pre>
+     * Utils.isNotEmpty(null)      = false
+     * Utils.isNotEmpty("")        = false
+     * Utils.isNotEmpty(" ")       = true
+     * Utils.isNotEmpty("bob")     = true
+     * Utils.isNotEmpty("  bob  ") = true
+     * </pre>
+     *
+     * @param str 目标字符串
+     * @return 判断字符串不为空
+     */
+    public static boolean isNotEmpty(String str) {
+        return !Utils.isEmpty(str);
+    }
+
+    /**
+     * <pre>
+     * Utils.isBlank(null)      = true
+     * Utils.isBlank("")        = true
+     * Utils.isBlank(" ")       = true
+     * Utils.isBlank("bob")     = false
+     * Utils.isBlank("  bob  ") = false
+     * </pre>
+     *
+     * @param str 目标字符串
+     * @return 判断是否为纯空格
+     */
+    public static boolean isBlank(String str) {
+        int strLen;
+        if (str == null || (strLen = str.length()) == 0) {
+            return true;
+        }
+        for (int i = 0; i < strLen; i++) {
+            if ((!Character.isWhitespace(str.charAt(i)))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * <pre>
+     * StringUtils.isNotBlank(null)      = false
+     * StringUtils.isNotBlank("")        = false
+     * StringUtils.isNotBlank(" ")       = false
+     * StringUtils.isNotBlank("bob")     = true
+     * StringUtils.isNotBlank("  bob  ") = true
+     * </pre>
+     *
+     * @param str 目标字符串
+     * @return 判断是否不含纯空格
+     */
+    public static boolean isNotBlank(String str) {
+        return !Utils.isBlank(str);
+    }
+
+    /**
+     * @param request HttpServletRequest
+     * @return 获取客户端的访问地址
+     */
+    public static String getIP(HttpServletRequest request) {
+        String ip = request.getHeader("x-forwarded-for");
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        if ("0:0:0:0:0:0:0:1".equals(ip)) {
+            ip = "0.0.0.0";
+        }
+        return ip;
+    }
+
 }

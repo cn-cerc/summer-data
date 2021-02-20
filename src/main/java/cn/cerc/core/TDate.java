@@ -6,9 +6,8 @@ import java.util.Date;
 
 /**
  * 日期对象
- * 
- * @author 张弓
  *
+ * @author 张弓
  */
 public class TDate extends TDateTime {
     private static final long serialVersionUID = 1L;
@@ -19,13 +18,14 @@ public class TDate extends TDateTime {
 
     public TDate(String date) {
         TDateTime val = TDateTime.fromDate(date);
-        if (val == null)
+        if (val == null) {
             throw new RuntimeException(String.format("%s 不是一个有效的日期格式！", date));
+        }
         this.setData(val.getData());
     }
 
     // 当天，不带时分秒
-    public static TDate Today() {
+    public static TDate today() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Date date = new Date();
         String str = sdf.format(date);
@@ -38,6 +38,14 @@ public class TDate extends TDateTime {
         return new TDate(date);
     }
 
+    public static void main(String[] args) {
+        TDate val;
+        val = new TDate(TDateTime.now().incMonth(-13).getData());
+        System.out.println(val.getShortValue());
+        val = TDate.today();
+        System.out.println(val.getShortValue());
+    }
+
     @Override
     public String toString() {
         return this.getDate();
@@ -47,18 +55,10 @@ public class TDate extends TDateTime {
         String year = this.getYearMonth().substring(2, 4);
         int month = this.getMonth();
         int day = this.getDay();
-        if (TDateTime.Now().compareYear(this) != 0) {
+        if (TDateTime.now().compareYear(this) != 0) {
             return String.format("%s年%d月", year, month);
         } else {
             return String.format("%d月%d日", month, day);
         }
-    }
-
-    public static void main(String[] args) {
-        TDate val;
-        val = new TDate(TDateTime.Now().incMonth(-13).getData());
-        System.out.println(val.getShortValue());
-        val = TDate.Today();
-        System.out.println(val.getShortValue());
     }
 }
