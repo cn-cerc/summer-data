@@ -146,12 +146,9 @@ public class Utils {
      * double 类型数字格式化
      *
      * @param val   将要格式化的数字
-     * @param scale 精确到的位置， </br>
-     *              负数表示小数向后的位数，例如：2351.2513 当scale = -2时，精确后为2351.25 当scale =
-     *              -1时，精确后为2351.3 </br>
-     *              正数表示小数向前的位数，例如：2351.2513 当scale = 2时，精确后为2400.0 当scale =
-     *              3时，精确后为2000.0
-     * @return
+     * @param scale 精确到的位置
+     *              负数表示小数向后的位数，例如：2351.2513 当scale = -2时，精确后为2351.25 当scale = -1时，精确后为2351.3
+     *              正数表示小数向前的位数，例如：2351.2513 当scale = 2时，精确后为2400.0 当scale = 3时，精确后为2000.0
      */
     public static double roundTo(double val, int scale) {
         if (scale <= 0) {
