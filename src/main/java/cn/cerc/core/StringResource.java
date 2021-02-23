@@ -9,14 +9,15 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class StringResource {
-    private static String currentTimezone = "en";
+
+    public static final String LANGUAGE_EN = "en";
+    public static final String LANGUAGE_CN = "cn";
+    public static final String LANGUAGE_TW = "tw";
+    public static final String LANGUAGE_SG = "sg";
+
+    private static String currentLanguage = "en";
     private static final String packageName = "summer-core";
     private static final Properties resourceProperties = new Properties();
-
-    public static String TIMEZONE_EN = "en";
-    public static String TIMEZONE_CN = "cn";
-    public static String TIMEZONE_TW = "tw";
-    public static String TIMEZONE_SG = "sg";
 
     static {
         final String configFileName = "/application.properties";
@@ -29,9 +30,9 @@ public class StringResource {
             } else {
                 log.warn("{} does not exist.", configFileName);
             }
-            currentTimezone = config.getProperty("currentTimezone", currentTimezone);
-            log.info("currentTimezone value: {}", currentTimezone);
-            String resourceFileName = String.format("/%s-%s.properties", packageName, currentTimezone);
+            currentLanguage = config.getProperty("currentTimezone", currentLanguage);
+            log.info("currentTimezone value: {}", currentLanguage);
+            String resourceFileName = String.format("/%s-%s.properties", packageName, currentLanguage);
             try {
                 InputStream resourceString = StringResource.class.getResourceAsStream(resourceFileName);
                 if (resourceString == null) {
@@ -73,7 +74,27 @@ public class StringResource {
         return resourceProperties.getProperty(key, text);
     }
 
-    public static void list(Class<?> clazz) {
+    public static String getCurrentLanguage() {
+        return currentLanguage;
+    }
+
+    public static boolean isLanguageTW() {
+        return LANGUAGE_TW.equals(currentLanguage);
+    }
+
+    public static boolean isLanguageCN() {
+        return LANGUAGE_CN.equals(currentLanguage);
+    }
+
+    public static boolean isLanguageSG() {
+        return LANGUAGE_SG.equals(currentLanguage);
+    }
+
+    public static boolean isLanguageEN() {
+        return LANGUAGE_EN.equals(currentLanguage);
+    }
+
+    public static void debugList(Class<?> clazz) {
         int i = 1;
         String key = String.format("%s.%d", clazz.getName(), i);
         while (resourceProperties.containsKey(key)) {
@@ -83,11 +104,7 @@ public class StringResource {
         }
     }
 
-    public static String getCurrentTimezone() {
-        return currentTimezone;
-    }
-
     public static void main(String[] args) {
-        StringResource.list(DataSet.class);
+        StringResource.debugList(TDate.class);
     }
 }

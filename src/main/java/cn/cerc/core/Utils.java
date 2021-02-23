@@ -24,6 +24,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -36,8 +37,6 @@ public class Utils {
      */
     private Utils() {
     }
-
-    public static String locale = Locale.zh_CN;
 
     public static final String vbCrLf = "\r\n";
 
@@ -136,7 +135,7 @@ public class Utils {
 
     // 兼容 delphi 代码
     public static int round(double d) {
-        if (Locale.zh_TW.equals(Utils.locale)) {
+        if (StringResource.isLanguageTW()) {
             return new BigDecimal(d).setScale(0, BigDecimal.ROUND_HALF_UP).intValue();
         }
         return (int) Math.round(d);
@@ -155,7 +154,7 @@ public class Utils {
             String str = "0.000000000000";
             str = str.substring(0, str.indexOf(".") - scale + 1);
             DecimalFormat df = new DecimalFormat(str);
-            if (Locale.zh_TW.equals(Utils.locale)) {
+            if (StringResource.isLanguageTW()) {
                 df.setRoundingMode(RoundingMode.HALF_UP);
             }
             return Double.parseDouble(df.format(val));
@@ -351,7 +350,7 @@ public class Utils {
     // 兼容 delphi 代码
     public static String formatFloat(String fmt, double value) {
         DecimalFormat df = new DecimalFormat(fmt);
-        if (Locale.zh_TW.equals(Utils.locale)) {
+        if (StringResource.isLanguageTW()) {
             df.setRoundingMode(RoundingMode.HALF_UP);
         }
         fmt = df.format(value);
