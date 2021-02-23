@@ -15,6 +15,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.RoundingMode;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -34,6 +35,8 @@ public class Utils {
      */
     private Utils() {
     }
+
+    public static String locale = "cn";
 
     public static final String vbCrLf = "\r\n";
 
@@ -130,6 +133,17 @@ public class Utils {
         }
     }
 
+    /**
+     * double 类型数字格式化
+     *
+     * @param val   将要格式化的数字
+     * @param scale 精确到的位置， </br>
+     *              负数表示小数向后的位数，例如：2351.2513 当scale = -2时，精确后为2351.25 当scale =
+     *              -1时，精确后为2351.3 </br>
+     *              正数表示小数向前的位数，例如：2351.2513 当scale = 2时，精确后为2400.0 当scale =
+     *              3时，精确后为2000.0
+     * @return
+     */
     public static double roundTo(double val, int scale) {
         if (scale <= 0) {
             String str = "0.000000000000";
@@ -328,6 +342,9 @@ public class Utils {
     // 兼容 delphi 代码
     public static String formatFloat(String fmt, double value) {
         DecimalFormat df = new DecimalFormat(fmt);
+        if ("tw".equals(locale)) {
+            df.setRoundingMode(RoundingMode.HALF_UP);
+        }
         fmt = df.format(value);
         return fmt;
     }
