@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class StringResource {
-    private static String currentTimezone = "cn";
+    private static String currentTimezone = "en";
     private static final String packageName = "summer-core";
     private static final Properties resourceProperties = new Properties();
 
