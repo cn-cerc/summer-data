@@ -15,6 +15,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -36,7 +37,7 @@ public class Utils {
     private Utils() {
     }
 
-    public static String locale = "cn";
+    public static String locale = Locale.zh_CN;
 
     public static final String vbCrLf = "\r\n";
 
@@ -133,6 +134,14 @@ public class Utils {
         }
     }
 
+    // 兼容 delphi 代码
+    public static int round(double d) {
+        if (Locale.zh_TW.equals(Utils.locale)) {
+            return new BigDecimal(d).setScale(0, BigDecimal.ROUND_HALF_UP).intValue();
+        }
+        return (int) Math.round(d);
+    }
+
     /**
      * double 类型数字格式化
      *
@@ -149,6 +158,9 @@ public class Utils {
             String str = "0.000000000000";
             str = str.substring(0, str.indexOf(".") - scale + 1);
             DecimalFormat df = new DecimalFormat(str);
+            if (Locale.zh_TW.equals(Utils.locale)) {
+                df.setRoundingMode(RoundingMode.HALF_UP);
+            }
             return Double.parseDouble(df.format(val));
         } else {
             String str = val + "";
@@ -342,7 +354,7 @@ public class Utils {
     // 兼容 delphi 代码
     public static String formatFloat(String fmt, double value) {
         DecimalFormat df = new DecimalFormat(fmt);
-        if ("tw".equals(locale)) {
+        if (Locale.zh_TW.equals(Utils.locale)) {
             df.setRoundingMode(RoundingMode.HALF_UP);
         }
         fmt = df.format(value);
@@ -580,11 +592,6 @@ public class Utils {
     // 兼容 delphi 代码
     public static int iif(boolean flag, int val1, int val2) {
         return flag ? val1 : val2;
-    }
-
-    // 兼容 delphi 代码
-    public static int round(double d) {
-        return (int) Math.round(d);
     }
 
     /**
