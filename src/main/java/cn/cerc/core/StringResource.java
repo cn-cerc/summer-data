@@ -15,7 +15,7 @@ public class StringResource {
     public static final String LANGUAGE_TW = "tw";
     public static final String LANGUAGE_SG = "sg";
 
-    private static String currentLanguage = "en";
+    private static String currentLanguage = "cn";
     private static final String packageName = "summer-core";
     private static final Properties resourceProperties = new Properties();
 
@@ -105,6 +105,6 @@ public class StringResource {
     }
 
     public static void main(String[] args) {
-        StringResource.debugList(TDate.class);
+        StringResource.debugList(DataSet.class);
     }
 }

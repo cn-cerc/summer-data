@@ -19,7 +19,7 @@ public class TDate extends TDateTime {
     public TDate(String date) {
         TDateTime val = TDateTime.fromDate(date);
         if (val == null) {
-            throw new RuntimeException(String.format("%s 不是一个有效的日期格式！", date));
+            throw new RuntimeException(String.format(StringResource.get(this, 1, "%s 不是一个有效的日期格式！"), date));
         }
         this.setData(val.getData());
     }
@@ -38,7 +38,7 @@ public class TDate extends TDateTime {
             date = sdf.parse(str);
         } catch (ParseException e) {
             e.printStackTrace();
-            throw new RuntimeException("日期类型转换错误");
+            throw new RuntimeException(StringResource.get(TDate.class, 2, "日期类型转换错误"));
         }
         return new TDate(date);
     }

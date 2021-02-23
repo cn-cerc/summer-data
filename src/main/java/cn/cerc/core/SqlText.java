@@ -131,7 +131,7 @@ public class SqlText {
 
     public void setMaximum(int maximum) {
         if (maximum > MAX_RECORDS) {
-            throw new RuntimeException(String.format("本次请求的记录数超出了系统最大笔数为  %d 的限制！", MAX_RECORDS));
+            throw new RuntimeException(String.format(StringResource.get(this, 1, "本次请求的记录数超出了系统最大笔数为  %d 的限制！"), MAX_RECORDS));
         }
         this.maximum = maximum;
     }

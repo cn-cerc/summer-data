@@ -23,6 +23,7 @@ import java.util.Map;
 
 public class DataSet implements IRecord, Serializable, Iterable<Record> {
     private static final long serialVersionUID = 873159747066855363L;
+//    private static StringResource stringResource = StringResourceFactory.get("summer-core");
     private int recNo = 0;
     private int fetchNo = -1;
     private FieldDefs fieldDefs = new FieldDefs();

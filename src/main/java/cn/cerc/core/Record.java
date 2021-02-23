@@ -230,7 +230,7 @@ public class Record implements IRecord, Serializable {
 
     public void setJSON(Object jsonObj) {
         if (!(jsonObj instanceof Map<?, ?>)) {
-            throw new RuntimeException("不支持的类型：" + jsonObj.getClass().getName());
+            throw new RuntimeException("not support type：" + jsonObj.getClass().getName());
         }
         @SuppressWarnings("unchecked")
         Map<String, Object> head = (Map<String, Object>) jsonObj;
@@ -457,7 +457,7 @@ public class Record implements IRecord, Serializable {
             return new TDateTime();
         } else if (obj instanceof TDateTime) {
             // return (TDateTime) obj;
-            throw new RuntimeException("Record不支持存储TDateTime类型！");
+            throw new RuntimeException("Record not support TDateTime");
         } else if (obj instanceof String) {
             String val = (String) obj;
             TDateTime tdt = new TDateTime();

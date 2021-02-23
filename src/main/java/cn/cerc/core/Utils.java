@@ -24,7 +24,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -379,7 +378,7 @@ public class Utils {
      */
     public static int random(int min, int max) {
         if (max < min) {
-            throw new RuntimeException("最大值范围不允许小于最小值");
+            throw new RuntimeException("max must > min");
         }
         Random random = new Random();
         return random.nextInt((max - min) + 1) + min;
@@ -537,7 +536,7 @@ public class Utils {
     public static String confused(String mobile, int fromLength, int endLength) {
         int length = mobile.length();
         if (length < (fromLength + endLength)) {
-            throw new RuntimeException("字符串长度不符合要求");
+            throw new RuntimeException(StringResource.get(Utils.class, 1, "字符串长度不符合要求"));
         }
         int len = mobile.length() - fromLength - endLength;
         String star = "";

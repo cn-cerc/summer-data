@@ -109,7 +109,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
             tdt.setData(sdf.parse(val));
             return tdt;
         } catch (ParseException e) {
-            throw new RuntimeException(String.format("不是 %s 标准年月格式 ：yyyyMM", val));
+            throw new RuntimeException(String.format(StringResource.get(TDateTime.class, 1, "不是 %s 标准年月格式 ：yyyyMM"), val));
         }
     }
 
@@ -194,7 +194,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         try {
             sdf = new SimpleDateFormat(map.get(fmt));
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("日期格式不正确");
+            throw new RuntimeException(StringResource.get(TDateTime.class, 2, "日期格式不正确"));
         }
         return sdf.format(value.getData());
     }
@@ -202,7 +202,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
     public static TDateTime StrToDate(String val) {
         String fmt = TDateTime.getFormat(val);
         if (fmt == null) {
-            throw new RuntimeException("时间格式不正确: value=" + val);
+            throw new RuntimeException(String.format(StringResource.get(TDateTime.class, 3, "时间格式不正确: value=%s"), val));
         }
         return new TDateTime(fmt, val);
     }
@@ -378,7 +378,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
                 count = count + flag;
             }
         } catch (ParseException e) {
-            throw new RuntimeException("日期转换格式错误 ：" + e.getMessage());
+            throw new RuntimeException(String.format(StringResource.get(this, 4, "日期转换格式错误 ：%s") , e.getMessage()));
         }
         return count;
     }
