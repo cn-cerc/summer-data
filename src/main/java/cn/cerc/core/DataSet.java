@@ -88,7 +88,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
 
     public void edit() {
         if (bof() || eof()) {
-            throw new RuntimeException("当前记录为空，无法修改");
+            throw new RuntimeException(StringResource.get(this, 1, "当前记录为空，无法修改"));
         }
         if (search != null) {
             search.clear();
@@ -98,7 +98,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
 
     public void delete() {
         if (bof() || eof()) {
-            throw new RuntimeException("当前记录为空，无法修改");
+            throw new RuntimeException(StringResource.get(this, 2, "当前记录为空，无法删除"));
         }
         if (search != null) {
             search.clear();
@@ -180,8 +180,9 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
 
     public void setRecNo(int recNo) {
         if (recNo > this.records.size()) {
-            throw new RuntimeException(
-                    String.format("[%s]RecNo %d 大于总长度 %d", this.getClass().getName(), recNo, this.records.size()));
+            String msg = String.format(StringResource.get(this, 3, "[%s]RecNo %d 大于总长度 %d"), this.getClass().getName(),
+                    recNo, this.records.size());
+            throw new RuntimeException(msg);
         } else {
             this.recNo = recNo;
         }
@@ -198,14 +199,14 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     // 仅用于查找一次时，调用此函数，速度最快
     public boolean locateOnlyOne(String fields, Object... values) {
         if (fields == null || "".equals(fields)) {
-            throw new RuntimeException("参数名称不能为空");
+            throw new RuntimeException(StringResource.get(this, 4, "参数名称不能为空"));
         }
         if (values == null || values.length == 0) {
-            throw new RuntimeException("值列表不能为空或者长度不能为0");
+            throw new RuntimeException(StringResource.get(this, 5, "值列表不能为空或者长度不能为0"));
         }
         String[] fieldslist = fields.split(";");
         if (fieldslist.length != values.length) {
-            throw new RuntimeException("参数名称 与 值列表长度不匹配");
+            throw new RuntimeException(StringResource.get(this, 6, "参数名称与值列表长度不匹配"));
         }
         Map<String, Object> fieldValueMap = new HashMap<String, Object>();
         for (int i = 0; i < fieldslist.length; i++) {
@@ -342,7 +343,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
             search.clear();
         }
         if (targetFields.length != sourceFields.length) {
-            throw new RuntimeException("前后字段数目不一样，请您确认！");
+            throw new RuntimeException(StringResource.get(this, 7, "前后字段数目不一样，请您确认！"));
         }
         Record targetRecord = this.getCurrent();
         for (int i = 0; i < sourceFields.length; i++) {
