@@ -12,6 +12,7 @@ public class SqlText {
     public static int PUBLIC = 1;
     public static int PRIVATE = 2;
     public static int PROTECTED = 4;
+    private static ClassResource res = new ClassResource("summer-core", SqlText.class);
     private int maximum = MAX_RECORDS;
     private int offset = 0;
     // sql 指令
@@ -131,7 +132,7 @@ public class SqlText {
 
     public void setMaximum(int maximum) {
         if (maximum > MAX_RECORDS) {
-            throw new RuntimeException(String.format(StringResource.get(this, 1, "本次请求的记录数超出了系统最大笔数为  %d 的限制！"), MAX_RECORDS));
+            throw new RuntimeException(String.format(res.getString(1, "本次请求的记录数超出了系统最大笔数为  %d 的限制！"), MAX_RECORDS));
         }
         this.maximum = maximum;
     }

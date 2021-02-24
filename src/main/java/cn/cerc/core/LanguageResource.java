@@ -8,22 +8,21 @@ import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class StringResource {
+public class LanguageResource {
 
     public static final String LANGUAGE_EN = "en";
     public static final String LANGUAGE_CN = "cn";
     public static final String LANGUAGE_TW = "tw";
     public static final String LANGUAGE_SG = "sg";
 
-    private static String currentLanguage = "cn";
-    private static final String packageName = "summer-core";
+    private static String currentLanguage = "en";
     private static final Properties resourceProperties = new Properties();
 
     static {
         final String configFileName = "/application.properties";
         Properties config = new Properties();
         try {
-            final InputStream configFile = StringResource.class.getResourceAsStream(configFileName);
+            final InputStream configFile = LanguageResource.class.getResourceAsStream(configFileName);
             if (configFile != null) {
                 config.load(configFile);
                 log.info("read file: {}", configFileName);
@@ -32,43 +31,31 @@ public class StringResource {
             }
             currentLanguage = config.getProperty("currentTimezone", currentLanguage);
             log.info("currentTimezone value: {}", currentLanguage);
-            String resourceFileName = String.format("/%s-%s.properties", packageName, currentLanguage);
-            try {
-                InputStream resourceString = StringResource.class.getResourceAsStream(resourceFileName);
-                if (resourceString == null) {
-                    resourceFileName = String.format("/%s.properties", packageName);
-                    resourceString = StringResource.class.getResourceAsStream(resourceFileName);
-                }
-                if (resourceString != null) {
-                    resourceProperties.load(new InputStreamReader(resourceString, "UTF-8"));
-                } else {
-                    log.warn("{} does not exist.", resourceFileName);
-                }
-            } catch (IOException e) {
-                log.error("Failed to load the settings from the file: {} ", resourceFileName);
-            }
         } catch (IOException e) {
             log.error("Failed to load the settings from the file: {}", configFileName);
         }
+
     }
 
-    public static String get(Object object, int key, String text) {
-        if (object == null) {
-            log.error("object is null");
-            return text;
+    public LanguageResource(String projectId) {
+        String resourceFileName = String.format("/%s-%s.properties", projectId, currentLanguage);
+        try {
+            InputStream resourceString = LanguageResource.class.getResourceAsStream(resourceFileName);
+            if (resourceString == null) {
+                resourceFileName = String.format("/%s.properties", projectId);
+                resourceString = LanguageResource.class.getResourceAsStream(resourceFileName);
+            }
+            if (resourceString != null) {
+                resourceProperties.load(new InputStreamReader(resourceString, "UTF-8"));
+            } else {
+                log.warn("{} does not exist.", resourceFileName);
+            }
+        } catch (IOException e) {
+            log.error("Failed to load the settings from the file: {} ", resourceFileName);
         }
-        return get(String.format("%s.%d", object.getClass().getName(), key), text);
     }
 
-    public static String get(Class<?> clazz, int key, String text) {
-        if (clazz == null) {
-            log.error("clazz is null");
-            return text;
-        }
-        return get(String.format("%s.%d", clazz.getName(), key), text);
-    }
-
-    private static String get(String key, String text) {
+    public String getString(String key, String text) {
         if (!resourceProperties.containsKey(key))
             log.info("String resource key {} does not exist.", key);
         return resourceProperties.getProperty(key, text);
@@ -105,6 +92,6 @@ public class StringResource {
     }
 
     public static void main(String[] args) {
-        StringResource.debugList(DataSet.class);
+        LanguageResource.debugList(DataSet.class);
     }
 }

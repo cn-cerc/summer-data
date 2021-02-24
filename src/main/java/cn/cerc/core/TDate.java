@@ -10,6 +10,7 @@ import java.util.Date;
  * @author 张弓
  */
 public class TDate extends TDateTime {
+    private static ClassResource res = new ClassResource("summer-core", TDate.class);
     private static final long serialVersionUID = 1L;
 
     public TDate(Date date) {
@@ -19,7 +20,7 @@ public class TDate extends TDateTime {
     public TDate(String date) {
         TDateTime val = TDateTime.fromDate(date);
         if (val == null) {
-            throw new RuntimeException(String.format(StringResource.get(this, 1, "%s 不是一个有效的日期格式！"), date));
+            throw new RuntimeException(String.format(res.getString(1, "%s 不是一个有效的日期格式！"), date));
         }
         this.setData(val.getData());
     }
@@ -38,7 +39,7 @@ public class TDate extends TDateTime {
             date = sdf.parse(str);
         } catch (ParseException e) {
             e.printStackTrace();
-            throw new RuntimeException(StringResource.get(TDate.class, 2, "日期类型转换错误"));
+            throw new RuntimeException(res.getString(2, "日期类型转换错误"));
         }
         return new TDate(date);
     }
