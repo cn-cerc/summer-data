@@ -20,8 +20,7 @@ public class ClassResource {
         return stringResource.getString(String.format("%s.%d", this.clasPath, id), string);
     }
 
-    public String getImage(String fileName) {
-        return stringResource.getString(String.format("%s.image.%s", this.clasPath, fileName), fileName);
+    public String getFile(String fileName) {
+        return stringResource.getString(String.format("%s.file.%s", this.clasPath, fileName), fileName);
     }
-
 }
