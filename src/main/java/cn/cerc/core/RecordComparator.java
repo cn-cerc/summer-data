@@ -14,7 +14,7 @@ public class RecordComparator implements Comparator<Record> {
         long tmp = 0;
         for (String item : fields) {
             if (item == null || "".equals(item)) {
-                throw new RuntimeException("排序字段为空");
+                throw new RuntimeException("sort field is empty");
             }
             String[] params = item.split(" ");
             String field = params[0];
@@ -42,7 +42,7 @@ public class RecordComparator implements Comparator<Record> {
                 } else if ("DESC".equalsIgnoreCase(params[1])) {
                     return tmp > 0 ? -1 : 1;
                 } else {
-                    throw new RuntimeException(String.format("不支持【%s】排序模式", params[1]));
+                    throw new RuntimeException(String.format("not support [%s] sort mode", params[1]));
                 }
             }
         }

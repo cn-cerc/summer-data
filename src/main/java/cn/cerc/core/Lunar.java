@@ -174,14 +174,6 @@ public class Lunar {
         }
     }
 
-    public static void main(String[] args) throws ParseException {
-        Calendar today = Calendar.getInstance();
-        today.setTime(chineseDateFormat.parse("2015-03-30"));
-        Lunar lunar = new Lunar(today);
-
-        log.debug("北京时间：" + chineseDateFormat.format(today.getTime()) + "　农历" + lunar);
-    }
-
     // ====== 传回农历 y年的生肖
     final public String animalsYear() {
         final String[] Animals = new String[]{"鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪"};
@@ -201,4 +193,13 @@ public class Lunar {
         String days = "0" + day;
         return year + "-" + chineseNumber[month - 1] + "-" + days.substring(days.length() - 2);
     }
+
+    public static void main(String[] args) throws ParseException {
+        Calendar today = Calendar.getInstance();
+        today.setTime(chineseDateFormat.parse("2015-03-30"));
+        Lunar lunar = new Lunar(today);
+
+        log.debug("北京时间：" + chineseDateFormat.format(today.getTime()) + "　农历" + lunar);
+    }
+
 }
