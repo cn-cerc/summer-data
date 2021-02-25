@@ -8,12 +8,12 @@ public class ClassResource {
     private String clasPath;
 
     public ClassResource(String resourceFile, Class<?> clazz) {
-        LanguageResource stringResource = buffer.get(resourceFile);
+        stringResource = buffer.get(resourceFile);
         if (stringResource == null) {
             stringResource = new LanguageResource(resourceFile);
             buffer.put(resourceFile, stringResource);
         }
-        this.clasPath = clazz.getClass().getName();
+        this.clasPath = clazz.getName();
     }
 
     public String getString(int id, String string) {
