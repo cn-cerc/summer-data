@@ -29,8 +29,8 @@ public class LanguageResource {
             } else {
                 log.warn("{} does not exist.", configFileName);
             }
-            currentLanguage = config.getProperty("currentTimezone", currentLanguage);
-            log.info("currentTimezone value: {}", currentLanguage);
+            currentLanguage = config.getProperty("currentLanguage", currentLanguage);
+            log.info("currentLanguage value: {}", currentLanguage);
         } catch (IOException e) {
             log.error("Failed to load the settings from the file: {}", configFileName);
         }
