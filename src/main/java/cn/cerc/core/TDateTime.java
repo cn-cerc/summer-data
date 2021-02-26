@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable {
-
     private static final long serialVersionUID = -7395748632907604015L;
     private static Map<String, String> dateFormats = new HashMap<>();
     private static Map<String, String> map;
@@ -109,7 +108,8 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
             tdt.setData(sdf.parse(val));
             return tdt;
         } catch (ParseException e) {
-            throw new RuntimeException(String.format("不是 %s 标准年月格式 ：yyyyMM", val));
+            ClassResource res = new ClassResource("summer-core", TDateTime.class);
+            throw new RuntimeException(String.format(res.getString(1, "不是 %s 标准年月格式 ：yyyyMM"), val));
         }
     }
 
@@ -194,7 +194,8 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         try {
             sdf = new SimpleDateFormat(map.get(fmt));
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("日期格式不正确");
+            ClassResource res = new ClassResource("summer-core", TDateTime.class);
+            throw new RuntimeException(res.getString(2, "日期格式不正确"));
         }
         return sdf.format(value.getData());
     }
@@ -202,7 +203,8 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
     public static TDateTime StrToDate(String val) {
         String fmt = TDateTime.getFormat(val);
         if (fmt == null) {
-            throw new RuntimeException("时间格式不正确: value=" + val);
+            ClassResource res = new ClassResource("summer-core", TDateTime.class);
+            throw new RuntimeException(String.format(res.getString(3, "时间格式不正确: value=%s"), val));
         }
         return new TDateTime(fmt, val);
     }
@@ -378,7 +380,8 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
                 count = count + flag;
             }
         } catch (ParseException e) {
-            throw new RuntimeException("日期转换格式错误 ：" + e.getMessage());
+            ClassResource res = new ClassResource("summer-core", TDateTime.class);
+            throw new RuntimeException(String.format(res.getString(4, "日期转换格式错误 ：%s") , e.getMessage()));
         }
         return count;
     }

@@ -55,7 +55,7 @@ public class SearchDataSet {
 
     public Record get(Object[] keys) {
         if (keys == null || keys.length == 0) {
-            throw new RuntimeException("值列表不能为空或者长度不能为0");
+            throw new RuntimeException("keys can't be null or keys's length = 0 ");
         }
         if (fields.size() != keys.length) {
             throw new RuntimeException("参数名称 与 值列表长度不匹配");
@@ -86,13 +86,13 @@ public class SearchDataSet {
 
     public void setFields(String keyFields) {
         if (keyFields == null || "".equals(keyFields)) {
-            throw new RuntimeException("参数名称不能为空");
+            throw new RuntimeException("keyFields can't be null");
         }
         if (!keyFields.equals(this.keyFields)) {
             fields.clear();
             for (String key : keyFields.split(";")) {
                 if (dataSet.size() > 0 && dataSet.getFieldDefs().size() > 0 && !dataSet.exists(key)) {
-                    throw new RuntimeException(String.format("字段 %s 不存在，无法查找！", key));
+                    throw new RuntimeException(String.format("field %s not find !", key));
                 }
                 fields.add(key);
             }

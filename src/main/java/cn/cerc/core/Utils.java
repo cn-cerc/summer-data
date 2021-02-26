@@ -37,8 +37,6 @@ public class Utils {
     private Utils() {
     }
 
-    public static String locale = Locale.zh_CN;
-
     public static final String vbCrLf = "\r\n";
 
     /**
@@ -136,7 +134,7 @@ public class Utils {
 
     // 兼容 delphi 代码
     public static int round(double d) {
-        if (Locale.zh_TW.equals(Utils.locale)) {
+        if (LanguageResource.isLanguageTW()) {
             return new BigDecimal(d).setScale(0, BigDecimal.ROUND_HALF_UP).intValue();
         }
         return (int) Math.round(d);
@@ -155,7 +153,7 @@ public class Utils {
             String str = "0.000000000000";
             str = str.substring(0, str.indexOf(".") - scale + 1);
             DecimalFormat df = new DecimalFormat(str);
-            if (Locale.zh_TW.equals(Utils.locale)) {
+            if (LanguageResource.isLanguageTW()) {
                 df.setRoundingMode(RoundingMode.HALF_UP);
             }
             return Double.parseDouble(df.format(val));
@@ -351,7 +349,7 @@ public class Utils {
     // 兼容 delphi 代码
     public static String formatFloat(String fmt, double value) {
         DecimalFormat df = new DecimalFormat(fmt);
-        if (Locale.zh_TW.equals(Utils.locale)) {
+        if (LanguageResource.isLanguageTW()) {
             df.setRoundingMode(RoundingMode.HALF_UP);
         }
         fmt = df.format(value);
@@ -380,7 +378,7 @@ public class Utils {
      */
     public static int random(int min, int max) {
         if (max < min) {
-            throw new RuntimeException("最大值范围不允许小于最小值");
+            throw new RuntimeException("max must > min");
         }
         Random random = new Random();
         return random.nextInt((max - min) + 1) + min;
@@ -538,7 +536,8 @@ public class Utils {
     public static String confused(String mobile, int fromLength, int endLength) {
         int length = mobile.length();
         if (length < (fromLength + endLength)) {
-            throw new RuntimeException("字符串长度不符合要求");
+            ClassResource res = new ClassResource("summer-core", Utils.class);
+            throw new RuntimeException(res.getString(1, "字符串长度不符合要求"));
         }
         int len = mobile.length() - fromLength - endLength;
         String star = "";
