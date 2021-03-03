@@ -5,7 +5,7 @@ import java.util.HashMap;
 public class ClassResource {
     private static HashMap<String, LanguageResource> buffer = new HashMap<>();
     private LanguageResource stringResource;
-    private String clasPath;
+    private String classPath;
 
     public ClassResource(String resourceFile, Class<?> clazz) {
         stringResource = buffer.get(resourceFile);
@@ -13,14 +13,14 @@ public class ClassResource {
             stringResource = new LanguageResource(resourceFile);
             buffer.put(resourceFile, stringResource);
         }
-        this.clasPath = clazz.getName();
+        this.classPath = clazz.getName();
     }
 
     public String getString(int id, String string) {
-        return stringResource.getString(String.format("%s.%d", this.clasPath, id), string);
+        return stringResource.getString(String.format("%s.%d", this.classPath, id), string);
     }
 
     public String getFile(String fileName) {
-        return stringResource.getString(String.format("%s.file.%s", this.clasPath, fileName), fileName);
+        return stringResource.getString(String.format("%s.file.%s", this.classPath, fileName), fileName);
     }
 }
