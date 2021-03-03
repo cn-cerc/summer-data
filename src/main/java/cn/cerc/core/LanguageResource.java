@@ -74,7 +74,7 @@ public class LanguageResource {
         return resourceProperties.getProperty(key, text);
     }
 
-    public static String getCurrentLanguage() {
+    public String getCurrentLanguage() {
         return currentLanguage;
     }
 
@@ -107,4 +107,5 @@ public class LanguageResource {
     public static void main(String[] args) {
         LanguageResource.debugList(DataSet.class);
     }
+
 }

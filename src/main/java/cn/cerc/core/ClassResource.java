@@ -26,10 +26,10 @@ public class ClassResource {
     }
 
     private void initResource() {
-        stringResource = buffer.get(resourceFile);
+        stringResource = buffer.get(String.format("%s-%s", resourceFile, this.languageId));
         if (stringResource == null) {
             stringResource = new LanguageResource(resourceFile, this.languageId);
-            buffer.put(resourceFile, stringResource);
+            buffer.put(String.format("%s-%s", resourceFile, stringResource.getCurrentLanguage()), stringResource);
         }
     }
 
