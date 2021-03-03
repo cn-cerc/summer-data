@@ -1,11 +1,12 @@
 package cn.cerc.core;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class LanguageResource {
@@ -29,8 +30,8 @@ public class LanguageResource {
             } else {
                 log.warn("{} does not exist.", configFileName);
             }
-            currentLanguage = config.getProperty("currentLanguage", currentLanguage);
-            log.info("currentLanguage value: {}", currentLanguage);
+            currentLanguage = config.getProperty("currentTimezone", currentLanguage);
+            log.info("currentTimezone value: {}", currentLanguage);
         } catch (IOException e) {
             log.error("Failed to load the settings from the file: {}", configFileName);
         }
@@ -38,7 +39,18 @@ public class LanguageResource {
     }
 
     public LanguageResource(String projectId) {
-        String resourceFileName = String.format("/%s-%s.properties", projectId, currentLanguage);
+        initResource(projectId, currentLanguage);
+    }
+
+    public LanguageResource(String projectId, String userLanguage) {
+        initResource(projectId, userLanguage);
+    }
+
+    private void initResource(String projectId, String userLanguage) {
+        if (Utils.isEmpty(userLanguage)) {
+            userLanguage = currentLanguage;
+        }
+        String resourceFileName = String.format("/%s-%s.properties", projectId, userLanguage);
         try {
             InputStream resourceString = LanguageResource.class.getResourceAsStream(resourceFileName);
             if (resourceString == null) {
@@ -46,7 +58,7 @@ public class LanguageResource {
                 resourceString = LanguageResource.class.getResourceAsStream(resourceFileName);
             }
             if (resourceString != null) {
-                resourceProperties.load(new InputStreamReader(resourceString, "UTF-8"));
+                resourceProperties.load(new InputStreamReader(resourceString, StandardCharsets.UTF_8));
             } else {
                 log.warn("{} does not exist.", resourceFileName);
             }
@@ -56,8 +68,9 @@ public class LanguageResource {
     }
 
     public String getString(String key, String text) {
-        if (!resourceProperties.containsKey(key))
-            log.info("String resource key {} does not exist.", key);
+        if (!resourceProperties.containsKey(key)) {
+            log.info("Language {} String resource key {} does not exist.", currentLanguage, key);
+        }
         return resourceProperties.getProperty(key, text);
     }
 
