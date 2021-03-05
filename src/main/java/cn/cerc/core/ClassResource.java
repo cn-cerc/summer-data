@@ -32,7 +32,7 @@ public class ClassResource {
                 this.languageId = ((IUserLanguage) owner).getLanguageId();
             }
             stringResource = new LanguageResource(resourceFile, this.languageId);
-            buffer.put(String.format("%s-%s", resourceFile, stringResource.getCurrentLanguage()), stringResource);
+            buffer.put(String.format("%s-%s", resourceFile, this.languageId), stringResource);
         }
     }
 
