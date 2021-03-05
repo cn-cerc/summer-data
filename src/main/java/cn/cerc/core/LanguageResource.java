@@ -71,7 +71,9 @@ public class LanguageResource {
         if (!resourceProperties.containsKey(key)) {
             log.info("Language {} String resource key {} does not exist.", currentLanguage, key);
         }
-        return resourceProperties.getProperty(key, text);
+        String value = resourceProperties.getProperty(key, text);
+        log.info("language {}, key {}, input {}, output {}", currentLanguage, key, text, value);
+        return value;
     }
 
     public String getCurrentLanguage() {
