@@ -28,12 +28,11 @@ public class LanguageResource {
             final InputStream configFile = LanguageResource.class.getResourceAsStream(configFileName);
             if (configFile != null) {
                 config.load(configFile);
-                log.info("read file: {}", configFileName);
+                log.info("load file: {}", configFileName);
             } else {
-                log.warn("{} does not exist.", configFileName);
+                log.warn("{} doesn't exist.", configFileName);
             }
-            appLanguage = config.getProperty("currentLanguage", appLanguage);
-            log.info("currentLanguage value: {}", appLanguage);
+            appLanguage = config.getProperty("app.language", appLanguage);
         } catch (IOException e) {
             log.error("Failed to load the settings from the file: {}", configFileName);
         }
@@ -48,7 +47,6 @@ public class LanguageResource {
     }
 
     private void initResource(String projectId, String userLanguage) {
-        log.info("userLanguage {}", userLanguage);
         this.userLanguage = userLanguage;// 用户级的语言类型
         if (Utils.isEmpty(userLanguage)) {
             userLanguage = appLanguage;// 若用户没有传入语言类型则默认选择英文文件
@@ -68,7 +66,7 @@ public class LanguageResource {
                 log.warn("{} does not exist.", resourceFileName);
             }
         } catch (IOException e) {
-            log.error("Failed to load the settings from the file: {} ", resourceFileName);
+            log.error("Failed to load the settings from the file: {}", resourceFileName);
         }
     }
 
@@ -76,9 +74,7 @@ public class LanguageResource {
         if (!resourceProperties.containsKey(key)) {
             log.error("resourceFileName {}, appLanguage {}, userLanguage {}, resource key {}, does not exist.", resourceFileName, appLanguage, userLanguage, key);
         }
-        String value = resourceProperties.getProperty(key, text);
-        log.info("resourceFileName {}, appLanguage {}, userLanguage {}, key {}, input {}, output {}", resourceFileName, appLanguage, userLanguage, key, text, value);
-        return value;
+        return resourceProperties.getProperty(key, text);
     }
 
     public String getCurrentLanguage() {
