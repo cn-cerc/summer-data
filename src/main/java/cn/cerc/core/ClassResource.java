@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Map;
 
-@Slf4j
 public class ClassResource {
     private static Map<String, LanguageResource> buffer = new HashMap<>();
     private LanguageResource stringResource;
@@ -33,7 +32,7 @@ public class ClassResource {
     }
 
     private void initResource() {
-        // 首次加载语言类型为空不加载，底部默认为空的语言LanguageResource会直接使用currentLanguage
+        // 首次加载语言类型为空不加载，底部默认为空的语言LanguageResource会直接使用app.language
         if (this.languageId != null) {
             stringResource = buffer.get(getBuffKey(resourceFile, this.languageId));
         }
@@ -41,10 +40,8 @@ public class ClassResource {
         if (stringResource == null) {
             if (owner != null && owner instanceof IUserLanguage) {
                 this.languageId = ((IUserLanguage) owner).getLanguageId();
-                log.info(owner.getClass().getName());
             }
             stringResource = new LanguageResource(resourceFile, this.languageId);
-            log.info("languageId {}", languageId);
             buffer.put(getBuffKey(resourceFile, this.languageId), stringResource);
         }
     }
