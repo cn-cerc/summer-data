@@ -19,7 +19,7 @@ public class ClassResource {
         this.resourceFile = resourceFile;
     }
 
-    public ClassResource(String resourceFile, Object owner) {
+    public ClassResource(Object owner, String resourceFile) {
         this.owner = owner;
         this.classPath = owner.getClass().getName();
         this.resourceFile = resourceFile;
