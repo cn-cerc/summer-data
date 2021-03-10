@@ -22,20 +22,7 @@ public class LanguageResource {
     private static final Properties resourceProperties = new Properties();
 
     static {
-        final String configFileName = "/application.properties";
-        Properties config = new Properties();
-        try {
-            final InputStream configFile = LanguageResource.class.getResourceAsStream(configFileName);
-            if (configFile != null) {
-                config.load(configFile);
-                log.info("load file: {}", configFileName);
-            } else {
-                log.warn("{} doesn't exist.", configFileName);
-            }
-            appLanguage = config.getProperty("app.language", appLanguage);
-        } catch (IOException e) {
-            log.error("Failed to load the settings from the file: {}", configFileName);
-        }
+        appLanguage = (new ClassConfig(LanguageResource.class, null)).getProperty("app.language", appLanguage);
     }
 
     public LanguageResource(String projectId) {
@@ -72,7 +59,8 @@ public class LanguageResource {
 
     public String getString(String key, String text) {
         if (!resourceProperties.containsKey(key)) {
-            log.error("resourceFileName {}, appLanguage {}, userLanguage {}, resource key {}, does not exist.", resourceFileName, appLanguage, userLanguage, key);
+            log.error("resourceFileName {}, appLanguage {}, userLanguage {}, resource key {}, does not exist.",
+                    resourceFileName, appLanguage, userLanguage, key);
         }
         return resourceProperties.getProperty(key, text);
     }
@@ -109,6 +97,7 @@ public class LanguageResource {
 
     public static void main(String[] args) {
         LanguageResource.debugList(DataSet.class);
+        System.out.println(appLanguage);
     }
 
 }
