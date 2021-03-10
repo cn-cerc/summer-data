@@ -94,28 +94,13 @@ public class ClassConfig {
     }
 
     /**
-     * 读取以自动加上类名开头的数据
-     * 
-     * @param key          例如 cn.cerc.core.ClassConfig.1
-     * @param defaultValue
-     * @return
-     */
-    public String getString(String key, String defaultValue) {
-        if (classPath == null) {
-            log.warn("classPath is null.");
-            return getProperty(key, defaultValue);
-        }
-        return getProperty(String.format("%s.%s", this.classPath, key), defaultValue);
-    }
-
-    /**
-     * 直接读取文件底层数据，尽量改使用 getString
+     * 读取配置文件数据，不会自动追加class路径，否则请使用 getClassValue
      * 
      * @param key          例如 app.language
      * @param defaultValue
      * @return
      */
-    public String getProperty(String key, String defaultValue) {
+    public String getString(String key, String defaultValue) {
         log.debug("key: {}", key);
         if (localConfig.containsKey(key))
             return localConfig.getProperty(key);
@@ -127,9 +112,41 @@ public class ClassConfig {
             return defaultValue;
     }
 
+    public boolean getBoolean(String key, boolean defaultValue) {
+        return "true".equals(getString(key, String.valueOf(defaultValue)));
+    }
+
+    /**
+     * 读取以自动加上类名开头的数据
+     * 
+     * @param key          例如 cn.cerc.core.ClassConfig.1
+     * @param defaultValue
+     * @return
+     */
+    public String getClassProperty(String key, String defaultValue) {
+        if (classPath == null) {
+            log.warn("classPath is null.");
+            return getString(key, defaultValue);
+        }
+        return getString(String.format("%s.%s", this.classPath, key), defaultValue);
+    }
+
+    /**
+     * 直接读取文件底层数据，尽量改使用 getString
+     * 
+     * @param key          例如 app.language
+     * @param defaultValue
+     * @return
+     */
+    @Deprecated
+    public String getProperty(String key, String defaultValue) {
+        return getString(key, defaultValue);
+    }
+
     public static void main(String[] args) {
         ClassConfig config = new ClassConfig(ClassConfig.class, "summer-core-cn");
-        System.out.println(config.getProperty("cn.cerc.core.DataSet.1", "not find."));
-        System.out.println(config.getProperty("app.language", "not find."));
+        System.out.println(config.getString("cn.cerc.core.DataSet.1", "not find."));
+        System.out.println(config.getString("app.language", "not find."));
     }
+
 }
