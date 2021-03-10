@@ -536,7 +536,7 @@ public class Utils {
     public static String confused(String mobile, int fromLength, int endLength) {
         int length = mobile.length();
         if (length < (fromLength + endLength)) {
-            ClassResource res = new ClassResource("summer-core", Utils.class);
+            ClassResource res = new ClassResource(Utils.class, "summer-core");
             throw new RuntimeException(res.getString(1, "字符串长度不符合要求"));
         }
         int len = mobile.length() - fromLength - endLength;
