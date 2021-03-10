@@ -1,5 +1,8 @@
 package cn.cerc.core;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -14,15 +17,35 @@ import lombok.extern.slf4j.Slf4j;
 public class ClassConfig {
     private static final Map<String, Properties> buff = new HashMap<>();
     private static final String CONFIGFILE_APPLICATION = "/application.properties";
-    private static final Properties configApplication = new Properties();
-    private Properties configPackage;
+    private static final Properties applicationConfig = new Properties();
+    private Properties packageConfig;
     private String classPath = null;
 
+    private static final Properties localConfig = new Properties();
+
     static {
+        // 加载本地文件配置
+        String path = System.getProperty("user.home") + System.getProperty("file.separator");
+        String confFile = path + "summer-application.properties";
+        try {
+            localConfig.clear();
+            File file = new File(confFile);
+            if (file.exists()) {
+                localConfig.load(new FileInputStream(confFile));
+                log.info("{} is loaded.", confFile);
+            } else {
+                log.warn("{} doesn't exist.", confFile);
+            }
+        } catch (FileNotFoundException e) {
+            log.error("The settings file does not exist: {}'", confFile);
+        } catch (IOException e) {
+            log.error("Failed to load the settings from the file: {}", confFile);
+        }
+        // 加载项目文件配置
         try {
             InputStream file = ClassConfig.class.getResourceAsStream(CONFIGFILE_APPLICATION);
             if (file != null) {
-                configApplication.load(new InputStreamReader(file, StandardCharsets.UTF_8));
+                applicationConfig.load(new InputStreamReader(file, StandardCharsets.UTF_8));
                 log.info("{} is loaded.", CONFIGFILE_APPLICATION);
             } else {
                 log.warn("{} doesn't exist.", CONFIGFILE_APPLICATION);
@@ -33,6 +56,7 @@ public class ClassConfig {
     }
 
     public ClassConfig() {
+
     }
 
     public ClassConfig(Object owner, String packageName) {
@@ -48,18 +72,18 @@ public class ClassConfig {
             return;
 
         String configFileName = String.format("/%s.properties", packageName);
-        configPackage = buff.get(packageName);
-        if (configPackage != null)
+        packageConfig = buff.get(packageName);
+        if (packageConfig != null)
             return;
 
-        configPackage = new Properties();
-        if (buff.putIfAbsent(packageName, configPackage) != null)
+        packageConfig = new Properties();
+        if (buff.putIfAbsent(packageName, packageConfig) != null)
             return;
 
         try {
             final InputStream configFile = ClassConfig.class.getResourceAsStream(configFileName);
             if (configFile != null) {
-                configPackage.load(new InputStreamReader(configFile, StandardCharsets.UTF_8));
+                packageConfig.load(new InputStreamReader(configFile, StandardCharsets.UTF_8));
                 log.info("{} is loaded.", configFileName);
             } else {
                 log.warn("{} doesn't exist.", configFileName);
@@ -93,10 +117,12 @@ public class ClassConfig {
      */
     public String getValue(String key, String defaultValue) {
         log.debug("key: {}", key);
-        if (configApplication.containsKey(key))
-            return configApplication.getProperty(key);
-        else if (configPackage != null)
-            return configPackage.getProperty(key, defaultValue);
+        if (localConfig.containsKey(key))
+            return localConfig.getProperty(key);
+        else if (applicationConfig.containsKey(key))
+            return applicationConfig.getProperty(key);
+        else if (packageConfig != null)
+            return packageConfig.getProperty(key, defaultValue);
         else
             return defaultValue;
     }
