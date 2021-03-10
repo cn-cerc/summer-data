@@ -103,9 +103,9 @@ public class ClassConfig {
     public String getString(String key, String defaultValue) {
         if (classPath == null) {
             log.warn("classPath is null.");
-            return getValue(key, defaultValue);
+            return getProperty(key, defaultValue);
         }
-        return getValue(String.format("%s.%s", this.classPath, key), defaultValue);
+        return getProperty(String.format("%s.%s", this.classPath, key), defaultValue);
     }
 
     /**
@@ -115,7 +115,7 @@ public class ClassConfig {
      * @param defaultValue
      * @return
      */
-    public String getValue(String key, String defaultValue) {
+    public String getProperty(String key, String defaultValue) {
         log.debug("key: {}", key);
         if (localConfig.containsKey(key))
             return localConfig.getProperty(key);
@@ -129,7 +129,7 @@ public class ClassConfig {
 
     public static void main(String[] args) {
         ClassConfig config = new ClassConfig(ClassConfig.class, "summer-core-cn");
-        System.out.println(config.getValue("cn.cerc.core.DataSet.1", "not find."));
-        System.out.println(config.getValue("app.language", "not find."));
+        System.out.println(config.getProperty("cn.cerc.core.DataSet.1", "not find."));
+        System.out.println(config.getProperty("app.language", "not find."));
     }
 }

@@ -22,7 +22,7 @@ public class LanguageResource {
     private static final Properties resourceProperties = new Properties();
 
     static {
-        appLanguage = (new ClassConfig(LanguageResource.class, null)).getValue("app.language", appLanguage);
+        appLanguage = (new ClassConfig(LanguageResource.class, null)).getProperty("app.language", appLanguage);
     }
 
     public LanguageResource(String projectId) {
