@@ -128,7 +128,7 @@ public class ClassConfig {
             log.warn("classPath is null.");
             return getString(key, defaultValue);
         }
-        return getString(String.format("%s.%s", this.classPath, key), defaultValue);
+        return getString(String.format("config.%s.%s", this.classPath, key), defaultValue);
     }
 
     /**
