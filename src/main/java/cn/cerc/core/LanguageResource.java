@@ -1,12 +1,12 @@
 package cn.cerc.core;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class LanguageResource {
@@ -16,7 +16,7 @@ public class LanguageResource {
     public static final String LANGUAGE_TW = "tw";
     public static final String LANGUAGE_SG = "sg";
 
-    private static String appLanguage = "en";
+    public static String appLanguage = "en";
     private String userLanguage;
     private String resourceFileName;
     private static final Properties resourceProperties = new Properties();
