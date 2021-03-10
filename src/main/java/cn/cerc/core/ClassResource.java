@@ -1,7 +1,5 @@
 package cn.cerc.core;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,6 +38,9 @@ public class ClassResource {
         if (stringResource == null) {
             if (owner != null && owner instanceof IUserLanguage) {
                 this.languageId = ((IUserLanguage) owner).getLanguageId();
+                if (Utils.isEmpty(this.languageId)) {
+                    this.languageId = LanguageResource.appLanguage;
+                }
             }
             stringResource = new LanguageResource(resourceFile, this.languageId);
             buffer.put(getBuffKey(resourceFile, this.languageId), stringResource);
