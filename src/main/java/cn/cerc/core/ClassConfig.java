@@ -113,7 +113,12 @@ public class ClassConfig {
     }
 
     public boolean getBoolean(String key, boolean defaultValue) {
-        return "true".equals(getString(key, String.valueOf(defaultValue)));
+        String value = getString(key, String.valueOf(defaultValue));
+        if ("1".equals(key)) {
+            log.warn("key {} config old, Please up to use true/false", key);
+            return true;
+        }
+        return "true".equals(value);
     }
 
     /**
