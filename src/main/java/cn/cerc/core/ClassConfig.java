@@ -121,6 +121,10 @@ public class ClassConfig {
         return "true".equals(value);
     }
 
+    public int getInt(String key, int defaultValue) {
+        return Integer.parseInt(getString(key, String.valueOf(defaultValue)));
+    }
+
     /**
      * 读取以自动加上类名开头的数据
      * 
