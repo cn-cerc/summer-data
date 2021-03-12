@@ -22,7 +22,7 @@ public class LanguageResource {
     private static final Properties resourceProperties = new Properties();
 
     static {
-        appLanguage = (new ClassConfig(LanguageResource.class, null)).getProperty("app.language", appLanguage);
+        appLanguage = (new ClassConfig(LanguageResource.class, null)).getString("app.language", appLanguage);
     }
 
     public LanguageResource(String projectId) {
@@ -47,7 +47,7 @@ public class LanguageResource {
             }
             if (resourceString != null) {
                 this.resourceFileName = resourceFileName;
-                log.info("load properties file {}", resourceFileName);
+                log.info("{} is loaded.", resourceFileName);
                 resourceProperties.load(new InputStreamReader(resourceString, StandardCharsets.UTF_8));
             } else {
                 log.warn("{} does not exist.", resourceFileName);
