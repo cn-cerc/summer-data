@@ -14,7 +14,7 @@ import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ClassConfig {
+public class ClassConfig implements IConfig {
     private static final Map<String, Properties> buff = new HashMap<>();
     private static final String CONFIGFILE_APPLICATION = "/application.properties";
     private static final Properties applicationConfig = new Properties();
