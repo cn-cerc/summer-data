@@ -1,6 +1,6 @@
 package cn.cerc.core;
 
-public interface ISession {
+public interface ISession extends AutoCloseable{
     
     // 自定义参数，注：若key=null则返回实现接口的对象本身
     Object getProperty(String key);
