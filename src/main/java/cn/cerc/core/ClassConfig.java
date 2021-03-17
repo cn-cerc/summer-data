@@ -16,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ClassConfig implements IConfig {
     private static final Map<String, Properties> buff = new HashMap<>();
-    private static final String CONFIGFILE_APPLICATION = "/application.properties";
     private static final Properties applicationConfig = new Properties();
     private Properties packageConfig;
     private String classPath = null;
@@ -42,16 +41,17 @@ public class ClassConfig implements IConfig {
             log.error("Failed to load the settings from the file: {}", confFile);
         }
         // 加载项目文件配置
+        String confApp = "/application.properties";
         try {
-            InputStream file = ClassConfig.class.getResourceAsStream(CONFIGFILE_APPLICATION);
+            InputStream file = ClassConfig.class.getResourceAsStream(confApp);
             if (file != null) {
                 applicationConfig.load(new InputStreamReader(file, StandardCharsets.UTF_8));
-                log.info("{} is loaded.", CONFIGFILE_APPLICATION);
+                log.info("{} is loaded.", confApp);
             } else {
-                log.warn("{} doesn't exist.", CONFIGFILE_APPLICATION);
+                log.warn("{} doesn't exist.", confApp);
             }
         } catch (IOException e) {
-            log.error("Failed to load the settings from the file: {}", CONFIGFILE_APPLICATION);
+            log.error("Failed to load the settings from the file: {}", confApp);
         }
     }
 
