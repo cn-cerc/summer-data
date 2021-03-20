@@ -114,7 +114,7 @@ public class ClassConfig implements IConfig {
 
     public boolean getBoolean(String key, boolean defaultValue) {
         String value = getString(key, String.valueOf(defaultValue));
-        if ("1".equals(key)) {
+        if ("1".equals(value)) {
             log.warn("key {} config old, Please up to use true/false", key);
             return true;
         }
