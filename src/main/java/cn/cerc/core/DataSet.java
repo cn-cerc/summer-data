@@ -32,7 +32,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     private DataSetEvent onAfterAppend;
     private DataSetEvent onBeforePost;
     private SearchDataSet search;
-
+    private boolean readonly;
     private Record head = null;
     private FieldDefs head_defs = null;
 
@@ -625,5 +625,13 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
 
     public void setOnBeforeAppend(DataSetBeforeAppendEvent onBeforeAppend) {
         this.onBeforeAppend = onBeforeAppend;
+    }
+
+    public boolean isReadonly() {
+        return readonly;
+    }
+
+    public void setReadonly(boolean readonly) {
+        this.readonly = readonly;
     }
 }
