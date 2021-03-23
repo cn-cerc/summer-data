@@ -11,12 +11,6 @@ public class ClassResource {
     private String resourceFile;
     private Object owner;
 
-    @Deprecated
-    public ClassResource(String resourceFile, Class<?> clazz) {
-        this.classPath = clazz.getName();
-        this.resourceFile = resourceFile;
-    }
-
     public ClassResource(Object owner, String resourceFile) {
         if (owner instanceof Class) {
             this.classPath = ((Class<?>) owner).getName();

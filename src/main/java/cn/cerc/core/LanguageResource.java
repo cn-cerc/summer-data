@@ -10,9 +10,17 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class LanguageResource {
-
+    /**
+     * 英语美国
+     */
     public static final String LANGUAGE_EN = "en";
+    /**
+     * 简体中文
+     */
     public static final String LANGUAGE_CN = "cn";
+    /**
+     * 繁体中文
+     */
     public static final String LANGUAGE_TW = "tw";
     public static final String LANGUAGE_SG = "sg";
 
