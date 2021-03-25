@@ -97,8 +97,8 @@ public class ClassConfig implements IConfig {
      * 读取配置文件数据，不会自动追加class路径，否则请使用 getClassValue
      * 
      * @param key          例如 app.language
-     * @param defaultValue
-     * @return
+     * @param defaultValue 默认值
+     * @return 返回字符值
      */
     public String getString(String key, String defaultValue) {
         log.debug("key: {}", key);
@@ -129,8 +129,8 @@ public class ClassConfig implements IConfig {
      * 读取以自动加上类名开头的数据
      * 
      * @param key          例如 cn.cerc.core.ClassConfig.1
-     * @param defaultValue
-     * @return
+     * @param defaultValue 定义默认值
+     * @return 返回值，可为null
      */
     public String getClassProperty(String key, String defaultValue) {
         if (classPath == null) {
@@ -144,9 +144,10 @@ public class ClassConfig implements IConfig {
      * 直接读取文件底层数据，尽量改使用 getString
      * 
      * @param key          例如 app.language
-     * @param defaultValue
-     * @return
+     * @param defaultValue 定义默认值
+     * @return 返回值，可为null
      */
+    @Override
     @Deprecated
     public String getProperty(String key, String defaultValue) {
         return getString(key, defaultValue);
