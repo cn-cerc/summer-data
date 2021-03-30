@@ -1,8 +1,5 @@
 package cn.cerc.core;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,9 +15,6 @@ public class SqlText {
     // sql 指令
     private String text;
     private ClassData classData;
-
-    @Setter
-    @Getter
     private boolean supportMssql = false;
 
     public SqlText() {
@@ -194,6 +188,14 @@ public class SqlText {
 
     public ClassData getClassData() {
         return classData;
+    }
+
+    public boolean isSupportMssql() {
+        return supportMssql;
+    }
+
+    public void setSupportMssql(boolean supportMssql) {
+        this.supportMssql = supportMssql;
     }
 
 }
