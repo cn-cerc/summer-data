@@ -11,10 +11,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 public class ClassConfig implements IConfig {
+	private static final Logger log = LoggerFactory.getLogger(ClassConfig.class);
     private static final Map<String, Properties> buff = new HashMap<>();
     private static final Properties applicationConfig = new Properties();
     private Properties packageConfig;

@@ -27,10 +27,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Transient;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 public class Utils {
+	private static final Logger log = LoggerFactory.getLogger(Utils.class);
 
     /**
      * 不允许创建对象，只能作为工具类使用
