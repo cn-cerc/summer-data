@@ -9,6 +9,7 @@ public interface ISession extends AutoCloseable {
     public static final String LANGUAGE_ID = "language_id";
     public static final String CLIENT_DEVICE = "device"; // client device
     public static final String LOGIN_SERVER = "login_server";
+    public static final String REQUEST = "request";
 
     // 自定义参数，注：若key=null则返回实现接口的对象本身
     Object getProperty(String key);
@@ -52,5 +53,6 @@ public interface ISession extends AutoCloseable {
     boolean logon();
 
     // 关闭开启的资源
+    @Override
     void close();
 }
