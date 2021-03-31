@@ -63,15 +63,16 @@ public class LanguageResource {
         }
 
         try {
-            InputStream resourceString = LanguageResource.class.getResourceAsStream(resourceFileName);
-            if (resourceString == null) {
+            InputStream inputStream = LanguageResource.class.getResourceAsStream(resourceFileName);
+            if (inputStream == null) {
                 resourceFileName = String.format("/%s.properties", projectId);
-                resourceString = LanguageResource.class.getResourceAsStream(resourceFileName);
+                inputStream = LanguageResource.class.getResourceAsStream(resourceFileName);
             }
-            if (resourceString != null) {
+            if (inputStream != null) {
                 this.resourceFileName = resourceFileName;
                 log.info("{} is loaded.", resourceFileName);
-                resourceProperties.load(new InputStreamReader(resourceString, StandardCharsets.UTF_8));
+                resourceProperties = new Properties();
+                resourceProperties.load(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
                 items.put(resourceFileName, resourceProperties);
             } else {
                 log.warn("{} does not exist.", resourceFileName);
