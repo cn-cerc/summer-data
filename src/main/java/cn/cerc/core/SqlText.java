@@ -9,7 +9,7 @@ public class SqlText {
     public static int PUBLIC = 1;
     public static int PRIVATE = 2;
     public static int PROTECTED = 4;
-    private static ClassResource res = new ClassResource(SqlText.class, "summer-core");
+    private static ClassResource res = new ClassResource(SqlText.class, SummerCore.ID);
     private int maximum = MAX_RECORDS;
     private int offset = 0;
     // sql 指令
