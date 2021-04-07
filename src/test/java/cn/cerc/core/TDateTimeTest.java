@@ -18,6 +18,7 @@ public class TDateTimeTest {
         assertEquals("年月与日期互转", ym, val);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void test_incHour() {
         obj = TDateTime.fromYearMonth(ym).incHour(-1);
@@ -30,6 +31,7 @@ public class TDateTimeTest {
         assertThat("加12小时", obj.getTime(), is("12:00:00"));
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void test_incMonth() {
         obj = TDateTime.fromYearMonth(ym).incMonth(-1);
@@ -39,6 +41,7 @@ public class TDateTimeTest {
         assertThat("测试2月份", obj.getYearMonth(), is("201502"));
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void test_monthEof() {
         obj = TDateTime.fromYearMonth(ym).monthEof();
