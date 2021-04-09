@@ -24,7 +24,6 @@ import com.google.gson.reflect.TypeToken;
 
 public class Record implements IRecord, Serializable {
 	private static final Logger log = LoggerFactory.getLogger(Record.class);
-
     private static final long serialVersionUID = 4454304132898734723L;
     private DataSetState state = DataSetState.dsNone;
     private FieldDefs defs;

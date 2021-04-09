@@ -21,7 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DataSet implements IRecord, Serializable, Iterable<Record> {
+public class DataSet implements IDataSet, Serializable, Iterable<Record> {
     private static final long serialVersionUID = 873159747066855363L;
     private static ClassResource res = new ClassResource(DataSet.class, SummerCore.ID);
     private int recNo = 0;
