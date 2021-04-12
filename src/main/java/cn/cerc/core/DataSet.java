@@ -36,7 +36,7 @@ public class DataSet implements IDataSet, Serializable, Iterable<Record> {
     private Record head = null;
     private FieldDefs head_defs = null;
 
-    public Record newRecord() {
+    protected Record newRecord() {
         Record record = new Record(this.fieldDefs);
         record.setDataSet(this);
         record.setState(DataSetState.dsInsert);
