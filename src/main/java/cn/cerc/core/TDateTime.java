@@ -10,6 +10,7 @@ import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable {
@@ -562,6 +563,14 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         cal.setTime(this.getData());
         Lunar lunar = new Lunar(cal);
         return lunar.toString().substring(5).replaceAll("-", "/");
+    }
+
+    /**
+     * @return 返回当前时间对应英文格式
+     */
+    public String getEnDate() {
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEEE, MMM dd, yyyy HH:mm:ss a ",Locale.US);
+        return sdf.format(data);
     }
 
     @Override
