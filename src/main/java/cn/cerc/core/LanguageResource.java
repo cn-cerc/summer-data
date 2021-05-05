@@ -26,8 +26,10 @@ public class LanguageResource {
      */
     public static final String LANGUAGE_TW = "tw";
     public static final String LANGUAGE_SG = "sg";
-
-    public static String appLanguage = "en";
+    /**
+     * 默认界面语言版本
+     */
+    public static final String appLanguage;
 
     private String userLanguage;
     private String resourceFileName;
@@ -35,7 +37,7 @@ public class LanguageResource {
     private static Map<String, Properties> items = new HashMap<>();
 
     static {
-        appLanguage = (new ClassConfig(LanguageResource.class, null)).getString("app.language", appLanguage);
+        appLanguage = (new ClassConfig(LanguageResource.class, null)).getString("app.language", "en");
     }
 
     public LanguageResource(String projectId) {
@@ -83,14 +85,14 @@ public class LanguageResource {
     }
 
     public String getString(String key, String text) {
-        if(resourceProperties == null)
+        if (resourceProperties == null)
             return text;
-        
+
         if (!resourceProperties.containsKey(key)) {
             log.error("resourceFileName {}, appLanguage {}, userLanguage {}, resource key {}, does not exist.",
                     resourceFileName, appLanguage, userLanguage, key);
         }
-        
+
         return resourceProperties.getProperty(key, text);
     }
 
