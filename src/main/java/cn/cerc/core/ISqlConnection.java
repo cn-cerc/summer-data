@@ -5,6 +5,7 @@ import java.sql.Connection;
 public abstract interface ISqlConnection extends IConnection {
 
     // 返回会话
+    @Override
     Connection getClient();
 
 }
