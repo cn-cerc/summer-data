@@ -1,23 +1,18 @@
 package cn.cerc.core;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ClassResource {
-    private static Map<String, LanguageResource> buffer = new HashMap<>();
+    private static Map<String, LanguageResource> buffer = new ConcurrentHashMap<>();
     private LanguageResource stringResource;
     private String languageId;
     private String classPath;
     private String resourceFile;
     private Object owner;
 
-    public ClassResource(Object owner, String resourceFile) {
-        if (owner instanceof Class) {
-            this.classPath = ((Class<?>) owner).getName();
-        } else {
-            this.classPath = owner.getClass().getName();
-            this.owner = owner;
-        }
+    public ClassResource(Class<?> owner, String resourceFile) {
+        this.classPath = ((Class<?>) owner).getName();
         this.resourceFile = resourceFile;
     }
 
