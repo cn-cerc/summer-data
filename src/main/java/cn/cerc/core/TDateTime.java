@@ -526,7 +526,11 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
     }
 
     /**
-     * 获取指定日期的开始时刻
+     * 获取指定日期的开始时间
+     * 
+     * @param dateTime 指定时间
+     * 
+     * @return 开始时间
      */
     public static TDateTime getStartOfDay(TDateTime dateTime) {
         Date date = dateTime.getData();
@@ -539,6 +543,10 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
 
     /**
      * 获取指定日期的结束时刻
+     * 
+     * @param dateTime 指定时间
+     * 
+     * @return 结束时间
      */
     public static TDateTime getEndOfDay(TDateTime dateTime) {
         Date date = dateTime.getData();
