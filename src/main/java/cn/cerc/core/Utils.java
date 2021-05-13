@@ -31,7 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Utils {
-	private static final Logger log = LoggerFactory.getLogger(Utils.class);
+
+    private static final Logger log = LoggerFactory.getLogger(Utils.class);
+    private static final ClassResource res = new ClassResource(Utils.class, SummerCore.ID);
 
     /**
      * 不允许创建对象，只能作为工具类使用
@@ -79,8 +81,7 @@ public class Utils {
      * 按照指定的编码格式进行url编码
      *
      * @param value 原始字符串
-     * @param enc   编码格式
-     *              StandardCharsets.UTF_8.name()
+     * @param enc   编码格式 StandardCharsets.UTF_8.name()
      * @return 编码后的字符串
      */
     public static String encode(String value, String enc) {
@@ -95,8 +96,7 @@ public class Utils {
      * 按照指定的编码格式进行url解码
      *
      * @param value 原始字符串
-     * @param enc   编码格式
-     *              StandardCharsets.UTF_8.name()
+     * @param enc   编码格式 StandardCharsets.UTF_8.name()
      * @return 解码后的字符串
      */
     public static String decode(String value, String enc) {
@@ -146,9 +146,10 @@ public class Utils {
      * double 类型数字格式化
      *
      * @param val   将要格式化的数字
-     * @param scale 精确到的位置
-     *              负数表示小数向后的位数，例如：2351.2513 当scale = -2时，精确后为2351.25 当scale = -1时，精确后为2351.3
-     *              正数表示小数向前的位数，例如：2351.2513 当scale = 2时，精确后为2400.0 当scale = 3时，精确后为2000.0
+     * @param scale 精确到的位置 负数表示小数向后的位数，例如：2351.2513 </br>
+     *              当scale = -2时，精确后为2351.25 </br>
+     *              当scale = -1时，精确后为2351.3 正数表示小数向前的位数，例如：2351.2513 </br>
+     *              当scale = 2时，精确后为2400.0 当scale = 3时，精确后为2000.0 </br>
      */
     public static double roundTo(double val, int scale) {
         if (scale <= 0) {
@@ -528,7 +529,7 @@ public class Utils {
     }
 
     /**
-     * Utils.confused("13927470636", 2, 4)      = 13*****0636
+     * Utils.confused("13927470636", 2, 4) = 13*****0636
      *
      * @param mobile     手机号码
      * @param fromLength 起始显示位数
@@ -538,7 +539,6 @@ public class Utils {
     public static String confused(String mobile, int fromLength, int endLength) {
         int length = mobile.length();
         if (length < (fromLength + endLength)) {
-            ClassResource res = new ClassResource(Utils.class, SummerCore.ID);
             throw new RuntimeException(res.getString(1, "字符串长度不符合要求"));
         }
         int len = mobile.length() - fromLength - endLength;

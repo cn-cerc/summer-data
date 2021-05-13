@@ -1,9 +1,5 @@
 package cn.cerc.core;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -21,9 +17,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+
 public class DataSet implements IDataSet, Serializable, Iterable<Record> {
     private static final long serialVersionUID = 873159747066855363L;
-    private static ClassResource res = new ClassResource(DataSet.class, SummerCore.ID);
+    private static final ClassResource res = new ClassResource(DataSet.class, SummerCore.ID);
     private int recNo = 0;
     private int fetchNo = -1;
     private FieldDefs fieldDefs = new FieldDefs();
