@@ -89,8 +89,8 @@ public class LanguageResource {
             return text;
 
         if (!resourceProperties.containsKey(key)) {
-            log.error("resourceFileName {}, appLanguage {}, userLanguage {}, resource key {}, does not exist.",
-                    resourceFileName, appLanguage, userLanguage, key);
+            log.error("resourceFileName {}, appLanguage {}, userLanguage {}, resource key {}, text {}, does not exist.",
+                    resourceFileName, appLanguage, userLanguage, key, text);
         }
 
         return resourceProperties.getProperty(key, text);
