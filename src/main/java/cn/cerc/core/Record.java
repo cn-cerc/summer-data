@@ -23,7 +23,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 
 public class Record implements IRecord, Serializable {
-	private static final Logger log = LoggerFactory.getLogger(Record.class);
+    private static final Logger log = LoggerFactory.getLogger(Record.class);
     private static final long serialVersionUID = 4454304132898734723L;
     private DataSetState state = DataSetState.dsNone;
     private FieldDefs defs;
@@ -41,6 +41,10 @@ public class Record implements IRecord, Serializable {
 
     public static void main(String[] args) {
         Record record = new Record();
+        // 打印getInt()堆栈测试
+        record.setField("UID_", new BigInteger("121"));
+        System.out.println(record.getInt("UID_"));
+
         // record.getFieldDefs().add("num", new DoubleField(18, 4));
         record.setField("num", 12345);
         record.setState(DataSetState.dsEdit);
@@ -293,6 +297,10 @@ public class Record implements IRecord, Serializable {
         if (obj instanceof Integer) {
             return (Integer) obj;
         } else if (obj instanceof BigInteger) {
+            StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
+            for (StackTraceElement item : stacktrace) {
+                log.warn("{}.{}:{}", item.getClassName(), item.getMethodName(), item.getLineNumber());
+            }
             log.warn("type error: getInt() can not use BigInteger");
             return ((BigInteger) obj).intValue();
         } else if (obj instanceof Double) {
@@ -507,27 +515,27 @@ public class Record implements IRecord, Serializable {
 
     public boolean isModify() {
         switch (this.state) {
-            case dsInsert:
-                return true;
-            case dsEdit: {
-                if (delta.size() == 0) {
-                    return false;
-                }
-                List<String> delList = new ArrayList<>();
-                for (String field : delta.keySet()) {
-                    Object value = items.get(field);
-                    Object oldValue = delta.get(field);
-                    if (compareValue(value, oldValue)) {
-                        delList.add(field);
-                    }
-                }
-                for (String field : delList) {
-                    delta.remove(field);
-                }
-                return delta.size() > 0;
-            }
-            default:
+        case dsInsert:
+            return true;
+        case dsEdit: {
+            if (delta.size() == 0) {
                 return false;
+            }
+            List<String> delList = new ArrayList<>();
+            for (String field : delta.keySet()) {
+                Object value = items.get(field);
+                Object oldValue = delta.get(field);
+                if (compareValue(value, oldValue)) {
+                    delList.add(field);
+                }
+            }
+            for (String field : delList) {
+                delta.remove(field);
+            }
+            return delta.size() > 0;
+        }
+        default:
+            return false;
         }
     }
 
@@ -551,4 +559,5 @@ public class Record implements IRecord, Serializable {
             defs.delete(field);
         }
     }
+
 }
