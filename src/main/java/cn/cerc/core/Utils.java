@@ -604,7 +604,7 @@ public class Utils {
      * @param str 目标字符串
      * @return 判断字符串是否为空
      */
-    public static boolean isEmpty(String str) {
+    public static final boolean isEmpty(String str) {
         return str == null || str.length() == 0;
     }
 
@@ -620,6 +620,7 @@ public class Utils {
      * @param str 目标字符串
      * @return 判断字符串不为空
      */
+    @Deprecated
     public static boolean isNotEmpty(String str) {
         return !Utils.isEmpty(str);
     }
@@ -636,6 +637,7 @@ public class Utils {
      * @param str 目标字符串
      * @return 判断是否为纯空格
      */
+    @Deprecated
     public static boolean isBlank(String str) {
         int strLen;
         if (str == null || (strLen = str.length()) == 0) {
@@ -661,6 +663,7 @@ public class Utils {
      * @param str 目标字符串
      * @return 判断是否不含纯空格
      */
+    @Deprecated
     public static boolean isNotBlank(String str) {
         return !Utils.isBlank(str);
     }
