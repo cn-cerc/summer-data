@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
 
 public class ClassConfig implements IConfig {
     private static final Logger log = LoggerFactory.getLogger(ClassConfig.class);
-    private static final Map<String, Properties> buffer = new ConcurrentHashMap<>();
     private static final Properties localConfig = new Properties();
-    private static final Properties applicationConfig;;
+    private static final Properties applicationConfig = new Properties();
+    private static final Map<String, Properties> buffer = new ConcurrentHashMap<>();
     private final String classPath;
     private Properties config;
 
@@ -40,7 +40,6 @@ public class ClassConfig implements IConfig {
             log.error("Failed to load the settings from the file: {}", confFile);
         }
         // 加载项目文件配置
-        applicationConfig = new Properties(localConfig);
         String confApp = "/application.properties";
         try {
             InputStream file = ClassConfig.class.getResourceAsStream(confApp);
@@ -56,38 +55,56 @@ public class ClassConfig implements IConfig {
     }
 
     public ClassConfig() {
-        config = applicationConfig;
+        super();
         classPath = null;
+        config = new Properties(applicationConfig);
+        localConfig.forEach((k, v) -> {
+            config.put(k, v);
+        });
     }
 
     public ClassConfig(Class<?> owner, String packageName) {
+        super();
         this.classPath = owner.getName();
 
         if (packageName == null) {
-            config = applicationConfig;
+            config = new Properties(applicationConfig);
+            localConfig.forEach((k, v) -> {
+                config.put(k, v);
+            });
             return;
         }
 
         String configFileName = String.format("/%s.properties", packageName);
-        config = buffer.get(packageName);
-        if (config != null)
-            return;
-
-        config = new Properties(applicationConfig);
-        if (buffer.putIfAbsent(packageName, config) != null)
-            return;
-
-        try {
-            final InputStream configFile = ClassConfig.class.getResourceAsStream(configFileName);
-            if (configFile != null) {
-                config.load(new InputStreamReader(configFile, StandardCharsets.UTF_8));
-                log.info("{} is loaded.", configFileName);
+        Properties packageConfig = buffer.get(packageName);
+        if (packageConfig == null) {
+            packageConfig = new Properties(applicationConfig);
+            if (buffer.putIfAbsent(packageName, packageConfig) == null) {
+                try {
+                    final InputStream configFile = ClassConfig.class.getResourceAsStream(configFileName);
+                    if (configFile != null) {
+                        packageConfig.load(new InputStreamReader(configFile, StandardCharsets.UTF_8));
+                        log.info("{} is loaded.", configFileName);
+                    } else {
+                        log.warn("{} doesn't exist.", configFileName);
+                    }
+                } catch (IOException e) {
+                    log.error("Failed to load the settings from the file: {}", configFileName);
+                }
             } else {
-                log.warn("{} doesn't exist.", configFileName);
+                packageConfig = buffer.get(packageName);
             }
-        } catch (IOException e) {
-            log.error("Failed to load the settings from the file: {}", configFileName);
         }
+
+        Properties parentConfig = new Properties(packageConfig);
+        applicationConfig.forEach((k, v) -> {
+            parentConfig.put(k, v);
+        });
+        config = new Properties(parentConfig);
+        localConfig.forEach((k, v) -> {
+            config.put(k, v);
+        });
+        return;
     }
 
     /**
