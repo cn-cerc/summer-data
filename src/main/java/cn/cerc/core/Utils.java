@@ -31,15 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Utils {
-
     private static final Logger log = LoggerFactory.getLogger(Utils.class);
     private static final ClassResource res = new ClassResource(Utils.class, SummerCore.ID);
-
-    /**
-     * 不允许创建对象，只能作为工具类使用
-     */
-    private Utils() {
-    }
 
     public static final String vbCrLf = "\r\n";
 
