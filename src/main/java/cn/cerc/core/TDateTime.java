@@ -13,10 +13,14 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable {
+    private static final Logger log = LoggerFactory.getLogger(TDateTime.class);
     private static final long serialVersionUID = -7395748632907604015L;
-    private static Map<String, String> dateFormats = new HashMap<>();
-    private static Map<String, String> map;
+    private static final Map<String, String> dateFormats = new HashMap<>();
+    private static final Map<String, String> map;
     private static final ClassResource res = new ClassResource(TDateTime.class, SummerCore.ID);
 
     static {
@@ -40,8 +44,11 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         dateFormats.put("yyyy-MM-dd HH:mm", "\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}");
         dateFormats.put("yyyy-MM-dd", "\\d{4}-\\d{2}-\\d{2}");
         dateFormats.put("yyyy/MM/dd HH:mm:ss", "\\d{4}/\\d{2}/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}");
+        dateFormats.put("yyyy/MM/dd HH:mm", "\\d{4}/\\d{2}/\\d{2}\\s\\d{2}:\\d{2}");
         dateFormats.put("yyyy/MM/dd", "\\d{4}/\\d{2}/\\d{2}");
         dateFormats.put("yyyyMMdd", "\\d{8}");
+        dateFormats.put("yyyyMM", "\\d{6}");
+        dateFormats.put("yyyy", "\\d{4}");
     }
 
     private Date data;
@@ -50,16 +57,23 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         this.data = new Date(0);
     }
 
-    public TDateTime(String value) {
-        String fmt = getFormat(value);
-        if (fmt == null) {
-            fmt = "yyyy-MM-dd HH:mm:ss";
-        }
-        SimpleDateFormat sdf = new SimpleDateFormat(fmt);
-        try {
-            data = sdf.parse(value);
-        } catch (ParseException e) {
-            throw new RuntimeException(e.getMessage());
+    public TDateTime(Date value) {
+        data = value;
+    }
+
+    public TDateTime(String dateValue) {
+        super();
+        this.data = new Date(0);
+        String fmt = getFormat(dateValue);
+        if (fmt != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat(fmt);
+            try {
+                this.data = sdf.parse(dateValue);
+            } catch (ParseException e) {
+                log.error(e.getMessage(), e);
+            }
+        } else {
+            log.error("dateValue format error: {}", dateValue);
         }
     }
 
@@ -72,10 +86,6 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         }
     }
 
-    public TDateTime(Date value) {
-        data = value;
-    }
-
     // 当时，带时分秒
     public static TDateTime now() {
         TDateTime result = new TDateTime();
@@ -86,21 +96,6 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
     @Deprecated
     public static TDateTime Now() {
         return TDateTime.now();
-    }
-
-    public static TDateTime fromDate(String val) {
-        String fmt = getFormat(val);
-        if (fmt == null) {
-            return null;
-        }
-        SimpleDateFormat sdf = new SimpleDateFormat(fmt);
-        TDateTime tdtTo = new TDateTime();
-        try {
-            tdtTo.setData(sdf.parse(val));
-            return tdtTo;
-        } catch (ParseException e) {
-            return null;
-        }
     }
 
     public static TDateTime fromYearMonth(String val) {
@@ -200,14 +195,6 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         return sdf.format(value.getData());
     }
 
-    public static TDateTime StrToDate(String val) {
-        String fmt = TDateTime.getFormat(val);
-        if (fmt == null) {
-            throw new RuntimeException(String.format(res.getString(3, "时间格式不正确: value=%s"), val));
-        }
-        return new TDateTime(fmt, val);
-    }
-
     public static String FormatDateTime(String fmt, Date value) {
         SimpleDateFormat sdf = null;
         try {
@@ -297,12 +284,8 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
     }
 
     public String format(String fmt) {
-        if (data == null) {
-            return null;
-        }
-        if (data.compareTo(new Date(0)) == 0) {
-            return "";
-        }
+        if (isEmpty())
+            throw new RuntimeException("data is empty");
         SimpleDateFormat sdf = new SimpleDateFormat(fmt);
         return sdf.format(data);
     }
@@ -312,6 +295,8 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
     }
 
     public void setData(Date data) {
+        if (data == null)
+            throw new RuntimeException("data is null");
         this.data = data;
     }
 
@@ -597,30 +582,32 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         return new TDateTime(this.getData());
     }
 
+    @Deprecated
     public boolean isNull() {
         return this.data == null;
     }
 
-    public static void main(String[] args) {
-        System.out.println(System.currentTimeMillis());
-        TDateTime date = TDateTime.fromDate("2016-02-28 08:00:01");
-        System.out.println(date.getDay());
-        System.out.println(date.getTimestamp());
-        System.out.println(date.getUnixTimestamp());
-        System.out.println(date);
-        System.out.println(date.incMonth(1));
-        System.out.println(date.incMonth(2));
-        System.out.println(date.incMonth(3));
-        System.out.println(date.incMonth(4));
-        System.out.println(date.incMonth(12));
-        System.out.println(date.incMonth(13));
-        System.out.println(date);
-
-        TDateTime date2 = TDateTime.fromDate("2016-05-31 23:59:59");
-        System.out.println(date2);
-        System.out.println(date2.incMonth(1));
-        System.out.println(date2.incMonth(1).monthBof());
-
-        System.out.println(isInterval("05:30", "17:00"));
+    public boolean isEmpty() {
+        return this.data == null || this.data.getTime() == 0;
     }
+
+    public static TDateTime StrToDate(String dateValue) throws ParseException {
+        TDateTime result = new TDateTime(dateValue);
+        if (result.isEmpty())
+            throw new ParseException(String.format(res.getString(3, "时间格式不正确: value=%s"), dateValue), 0);
+        return result;
+    }
+
+    @Deprecated
+    public static TDateTime fromDate(String dateValue) {
+        TDateTime result = new TDateTime(dateValue);
+        if (result.isEmpty())
+            return null;
+        return result;
+    }
+
+    public static void main(String[] args) {
+        
+    }
+
 }

@@ -17,10 +17,10 @@ public class TDate extends TDateTime {
         this.setData(date);
     }
 
-    public TDate(String date) {
-        TDateTime val = TDateTime.fromDate(date);
+    public TDate(String dateValue) {
+        TDateTime val = new TDateTime(dateValue);
         if (val == null) {
-            throw new RuntimeException(String.format(res.getString(1, "%s 不是一个有效的日期格式！"), date));
+            throw new RuntimeException(String.format(res.getString(1, "%s 不是一个有效的日期格式！"), dateValue));
         }
         this.setData(val.getData());
     }
