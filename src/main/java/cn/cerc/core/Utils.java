@@ -219,6 +219,11 @@ public class Utils {
         return uuid.replaceAll("-", "");
     }
 
+    @Deprecated
+    public static final String guidFixStr() {
+        return generateToken();
+    }
+
     // 兼容 delphi 代码
     public static String copy(String text, int iStart, int iLength) {
         if (text == null) {
