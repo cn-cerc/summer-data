@@ -87,29 +87,27 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
     }
 
     // 当时，带时分秒
-    public static TDateTime now() {
-        TDateTime result = new TDateTime();
-        result.setData(new Date());
-        return result;
+    public static final TDateTime now() {
+        return new TDateTime(new Date());
     }
 
     @Deprecated
-    public static TDateTime Now() {
+    public static final TDateTime Now() {
         return TDateTime.now();
     }
 
-    public static TDateTime fromYearMonth(String val) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMM");
-        TDateTime tdt = new TDateTime();
-        try {
-            tdt.setData(sdf.parse(val));
-            return tdt;
-        } catch (ParseException e) {
+    /**
+     * @deprecated {@code TDateTime.StrToDate}
+     */
+    @Deprecated
+    public static final TDateTime fromYearMonth(String val) {
+        TDateTime result = new TDateTime(val);
+        if (result.isEmpty())
             throw new RuntimeException(String.format(res.getString(1, "不是 %s 标准年月格式 ：yyyyMM"), val));
-        }
+        return result;
     }
 
-    public static String getFormat(String val) {
+    private static final String getFormat(String val) {
         if (val == null) {
             return null;
         }
@@ -135,7 +133,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
      * @param endTime   截止时间
      * @return 是否超时
      */
-    public static boolean isTimeOut(TDateTime startTime, TDateTime endTime) {
+    public static final boolean isTimeOut(TDateTime startTime, TDateTime endTime) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         // 一天的毫秒数
@@ -185,24 +183,14 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         return sec - day > 0;
     }
 
-    public static String FormatDateTime(String fmt, TDateTime value) {
-        SimpleDateFormat sdf = null;
-        try {
-            sdf = new SimpleDateFormat(map.get(fmt));
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException(res.getString(2, "日期格式不正确"));
-        }
-        return sdf.format(value.getData());
+    @Deprecated
+    public static final String FormatDateTime(String fmt, TDateTime value) {
+        return value.format(fmt);
     }
 
-    public static String FormatDateTime(String fmt, Date value) {
-        SimpleDateFormat sdf = null;
-        try {
-            sdf = new SimpleDateFormat(fmt);
-        } catch (IllegalArgumentException e) {
-            sdf = new SimpleDateFormat(map.get(fmt));
-        }
-        return sdf.format(value);
+    @Deprecated
+    public static final String FormatDateTime(String fmt, Date value) {
+        return new TDateTime(value).format(fmt);
     }
 
     /**
@@ -212,7 +200,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
      * @param last  截止时间段
      * @return 是否在指定时间范围内
      */
-    public static boolean isInterval(String start, String last) {
+    public static final boolean isInterval(String start, String last) {
         SimpleDateFormat df = new SimpleDateFormat("HH:mm");
         Date now = null;
         Date beginTime = null;
@@ -239,68 +227,64 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
 
     @Override
     public String toString() {
-        if (data == null) {
-            return "";
-        }
         return format("yyyy-MM-dd HH:mm:ss");
     }
 
-    public String getDate() {
+    public final String getDate() {
         return format("yyyy-MM-dd");
     }
 
-    public String getTime() {
+    public final String getTime() {
         return format("HH:mm:ss");
     }
 
     /**
      * @return 获取Java时间戳，一共13位，毫秒级
      */
-    public long getTimestamp() {
+    public final long getTimestamp() {
         return this.getData().getTime();
     }
 
     /**
      * @return 获取Unix时间戳，一共10位，秒级
      */
-    public long getUnixTimestamp() {
+    public final long getUnixTimestamp() {
         return this.getData().getTime() / 1000;
     }
 
-    public String getYearMonth() {
+    public final String getYearMonth() {
         return format("yyyyMM");
     }
 
-    public String getMonthDay() {
+    public final String getMonthDay() {
         return format("MM-dd");
     }
 
-    public String getYear() {
+    public final String getYear() {
         return format("yyyy");
     }
 
-    public String getFull() {
+    public final String getFull() {
         return format("yyyy-MM-dd HH:mm:ss:SSS");
     }
 
-    public String format(String fmt) {
+    public final String format(String fmt) {
         if (isEmpty())
             throw new RuntimeException("data is empty");
-        SimpleDateFormat sdf = new SimpleDateFormat(fmt);
-        return sdf.format(data);
+        return new SimpleDateFormat(fmt).format(data);
     }
 
-    public Date getData() {
+    public final Date getData() {
         return data;
     }
 
-    public void setData(Date data) {
+    public final void setData(Date data) {
         if (data == null)
             throw new RuntimeException("data is null");
         this.data = data;
     }
 
-    public long compareSecond(TDateTime startTime) {
+    public final long compareSecond(TDateTime startTime) {
         if (startTime == null) {
             return 0;
         }
@@ -313,7 +297,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         return (end - start) / second;
     }
 
-    public long compareMinute(TDateTime startTime) {
+    public final long compareMinute(TDateTime startTime) {
         if (startTime == null) {
             return 0;
         }
@@ -326,7 +310,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         return (end - start) / minute;
     }
 
-    public long compareHour(TDateTime startTime) {
+    public final long compareHour(TDateTime startTime) {
         if (startTime == null) {
             return 0;
         }
@@ -341,7 +325,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
 
     // 若当前值大，则返回正数，否则返回负数
 
-    public int compareDay(TDateTime dateFrom) {
+    public final int compareDay(TDateTime dateFrom) {
         if (dateFrom == null) {
             return 0;
         }
@@ -370,7 +354,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
     }
     // 原MonthsBetween，改名为：compareMonth
 
-    public int compareMonth(TDateTime dateFrom) {
+    public final int compareMonth(TDateTime dateFrom) {
         Calendar cal1 = Calendar.getInstance();
         cal1.setTime(this.getData());
         int month1 = cal1.get(Calendar.YEAR) * 12 + cal1.get(Calendar.MONTH);
@@ -382,7 +366,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         return month1 - month2;
     }
 
-    public int compareYear(TDateTime dateFrom) {
+    public final int compareYear(TDateTime dateFrom) {
         Calendar cal1 = Calendar.getInstance();
         cal1.setTime(this.getData());
         int year1 = cal1.get(Calendar.YEAR);
@@ -394,11 +378,11 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         return year1 - year2;
     }
 
-    public TDate asDate() {
+    public final TDate asDate() {
         return new TDate(this.data);
     }
 
-    public TDateTime incSecond(int value) {
+    public final TDateTime incSecond(int value) {
         TDateTime result = this.clone();
         Calendar cal = Calendar.getInstance();
         cal.setTime(result.getData());
@@ -407,7 +391,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         return result;
     }
 
-    public TDateTime incMinute(int value) {
+    public final TDateTime incMinute(int value) {
         TDateTime result = this.clone();
         Calendar cal = Calendar.getInstance();
         cal.setTime(result.getData());
@@ -416,7 +400,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         return result;
     }
 
-    public TDateTime incHour(int value) {
+    public final TDateTime incHour(int value) {
         TDateTime result = this.clone();
         Calendar cal = Calendar.getInstance();
         cal.setTime(result.getData());
@@ -425,7 +409,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         return result;
     }
 
-    public TDateTime incDay(int value) {
+    public final TDateTime incDay(int value) {
         TDateTime result = this.clone();
         Calendar cal = Calendar.getInstance();
         cal.setTime(result.getData());
@@ -434,7 +418,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         return result;
     }
 
-    public TDateTime incMonth(int offset) {
+    public final TDateTime incMonth(int offset) {
         TDateTime result = this.clone();
         if (offset == 0) {
             return result;
@@ -456,13 +440,13 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
     }
 
     @Deprecated
-    public TDateTime addDay(int value) {
+    public final TDateTime addDay(int value) {
         return this.incDay(value);
     }
 
     // 返回value的当月第1天
 
-    public TDateTime monthBof() {
+    public final TDateTime monthBof() {
         Calendar cal = Calendar.getInstance();
         cal.setTime(this.getData());
         cal.set(Calendar.DAY_OF_MONTH, 1);
@@ -475,7 +459,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         return tdt;
     }
 
-    public TDateTime monthEof() {
+    public final TDateTime monthEof() {
         // 返回value的当月最后1天
         Calendar cal = Calendar.getInstance();
         cal.setTime(this.getData());
@@ -489,21 +473,21 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         return tdt;
     }
 
-    public int getMonth() {
+    public final int getMonth() {
         // 返回value的月值 1-12
         Calendar cal = Calendar.getInstance();
         cal.setTime(this.data);
         return cal.get(Calendar.MONTH) + 1;
     }
 
-    public int getDay() {
+    public final int getDay() {
         // 返回value的日值
         Calendar cal = Calendar.getInstance();
         cal.setTime(this.data);
         return cal.get(Calendar.DAY_OF_MONTH);
     }
 
-    public int getHours() {
+    public final int getHours() {
         // 返回value的小时值
         Calendar cal = Calendar.getInstance();
         cal.setTime(this.data);
@@ -517,7 +501,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
      * 
      * @return 开始时间
      */
-    public static TDateTime getStartOfDay(TDateTime dateTime) {
+    public static final TDateTime getStartOfDay(TDateTime dateTime) {
         Date date = dateTime.getData();
         LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(date.getTime()),
                 ZoneId.systemDefault());
@@ -533,7 +517,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
      * 
      * @return 结束时间
      */
-    public static TDateTime getEndOfDay(TDateTime dateTime) {
+    public static final TDateTime getEndOfDay(TDateTime dateTime) {
         Date date = dateTime.getData();
         LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(date.getTime()),
                 ZoneId.systemDefault());
@@ -542,7 +526,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
         return new TDateTime(end);
     }
 
-    public int getMinutes() {
+    public final int getMinutes() {
         // 返回value的分钟值
         Calendar cal = Calendar.getInstance();
         cal.setTime(this.data);
@@ -550,7 +534,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
     }
 
     // 返回农历日期
-    public String getGregDate() {
+    public final String getGregDate() {
         Calendar cal = Calendar.getInstance();
         cal.setTime(this.getData());
         Lunar lunar = new Lunar(cal);
@@ -560,13 +544,13 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
     /**
      * @return 返回当前时间对应英文格式
      */
-    public String getEnDate() {
+    public final String getEnDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("EEEEE, MMM dd, yyyy HH:mm:ss a ", Locale.US);
         return sdf.format(data);
     }
 
     @Override
-    public int compareTo(TDateTime tdt) {
+    public final int compareTo(TDateTime tdt) {
         if (tdt == null) {
             return 1;
         }
@@ -578,20 +562,20 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
     }
 
     @Override
-    public TDateTime clone() {
+    public final TDateTime clone() {
         return new TDateTime(this.getData());
     }
 
     @Deprecated
-    public boolean isNull() {
+    public final boolean isNull() {
         return this.data == null;
     }
 
-    public boolean isEmpty() {
+    public final boolean isEmpty() {
         return this.data == null || this.data.getTime() == 0;
     }
 
-    public static TDateTime StrToDate(String dateValue) throws ParseException {
+    public static final TDateTime StrToDate(String dateValue) throws ParseException {
         TDateTime result = new TDateTime(dateValue);
         if (result.isEmpty())
             throw new ParseException(String.format(res.getString(3, "时间格式不正确: value=%s"), dateValue), 0);
@@ -599,7 +583,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
     }
 
     @Deprecated
-    public static TDateTime fromDate(String dateValue) {
+    public static final TDateTime fromDate(String dateValue) {
         TDateTime result = new TDateTime(dateValue);
         if (result.isEmpty())
             return null;
@@ -607,7 +591,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
     }
 
     public static void main(String[] args) {
-        
+        System.out.println(TDateTime.fromYearMonth("202101"));
     }
 
 }
