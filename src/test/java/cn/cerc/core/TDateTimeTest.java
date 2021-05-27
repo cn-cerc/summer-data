@@ -37,8 +37,6 @@ public class TDateTimeTest {
 
         obj = TDateTime.fromYearMonth("201503").incMonth(-1);
         assertEquals("测试2月份", obj.getYearMonth(), "201502");
-        
-        
 
         TDateTime date = TDateTime.fromDate("2016-02-28 08:00:01");
         assertEquals(28, date.getDay());
@@ -53,8 +51,6 @@ public class TDateTimeTest {
         assertEquals("2017-03-28 08:00:01", date.incMonth(13).toString());
         assertEquals("2016-02-28 08:00:01", date.toString());
 
-    
-        
         TDateTime date2 = TDateTime.fromDate("2016-05-31 23:59:59");
         assertEquals("2016-05-31 23:59:59", date2.toString());
         assertEquals("2016-06-30 23:59:59", date2.incMonth(1).toString());
@@ -81,7 +77,7 @@ public class TDateTimeTest {
 
     @Test
     public void test_isInterval() {
-        assertFalse("范围内", TDateTime.isInterval("05:30", "17:00"));
+        assertTrue("范围内", TDateTime.isInterval("05:30", "17:00"));
     }
 
     @Test
@@ -97,5 +93,41 @@ public class TDateTimeTest {
     @Test(expected = RuntimeException.class)
     public void test_isNew() {
         new TDateTime("20211").getDate();
+    }
+
+    public void test_empty1() {
+        TDateTime date = new TDateTime("");
+        assertTrue(date.isEmpty());
+        assertEquals("", date.toString());
+        assertEquals("0000-00-00", date.getDate());
+        assertEquals("000000", date.getYearMonth());
+        assertEquals("0000", date.getYear());
+        assertEquals(0, date.getDay());
+        assertEquals(0, date.getHours());
+        assertEquals(0, date.getMinutes());
+    }
+
+    public void test_empty2() {
+        TDateTime date = new TDateTime();
+        assertTrue(date.isEmpty());
+        assertEquals("0000-00-00 00:00:00", date.toString());
+        assertEquals("0000-00-00", date.getDate());
+        assertEquals("000000", date.getYearMonth());
+        assertEquals("0000", date.getYear());
+        assertEquals(0, date.getDay());
+        assertEquals(0, date.getHours());
+        assertEquals(0, date.getMinutes());
+    }
+
+    public void test_empty3() {
+        TDateTime date = new TDateTime("0000-00-00");
+        assertTrue(date.isEmpty());
+        assertEquals("0000-00-00 00:00:00", date.toString());
+        assertEquals("0000-00-00", date.getDate());
+        assertEquals("000000", date.getYearMonth());
+        assertEquals("0000", date.getYear());
+        assertEquals(0, date.getDay());
+        assertEquals(0, date.getHours());
+        assertEquals(0, date.getMinutes());
     }
 }

@@ -270,8 +270,9 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
 
     public final String format(String fmt) {
         if (isEmpty())
-            throw new RuntimeException("data is empty");
-        return new SimpleDateFormat(fmt).format(data);
+            return "";
+        else
+            return new SimpleDateFormat(fmt).format(data);
     }
 
     public final Date getData() {
@@ -591,7 +592,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
     }
 
     public static void main(String[] args) {
-        System.out.println(TDateTime.fromYearMonth("202101"));
+
     }
 
 }
