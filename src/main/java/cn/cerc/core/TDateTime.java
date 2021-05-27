@@ -190,7 +190,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
 
     @Deprecated
     public static final String FormatDateTime(String fmt, Date value) {
-        return new TDateTime(value).format(map.get(fmt));
+        return new TDateTime(value).format(fmt);
     }
 
     /**
