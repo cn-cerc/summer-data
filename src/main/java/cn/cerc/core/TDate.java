@@ -19,9 +19,6 @@ public class TDate extends TDateTime {
 
     public TDate(String dateValue) {
         TDateTime val = new TDateTime(dateValue);
-        if (val == null) {
-            throw new RuntimeException(String.format(res.getString(1, "%s 不是一个有效的日期格式！"), dateValue));
-        }
         this.setData(val.getData());
     }
 
