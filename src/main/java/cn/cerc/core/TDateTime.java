@@ -73,7 +73,9 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
                 log.error(e.getMessage(), e);
             }
         } else {
-            log.error("dateValue format error: {}", dateValue);
+            if (!Utils.isEmpty(dateValue)) {
+                log.warn("dateValue format error: {}", dateValue);
+            }
         }
     }
 
