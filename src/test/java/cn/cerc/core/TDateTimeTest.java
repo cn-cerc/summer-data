@@ -1,9 +1,10 @@
 package cn.cerc.core;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+
+import java.text.ParseException;
 
 import org.junit.Test;
 
@@ -12,33 +13,33 @@ public class TDateTimeTest {
     private TDateTime obj;
 
     @Test
-    public void test_getYearMonth() {
-        obj = TDateTime.fromYearMonth(ym);
+    public void test_getYearMonth() throws ParseException {
+        obj = TDateTime.StrToDate(ym);
         String val = obj.getYearMonth();
         assertEquals("年月与日期互转", ym, val);
     }
 
     @Test
-    public void test_incHour() {
-        obj = TDateTime.fromYearMonth(ym).incHour(-1);
+    public void test_incHour() throws ParseException {
+        obj = TDateTime.StrToDate(ym).incHour(-1);
         assertEquals("减1小时", obj.toString(), "2015-11-30 23:00:00");
-        obj = TDateTime.fromYearMonth(ym).incHour(-25);
+        obj = TDateTime.StrToDate(ym).incHour(-25);
         assertEquals("减25小时", obj.toString(), "2015-11-29 23:00:00");
-        obj = TDateTime.fromYearMonth(ym).incHour(1);
+        obj = TDateTime.StrToDate(ym).incHour(1);
         assertEquals("加1小时", obj.getTime(), "01:00:00");
-        obj = TDateTime.fromYearMonth(ym).incHour(12);
+        obj = TDateTime.StrToDate(ym).incHour(12);
         assertEquals("加12小时", obj.getTime(), "12:00:00");
     }
 
     @Test
-    public void test_incMonth() {
-        obj = TDateTime.fromYearMonth(ym).incMonth(-1);
+    public void test_incMonth() throws ParseException {
+        obj = TDateTime.StrToDate(ym).incMonth(-1);
         assertEquals("取上月初", obj.getYearMonth(), "201511");
 
-        obj = TDateTime.fromYearMonth("201503").incMonth(-1);
+        obj = TDateTime.StrToDate("201503").incMonth(-1);
         assertEquals("测试2月份", obj.getYearMonth(), "201502");
 
-        TDateTime date = TDateTime.fromDate("2016-02-28 08:00:01");
+        TDateTime date = TDateTime.StrToDate("2016-02-28 08:00:01");
         assertEquals(28, date.getDay());
         assertEquals(1456617601000L, date.getTimestamp());
         assertEquals(1456617601, date.getUnixTimestamp());
@@ -51,15 +52,15 @@ public class TDateTimeTest {
         assertEquals("2017-03-28 08:00:01", date.incMonth(13).toString());
         assertEquals("2016-02-28 08:00:01", date.toString());
 
-        TDateTime date2 = TDateTime.fromDate("2016-05-31 23:59:59");
+        TDateTime date2 = TDateTime.StrToDate("2016-05-31 23:59:59");
         assertEquals("2016-05-31 23:59:59", date2.toString());
         assertEquals("2016-06-30 23:59:59", date2.incMonth(1).toString());
         assertEquals("2016-06-01 00:00:00", date2.incMonth(1).monthBof().toString());
     }
 
     @Test
-    public void test_monthEof() {
-        obj = TDateTime.fromYearMonth(ym).monthEof();
+    public void test_monthEof() throws ParseException {
+        obj = TDateTime.StrToDate(ym).monthEof();
         assertEquals("取上月末", obj.getDate(), "2015-12-31");
     }
 
@@ -71,18 +72,13 @@ public class TDateTimeTest {
 
     @Test
     public void test_FormatDateTime() {
-        String val = TDateTime.FormatDateTime("YYMMDD", new TDateTime("2016-01-01"));
+        String val = new TDateTime("2016-01-01").format("yyMMdd");
         assertEquals("160101", val);
     }
 
     @Test
     public void test_isInterval() {
         assertTrue("范围内", TDateTime.isInterval("05:30", "17:00"));
-    }
-
-    @Test
-    public void test_isNull() {
-        assertFalse(new TDateTime().isNull());
     }
 
     @Test
