@@ -566,7 +566,7 @@ public class TDateTime implements Serializable, Comparable<TDateTime>, Cloneable
 
     @Override
     public final TDateTime clone() {
-        return new TDateTime(this.getData());
+        return new TDateTime((Date) this.getData().clone());
     }
 
     @Deprecated
