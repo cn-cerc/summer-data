@@ -58,7 +58,7 @@ public class Utils {
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
         ObjectOutputStream objOut = new ObjectOutputStream(byteOut);
         objOut.writeObject(obj);
-        return byteOut.toString(StandardCharsets.ISO_8859_1);// 此处只能是ISO-8859-1,但是不会影响中文使用;
+        return byteOut.toString("ISO-8859-1");// 此处只能是ISO-8859-1,但是不会影响中文使用;
     }
 
     public static Object deserializeToObject(String str) throws IOException, ClassNotFoundException {
@@ -108,7 +108,7 @@ public class Utils {
             ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
             ObjectOutputStream objOut = new ObjectOutputStream(byteOut);
             objOut.writeObject(obj);
-            return byteOut.toString(StandardCharsets.ISO_8859_1);// 此处只能是ISO-8859-1,但是不会影响中文使用;
+            return byteOut.toString("ISO-8859-1");// 此处只能是ISO-8859-1,但是不会影响中文使用;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
