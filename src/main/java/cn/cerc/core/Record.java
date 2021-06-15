@@ -95,7 +95,7 @@ public class Record implements IRecord, Serializable {
     @Override
     public Record setField(String field, Object value) {
         if (field == null || "".equals(field)) {
-            throw new RuntimeException("field is null!");
+            throw new RuntimeException(String.format("field is null, value is %s", value));
         }
         if (!defs.exists(field)) {
             defs.add(field);
