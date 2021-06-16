@@ -8,4 +8,8 @@ public interface SupportRecord {
         return result;
     }
 
+    default void copyTo(Record record) {
+        RecordUtils.copyToRecord(this, record);
+    }
+
 }
