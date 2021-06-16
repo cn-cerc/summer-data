@@ -7,7 +7,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity(name = "s_user")
-@Select("select * from s_userInfo")
 public class StubUser {
 
     @Id

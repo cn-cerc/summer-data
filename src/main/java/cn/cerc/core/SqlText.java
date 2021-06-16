@@ -24,9 +24,6 @@ public class SqlText {
     public SqlText(Class<?> clazz) {
         super();
         classData = ClassFactory.get(clazz);
-        if (classData.getTableId() == null) {
-            throw new RuntimeException("entity.name or select not define");
-        }
         this.text = classData.getSelect();
     }
 
