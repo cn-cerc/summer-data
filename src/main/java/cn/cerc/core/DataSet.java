@@ -1,9 +1,5 @@
 package cn.cerc.core;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -21,9 +17,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DataSet implements IRecord, Serializable, Iterable<Record> {
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+
+public class DataSet implements IDataSet, Serializable, Iterable<Record> {
     private static final long serialVersionUID = 873159747066855363L;
-    private static ClassResource res = new ClassResource("summer-core", DataSet.class);
+    private static final ClassResource res = new ClassResource(DataSet.class, SummerCore.ID);
     private int recNo = 0;
     private int fetchNo = -1;
     private FieldDefs fieldDefs = new FieldDefs();
@@ -32,11 +32,11 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     private DataSetEvent onAfterAppend;
     private DataSetEvent onBeforePost;
     private SearchDataSet search;
-
+    private boolean readonly;
     private Record head = null;
     private FieldDefs head_defs = null;
 
-    public Record newRecord() {
+    protected Record newRecord() {
         Record record = new Record(this.fieldDefs);
         record.setDataSet(this);
         record.setState(DataSetState.dsInsert);
@@ -625,5 +625,13 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
 
     public void setOnBeforeAppend(DataSetBeforeAppendEvent onBeforeAppend) {
         this.onBeforeAppend = onBeforeAppend;
+    }
+
+    public boolean isReadonly() {
+        return readonly;
+    }
+
+    public void setReadonly(boolean readonly) {
+        this.readonly = readonly;
     }
 }

@@ -2,13 +2,15 @@ package cn.cerc.core;
 
 import static org.junit.Assert.assertEquals;
 
+import java.text.ParseException;
+
 import org.junit.Test;
 
 public class TDateTimeTest_incMonth {
 
     @Test
-    public void test_incMonth1() {
-        TDateTime obj = TDateTime.fromYearMonth("201601");
+    public void test_incMonth1() throws ParseException {
+        TDateTime obj = TDateTime.StrToDate("201601");
         for (int i = 1; i < 365; i++) {
             check(obj.toString(), i);
         }

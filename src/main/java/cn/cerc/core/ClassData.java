@@ -1,10 +1,5 @@
 package cn.cerc.core;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -12,6 +7,12 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 public class ClassData {
     public static final int PUBLIC = 1;
@@ -31,25 +32,13 @@ public class ClassData {
         for (Annotation anno : clazz.getAnnotations()) {
             if (anno instanceof Entity) {
                 Entity entity = (Entity) anno;
-                if (!"".equals(entity.name())) {
-                    tableId = entity.name();
-                }
-            }
-            if (anno instanceof Select) {
-                Select obj = (Select) anno;
-                if (!"".equals(obj.value())) {
-                    select = obj.value();
-                }
+                tableId = entity.name();
             }
         }
 
         this.fields = loadFields();
 
-        if (tableId == null && select == null) {
-            throw new RuntimeException("entity.name or select not define");
-        }
-
-        if (select == null) {
+        if (!Utils.isEmpty(tableId)) {
             StringBuffer sb = new StringBuffer();
             sb.append("select ");
             int i = 0;
@@ -62,25 +51,8 @@ public class ClassData {
             }
             sb.append(" from ").append("`" + tableId + "`");
             select = sb.toString();
-        } else if (tableId == null) {
-            String[] items = select.split("[ \r\n]");
-            for (int i = 0; i < items.length; i++) {
-                if (items[i].toLowerCase().contains("from")) {
-                    // 如果取到form后 下一个记录为数据库表名
-                    while (items[i + 1] == null || "".equals(items[i + 1].trim())) {
-                        // 防止取到空值
-                        i++;
-                    }
-                    tableId = items[++i]; // 获取数据库表名
-                    break;
-                }
-            }
-
-            if (tableId == null) {
-                throw new RuntimeException("entity.name or select not define");
-            }
         }
-
+        
         // 查找自增字段并赋值
         int count = 0;
         for (String key : fields.keySet()) {

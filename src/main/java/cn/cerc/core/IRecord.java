@@ -23,7 +23,7 @@ public interface IRecord {
 
     TDateTime getDateTime(String field);
 
-    IRecord setField(String field, Object value);
+    Object setField(String field, Object value);
 
     Object getField(String field);
 

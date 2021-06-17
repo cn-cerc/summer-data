@@ -1,11 +1,5 @@
 package cn.cerc.core;
 
-import lombok.extern.slf4j.Slf4j;
-
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Transient;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -28,14 +22,17 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
-@Slf4j
-public class Utils {
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Transient;
 
-    /**
-     * 不允许创建对象，只能作为工具类使用
-     */
-    private Utils() {
-    }
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class Utils {
+    private static final Logger log = LoggerFactory.getLogger(Utils.class);
+    private static final ClassResource res = new ClassResource(Utils.class, SummerCore.ID);
 
     public static final String vbCrLf = "\r\n";
 
@@ -77,8 +74,7 @@ public class Utils {
      * 按照指定的编码格式进行url编码
      *
      * @param value 原始字符串
-     * @param enc   编码格式
-     *              StandardCharsets.UTF_8.name()
+     * @param enc   编码格式 StandardCharsets.UTF_8.name()
      * @return 编码后的字符串
      */
     public static String encode(String value, String enc) {
@@ -93,8 +89,7 @@ public class Utils {
      * 按照指定的编码格式进行url解码
      *
      * @param value 原始字符串
-     * @param enc   编码格式
-     *              StandardCharsets.UTF_8.name()
+     * @param enc   编码格式 StandardCharsets.UTF_8.name()
      * @return 解码后的字符串
      */
     public static String decode(String value, String enc) {
@@ -135,7 +130,7 @@ public class Utils {
     // 兼容 delphi 代码
     public static int round(double d) {
         if (LanguageResource.isLanguageTW()) {
-            return new BigDecimal(d).setScale(0, BigDecimal.ROUND_HALF_UP).intValue();
+            return new BigDecimal(d).setScale(0, RoundingMode.HALF_UP).intValue();
         }
         return (int) Math.round(d);
     }
@@ -144,9 +139,10 @@ public class Utils {
      * double 类型数字格式化
      *
      * @param val   将要格式化的数字
-     * @param scale 精确到的位置
-     *              负数表示小数向后的位数，例如：2351.2513 当scale = -2时，精确后为2351.25 当scale = -1时，精确后为2351.3
-     *              正数表示小数向前的位数，例如：2351.2513 当scale = 2时，精确后为2400.0 当scale = 3时，精确后为2000.0
+     * @param scale 精确到的位置 负数表示小数向后的位数，例如：2351.2513 <br>
+     *              当scale = -2时，精确后为2351.25 <br>
+     *              当scale = -1时，精确后为2351.3 正数表示小数向前的位数，例如：2351.2513 <br>
+     *              当scale = 2时，精确后为2400.0 当scale = 3时，精确后为2000.0 <br>
      */
     public static double roundTo(double val, int scale) {
         if (scale <= 0) {
@@ -221,6 +217,11 @@ public class Utils {
     public static String generateToken() {
         String uuid = UUID.randomUUID().toString();
         return uuid.replaceAll("-", "");
+    }
+
+    @Deprecated
+    public static final String guidFixStr() {
+        return generateToken();
     }
 
     // 兼容 delphi 代码
@@ -526,7 +527,7 @@ public class Utils {
     }
 
     /**
-     * Utils.confused("13927470636", 2, 4)      = 13*****0636
+     * Utils.confused("13927470636", 2, 4) = 13*****0636
      *
      * @param mobile     手机号码
      * @param fromLength 起始显示位数
@@ -536,7 +537,6 @@ public class Utils {
     public static String confused(String mobile, int fromLength, int endLength) {
         int length = mobile.length();
         if (length < (fromLength + endLength)) {
-            ClassResource res = new ClassResource("summer-core", Utils.class);
             throw new RuntimeException(res.getString(1, "字符串长度不符合要求"));
         }
         int len = mobile.length() - fromLength - endLength;
@@ -602,7 +602,7 @@ public class Utils {
      * @param str 目标字符串
      * @return 判断字符串是否为空
      */
-    public static boolean isEmpty(String str) {
+    public static final boolean isEmpty(String str) {
         return str == null || str.length() == 0;
     }
 
@@ -618,6 +618,7 @@ public class Utils {
      * @param str 目标字符串
      * @return 判断字符串不为空
      */
+    @Deprecated
     public static boolean isNotEmpty(String str) {
         return !Utils.isEmpty(str);
     }
@@ -634,6 +635,7 @@ public class Utils {
      * @param str 目标字符串
      * @return 判断是否为纯空格
      */
+    @Deprecated
     public static boolean isBlank(String str) {
         int strLen;
         if (str == null || (strLen = str.length()) == 0) {
@@ -659,6 +661,7 @@ public class Utils {
      * @param str 目标字符串
      * @return 判断是否不含纯空格
      */
+    @Deprecated
     public static boolean isNotBlank(String str) {
         return !Utils.isBlank(str);
     }

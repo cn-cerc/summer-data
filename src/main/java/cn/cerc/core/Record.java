@@ -1,12 +1,7 @@
 package cn.cerc.core;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.internal.LinkedTreeMap;
-import com.google.gson.reflect.TypeToken;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
@@ -20,9 +15,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-@Slf4j
-public class Record implements IRecord, Serializable {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.internal.LinkedTreeMap;
+import com.google.gson.reflect.TypeToken;
+
+public class Record implements IRecord, Serializable {
+    private static final Logger log = LoggerFactory.getLogger(Record.class);
     private static final long serialVersionUID = 4454304132898734723L;
     private DataSetState state = DataSetState.dsNone;
     private FieldDefs defs;
@@ -36,38 +38,6 @@ public class Record implements IRecord, Serializable {
 
     public Record(FieldDefs defs) {
         this.defs = defs;
-    }
-
-    public static void main(String[] args) {
-        Record record = new Record();
-        // record.getFieldDefs().add("num", new DoubleField(18, 4));
-        record.setField("num", 12345);
-        record.setState(DataSetState.dsEdit);
-        record.setField("num", 0);
-        record.setField("num", 123452);
-
-        // 增加对BigInteger的测试
-        record.setField("num2", 123);
-        System.out.println(record.getBigInteger("num2"));
-        record.setField("num2", 123452L);
-        System.out.println(record.getBigInteger("num2"));
-        record.setField("num2", 123452d);
-        System.out.println(record.getBigInteger("num2"));
-        record.setField("num2", "123452");
-        System.out.println(record.getBigInteger("num2"));
-        record.setField("num2", new Object());
-        System.out.println(record.getBigInteger("num2"));
-
-        if (record.isModify()) {
-            System.out.println("num old: " + record.getOldField("num"));
-            System.out.println("num new: " + record.getField("num"));
-        }
-        System.out.println(record);
-        record.delete("num2");
-        record.getFieldDefs().add("num3");
-        System.out.println(record);
-        record.delete("num3");
-        System.out.println(record);
     }
 
     public DataSetState getState() {
@@ -292,6 +262,10 @@ public class Record implements IRecord, Serializable {
         if (obj instanceof Integer) {
             return (Integer) obj;
         } else if (obj instanceof BigInteger) {
+            StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
+            for (StackTraceElement item : stacktrace) {
+                log.warn("{}.{}:{}", item.getClassName(), item.getMethodName(), item.getLineNumber());
+            }
             log.warn("type error: getInt() can not use BigInteger");
             return ((BigInteger) obj).intValue();
         } else if (obj instanceof Double) {
@@ -506,27 +480,27 @@ public class Record implements IRecord, Serializable {
 
     public boolean isModify() {
         switch (this.state) {
-            case dsInsert:
-                return true;
-            case dsEdit: {
-                if (delta.size() == 0) {
-                    return false;
-                }
-                List<String> delList = new ArrayList<>();
-                for (String field : delta.keySet()) {
-                    Object value = items.get(field);
-                    Object oldValue = delta.get(field);
-                    if (compareValue(value, oldValue)) {
-                        delList.add(field);
-                    }
-                }
-                for (String field : delList) {
-                    delta.remove(field);
-                }
-                return delta.size() > 0;
-            }
-            default:
+        case dsInsert:
+            return true;
+        case dsEdit: {
+            if (delta.size() == 0) {
                 return false;
+            }
+            List<String> delList = new ArrayList<>();
+            for (String field : delta.keySet()) {
+                Object value = items.get(field);
+                Object oldValue = delta.get(field);
+                if (compareValue(value, oldValue)) {
+                    delList.add(field);
+                }
+            }
+            for (String field : delList) {
+                delta.remove(field);
+            }
+            return delta.size() > 0;
+        }
+        default:
+            return false;
         }
     }
 
@@ -550,4 +524,54 @@ public class Record implements IRecord, Serializable {
             defs.delete(field);
         }
     }
+
+    public <T> T asObject(Class<T> clazz) {
+        T result = null;
+        try {
+            result = clazz.getDeclaredConstructor().newInstance();
+            RecordUtils.copyToObject(this, result);
+            return result;
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+                | NoSuchMethodException | SecurityException e1) {
+            e1.printStackTrace();
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        Record record = new Record();
+        // 打印getInt()堆栈测试
+        record.setField("UID_", new BigInteger("121"));
+        System.out.println(record.getInt("UID_"));
+
+        // record.getFieldDefs().add("num", new DoubleField(18, 4));
+        record.setField("num", 12345);
+        record.setState(DataSetState.dsEdit);
+        record.setField("num", 0);
+        record.setField("num", 123452);
+
+        // 增加对BigInteger的测试
+        record.setField("num2", 123);
+        System.out.println(record.getBigInteger("num2"));
+        record.setField("num2", 123452L);
+        System.out.println(record.getBigInteger("num2"));
+        record.setField("num2", 123452d);
+        System.out.println(record.getBigInteger("num2"));
+        record.setField("num2", "123452");
+        System.out.println(record.getBigInteger("num2"));
+        record.setField("num2", new Object());
+        System.out.println(record.getBigInteger("num2"));
+
+        if (record.isModify()) {
+            System.out.println("num old: " + record.getOldField("num"));
+            System.out.println("num new: " + record.getField("num"));
+        }
+        System.out.println(record);
+        record.delete("num2");
+        record.getFieldDefs().add("num3");
+        System.out.println(record);
+        record.delete("num3");
+        System.out.println(record);
+    }
+
 }

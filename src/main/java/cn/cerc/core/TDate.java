@@ -10,18 +10,15 @@ import java.util.Date;
  * @author 张弓
  */
 public class TDate extends TDateTime {
-    private static ClassResource res = new ClassResource("summer-core", TDate.class);
+    private static final ClassResource res = new ClassResource(TDate.class, SummerCore.ID);
     private static final long serialVersionUID = 1L;
 
     public TDate(Date date) {
         this.setData(date);
     }
 
-    public TDate(String date) {
-        TDateTime val = TDateTime.fromDate(date);
-        if (val == null) {
-            throw new RuntimeException(String.format(res.getString(1, "%s 不是一个有效的日期格式！"), date));
-        }
+    public TDate(String dateValue) {
+        TDateTime val = new TDateTime(dateValue);
         this.setData(val.getData());
     }
 
