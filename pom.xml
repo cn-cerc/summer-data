@@ -324,6 +324,11 @@
                 <artifactId>aliyun-log-log4j-appender</artifactId>
                 <version>0.1.12</version>
             </dependency>
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+                <version>1.2</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
