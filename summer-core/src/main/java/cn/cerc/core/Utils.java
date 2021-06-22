@@ -635,7 +635,6 @@ public class Utils {
      * @param str 目标字符串
      * @return 判断是否为纯空格
      */
-    @Deprecated
     public static boolean isBlank(String str) {
         int strLen;
         if (str == null || (strLen = str.length()) == 0) {
