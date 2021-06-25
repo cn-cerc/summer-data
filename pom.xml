@@ -6,7 +6,7 @@
 
     <groupId>cn.cerc</groupId>
     <artifactId>summer-framework</artifactId>
-    <version>3.4.0-SNAPSHOT</version>
+    <version>3.5.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -22,7 +22,7 @@
         <mysql-connector-java.version>8.0.16</mysql-connector-java.version>
         <mssql-jdbc.version>7.4.1.jre8</mssql-jdbc.version>
         <quartz.version>2.3.2</quartz.version>
-        <summer-framework.version>3.4.0-SNAPSHOT</summer-framework.version>
+        <summer-framework.version>3.5.0-SNAPSHOT</summer-framework.version>
     </properties>
 
     <build>
@@ -334,6 +334,11 @@
                 <groupId>commons-logging</groupId>
                 <artifactId>commons-logging</artifactId>
                 <version>1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.xerial</groupId>
+                <artifactId>sqlite-jdbc</artifactId>
+                <version>3.30.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -4,18 +4,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SqlText {
+    private static final ClassResource res = new ClassResource(SqlText.class, SummerCore.ID);
     // 从数据库每次加载的最大笔数
     public static final int MAX_RECORDS = 50000;
-    public static int PUBLIC = 1;
-    public static int PRIVATE = 2;
-    public static int PROTECTED = 4;
-    private static final ClassResource res = new ClassResource(SqlText.class, SummerCore.ID);
+    //
+    public static final int PUBLIC = 1;
+    public static final int PRIVATE = 2;
+    public static final int PROTECTED = 4;
+
+    public static final String SERVERTYPE_MSSQL = "Microsoft SQL Server";
+    public static final String SERVERTYPE_MYSQL = "MySQL";
+    public static final String SERVERTYPE_SQLITE = "SQLite";
+    //
     private int maximum = MAX_RECORDS;
     private int offset = 0;
     // sql 指令
     private String text;
     private ClassData classData;
-    private boolean supportMssql = false;
+    private String serverType = SERVERTYPE_MYSQL;
 
     public SqlText() {
         super();
@@ -25,10 +31,6 @@ public class SqlText {
         super();
         classData = ClassFactory.get(clazz);
         this.text = classData.getSelect();
-    }
-
-    public SqlText(String commandText) {
-        add(commandText);
     }
 
     public SqlText(String format, Object... args) {
@@ -101,7 +103,7 @@ public class SqlText {
             return sql;
         }
 
-        if (!this.supportMssql) {
+        if (SERVERTYPE_MYSQL.equals(this.serverType)) {
             if (this.offset > 0) {
                 if (this.maximum < 0) {
                     sql = sql + String.format(" limit %d,%d", this.offset, MAX_RECORDS + 1);
@@ -123,7 +125,7 @@ public class SqlText {
 
     public void setMaximum(int maximum) {
         if (maximum > MAX_RECORDS) {
-            throw new RuntimeException(String.format(res.getString(1, "本次请求的记录数超出了系统最大笔数为  %d 的限制！"), MAX_RECORDS));
+            throw new RuntimeException(String.format(res.getString(1, "本次请求的记录数超出了系统最大笔数为 %d 的限制！"), MAX_RECORDS));
         }
         this.maximum = maximum;
     }
@@ -187,12 +189,40 @@ public class SqlText {
         return classData;
     }
 
+    @Deprecated
     public boolean isSupportMssql() {
-        return supportMssql;
+        return SERVERTYPE_MSSQL.equals(this.serverType);
     }
 
-    public void setSupportMssql(boolean supportMssql) {
-        this.supportMssql = supportMssql;
+    public String getServerType() {
+        return serverType;
+    }
+
+    public void setServerType(String serverType) {
+        this.serverType = serverType;
+    }
+
+    // 根据 sql 获取数据库表名
+    public static String findTableName(String sql) {
+        String result = null;
+        String[] items = sql.split("[ \r\n]");
+        for (int i = 0; i < items.length; i++) {
+            if (items[i].toLowerCase().contains("from")) {
+                // 如果取到form后 下一个记录为数据库表名
+                while (items[i + 1] == null || "".equals(items[i + 1].trim())) {
+                    // 防止取到空值
+                    i++;
+                }
+                result = items[++i]; // 获取数据库表名
+                break;
+            }
+        }
+
+        if (result == null) {
+            throw new RuntimeException("sql command error");
+        }
+
+        return result;
     }
 
 }
