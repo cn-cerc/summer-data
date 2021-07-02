@@ -21,7 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-public class DataSet implements IDataSet, Serializable, Iterable<Record> {
+public class DataSet implements IRecord, Serializable, Iterable<Record> {
     private static final long serialVersionUID = 873159747066855363L;
     private static final ClassResource res = new ClassResource(DataSet.class, SummerCore.ID);
     private int recNo = 0;
@@ -644,16 +644,18 @@ public class DataSet implements IDataSet, Serializable, Iterable<Record> {
         return state;
     }
 
-    public void setState(int state) {
+    public DataSet setState(int state) {
         this.state = state;
+        return this;
     }
 
     public String getMessage() {
         return message;
     }
 
-    public void setMessage(String message) {
+    public DataSet setMessage(String message) {
         this.message = message;
+        return this;
     }
 
     public static void main(String[] args) {
