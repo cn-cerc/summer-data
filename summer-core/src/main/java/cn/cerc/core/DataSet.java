@@ -38,6 +38,15 @@ public class DataSet implements IDataSet, Serializable, Iterable<Record> {
     private Record head = null;
     private FieldDefs head_defs = null;
 
+    public DataSet() {
+        super();
+    }
+
+    public DataSet(String jsonData) {
+        super();
+        this.setJSON(jsonData);
+    }
+
     protected Record newRecord() {
         Record record = new Record(this.fieldDefs);
         record.setDataSet(this);
@@ -451,27 +460,27 @@ public class DataSet implements IDataSet, Serializable, Iterable<Record> {
         return head;
     }
 
-    public String getJSON() {
-        return this.getJSON(0, this.size() - 1);
-    }
-
-    public String getJSON(int beginLine, int endLine) {
+    public final String getJSON() {
         StringBuilder builder = new StringBuilder();
 
         builder.append("{");
 
         if (this.state != 0)
             builder.append("\"state\":").append(this.state);
-        if (this.message != null)
-            builder.append("\"message\":").append(this.message);
+
+        if (this.message != null) {
+            if (builder.length() > 0)
+                builder.append(",");
+            builder.append("\"message\":\"").append(this.message).append("\"");
+        }
 
         if (head != null) {
-            if (head.size() > 0) {
-                builder.append("\"head\":").append(head.toString());
-            }
-            if (head.size() > 0 && this.size() > 0) {
+            if (builder.length() > 0)
                 builder.append(",");
-            }
+            if (head.size() > 0)
+                builder.append("\"head\":").append(head.toString());
+            if (head.size() > 0 && this.size() > 0)
+                builder.append(",");
         }
         if (this.size() > 0) {
             List<String> fields = this.getFieldDefs().getFields();
@@ -479,9 +488,6 @@ public class DataSet implements IDataSet, Serializable, Iterable<Record> {
             builder.append("\"dataset\":[").append(gson.toJson(fields));
             for (int i = 0; i < this.size(); i++) {
                 Record record = this.getRecords().get(i);
-                if (i < beginLine || i > endLine) {
-                    continue;
-                }
                 Map<String, Object> tmp1 = record.getItems();
                 Map<String, Object> tmp2 = new LinkedHashMap<String, Object>();
                 for (String field : fields) {
@@ -501,32 +507,29 @@ public class DataSet implements IDataSet, Serializable, Iterable<Record> {
             builder.append("]");
         }
         builder.append("}");
-        // Logger.debug(getClass(),"getJson == "+ buffer.toString());
         return builder.toString();
     }
 
-    public boolean setJSON(String json) {
-        if (json == null || "".equals(json)) {
-            return false;
-        }
-        if ("".equals(json)) {
-            this.close();
-            return true;
+    public final DataSet setJSON(String json) {
+        if (Utils.isEmpty(json)) {
+            close();
+            return this;
         }
 
         Gson gson = new GsonBuilder().serializeNulls().create();
         Map<String, Object> jsonmap = gson.fromJson(json, new TypeToken<Map<String, Object>>() {
         }.getType());
 
-        if (jsonmap.containsKey("state"))
-            this.setState((int) jsonmap.get("state"));
+        if (jsonmap.containsKey("state")) {
+            String value = String.valueOf(jsonmap.get("state"));
+            this.setState(Integer.parseInt(value.split("\\.")[0]));
+        }
 
         if (jsonmap.containsKey("message"))
-            this.setState((int) jsonmap.get("message"));
+            this.setMessage(String.valueOf(jsonmap.get("message")));
 
-        if (jsonmap.containsKey("head")) {
+        if (jsonmap.containsKey("head"))
             this.getHead().setJSON(jsonmap.get("head"));
-        }
 
         if (jsonmap.containsKey("dataset")) {
             @SuppressWarnings("rawtypes")
@@ -556,11 +559,11 @@ public class DataSet implements IDataSet, Serializable, Iterable<Record> {
                 this.first();
             }
         }
-        return true;
+        return this;
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
         return getJSON();
     }
 
@@ -651,5 +654,30 @@ public class DataSet implements IDataSet, Serializable, Iterable<Record> {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public static void main(String[] args) {
+        DataSet ds = new DataSet();
+        System.out.println(ds.getJSON());
+
+        ds.setState(1);
+        System.out.println(ds.getJSON());
+
+        ds.setMessage("hello");
+        System.out.println(ds.getJSON());
+
+        ds.getHead().setField("token", "xxx");
+        System.out.println(ds.getJSON());
+
+        ds.append();
+        ds.setField("code", "1");
+        ds.setField("name", "a");
+        ds.append();
+        ds.setField("code", "2");
+        ds.setField("name", "b");
+
+        System.out.println(ds.getJSON());
+        DataSet ds2 = new DataSet();
+        ds2.setJSON(ds.toString());
     }
 }

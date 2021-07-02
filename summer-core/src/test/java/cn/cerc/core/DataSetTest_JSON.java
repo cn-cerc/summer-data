@@ -22,13 +22,13 @@ public class DataSetTest_JSON {
         ds.setField("It", 2);
         ds.setField("Part", "001");
         ds.setField("Desc", "desc");
-        assertEquals(jsonStr, ds.getJSON());
+        assertEquals(jsonStr, ds.toString());
     }
 
     @Test
     public void test_fromJSON() {
         ds.setJSON(jsonStr);
-        assertEquals(jsonStr, ds.getJSON());
+        assertEquals(jsonStr, ds.toString());
         assertEquals("1", ds.getHead().getString("It"));
     }
 }
