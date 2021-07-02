@@ -469,13 +469,13 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
             builder.append("\"state\":").append(this.state);
 
         if (this.message != null) {
-            if (builder.length() > 0)
+            if (builder.length() > 1)
                 builder.append(",");
             builder.append("\"message\":\"").append(this.message).append("\"");
         }
 
         if (head != null) {
-            if (builder.length() > 0)
+            if (builder.length() > 1)
                 builder.append(",");
             if (head.size() > 0)
                 builder.append("\"head\":").append(head.toString());
