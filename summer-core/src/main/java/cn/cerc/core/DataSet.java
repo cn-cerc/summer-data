@@ -459,6 +459,12 @@ public class DataSet implements IDataSet, Serializable, Iterable<Record> {
         StringBuilder builder = new StringBuilder();
 
         builder.append("{");
+
+        if (this.state != 0)
+            builder.append("\"state\":").append(this.state);
+        if (this.message != null)
+            builder.append("\"message\":").append(this.message);
+
         if (head != null) {
             if (head.size() > 0) {
                 builder.append("\"head\":").append(head.toString());
@@ -507,18 +513,16 @@ public class DataSet implements IDataSet, Serializable, Iterable<Record> {
             this.close();
             return true;
         }
-        // JSONObject jsonobj;
-        // try {
-        // jsonobj = JSONObject.fromObject(json);
-        // } catch (JSONException e) {
-        // this.close();
-        // log.info("JSON format error: " + json);
-        // return false;
-        // }
 
         Gson gson = new GsonBuilder().serializeNulls().create();
         Map<String, Object> jsonmap = gson.fromJson(json, new TypeToken<Map<String, Object>>() {
         }.getType());
+
+        if (jsonmap.containsKey("state"))
+            this.setState((int) jsonmap.get("state"));
+
+        if (jsonmap.containsKey("message"))
+            this.setState((int) jsonmap.get("message"));
 
         if (jsonmap.containsKey("head")) {
             this.getHead().setJSON(jsonmap.get("head"));
