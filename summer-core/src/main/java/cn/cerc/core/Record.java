@@ -26,7 +26,7 @@ import com.google.gson.reflect.TypeToken;
 public class Record implements IRecord, Serializable {
     private static final Logger log = LoggerFactory.getLogger(Record.class);
     private static final long serialVersionUID = 4454304132898734723L;
-    private DataSetState state = DataSetState.dsNone;
+    private RecordState state = RecordState.dsNone;
     private FieldDefs defs;
     private Map<String, Object> items = new LinkedHashMap<String, Object>();
     private Map<String, Object> delta = new HashMap<String, Object>();
@@ -40,18 +40,18 @@ public class Record implements IRecord, Serializable {
         this.defs = defs;
     }
 
-    public DataSetState getState() {
+    public RecordState getState() {
         return state;
     }
 
-    public void setState(DataSetState dataSetState) {
-        if (dataSetState == DataSetState.dsEdit) {
-            if (this.state == DataSetState.dsInsert) {
+    public void setState(RecordState dataSetState) {
+        if (dataSetState == RecordState.dsEdit) {
+            if (this.state == RecordState.dsInsert) {
                 // throw new RuntimeException("当前记录为插入状态 不允许被修改");
                 return;
             }
         }
-        if (dataSetState.equals(DataSetState.dsNone)) {
+        if (dataSetState.equals(RecordState.dsNone)) {
             delta.clear();
         }
         this.state = dataSetState;
@@ -66,7 +66,7 @@ public class Record implements IRecord, Serializable {
             defs.add(field);
         }
 
-        if (this.state == DataSetState.dsEdit) {
+        if (this.state == RecordState.dsEdit) {
             Object oldValue = items.get(field);
             // 只有值发生变更的时候 才做处理
             if (compareValue(value, oldValue)) {
@@ -546,7 +546,7 @@ public class Record implements IRecord, Serializable {
 
         // record.getFieldDefs().add("num", new DoubleField(18, 4));
         record.setField("num", 12345);
-        record.setState(DataSetState.dsEdit);
+        record.setState(RecordState.dsEdit);
         record.setField("num", 0);
         record.setField("num", 123452);
 

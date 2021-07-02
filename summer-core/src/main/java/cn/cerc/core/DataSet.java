@@ -26,6 +26,8 @@ public class DataSet implements IDataSet, Serializable, Iterable<Record> {
     private static final ClassResource res = new ClassResource(DataSet.class, SummerCore.ID);
     private int recNo = 0;
     private int fetchNo = -1;
+    private int state = 0;
+    private String message = null;
     private FieldDefs fieldDefs = new FieldDefs();
     private List<Record> records = new ArrayList<Record>();
     private DataSetBeforeAppendEvent onBeforeAppend;
@@ -39,7 +41,7 @@ public class DataSet implements IDataSet, Serializable, Iterable<Record> {
     protected Record newRecord() {
         Record record = new Record(this.fieldDefs);
         record.setDataSet(this);
-        record.setState(DataSetState.dsInsert);
+        record.setState(RecordState.dsInsert);
         return record;
     }
 
@@ -94,7 +96,7 @@ public class DataSet implements IDataSet, Serializable, Iterable<Record> {
         if (search != null) {
             search.clear();
         }
-        this.getCurrent().setState(DataSetState.dsEdit);
+        this.getCurrent().setState(RecordState.dsEdit);
     }
 
     public void delete() {
@@ -114,7 +116,7 @@ public class DataSet implements IDataSet, Serializable, Iterable<Record> {
         if (search != null) {
             search.clear();
         }
-        this.getCurrent().setState(DataSetState.dsNone);
+        this.getCurrent().setState(RecordState.dsNone);
     }
 
     public boolean first() {
@@ -181,8 +183,8 @@ public class DataSet implements IDataSet, Serializable, Iterable<Record> {
 
     public void setRecNo(int recNo) {
         if (recNo > this.records.size()) {
-            String msg = String.format(res.getString(3, "[%s]RecNo %d 大于总长度 %d"), this.getClass().getName(),
-                    recNo, this.records.size());
+            String msg = String.format(res.getString(3, "[%s]RecNo %d 大于总长度 %d"), this.getClass().getName(), recNo,
+                    this.records.size());
             throw new RuntimeException(msg);
         } else {
             this.recNo = recNo;
@@ -244,10 +246,6 @@ public class DataSet implements IDataSet, Serializable, Iterable<Record> {
         }
         search.setFields(fields);
         return values.length == 1 ? search.get(values[0]) : search.get(values);
-    }
-
-    public DataSetState getState() {
-        return this.getCurrent().getState();
     }
 
     @Override
@@ -633,5 +631,21 @@ public class DataSet implements IDataSet, Serializable, Iterable<Record> {
 
     public void setReadonly(boolean readonly) {
         this.readonly = readonly;
+    }
+
+    public int getState() {
+        return state;
+    }
+
+    public void setState(int state) {
+        this.state = state;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

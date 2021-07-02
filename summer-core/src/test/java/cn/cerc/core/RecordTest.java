@@ -12,13 +12,13 @@ public class RecordTest {
     @Test
     public void test_create() {
         assertEquals(def, item.getFieldDefs());
-        assertEquals(item.getState(), DataSetState.dsNone);
+        assertEquals(item.getState(), RecordState.dsNone);
     }
 
     @Test
     public void test_setState() {
-        item.setState(DataSetState.dsInsert);
-        assertEquals(item.getState(), DataSetState.dsInsert);
+        item.setState(RecordState.dsInsert);
+        assertEquals(item.getState(), RecordState.dsInsert);
     }
 
     @Test
@@ -73,7 +73,7 @@ public class RecordTest {
         rs.setField("Code_", val);
         assertEquals(rs.getDelta().size(), 0);
 
-        rs.setState(DataSetState.dsEdit);
+        rs.setState(RecordState.dsEdit);
         rs.setField("Code_", val);
         assertEquals(rs.getDelta().size(), 0);
 

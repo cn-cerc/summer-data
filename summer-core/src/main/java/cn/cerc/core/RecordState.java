@@ -1,5 +1,5 @@
 package cn.cerc.core;
 
-public enum DataSetState {
+public enum RecordState {
     dsNone, dsInsert, dsEdit, dsDelete
 }
