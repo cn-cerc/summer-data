@@ -479,8 +479,6 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
                 builder.append(",");
             if (head.size() > 0)
                 builder.append("\"head\":").append(head.toString());
-            if (head.size() > 0 && this.size() > 0)
-                builder.append(",");
         }
         if (this.size() > 0) {
             List<String> fields = this.getFieldDefs().getFields();
