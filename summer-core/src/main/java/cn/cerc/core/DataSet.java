@@ -98,7 +98,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         return this;
     }
 
-    public void edit() {
+    public final void edit() {
         if (bof() || eof()) {
             throw new RuntimeException(res.getString(1, "当前记录为空，无法修改"));
         }
