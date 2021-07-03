@@ -17,6 +17,9 @@ public interface ISession extends AutoCloseable {
     // 设置自定义参数
     void setProperty(String key, Object value);
 
+    // 从数据库根据token载入所有环境
+    void loadToken(String token);
+
     default String getToken() {
         return (String) getProperty(TOKEN);
     }
