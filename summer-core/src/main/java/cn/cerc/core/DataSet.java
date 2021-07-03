@@ -34,12 +34,11 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     private String message = null;
     private FieldDefs fieldDefs = new FieldDefs();
     private List<Record> records = new ArrayList<Record>();
-    private DataSetEvent _beforeAppend;
-    private DataSetEvent _afterAppend;
-    private RecordEvent _beforePost;
-    private RecordEvent _afterPost;
-    private RecordEvent _beforeDelete;
-    private RecordEvent _afterDelete;
+    private DataSetEvent appendEvent;
+    private RecordEvent beforePostEvent;
+    private RecordEvent afterPostEvent;
+    private RecordEvent beforeDeleteEvent;
+    private RecordEvent afterDeleteEvent;
     private boolean readonly;
     private Record head = null;
     private FieldDefs head_defs = null;
@@ -66,21 +65,19 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         return record;
     }
 
-    public DataSet append(Record record) {
-        beforeAppend();
-        this.records.add(record);
-        recNo = records.size();
-        afterAppend();
-        return this;
-    }
-
     public DataSet append() {
         return append(newRecord());
     }
 
+    public DataSet append(Record record) {
+        this.records.add(record);
+        recNo = records.size();
+        doAppend(record);
+        return this;
+    }
+
     public DataSet append(int index) {
         Record record = newRecord();
-        beforeAppend();
         if (index == -1 || index == records.size()) {
             this.records.add(record);
             recNo = records.size();
@@ -88,7 +85,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
             this.records.add(index, record);
             recNo = index + 1;
         }
-        afterAppend();
+        doAppend(record);
         return this;
     }
 
@@ -114,7 +111,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         if (this.isBatchSave()) {
             delList.add(record);
         } else {
-            beforeDelete(record);
+            doBeforeDelete(record);
             if (this.isStorage()) {
                 try {
                     deleteStorage(record);
@@ -133,7 +130,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
 
         Record record = this.getCurrent();
         if (record.getState() == RecordState.dsInsert) {
-            beforePost(record);
+            doBeforePost(record);
             if (this.isStorage()) {
                 try {
                     insertStorage(record);
@@ -142,9 +139,9 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
                     throw new RuntimeException(e.getMessage());
                 }
             }
-            afterPost(record);
+            doAfterPost(record);
         } else if (record.getState() == RecordState.dsEdit) {
-            beforePost(record);
+            doBeforePost(record);
             if (this.isStorage()) {
                 try {
                     updateStorage(record);
@@ -153,7 +150,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
                     throw new RuntimeException(e.getMessage());
                 }
             }
-            afterPost(record);
+            doAfterPost(record);
         }
     }
 
@@ -406,83 +403,75 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         return this.getFieldDefs().exists(field);
     }
 
-    public final void onBeforeAppend(DataSetEvent beforeAppend) {
-        this._beforeAppend = beforeAppend;
+    // 用于设置字段的初始值，如 pid, it 等
+    public final void onAppend(DataSetEvent appendEvent) {
+        this.appendEvent = appendEvent;
     }
 
-    public final DataSetEvent getBeforeAppend() {
-        return _beforeAppend;
+    public final DataSetEvent getOnAppend() {
+        return appendEvent;
     }
 
-    protected final void beforeAppend() {
-        if (_beforeAppend != null)
-            _beforeAppend.execute(this);
+    protected final void doAppend(Record record) {
+        if (appendEvent != null)
+            appendEvent.execute(this);
     }
 
-    public final void onAfterAppend(DataSetEvent afterAppend) {
-        this._afterAppend = afterAppend;
-    }
-
-    public final DataSetEvent getAfterAppend() {
-        return _afterAppend;
-    }
-
-    protected final void afterAppend() {
-        if (_afterAppend != null)
-            _afterAppend.execute(this);
+    // 用于在保存之前检查字段值是否合法，若失败则抛异常，以及给updateTime赋值
+    public final void onBeforePost(RecordEvent beforePostEvent) {
+        this.beforePostEvent = beforePostEvent;
     }
 
     public final RecordEvent getBeforePost() {
-        return _beforePost;
+        return beforePostEvent;
     }
 
-    public final void onBeforePost(RecordEvent beforePost) {
-        this._beforePost = beforePost;
+    protected final void doBeforePost(Record record) {
+        if (beforePostEvent != null)
+            beforePostEvent.execute(record);
     }
 
-    protected final void beforePost(Record record) {
-        if (_beforePost != null)
-            _beforePost.execute(record);
-    }
-
-    public final void onAfterPost(RecordEvent afterPost) {
-        this._afterPost = afterPost;
+    // 用于在保存成功之后进行记录
+    public final void onAfterPost(RecordEvent afterPostEvent) {
+        this.afterPostEvent = afterPostEvent;
     }
 
     public final RecordEvent getAfterPost() {
-        return _afterPost;
+        return afterPostEvent;
     }
 
-    protected final void afterPost(Record record) {
-        if (_afterPost != null)
-            _afterPost.execute(record);
+    protected final void doAfterPost(Record record) {
+        if (afterPostEvent != null)
+            afterPostEvent.execute(record);
         record.setState(RecordState.dsNone);
     }
 
-    public final void onBeforeDelete(RecordEvent beforeDelete) {
-        this._beforeDelete = beforeDelete;
+    // 用于在实际删除前检查是否允许删除
+    public final void onBeforeDelete(RecordEvent beforeDeleteEvent) {
+        this.beforeDeleteEvent = beforeDeleteEvent;
     }
 
     public final RecordEvent getBeforeDelete() {
-        return _beforeDelete;
+        return beforeDeleteEvent;
     }
 
-    protected final void beforeDelete(Record record) {
-        if (_beforeDelete != null)
-            _beforeDelete.execute(record);
+    protected final void doBeforeDelete(Record record) {
+        if (beforeDeleteEvent != null)
+            beforeDeleteEvent.execute(record);
     }
 
-    public final void onAfterDelete(RecordEvent afterDelete) {
-        this._afterDelete = afterDelete;
+    // 用于在删除成功后进行记录
+    public final void onAfterDelete(RecordEvent afterDeleteEvent) {
+        this.afterDeleteEvent = afterDeleteEvent;
     }
 
     public final RecordEvent getAfterDelete() {
-        return _afterDelete;
+        return afterDeleteEvent;
     }
 
     protected final void afterDelete(Record record) {
-        if (_afterDelete != null)
-            _afterDelete.execute(record);
+        if (afterDeleteEvent != null)
+            afterDeleteEvent.execute(record);
     }
 
     public void close() {
@@ -694,31 +683,6 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         return this;
     }
 
-    public static void main(String[] args) {
-        DataSet ds = new DataSet();
-        System.out.println(ds.getJSON());
-
-        ds.setState(1);
-        System.out.println(ds.getJSON());
-
-        ds.setMessage("hello");
-        System.out.println(ds.getJSON());
-
-        ds.getHead().setField("token", "xxx");
-        System.out.println(ds.getJSON());
-
-        ds.append();
-        ds.setField("code", "1");
-        ds.setField("name", "a");
-        ds.append();
-        ds.setField("code", "2");
-        ds.setField("name", "b");
-
-        System.out.println(ds.getJSON());
-        DataSet ds2 = new DataSet();
-        ds2.setJSON(ds.toString());
-    }
-
     protected final void setStorage(boolean storage) {
         this.storage = storage;
     }
@@ -734,4 +698,48 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     protected void setBatchSave(boolean batchSave) {
         this.batchSave = batchSave;
     }
+
+    public static void main(String[] args) {
+        DataSet dataSet = new DataSet();
+        dataSet.onAppend((ds) -> {
+            ds.setField("it", ds.size());
+        });
+        dataSet.onBeforePost((rs) -> {
+            System.out.println("onBeforePost: " + rs.toString());
+        });
+        dataSet.onAfterPost((rs) -> {
+            System.out.println("onAfterPost: " + rs.toString());
+        });
+        dataSet.onBeforeDelete((rs) -> {
+            System.out.println("onBeforeDelete: " + rs.toString());
+        });
+        dataSet.onAfterDelete((rs) -> {
+            System.out.println("onAfterDelete: " + rs.toString());
+        });
+        System.out.println(dataSet.getJSON());
+
+        dataSet.setState(1);
+        System.out.println(dataSet.getJSON());
+
+        dataSet.setMessage("hello");
+        System.out.println(dataSet.getJSON());
+
+        dataSet.getHead().setField("token", "xxx");
+        System.out.println(dataSet.getJSON());
+
+        dataSet.append();
+        dataSet.setField("code", "1");
+        dataSet.setField("name", "a");
+        dataSet.post();
+        dataSet.append();
+        dataSet.setField("code", "2");
+        dataSet.setField("name", "b");
+        dataSet.post();
+        dataSet.delete();
+
+        System.out.println(dataSet.getJSON());
+        DataSet ds2 = new DataSet();
+        ds2.setJSON(dataSet.toString());
+    }
+
 }
