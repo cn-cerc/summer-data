@@ -485,6 +485,8 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         if (this.size() > 0) {
             List<String> fields = this.getFieldDefs().getFields();
             Gson gson = new Gson();
+            if (builder.length() > 1)
+                builder.append(",");
             builder.append("\"dataset\":[").append(gson.toJson(fields));
             for (int i = 0; i < this.size(); i++) {
                 Record record = this.getRecords().get(i);
