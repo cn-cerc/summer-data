@@ -17,11 +17,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 public class DataSet implements IRecord, Serializable, Iterable<Record> {
+    private static final Logger log = LoggerFactory.getLogger(DataSet.class);
     private static final long serialVersionUID = 873159747066855363L;
     private static final ClassResource res = new ClassResource(DataSet.class, SummerCore.ID);
     private int recNo = 0;
@@ -30,12 +34,19 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     private String message = null;
     private FieldDefs fieldDefs = new FieldDefs();
     private List<Record> records = new ArrayList<Record>();
-    private DataSetBeforeAppendEvent onBeforeAppend;
-    private DataSetEvent onAfterAppend;
-    private DataSetEvent onBeforePost;
+    private DataSetEvent _beforeAppend;
+    private DataSetEvent _afterAppend;
+    private DataSetEvent _beforePost;
+    private DataSetEvent _afterPost;
     private boolean readonly;
     private Record head = null;
     private FieldDefs head_defs = null;
+    // 在变更时，是否需要同步保存到数据库中
+    private boolean storage;
+    // 批次保存模式，默认为post与delete立即保存
+    private boolean batchSave = false;
+    // 仅当batchSave为true时，delList才有记录存在
+    protected List<Record> delList = new ArrayList<>();
 
     public DataSet() {
         super();
@@ -54,18 +65,10 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     }
 
     public DataSet append(Record record) {
-        if (onBeforeAppend != null) {
-            record = onBeforeAppend.filter(this, record);
-            if (record == null) {
-                return this;
-            }
-        }
+        beforeAppend();
         this.records.add(record);
         recNo = records.size();
-
-        if (onAfterAppend != null) {
-            onAfterAppend.execute(this);
-        }
+        afterAppend();
         return this;
     }
 
@@ -75,6 +78,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
 
     public DataSet append(int index) {
         Record record = newRecord();
+        beforeAppend();
         if (index == -1 || index == records.size()) {
             this.records.add(record);
             recNo = records.size();
@@ -82,9 +86,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
             this.records.add(index, record);
             recNo = index + 1;
         }
-        if (onAfterAppend != null) {
-            onAfterAppend.execute(this);
-        }
+        afterAppend();
         return this;
     }
 
@@ -95,18 +97,74 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         this.getCurrent().setState(RecordState.dsEdit);
     }
 
-    public void delete() {
-        if (bof() || eof()) {
+    public final void delete() {
+        if (bof() || eof())
             throw new RuntimeException(res.getString(2, "当前记录为空，无法删除"));
-        }
+
+        Record record = this.getCurrent();
         records.remove(recNo - 1);
         if (this.fetchNo > -1) {
             this.fetchNo--;
         }
+        if (record.getState() == RecordState.dsInsert) {
+            return;
+        }
+        if (this.isBatchSave()) {
+            delList.add(record);
+        } else {
+            if (this.isStorage()) {
+                try {
+                    deleteStorage(record);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                    throw new RuntimeException(e.getMessage());
+                }
+            }
+        }
     }
 
-    public void post() {
-        this.getCurrent().setState(RecordState.dsNone);
+    public final void post() {
+        if (this.isBatchSave())
+            return;
+
+        Record record = this.getCurrent();
+        if (record.getState() == RecordState.dsInsert) {
+            beforePost();
+            if (this.isStorage()) {
+                try {
+                    insertStorage(record);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                    throw new RuntimeException(e.getMessage());
+                }
+            }
+            this.getCurrent().setState(RecordState.dsNone);
+            afterPost();
+        } else if (record.getState() == RecordState.dsEdit) {
+            beforePost();
+            if (this.isStorage()) {
+                try {
+                    updateStorage(record);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                    throw new RuntimeException(e.getMessage());
+                }
+            }
+            this.getCurrent().setState(RecordState.dsNone);
+            afterPost();
+        }
+    }
+
+    protected void insertStorage(Record record) throws Exception {
+
+    }
+
+    protected void updateStorage(Record record) throws Exception {
+
+    }
+
+    protected void deleteStorage(Record record) throws Exception {
+
     }
 
     public boolean first() {
@@ -346,26 +404,48 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         return this.getFieldDefs().exists(field);
     }
 
-    public DataSetEvent getOnAfterAppend() {
-        return onAfterAppend;
+    public final void onBeforeAppend(DataSetEvent beforeAppend) {
+        this._beforeAppend = beforeAppend;
     }
 
-    public void setOnAfterAppend(DataSetEvent onAfterAppend) {
-        this.onAfterAppend = onAfterAppend;
+    public final DataSetEvent getBeforeAppend() {
+        return _beforeAppend;
+    }
+
+    protected final void beforeAppend() {
+        if (_beforeAppend != null)
+            _beforeAppend.execute(this);
+    }
+
+    public final void onAfterAppend(DataSetEvent afterAppend) {
+        this._afterAppend = afterAppend;
+    }
+
+    public final DataSetEvent getAfterAppend() {
+        return _afterAppend;
+    }
+
+    protected final void afterAppend() {
+        if (_afterAppend != null)
+            _afterAppend.execute(this);
+    }
+
+    public final DataSetEvent getBeforePost() {
+        return _beforePost;
+    }
+
+    public void onBeforePost(DataSetEvent onBeforePost) {
+        this._beforePost = onBeforePost;
     }
 
     protected void beforePost() {
-        if (onBeforePost != null) {
-            onBeforePost.execute(this);
-        }
+        if (_beforePost != null)
+            _beforePost.execute(this);
     }
 
-    public DataSetEvent getOnBeforePost() {
-        return onBeforePost;
-    }
-
-    public void setOnBeforePost(DataSetEvent onBeforePost) {
-        this.onBeforePost = onBeforePost;
+    protected void afterPost() {
+        if (_afterPost != null)
+            _afterPost.execute(this);
     }
 
     public void close() {
@@ -551,14 +631,6 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         this.setJSON(json);
     }
 
-    public DataSetBeforeAppendEvent getOnBeforeAppend() {
-        return onBeforeAppend;
-    }
-
-    public void setOnBeforeAppend(DataSetBeforeAppendEvent onBeforeAppend) {
-        this.onBeforeAppend = onBeforeAppend;
-    }
-
     public boolean isReadonly() {
         return readonly;
     }
@@ -608,5 +680,21 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         System.out.println(ds.getJSON());
         DataSet ds2 = new DataSet();
         ds2.setJSON(ds.toString());
+    }
+
+    protected final void setStorage(boolean storage) {
+        this.storage = storage;
+    }
+
+    public final boolean isStorage() {
+        return storage;
+    }
+
+    protected boolean isBatchSave() {
+        return batchSave;
+    }
+
+    protected void setBatchSave(boolean batchSave) {
+        this.batchSave = batchSave;
     }
 }
