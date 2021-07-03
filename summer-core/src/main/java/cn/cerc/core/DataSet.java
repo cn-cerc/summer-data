@@ -36,8 +36,10 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     private List<Record> records = new ArrayList<Record>();
     private DataSetEvent _beforeAppend;
     private DataSetEvent _afterAppend;
-    private DataSetEvent _beforePost;
-    private DataSetEvent _afterPost;
+    private RecordEvent _beforePost;
+    private RecordEvent _afterPost;
+    private RecordEvent _beforeDelete;
+    private RecordEvent _afterDelete;
     private boolean readonly;
     private Record head = null;
     private FieldDefs head_defs = null;
@@ -112,6 +114,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         if (this.isBatchSave()) {
             delList.add(record);
         } else {
+            beforeDelete(record);
             if (this.isStorage()) {
                 try {
                     deleteStorage(record);
@@ -120,6 +123,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
                     throw new RuntimeException(e.getMessage());
                 }
             }
+            afterDelete(record);
         }
     }
 
@@ -129,7 +133,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
 
         Record record = this.getCurrent();
         if (record.getState() == RecordState.dsInsert) {
-            beforePost();
+            beforePost(record);
             if (this.isStorage()) {
                 try {
                     insertStorage(record);
@@ -138,10 +142,9 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
                     throw new RuntimeException(e.getMessage());
                 }
             }
-            this.getCurrent().setState(RecordState.dsNone);
-            afterPost();
+            afterPost(record);
         } else if (record.getState() == RecordState.dsEdit) {
-            beforePost();
+            beforePost(record);
             if (this.isStorage()) {
                 try {
                     updateStorage(record);
@@ -150,8 +153,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
                     throw new RuntimeException(e.getMessage());
                 }
             }
-            this.getCurrent().setState(RecordState.dsNone);
-            afterPost();
+            afterPost(record);
         }
     }
 
@@ -430,22 +432,57 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
             _afterAppend.execute(this);
     }
 
-    public final DataSetEvent getBeforePost() {
+    public final RecordEvent getBeforePost() {
         return _beforePost;
     }
 
-    public void onBeforePost(DataSetEvent onBeforePost) {
-        this._beforePost = onBeforePost;
+    public final void onBeforePost(RecordEvent beforePost) {
+        this._beforePost = beforePost;
     }
 
-    protected void beforePost() {
+    protected final void beforePost(Record record) {
         if (_beforePost != null)
-            _beforePost.execute(this);
+            _beforePost.execute(record);
     }
 
-    protected void afterPost() {
+    public final void onAfterPost(RecordEvent afterPost) {
+        this._afterPost = afterPost;
+    }
+
+    public final RecordEvent getAfterPost() {
+        return _afterPost;
+    }
+
+    protected final void afterPost(Record record) {
         if (_afterPost != null)
-            _afterPost.execute(this);
+            _afterPost.execute(record);
+        record.setState(RecordState.dsNone);
+    }
+
+    public final void onBeforeDelete(RecordEvent beforeDelete) {
+        this._beforeDelete = beforeDelete;
+    }
+
+    public final RecordEvent getBeforeDelete() {
+        return _beforeDelete;
+    }
+
+    protected final void beforeDelete(Record record) {
+        if (_beforeDelete != null)
+            _beforeDelete.execute(record);
+    }
+
+    public final void onAfterDelete(RecordEvent afterDelete) {
+        this._afterDelete = afterDelete;
+    }
+
+    public final RecordEvent getAfterDelete() {
+        return _afterDelete;
+    }
+
+    protected final void afterDelete(Record record) {
+        if (_afterDelete != null)
+            _afterDelete.execute(record);
     }
 
     public void close() {
