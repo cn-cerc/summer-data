@@ -120,7 +120,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
                     throw new RuntimeException(e.getMessage());
                 }
             }
-            afterDelete(record);
+            doAfterDelete(record);
         }
     }
 
@@ -469,7 +469,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         return afterDeleteEvent;
     }
 
-    protected final void afterDelete(Record record) {
+    protected final void doAfterDelete(Record record) {
         if (afterDeleteEvent != null)
             afterDeleteEvent.execute(record);
     }
