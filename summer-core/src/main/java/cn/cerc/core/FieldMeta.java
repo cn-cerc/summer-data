@@ -2,7 +2,9 @@ package cn.cerc.core;
 
 public class FieldMeta {
     private final String code;
-    private final FieldType type;
+    private FieldType type;
+    private boolean updateKey;
+    private boolean autoincrement;
 
     public enum FieldType {
         Data, Calculated;
@@ -26,13 +28,36 @@ public class FieldMeta {
         return type;
     }
 
+    public final FieldMeta setType(FieldType type) {
+        this.type = type;
+        return this;
+    }
+
+    public final boolean isUpdateKey() {
+        return updateKey;
+    }
+
+    public final FieldMeta setUpdateKey(boolean updateKey) {
+        this.updateKey = updateKey;
+        return this;
+    }
+
+    public final boolean isAutoincrement() {
+        return autoincrement;
+    }
+
+    public final FieldMeta setAutoincrement(boolean autoincrement) {
+        this.autoincrement = autoincrement;
+        return this;
+    }
+
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return code.hashCode();
     }
 
     @Override
-    public boolean equals(Object anObject) {
+    public final boolean equals(Object anObject) {
         if (this == anObject) {
             return true;
         }
@@ -42,4 +67,5 @@ public class FieldMeta {
         }
         return false;
     }
+
 }

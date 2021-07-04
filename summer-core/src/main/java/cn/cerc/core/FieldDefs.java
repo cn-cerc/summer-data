@@ -42,14 +42,15 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return this;
     }
 
-    public FieldDefs add(String fieldCode, FieldType fieldType) {
-        items.add(new FieldMeta(fieldCode, fieldType));
-        return this;
-    }
-
     public FieldDefs add(FieldMeta field) {
         items.add(field);
         return this;
+    }
+
+    public FieldMeta add(String fieldCode, FieldType fieldType) {
+        FieldMeta meta = new FieldMeta(fieldCode, fieldType);
+        items.add(meta);
+        return meta;
     }
 
     public void add(String... strs) {
@@ -92,6 +93,7 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         FieldDefs defs = new FieldDefs();
         defs.add("id", FieldType.Calculated);
         defs.add("id", FieldType.Data);
+        defs.getItem("id").setUpdateKey(true).setAutoincrement(true);
         System.out.println(defs.size());
         defs.add("name");
         System.out.println(defs.exists("id"));
