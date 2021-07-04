@@ -28,6 +28,15 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return result;
     }
 
+    public List<String> getFields(FieldType fieldType) {
+        List<String> result = new ArrayList<>();
+        for (FieldMeta meta : items) {
+            if (fieldType == meta.getType())
+                result.add(meta.getCode());
+        }
+        return result;
+    }
+
     public FieldDefs add(String fieldCode) {
         items.add(new FieldMeta(fieldCode, FieldType.Data));
         return this;
@@ -71,6 +80,14 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         items.remove(field);
     }
 
+    public FieldMeta getItem(String fieldCode) {
+        for (FieldMeta meta : items) {
+            if (fieldCode.equals(meta.getCode()))
+                return meta;
+        }
+        return null;
+    }
+
     public static void main(String[] args) {
         FieldDefs defs = new FieldDefs();
         defs.add("id", FieldType.Calculated);
@@ -84,4 +101,5 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         defs.delete("name");
         System.out.println(defs.toString());
     }
+
 }
