@@ -7,15 +7,23 @@ public class FieldMeta {
     private boolean autoincrement;
 
     public enum FieldType {
-        Data, Calculated;
+        Memory, Storage, Calculated;
+    }
+
+    public FieldMeta(String code) {
+        super();
+        if (code == null || "".equals(code))
+            throw new RuntimeException("fieldCode not is null!");
+        this.code = code;
+        this.type = FieldType.Memory;
     }
 
     public FieldMeta(String code, FieldType type) {
         super();
         if (code == null || "".equals(code))
-            throw new RuntimeException("fieldCode is null!");
+            throw new RuntimeException("fieldCode not is null!");
         if (type == null)
-            throw new RuntimeException("fieldType is null!");
+            throw new RuntimeException("fieldType not is null!");
         this.code = code;
         this.type = type;
     }
@@ -29,6 +37,10 @@ public class FieldMeta {
     }
 
     public final FieldMeta setType(FieldType type) {
+        if (type == null)
+            throw new RuntimeException("fieldType not is null!");
+        if (type == FieldType.Storage)
+            throw new RuntimeException("Wrong direction of modification");
         this.type = type;
         return this;
     }

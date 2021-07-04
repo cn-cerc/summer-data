@@ -15,7 +15,7 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     private LinkedHashSet<FieldMeta> items = new LinkedHashSet<>();
 
     public boolean exists(String fieldCode) {
-        return items.contains(new FieldMeta(fieldCode, FieldType.Data));
+        return items.contains(new FieldMeta(fieldCode));
     }
 
     public boolean exists(FieldMeta field) {
@@ -38,7 +38,7 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     }
 
     public FieldDefs add(String fieldCode) {
-        items.add(new FieldMeta(fieldCode, FieldType.Data));
+        items.add(new FieldMeta(fieldCode));
         return this;
     }
 
@@ -77,7 +77,7 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     }
 
     public void delete(String fieldCode) {
-        FieldMeta field = new FieldMeta(fieldCode, FieldType.Data);
+        FieldMeta field = new FieldMeta(fieldCode);
         items.remove(field);
     }
 
@@ -91,8 +91,8 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
 
     public static void main(String[] args) {
         FieldDefs defs = new FieldDefs();
-        defs.add("id", FieldType.Calculated);
-        defs.add("id", FieldType.Data);
+        defs.add("id", FieldType.Storage);
+        defs.add("id");
         defs.getItem("id").setUpdateKey(true).setAutoincrement(true);
         System.out.println(defs.size());
         defs.add("name");
