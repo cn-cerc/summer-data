@@ -8,10 +8,10 @@ import java.util.List;
 public class FieldDefs implements Serializable, Iterable<String> {
     private static final long serialVersionUID = 7478897050846245325L;
     private List<String> fields = new ArrayList<>();
-    // 设置字段为强类型，必须预先定义，默认为弱类型
-    private boolean strict = false;
-    // 设置是否不再允许添加字段，默认为可随时添加
-    private boolean locked = false;
+//    // 设置字段为强类型，必须预先定义，默认为弱类型
+//    private boolean strict = false;
+//    // 设置是否不再允许添加字段，默认为可随时添加
+//    private boolean locked = false;
 
     public boolean exists(String field) {
         return fields.contains(field);
@@ -27,12 +27,6 @@ public class FieldDefs implements Serializable, Iterable<String> {
     }
 
     public FieldDefs add(String field) {
-        if (this.locked) {
-            throw new RuntimeException("locked is true");
-        }
-        if (this.strict) {
-            throw new RuntimeException("strict is true");
-        }
         if (field == null || "".equals(field)) {
             throw new RuntimeException("field is null!");
         }
@@ -59,14 +53,6 @@ public class FieldDefs implements Serializable, Iterable<String> {
     @Override
     public Iterator<String> iterator() {
         return this.getFields().iterator();
-    }
-
-    public boolean isLocked() {
-        return locked;
-    }
-
-    public void setLocked(boolean locked) {
-        this.locked = locked;
     }
 
     public void delete(String field) {
