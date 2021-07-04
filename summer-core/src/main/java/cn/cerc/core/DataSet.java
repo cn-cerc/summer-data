@@ -24,6 +24,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import cn.cerc.core.FieldMeta.FieldType;
+
 public class DataSet implements IRecord, Serializable, Iterable<Record> {
     private static final Logger log = LoggerFactory.getLogger(DataSet.class);
     private static final long serialVersionUID = 873159747066855363L;
@@ -697,6 +699,14 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
 
     protected void setBatchSave(boolean batchSave) {
         this.batchSave = batchSave;
+    }
+
+    /**
+     * 关闭写入存储设备功能
+     */
+    public final void disableStorage() {
+        this.getFieldDefs().forEach(meta -> meta.setType(FieldType.Calculated));
+        this.setStorage(false);
     }
 
     public static void main(String[] args) {
