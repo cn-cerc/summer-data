@@ -70,7 +70,7 @@ public class RecordUtils {
             }
 
             // 查找并赋值
-            for (String fieldName : record.getFieldDefs()) {
+            for (String fieldName : record.getFieldDefs().getFields()) {
                 boolean exists = false;
                 for (Field field : items.keySet()) {
                     // 默认等于对象的属性
