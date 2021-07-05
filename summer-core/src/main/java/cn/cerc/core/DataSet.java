@@ -705,7 +705,10 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
      * 关闭写入存储设备功能
      */
     public final void disableStorage() {
-        this.getFieldDefs().forEach(meta -> meta.setType(FieldType.Calculated));
+        this.getFieldDefs().forEach(meta -> {
+            if (meta.getType() == FieldType.Storage)
+                meta.setType(FieldType.Memory);
+        });
         this.setStorage(false);
     }
 
