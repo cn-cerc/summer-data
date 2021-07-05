@@ -36,11 +36,11 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     private String message = null;
     private FieldDefs fieldDefs = new FieldDefs();
     private List<Record> records = new ArrayList<Record>();
-    private DataSetEvent appendEvent;
-    private RecordEvent beforePostEvent;
-    private RecordEvent afterPostEvent;
-    private RecordEvent beforeDeleteEvent;
-    private RecordEvent afterDeleteEvent;
+    private List<DataSetInsertEvent> appendListener;
+    private List<DataSetBeforeUpdateEvent> beforePostListener;
+    private List<DataSetAfterUpdateEvent> afterPostListener;
+    private List<DataSetBeforeDeleteEvent> beforeDeleteListener;
+    private List<DataSetAfterDeleteEvent> afterDeleteListener;
     private boolean readonly;
     private Record head = null;
     private FieldDefs head_defs = null;
@@ -405,75 +405,115 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         return this.getFieldDefs().exists(field);
     }
 
-    // 用于设置字段的初始值，如 pid, it 等
-    public final void onAppend(DataSetEvent appendEvent) {
-        this.appendEvent = appendEvent;
+    public interface DataSetInsertEvent {
+        void insertRecord(Record record);
     }
 
-    public final DataSetEvent getOnAppend() {
-        return appendEvent;
+    // 用于设置字段的初始值，如 pid, it 等
+    public final void onAppend(DataSetInsertEvent appendEvent) {
+        if (this.appendListener == null)
+            this.appendListener = new ArrayList<>();
+        this.appendListener.add(appendEvent);
+    }
+
+    public final List<DataSetInsertEvent> getOnAppend() {
+        if (this.appendListener == null)
+            this.appendListener = new ArrayList<>();
+        return appendListener;
     }
 
     protected final void doAppend(Record record) {
-        if (appendEvent != null)
-            appendEvent.execute(this);
+        if (appendListener != null)
+            appendListener.forEach(event -> event.insertRecord(record));
+    }
+
+    public interface DataSetBeforeUpdateEvent {
+        void updateRecordBefore(Record record);
     }
 
     // 用于在保存之前检查字段值是否合法，若失败则抛异常，以及给updateTime赋值
-    public final void onBeforePost(RecordEvent beforePostEvent) {
-        this.beforePostEvent = beforePostEvent;
+    public final void onBeforePost(DataSetBeforeUpdateEvent beforePostEvent) {
+        if (this.beforePostListener == null)
+            this.beforePostListener = new ArrayList<>();
+        this.beforePostListener.add(beforePostEvent);
     }
 
-    public final RecordEvent getBeforePost() {
-        return beforePostEvent;
+    public final List<DataSetBeforeUpdateEvent> getBeforePost() {
+        if (this.beforePostListener == null)
+            this.beforePostListener = new ArrayList<>();
+        return beforePostListener;
     }
 
     protected final void doBeforePost(Record record) {
-        if (beforePostEvent != null)
-            beforePostEvent.execute(record);
+        if (beforePostListener != null)
+            beforePostListener.forEach(event -> event.updateRecordBefore(record));
+    }
+
+    public interface DataSetAfterUpdateEvent {
+        void updateRecordAfter(Record record);
     }
 
     // 用于在保存成功之后进行记录
-    public final void onAfterPost(RecordEvent afterPostEvent) {
-        this.afterPostEvent = afterPostEvent;
+    public final void onAfterPost(DataSetAfterUpdateEvent afterPostEvent) {
+        if (this.afterPostListener == null)
+            this.afterPostListener = new ArrayList<>();
+        this.afterPostListener.add(afterPostEvent);
     }
 
-    public final RecordEvent getAfterPost() {
-        return afterPostEvent;
+    public final List<DataSetAfterUpdateEvent> getAfterPost() {
+        if (this.afterPostListener == null)
+            this.afterPostListener = new ArrayList<>();
+        return afterPostListener;
     }
 
     protected final void doAfterPost(Record record) {
-        if (afterPostEvent != null)
-            afterPostEvent.execute(record);
+        if (afterPostListener != null)
+            afterPostListener.forEach(event -> event.updateRecordAfter(record));
         record.setState(RecordState.dsNone);
     }
 
-    // 用于在实际删除前检查是否允许删除
-    public final void onBeforeDelete(RecordEvent beforeDeleteEvent) {
-        this.beforeDeleteEvent = beforeDeleteEvent;
+    public interface DataSetBeforeDeleteEvent {
+        void deleteRecordBefore(Record record);
     }
 
-    public final RecordEvent getBeforeDelete() {
-        return beforeDeleteEvent;
+    // 用于在实际删除前检查是否允许删除
+    public final void onBeforeDelete(DataSetBeforeDeleteEvent beforeDeleteEvent) {
+        if (this.beforeDeleteListener == null)
+            this.beforeDeleteListener = new ArrayList<>();
+        this.beforeDeleteListener.add(beforeDeleteEvent);
+    }
+
+    public final List<DataSetBeforeDeleteEvent> getBeforeDelete() {
+        if (this.beforeDeleteListener == null)
+            this.beforeDeleteListener = new ArrayList<>();
+        return beforeDeleteListener;
     }
 
     protected final void doBeforeDelete(Record record) {
-        if (beforeDeleteEvent != null)
-            beforeDeleteEvent.execute(record);
+        if (beforeDeleteListener != null)
+            beforeDeleteListener.forEach(event -> event.deleteRecordBefore(record));
+    }
+
+    public interface DataSetAfterDeleteEvent {
+        void deleteRecordAfter(Record record);
     }
 
     // 用于在删除成功后进行记录
-    public final void onAfterDelete(RecordEvent afterDeleteEvent) {
-        this.afterDeleteEvent = afterDeleteEvent;
+    public final void onAfterDelete(DataSetAfterDeleteEvent afterDeleteEvent) {
+        if (this.afterDeleteListener == null)
+            this.afterDeleteListener = new ArrayList<>();
+        this.afterDeleteListener.add(afterDeleteEvent);
     }
 
-    public final RecordEvent getAfterDelete() {
-        return afterDeleteEvent;
+    public final List<DataSetAfterDeleteEvent> getAfterDelete() {
+        if (this.afterDeleteListener == null)
+            this.afterDeleteListener = new ArrayList<>();
+        return afterDeleteListener;
     }
 
     protected final void doAfterDelete(Record record) {
-        if (afterDeleteEvent != null)
-            afterDeleteEvent.execute(record);
+        if (afterDeleteListener != null)
+            afterDeleteListener.forEach(event -> event.deleteRecordAfter(record));
     }
 
     public void close() {

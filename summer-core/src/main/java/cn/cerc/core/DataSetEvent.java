@@ -1,7 +1,12 @@
 package cn.cerc.core;
 
-public interface DataSetEvent {
+import cn.cerc.core.DataSet.DataSetAfterDeleteEvent;
+import cn.cerc.core.DataSet.DataSetAfterUpdateEvent;
+import cn.cerc.core.DataSet.DataSetBeforeDeleteEvent;
+import cn.cerc.core.DataSet.DataSetBeforeUpdateEvent;
+import cn.cerc.core.DataSet.DataSetInsertEvent;
 
-    void execute(DataSet dataSet);
+public interface DataSetEvent extends DataSetInsertEvent, DataSetBeforeUpdateEvent, DataSetAfterUpdateEvent,
+        DataSetBeforeDeleteEvent, DataSetAfterDeleteEvent {
 
 }
