@@ -69,6 +69,7 @@ public class MongoQuery extends DataSet implements IHandle {
         }
         this.first();
         this.active = true;
+        this.setStorage(true);
         return this;
     }
 

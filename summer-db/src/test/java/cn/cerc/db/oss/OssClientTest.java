@@ -2,6 +2,7 @@ package cn.cerc.db.oss;
 
 import com.aliyun.oss.ClientConfiguration;
 import com.aliyun.oss.OSSClient;
+import com.aliyun.oss.common.auth.DefaultCredentialProvider;
 import com.aliyun.oss.model.OSSObject;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class OssClientTest {
         // 设置失败请求重试次数，默认3次
         conf.setMaxErrorRetry(5);
         // 创建OSSClient实例
-        OSSClient client = new OSSClient(endpoint, accessKeyId, accessKeySecret, conf);
+        OSSClient client = new OSSClient(endpoint, new DefaultCredentialProvider(accessKeyId, accessKeySecret), conf);
         // 使用访问OSS
         String uuid = UUID.randomUUID().toString();
         // 存储一个对象
