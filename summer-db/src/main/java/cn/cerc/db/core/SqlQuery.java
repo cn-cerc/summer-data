@@ -4,8 +4,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +23,6 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     private boolean active = false;
     // 若数据有取完，则为true，否则为false
     private boolean fetchFinish;
-    // 仅当batchSave为true时，delList才有记录存在
-    private List<Record> delList = new ArrayList<>();
     // 数据库保存操作执行对象
     private SqlOperator operator;
     // SqlCommand 指令
@@ -120,6 +116,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
         try {
             if (this.isStorage())
                 client = getConnectionClient();
+
             // 先执行删除
             for (Record record : delList) {
                 doBeforeDelete(record);
