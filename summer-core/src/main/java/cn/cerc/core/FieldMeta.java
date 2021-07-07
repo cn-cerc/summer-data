@@ -1,6 +1,9 @@
 package cn.cerc.core;
 
-public class FieldMeta {
+import java.io.Serializable;
+
+public class FieldMeta implements Serializable {
+    private static final long serialVersionUID = -6898050783447062943L;
     private final String code;
     private FieldType type;
     private boolean updateKey;
