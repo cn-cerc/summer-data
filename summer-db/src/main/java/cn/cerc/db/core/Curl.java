@@ -26,6 +26,8 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.cerc.core.Utils;
+
 /**
  * HTTP请求代理类
  *
@@ -123,7 +125,9 @@ public class Curl {
 
     // 发送带参数的GET的HTTP请求
     public String doGet(String reqUrl) {
-
+        if (Utils.isEmpty(reqUrl)) {
+            return null;
+        }
         HttpURLConnection url_con = null;
         try {
             StringBuffer params = new StringBuffer();
@@ -180,6 +184,9 @@ public class Curl {
 
     // 发送不带参数的GET的HTTP请求, reqUrl HTTP请求URL return HTTP响应的字符串
     protected String doGet2(String reqUrl) {
+        if (Utils.isEmpty(reqUrl)) {
+            return null;
+        }
         HttpURLConnection url_con = null;
         try {
             StringBuffer params = new StringBuffer();
@@ -241,7 +248,10 @@ public class Curl {
     }
 
     // 发送带参数的POST的HTTP请求
-    public String doPost(String reqUrl) throws IOException {
+    public String doPost(String reqUrl) {
+        if (Utils.isEmpty(reqUrl)) {
+            return null;
+        }
         try {
             StringBuffer params = new StringBuffer();
             for (Entry<String, Object> stringObjectEntry : parameters.entrySet()) {
@@ -266,7 +276,10 @@ public class Curl {
 
     }
 
-    public String doPost(String reqUrl, StringBuffer params) throws IOException {
+    public String doPost(String reqUrl, StringBuffer params) {
+        if (Utils.isEmpty(reqUrl)) {
+            return null;
+        }
         HttpURLConnection url_con = null;
         try {
             reqUrl = new String(reqUrl.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
@@ -306,6 +319,8 @@ public class Curl {
             responseContent = tempStr.toString();
             rd.close();
             in.close();
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
         } finally {
             if (url_con != null) {
                 url_con.disconnect();
