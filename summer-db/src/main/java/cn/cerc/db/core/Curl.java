@@ -248,7 +248,7 @@ public class Curl {
     }
 
     // 发送带参数的POST的HTTP请求
-    public String doPost(String reqUrl) {
+    public String doPost(String reqUrl) throws IOException {
         if (Utils.isEmpty(reqUrl)) {
             return null;
         }
@@ -276,7 +276,7 @@ public class Curl {
 
     }
 
-    public String doPost(String reqUrl, StringBuffer params) {
+    public String doPost(String reqUrl, StringBuffer params) throws IOException {
         if (Utils.isEmpty(reqUrl)) {
             return null;
         }
@@ -319,8 +319,6 @@ public class Curl {
             responseContent = tempStr.toString();
             rd.close();
             in.close();
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
         } finally {
             if (url_con != null) {
                 url_con.disconnect();
