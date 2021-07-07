@@ -41,6 +41,7 @@ public class MongoQuery extends DataSet implements IHandle {
     }
 
     public MongoQuery open() {
+        this.setStorage(true);
         String table = SqlText.findTableName(this.getSqlText().getText());
         // 查找业务ID对应的数据
         MongoCollection<Document> coll = connection.getClient().getCollection(table);
@@ -69,7 +70,6 @@ public class MongoQuery extends DataSet implements IHandle {
         }
         this.first();
         this.active = true;
-        this.setStorage(true);
         return this;
     }
 
