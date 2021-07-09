@@ -82,7 +82,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
             }
         } catch (Exception e) {
             log.error(sql);
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 

@@ -40,11 +40,13 @@ public class MssqlServer implements SqlServer, AutoCloseable {
     private String user;
     private String password;
     private Connection connection;
+    private String database;
 
     private IConfig config;
 
     public MssqlServer() {
         config = ServerConfig.getInstance();
+        database = config.getProperty(MssqlServer.MSSQL_DATABASE, "appdb");
     }
 
     @Override
@@ -84,7 +86,6 @@ public class MssqlServer implements SqlServer, AutoCloseable {
     public final String getConnectUrl() {
         String site = config.getProperty(MssqlServer.MSSQL_SITE, "127.0.0.1");
         String port = config.getProperty(MssqlServer.MSSQL_PORT, "1433");
-        String database = config.getProperty(MssqlServer.MSSQL_DATABASE, "appdb");
 
         user = config.getProperty(MssqlServer.MSSQL_USERNAME, "appdb_user");
         password = config.getProperty(MssqlServer.MSSQL_PASSWORD, "appdb_password");
@@ -118,6 +119,10 @@ public class MssqlServer implements SqlServer, AutoCloseable {
     @Override
     public SqlOperator getDefaultOperator(IHandle handle) {
         return new MssqlOperator(handle);
+    }
+
+    public String getDatabase() {
+        return database;
     }
 
 }

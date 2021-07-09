@@ -24,7 +24,7 @@ public class SqliteOperator extends SqlOperator {
 
     public SqliteOperator() {
         super();
-        this.setUpdateKey("id");
+        this.setUpdateKey("id_");
     }
 
     @Override
