@@ -179,7 +179,9 @@ public abstract class SqlQuery extends DataSet implements IHandle {
             this.getRecords().add(record);
             this.last();
         }
-        BigdataException.check(this, this.size());
+        if (this.getMaximum() > -1) {
+            BigdataException.check(this, this.size());
+        }
     }
 
     @Override
