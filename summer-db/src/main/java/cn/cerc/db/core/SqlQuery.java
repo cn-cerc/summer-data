@@ -17,6 +17,7 @@ import cn.cerc.core.RecordState;
 import cn.cerc.core.SqlText;
 
 public abstract class SqlQuery extends DataSet implements IHandle {
+    private static final long serialVersionUID = -6671201813972797639L;
     private static final Logger log = LoggerFactory.getLogger(SqlQuery.class);
     // 数据集是否有打开
     private boolean active = false;
