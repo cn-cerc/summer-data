@@ -8,8 +8,8 @@ import java.util.Map;
 public class SearchDataSet {
     private DataSet dataSet;
     private Map<String, Record> items;
-    private List<String> fields = new ArrayList<>();
-    private String keyFields;
+    private List<String> keys = new ArrayList<>();
+    private String fields;
 
     public SearchDataSet() {
 
@@ -31,7 +31,7 @@ public class SearchDataSet {
             items = new HashMap<>();
         }
         String key = null;
-        for (String field : fields) {
+        for (String field : keys) {
             Object val = record.getField(field);
             if (val == null) {
                 val = "null";
@@ -41,67 +41,63 @@ public class SearchDataSet {
         items.put(key, record);
     }
 
-    public Record get(Object key) {
+    public Record get(Object value) {
         if (items == null) {
             items = new HashMap<>();
             add(dataSet);
         }
-        if (key == null) {
+        if (value == null) {
             return items.get("null");
         } else {
-            return items.get(key.toString());
+            return items.get(value.toString());
         }
     }
 
-    public Record get(Object[] keys) {
-        if (keys == null || keys.length == 0) {
+    public Record get(Object[] values) {
+        if (values == null || values.length == 0) {
             throw new RuntimeException("keys can't be null or keys's length = 0 ");
         }
-        if (fields.size() != keys.length) {
+        if (keys.size() != values.length) {
             throw new RuntimeException("参数名称 与 值列表长度不匹配");
         }
 
-        String key = null;
-        for (Object obj : keys) {
+        String value = null;
+        for (Object obj : values) {
             if (obj == null) {
                 obj = "null";
             }
-            key = key == null ? obj.toString() : key + ";" + obj.toString();
+            value = value == null ? obj.toString() : value + ";" + obj.toString();
         }
 
-        return get(key);
+        return get(value);
     }
 
     public void clear() {
+        this.fields = null;
+        keys.clear();
         items = null;
     }
 
-    public List<String> getFields() {
+    public String getFields() {
         return fields;
     }
 
-    public void setFields(List<String> fields) {
-        this.fields = fields;
-    }
-
-    public void setFields(String keyFields) {
-        if (keyFields == null || "".equals(keyFields)) {
+    public void setFields(String fields) {
+        if (fields == null || "".equals(fields))
             throw new RuntimeException("keyFields can't be null");
-        }
-        if (!keyFields.equals(this.keyFields)) {
-            fields.clear();
-            for (String key : keyFields.split(";")) {
+        if (!fields.equals(this.fields)) {
+            this.clear();
+            for (String key : fields.split(";")) {
                 if (dataSet.size() > 0 && dataSet.getFieldDefs().size() > 0 && !dataSet.exists(key)) {
                     throw new RuntimeException(String.format("field %s not find !", key));
                 }
-                fields.add(key);
+                keys.add(key);
             }
-            this.keyFields = keyFields;
-            clear();
+            this.fields = fields;
         }
     }
 
     public boolean existsKey(String field) {
-        return fields.contains(field);
+        return keys.contains(field);
     }
 }

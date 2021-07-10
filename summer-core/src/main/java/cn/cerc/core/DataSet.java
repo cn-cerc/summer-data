@@ -50,6 +50,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     private boolean batchSave = false;
     // 仅当batchSave为true时，delList才有记录存在
     protected List<Record> delList = new ArrayList<>();
+    private SearchDataSet search;
 
     public DataSet() {
         super();
@@ -92,16 +93,16 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     }
 
     public final void edit() {
-        if (bof() || eof()) {
+        if (bof() || eof())
             throw new RuntimeException(res.getString(1, "当前记录为空，无法修改"));
-        }
+        clearSearch();
         this.getCurrent().setState(RecordState.dsEdit);
     }
 
     public final void delete() {
         if (bof() || eof())
             throw new RuntimeException(res.getString(2, "当前记录为空，无法删除"));
-
+        clearSearch();
         Record record = this.getCurrent();
         records.remove(recNo - 1);
         if (this.fetchNo > -1) {
@@ -118,7 +119,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
                 try {
                     deleteStorage(record);
                 } catch (Exception e) {
-                    log.error(e.getMessage(), e);
+                    log.error(e.getMessage());
                     throw new RuntimeException(e.getMessage());
                 }
             }
@@ -127,6 +128,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     }
 
     public final void post() {
+        clearSearch();
         if (this.isBatchSave())
             return;
 
@@ -137,7 +139,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
                 try {
                     insertStorage(record);
                 } catch (Exception e) {
-                    log.error(e.getMessage(), e);
+                    log.error(e.getMessage());
                     throw new RuntimeException(e.getMessage());
                 }
             }
@@ -148,7 +150,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
                 try {
                     updateStorage(record);
                 } catch (Exception e) {
-                    log.error(e.getMessage(), e);
+                    log.error(e.getMessage());
                     throw new RuntimeException(e.getMessage());
                 }
             }
@@ -276,7 +278,9 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
 
     // 用于查找多次，调用时，会先进行排序，以方便后续的相同Key查找
     public boolean locate(String fields, Object... values) {
-        SearchDataSet search = new SearchDataSet(this);
+        if (search == null)
+            search = new SearchDataSet(this);
+
         search.setFields(fields);
         Record record = values.length == 1 ? search.get(values[0]) : search.get(values);
 
@@ -288,7 +292,9 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     }
 
     public Record lookup(String fields, Object... values) {
-        SearchDataSet search = new SearchDataSet(this);
+        if (search == null)
+            search = new SearchDataSet(this);
+
         search.setFields(fields);
         return values.length == 1 ? search.get(values[0]) : search.get(values);
     }
@@ -349,17 +355,21 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
 
     @Override
     public DataSet setField(String field, Object value) {
-        if (field == null || "".equals(field)) {
+        if (field == null || "".equals(field))
             throw new RuntimeException("field is null!");
-        }
+        clearSearch();
         this.getCurrent().setField(field, value);
         return this;
     }
 
+    private void clearSearch() {
+        if (search != null)
+            search.clear();
+    }
+
     @Deprecated
     public DataSet setNull(String field) {
-        this.getCurrent().setField(field, null);
-        return this;
+        return setField(field, null);
     }
 
     public boolean fetch() {
@@ -373,14 +383,17 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     }
 
     public void copyRecord(Record source, FieldDefs defs) {
+        clearSearch();
         this.getCurrent().copyValues(source, defs);
     }
 
     public void copyRecord(Record source, String... fields) {
+        clearSearch();
         this.getCurrent().copyValues(source, fields);
     }
 
     public void copyRecord(Record sourceRecord, String[] sourceFields, String[] targetFields) {
+        clearSearch();
         if (targetFields.length != sourceFields.length) {
             throw new RuntimeException(res.getString(7, "前后字段数目不一样，请您确认！"));
         }
@@ -425,6 +438,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     protected final void doAppend(Record record) {
         if (appendListener != null)
             appendListener.forEach(event -> event.insertRecord(record));
+        clearSearch();
     }
 
     public interface DataSetBeforeUpdateEvent {
@@ -523,6 +537,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         if (this.head_defs != null) {
             this.head_defs.clear();
         }
+        clearSearch();
         fieldDefs.clear();
         records.clear();
         recNo = 0;
@@ -647,6 +662,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     }
 
     public DataSet appendDataSet(DataSet source) {
+        clearSearch();
         // 先复制字段定义
         FieldDefs tarDefs = this.getFieldDefs();
         for (String field : source.getFieldDefs().getFields()) {
