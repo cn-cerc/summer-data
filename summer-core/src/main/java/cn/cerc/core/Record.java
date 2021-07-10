@@ -66,19 +66,33 @@ public class Record implements IRecord, Serializable {
             defs.add(field);
         }
 
+        SearchDataSet search = null;
+        if (this.dataSet != null && this.dataSet.getSearch() != null)
+            search = this.dataSet.getSearch();
+
+        if ((search == null) && (this.state != RecordState.dsEdit)) {
+            setValue(items, field, value);
+            return this;
+        }
+
+        Object oldValue = items.get(field);
+        if (compareValue(value, oldValue)) {
+            return this;
+        }
+
+        // 只有值发生变更的时候 才做处理
+        if (search != null)
+            search.remove(this);
+
         if (this.state == RecordState.dsEdit) {
-            Object oldValue = items.get(field);
-            // 只有值发生变更的时候 才做处理
-            if (compareValue(value, oldValue)) {
-                return this;
-            } else {
-                if (!delta.containsKey(field)) {
-                    setValue(delta, field, oldValue);
-                }
+            if (!delta.containsKey(field)) {
+                setValue(delta, field, oldValue);
             }
         }
         setValue(items, field, value);
 
+        if (search != null)
+            search.append(this);
         return this;
     }
 
@@ -472,6 +486,7 @@ public class Record implements IRecord, Serializable {
         this.dataSet = dataSet;
     }
 
+    @Deprecated
     public DataSet locate() {
         int recNo = dataSet.getRecords().indexOf(this) + 1;
         dataSet.setRecNo(recNo);

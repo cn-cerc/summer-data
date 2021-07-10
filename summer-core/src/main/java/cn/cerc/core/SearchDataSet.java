@@ -3,101 +3,77 @@ package cn.cerc.core;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class SearchDataSet {
-    private DataSet dataSet;
-    private Map<String, Record> items;
-    private List<String> keys = new ArrayList<>();
+    private final DataSet dataSet;
+    private final HashMap<String, Record> items = new HashMap<>();
+    private final List<String> keys = new ArrayList<>();
     private String fields;
-
-    public SearchDataSet() {
-
-    }
 
     public SearchDataSet(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
-    public SearchDataSet add(DataSet dataSet) {
-        for (int i = dataSet.size(); i > 0; i--) {
-            add(dataSet.getRecords().get(i - 1));
-        }
-        return this;
-    }
-
-    public void add(Record record) {
-        if (items == null) {
-            items = new HashMap<>();
-        }
-        String key = null;
-        for (String field : keys) {
-            Object val = record.getField(field);
-            if (val == null) {
-                val = "null";
-            }
-            key = key == null ? val.toString() : key + ";" + val.toString();
-        }
-        items.put(key, record);
-    }
-
-    public Record get(Object value) {
-        if (items == null) {
-            items = new HashMap<>();
-            add(dataSet);
-        }
-        if (value == null) {
-            return items.get("null");
-        } else {
-            return items.get(value.toString());
-        }
-    }
-
-    public Record get(Object[] values) {
-        if (values == null || values.length == 0) {
-            throw new RuntimeException("keys can't be null or keys's length = 0 ");
-        }
-        if (keys.size() != values.length) {
-            throw new RuntimeException("参数名称 与 值列表长度不匹配");
-        }
-
-        String value = null;
-        for (Object obj : values) {
-            if (obj == null) {
-                obj = "null";
-            }
-            value = value == null ? obj.toString() : value + ";" + obj.toString();
-        }
-
-        return get(value);
-    }
-
-    public void clear() {
-        this.fields = null;
-        keys.clear();
-        items = null;
-    }
-
-    public String getFields() {
-        return fields;
-    }
-
-    public void setFields(String fields) {
+    public final Record get(String fields, Object[] values) {
         if (fields == null || "".equals(fields))
-            throw new RuntimeException("keyFields can't be null");
+            throw new RuntimeException("fields can't be null");
+        if (values.length == 0)
+            throw new RuntimeException("keys can't values length = 0 ");
+
         if (!fields.equals(this.fields)) {
             this.clear();
+            this.fields = fields;
             for (String key : fields.split(";")) {
                 if (dataSet.size() > 0 && dataSet.getFieldDefs().size() > 0 && !dataSet.exists(key)) {
                     throw new RuntimeException(String.format("field %s not find !", key));
                 }
                 keys.add(key);
             }
-            this.fields = fields;
+            // 重置索引
+            if (keys.size() > 0) {
+                for (int i = dataSet.size(); i > 0; i--)
+                    append(dataSet.getRecords().get(i - 1));
+            }
         }
+        if (keys.size() != values.length)
+            throw new RuntimeException("[参数名称]与[值]个数不匹配");
+
+        return items.get(buildObjectKey(values));
     }
 
-    public boolean existsKey(String field) {
-        return keys.contains(field);
+    public final void remove(Record record) {
+        items.remove(buildRecordKey(record));
     }
+
+    public final void append(Record record) {
+        items.put(buildRecordKey(record), record);
+    }
+
+    public final void clear() {
+        fields = null;
+        keys.clear();
+        items.clear();
+    }
+
+    private final String buildRecordKey(Record record) {
+        String result = null;
+        for (String field : keys) {
+            Object val = record.getField(field);
+            if (val == null)
+                val = "null";
+            result = result == null ? val.toString() : result + ";" + val.toString();
+        }
+        return result;
+    }
+
+    private final String buildObjectKey(Object[] values) {
+        String result = null;
+        for (Object obj : values) {
+            if (obj == null)
+                obj = "null";
+            result = result == null ? obj.toString() : result + ";" + obj.toString();
+        }
+        return result;
+    }
+
 }
