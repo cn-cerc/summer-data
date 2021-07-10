@@ -7,8 +7,8 @@ import cn.cerc.core.SqlText;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.mysql.MysqlQuery;
 
-@SuppressWarnings("serial")
 public class DaoQuery<T> extends MysqlQuery {
+    private static final long serialVersionUID = -4833075222571787291L;
     private Class<T> clazz;
 
     @SuppressWarnings("unchecked")

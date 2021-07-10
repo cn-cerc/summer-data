@@ -3,8 +3,8 @@ package cn.cerc.db.mysql;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.SqlQuery;
 
-@SuppressWarnings("serial")
 public class MysqlQuery extends SqlQuery implements IHandle {
+    private static final long serialVersionUID = -400986212909017761L;
     private MysqlServer server;
     private MysqlServer master;
     private MysqlServer salve;

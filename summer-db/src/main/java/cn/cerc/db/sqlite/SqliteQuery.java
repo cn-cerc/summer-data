@@ -3,8 +3,8 @@ package cn.cerc.db.sqlite;
 import cn.cerc.core.SqlText;
 import cn.cerc.db.core.SqlQuery;
 
-@SuppressWarnings("serial")
 public class SqliteQuery extends SqlQuery {
+    private static final long serialVersionUID = 927151029588126209L;
     private SqliteServer server = null;
 
     public SqliteQuery() {

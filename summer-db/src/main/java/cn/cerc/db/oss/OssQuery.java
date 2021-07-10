@@ -8,8 +8,8 @@ import cn.cerc.core.SqlText;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.queue.OssOperator;
 
-@SuppressWarnings("serial")
 public class OssQuery extends DataSet implements IHandle {
+    private static final long serialVersionUID = 3346060985794794816L;
     private OssConnection connection;
     private OssOperator operator;
     // 文件名称

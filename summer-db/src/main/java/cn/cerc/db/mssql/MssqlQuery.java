@@ -4,8 +4,8 @@ import cn.cerc.core.SqlText;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.SqlQuery;
 
-@SuppressWarnings("serial")
 public class MssqlQuery extends SqlQuery implements IHandle {
+    private static final long serialVersionUID = -3510548502879617750L;
     private MssqlServer server = null;
 
     public MssqlQuery() {
