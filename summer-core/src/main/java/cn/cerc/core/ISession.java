@@ -1,7 +1,5 @@
 package cn.cerc.core;
 
-import java.util.Set;
-
 public interface ISession extends AutoCloseable {
     public static final String TOKEN = "sid"; // session id
     public static final String EDITION = "edition";
@@ -64,9 +62,9 @@ public interface ISession extends AutoCloseable {
     /**
      * 警告：若授权码清单中包含了 Permission.ADMIN，则意味着拥有所有权限！
      * 
-     * @return 返回当前用户已取得的授权码清单，若返回null则表示不判断
+     * @return 返回当前用户已取得的授权码清单，若返回null则表示不判断，返回空字符串则等于Permission.USERS
      */
-    default Set<String> getPermissions() {
+    default String getPermissions() {
         return null;
     }
 }
