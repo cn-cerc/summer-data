@@ -317,12 +317,8 @@ public abstract class SqlOperator {
                     if (pks.length == 0)
                         throw new RuntimeException("获取不到主键PK");
                     for (String pk : pks) {
-                        if (pk.equalsIgnoreCase(this.updateKey)) {
-                            if (!pk.equals(this.updateKey))
-                                throw new RuntimeException(String.format("%s <> %s", this.updateKey, pk));
-                            this.searchKeys.add(pk);
-                            break;
-                        }
+                        this.searchKeys.add(pk);
+                        break;
                     }
                 }
             } catch (SQLException e) {
