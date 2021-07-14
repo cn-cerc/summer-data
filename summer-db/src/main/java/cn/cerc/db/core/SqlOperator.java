@@ -294,6 +294,8 @@ public abstract class SqlOperator {
                 def.setAutoincrement(true);
             if ("id".equals(this.updateKey))
                 def.setAutoincrement(true);
+            if ("id_".equals(this.updateKey))
+                def.setAutoincrement(true);
             def.setUpdateKey(true);
         }
 
