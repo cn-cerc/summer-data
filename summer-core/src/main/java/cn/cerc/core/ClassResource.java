@@ -3,42 +3,37 @@ package cn.cerc.core;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 应用级别的语言资源文件
+ */
 public class ClassResource {
     private static Map<String, LanguageResource> buffer = new ConcurrentHashMap<>();
-    private LanguageResource stringResource;
-    private String languageId;
+    private LanguageResource languageResource;
     private String classPath;
-    private String resourceFile;
-    private Object owner;
+    private String projectId;
 
-    public ClassResource(Class<?> owner, String resourceFile) {
+    public ClassResource(Class<?> owner, String projectId) {
         this.classPath = ((Class<?>) owner).getName();
-        this.resourceFile = resourceFile;
+        this.projectId = projectId;
     }
 
-    public String getString(int id, String string) {
-        if (stringResource == null) {
+    public String getString(int it, String defaultValue) {
+        if (languageResource == null) {
             initResource();
         }
-        return stringResource.getString(String.format("%s.%d", this.classPath, id), string);
+        return languageResource.getString(String.format("%s.%d", this.classPath, it), defaultValue);
+    }
+
+    public String getFile(String fileName) {
+        if (languageResource == null) {
+            initResource();
+        }
+        return languageResource.getString(String.format("%s.file.%s", this.classPath, fileName), fileName);
     }
 
     private void initResource() {
-        // 首次加载语言类型为空不加载，底部默认为空的语言LanguageResource会直接使用app.language
-        if (this.languageId != null) {
-            stringResource = buffer.get(getBuffKey(resourceFile, this.languageId));
-        }
-
-        if (stringResource == null) {
-            if (owner != null && owner instanceof IUserLanguage) {
-                this.languageId = ((IUserLanguage) owner).getLanguageId();
-                if (Utils.isEmpty(this.languageId)) {
-                    this.languageId = LanguageResource.appLanguage;
-                }
-            }
-            stringResource = new LanguageResource(resourceFile, this.languageId);
-            buffer.put(getBuffKey(resourceFile, this.languageId), stringResource);
-        }
+        languageResource = new LanguageResource(projectId, LanguageResource.appLanguage);
+        buffer.put(getBuffKey(projectId, LanguageResource.appLanguage), languageResource);
     }
 
     private String getBuffKey(String resourceFile, String languageId) {
@@ -48,12 +43,4 @@ public class ClassResource {
             return String.format("%s-%s", resourceFile, languageId);
         }
     }
-
-    public String getFile(String fileName) {
-        if (stringResource == null) {
-            initResource();
-        }
-        return stringResource.getString(String.format("%s.file.%s", this.classPath, fileName), fileName);
-    }
-
 }

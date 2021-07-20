@@ -49,8 +49,10 @@ public class LanguageResource {
     }
 
     private void initResource(String projectId, String userLanguage) {
-        if (this.userLanguage == userLanguage)
-            return;
+        if (!Utils.isEmpty(userLanguage)) {
+            if (this.userLanguage == userLanguage)
+                return;
+        }
 
         this.userLanguage = userLanguage;// 用户级的语言类型
         if (Utils.isEmpty(userLanguage)) {
@@ -84,16 +86,16 @@ public class LanguageResource {
         }
     }
 
-    public String getString(String key, String text) {
+    public String getString(String key, String defaultValue) {
         if (resourceProperties == null)
-            return text;
+            return defaultValue;
 
         if (!resourceProperties.containsKey(key)) {
             log.error("resourceFileName {}, appLanguage {}, userLanguage {}, resource key {}, text {}, does not exist.",
-                    resourceFileName, appLanguage, userLanguage, key, text);
+                    resourceFileName, appLanguage, userLanguage, key, defaultValue);
         }
 
-        return resourceProperties.getProperty(key, text);
+        return resourceProperties.getProperty(key, defaultValue);
     }
 
     public String getCurrentLanguage() {
