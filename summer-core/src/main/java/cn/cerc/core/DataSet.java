@@ -591,9 +591,10 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     @Deprecated
     public final DataSet setJSON(String json) {
         DataSet src = buildGson().fromJson(json, DataSet.class);
-        if (src != null)
-            src.appendDataSet(src);
-        else
+        if (src != null) {
+            this.appendDataSet(src);
+            this.getHead().copyValues(src.getHead());
+        } else
             this.close();
         return this;
     }
@@ -652,7 +653,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
 
     // 支持对象序列化
     private void writeObject(ObjectOutputStream out) throws IOException {
-        String json = this.getJSON();
+        String json = this.toString();
         int strLen = json.length();
         out.writeInt(strLen);
         out.write(json.getBytes(StandardCharsets.UTF_8));
@@ -926,16 +927,16 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         ds1.onAfterDelete((rs) -> {
             System.out.println("onAfterDelete: " + rs.toString());
         });
-        System.out.println(ds1.getJSON());
+        System.out.println(ds1.toString());
 
         ds1.setState(1);
-        System.out.println(ds1.getJSON());
+        System.out.println(ds1.toString());
 
         ds1.setMessage("hello");
-        System.out.println(ds1.getJSON());
+        System.out.println(ds1.toString());
 
         ds1.getHead().setField("token", "xxx");
-        System.out.println(ds1.getJSON());
+        System.out.println(ds1.toString());
 
         ds1.append();
         ds1.setField("code", "1");
