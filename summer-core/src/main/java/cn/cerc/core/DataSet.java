@@ -66,15 +66,6 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         super();
     }
 
-    public DataSet(String json) {
-        super();
-        DataSet src = buildGson().fromJson(json, DataSet.class);
-        if (src != null)
-            this.appendDataSet(src);
-        else
-            this.close();
-    }
-
     protected Record newRecord() {
         Record record = new Record(this.fieldDefs);
         record.setDataSet(this);
@@ -583,22 +574,6 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         return head;
     }
 
-    @Deprecated
-    public final String getJSON() {
-        return buildGson().toJson(this);
-    }
-
-    @Deprecated
-    public final DataSet setJSON(String json) {
-        DataSet src = buildGson().fromJson(json, DataSet.class);
-        if (src != null) {
-            this.appendDataSet(src);
-            this.getHead().copyValues(src.getHead());
-        } else
-            this.close();
-        return this;
-    }
-
     public final static DataSet fromJson(String json) {
         if (Utils.isEmpty(json))
             return new DataSet();
@@ -606,9 +581,41 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
             return buildGson().fromJson(json, DataSet.class);
     }
 
+    public final String toJson() {
+        return buildGson().toJson(this);
+    }
+
+    @Deprecated
+    public final String getJSON() {
+        return buildGson().toJson(this);
+    }
+
     @Override
     public final String toString() {
         return buildGson().toJson(this);
+    }
+
+    @Deprecated
+    public final DataSet setJSON(String json) {
+        DataSet src = buildGson().fromJson(json, DataSet.class);
+        if (src != null) {
+            this.appendDataSet(src, true);
+        } else
+            this.close();
+        return this;
+    }
+
+    /**
+     * @param source      要复制的数据源
+     * @param includeHead 是否连头部一起复制
+     * @return 返回复制结果集
+     */
+    public DataSet appendDataSet(DataSet source, boolean includeHead) {
+        this.appendDataSet(source);
+        if (includeHead) {
+            this.getHead().copyValues(source.getHead(), source.getHead().getFieldDefs());
+        }
+        return this;
     }
 
     public DataSet appendDataSet(DataSet source) {
@@ -636,24 +643,9 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         return this;
     }
 
-    /**
-     * @param source      要复制的数据源
-     * @param includeHead 是否连头部一起复制
-     * @return 返回复制结果集
-     */
-    public DataSet appendDataSet(DataSet source, boolean includeHead) {
-        this.appendDataSet(source);
-
-        if (includeHead) {
-            this.getHead().copyValues(source.getHead(), source.getHead().getFieldDefs());
-        }
-
-        return this;
-    }
-
     // 支持对象序列化
     private void writeObject(ObjectOutputStream out) throws IOException {
-        String json = this.toString();
+        String json = this.toJson();
         int strLen = json.length();
         out.writeInt(strLen);
         out.write(json.getBytes(StandardCharsets.UTF_8));
@@ -927,16 +919,16 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         ds1.onAfterDelete((rs) -> {
             System.out.println("onAfterDelete: " + rs.toString());
         });
-        System.out.println(ds1.toString());
+        System.out.println(ds1.toJson());
 
         ds1.setState(1);
-        System.out.println(ds1.toString());
+        System.out.println(ds1.toJson());
 
         ds1.setMessage("hello");
-        System.out.println(ds1.toString());
+        System.out.println(ds1.toJson());
 
         ds1.getHead().setField("token", "xxx");
-        System.out.println(ds1.toString());
+        System.out.println(ds1.toJson());
 
         ds1.append();
         ds1.setField("code", "1");
@@ -974,10 +966,10 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         ds1.getHead().getFieldDefs().add("title").setName("标题").setType("varchar(30)");
 
         ds1.metaInfo = true;
-        System.out.println(ds1.toString());
+        System.out.println(ds1.toJson());
 
-        DataSet ds2 = DataSet.fromJson(ds1.toString());
-        System.out.println(ds2.toString());
+        DataSet ds2 = DataSet.fromJson(ds1.toJson());
+        System.out.println(ds2.toJson());
 
         DataSet ds3 = new DataSet();
         ds3.getHead().getFieldDefs().add("title").setName("标题").setType("varchar(30)");
@@ -986,7 +978,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         ds3.getFieldDefs().add("name").setName("名称").setType("varchar(30)");
         ds3.setMetaInfo(true);
 
-        System.out.println(ds3.toString());
+        System.out.println(ds3.toJson());
 
         System.out.println(new Gson().toJson(TDateTime.now()));
         System.out.println(new Gson().toJson(new Date()));
