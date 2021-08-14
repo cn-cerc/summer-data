@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -13,7 +14,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,9 +22,16 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
-import cn.cerc.core.FieldMeta.FieldType;
+import cn.cerc.core.FieldMeta.FieldKind;
 
 public class DataSet implements IRecord, Serializable, Iterable<Record> {
     private static final Logger log = LoggerFactory.getLogger(DataSet.class);
@@ -50,7 +57,10 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     private boolean batchSave = false;
     // 仅当batchSave为true时，delList才有记录存在
     protected List<Record> delList = new ArrayList<>();
+    // 搜索加速器
     private SearchDataSet search;
+    // gson时，是否输出meta讯息
+    private boolean metaInfo;
 
     public DataSet() {
         super();
@@ -569,111 +579,31 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         return head;
     }
 
+    @Deprecated
     public final String getJSON() {
-        StringBuilder builder = new StringBuilder();
-
-        builder.append("{");
-
-        if (this.state != 0)
-            builder.append("\"state\":").append(this.state);
-
-        if (this.message != null) {
-            if (builder.length() > 1)
-                builder.append(",");
-            builder.append("\"message\":\"").append(this.message).append("\"");
-        }
-
-        if (head != null) {
-            if (builder.length() > 1)
-                builder.append(",");
-            if (head.size() > 0)
-                builder.append("\"head\":").append(head.toString());
-        }
-        if (this.size() > 0) {
-            List<String> fields = this.getFieldDefs().getFields();
-            Gson gson = new Gson();
-            if (builder.length() > 1)
-                builder.append(",");
-            builder.append("\"dataset\":[").append(gson.toJson(fields));
-            for (int i = 0; i < this.size(); i++) {
-                Record record = this.getRecords().get(i);
-                Map<String, Object> tmp1 = record.getItems();
-                Map<String, Object> tmp2 = new LinkedHashMap<String, Object>();
-                for (String field : fields) {
-                    Object obj = tmp1.get(field);
-                    if (obj == null) {
-                        tmp2.put(field, "{}");
-                    } else if (obj instanceof TDateTime) {
-                        tmp2.put(field, obj.toString());
-                    } else if (obj instanceof Date) {
-                        tmp2.put(field, (new TDateTime((Date) obj)).toString());
-                    } else {
-                        tmp2.put(field, obj);
-                    }
-                }
-                builder.append(",").append(gson.toJson(tmp2.values()));
-            }
-            builder.append("]");
-        }
-        builder.append("}");
-        return builder.toString();
+        return buildGson().toJson(this);
     }
 
+    @Deprecated
     public final DataSet setJSON(String json) {
-        if (Utils.isEmpty(json)) {
-            close();
-            return this;
-        }
-
-        Gson gson = new GsonBuilder().serializeNulls().create();
-        Map<String, Object> jsonmap = gson.fromJson(json, new TypeToken<Map<String, Object>>() {
-        }.getType());
-
-        if (jsonmap.containsKey("state")) {
-            String value = String.valueOf(jsonmap.get("state"));
-            this.setState(Integer.parseInt(value.split("\\.")[0]));
-        }
-
-        if (jsonmap.containsKey("message"))
-            this.setMessage(String.valueOf(jsonmap.get("message")));
-
-        if (jsonmap.containsKey("head"))
-            this.getHead().setJSON(jsonmap.get("head"));
-
-        if (jsonmap.containsKey("dataset")) {
-            @SuppressWarnings("rawtypes")
-            ArrayList dataset = (ArrayList) jsonmap.get("dataset");
-            if (dataset != null && dataset.size() > 1) {
-                @SuppressWarnings("rawtypes")
-                ArrayList fields = (ArrayList) dataset.get(0);
-                for (int i = 1; i < dataset.size(); i++) {
-                    @SuppressWarnings("rawtypes")
-                    ArrayList Recordj = (ArrayList) dataset.get(i);
-                    Record record = this.append().getCurrent();
-                    for (int j = 0; j < fields.size(); j++) {
-                        Object obj = Recordj.get(j);
-                        if (obj instanceof Double) {
-                            double tmp = (double) obj;
-                            if (tmp >= Integer.MIN_VALUE && tmp <= Integer.MAX_VALUE) {
-                                Integer val = (int) tmp;
-                                if (tmp == val) {
-                                    obj = val;
-                                }
-                            }
-                        }
-                        record.setField(fields.get(j).toString(), obj);
-                    }
-                    this.post();
-                }
-                this.first();
-            }
-        }
+        DataSet src = buildGson().fromJson(json, DataSet.class);
+        if (src != null)
+            src.appendDataSet(src);
+        else
+            this.close();
         return this;
+    }
+
+    public final static DataSet fromJson(String json) {
+        if (Utils.isEmpty(json))
+            return new DataSet();
+        else
+            return buildGson().fromJson(json, DataSet.class);
     }
 
     @Override
     public final String toString() {
-        return getJSON();
+        return buildGson().toJson(this);
     }
 
     public DataSet appendDataSet(DataSet source) {
@@ -780,8 +710,8 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
      */
     public final void disableStorage() {
         this.getFieldDefs().forEach(meta -> {
-            if (meta.getType() == FieldType.Storage)
-                meta.setType(FieldType.Memory);
+            if (meta.getKind() == FieldKind.Storage)
+                meta.setKind(FieldKind.Memory);
         });
         this.setStorage(false);
     }
@@ -790,47 +720,292 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         return search;
     }
 
+    public static final Gson buildGson() {
+        GsonInterface<DataSet> gsonDataSet = new GsonInterface<DataSet>() {
+            @Override
+            public JsonElement serialize(DataSet src, Type typeOfSrc, JsonSerializationContext context) {
+                JsonObject root = new JsonObject();
+                if (src.state != 0)
+                    root.addProperty("state", src.state);
+                if (src.message != null)
+                    root.addProperty("message", src.message);
+
+                // 输出metaInfo
+                if (src.metaInfo) {
+                    JsonObject meta = new JsonObject();
+                    if (src.head != null && src.head.getFieldDefs().size() > 0) {
+                        JsonArray head = new JsonArray();
+                        src.head.getFieldDefs().forEach(def -> head.add(context.serialize(def)));
+                        meta.add("head", head);
+                    }
+                    JsonArray body = new JsonArray();
+                    src.getFieldDefs().forEach(def -> body.add(context.serialize(def)));
+                    meta.add("body", body);
+                    root.add("meta", meta);
+                }
+
+                if (src.head != null && src.head.size() > 0) {
+                    JsonObject item = new JsonObject();
+                    src.head.getFieldDefs().forEach(def -> {
+                        String field = def.getCode();
+                        Object obj = src.head.getField(field);
+                        if (obj == null)
+                            item.addProperty(field, "{}");
+                        else
+                            item.add(field, context.serialize(obj));
+                    });
+                    root.add("head", item);
+                }
+
+                if (src.size() > 0) {
+                    JsonArray body = new JsonArray();
+                    // 添加字段定义
+                    body.add(context.serialize(src.getFieldDefs()));
+                    src.records.forEach(dataRow -> body.add(context.serialize(dataRow)));
+                    root.add("body", body);
+                }
+
+                return root;
+            }
+
+            @Override
+            public DataSet deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                    throws JsonParseException {
+                DataSet ds = new DataSet();
+                JsonObject root = json.getAsJsonObject();
+                if (root.size() == 0)
+                    return ds;
+                if (root.has("state"))
+                    ds.state = root.get("state").getAsInt();
+                if (root.has("message"))
+                    ds.message = root.get("message").getAsString();
+
+                if (root.has("meta")) {
+                    JsonObject meta = root.get("meta").getAsJsonObject();
+                    JsonArray head = meta.get("head").getAsJsonArray();
+                    head.forEach(item -> {
+                        FieldMeta def = context.deserialize(item, FieldMeta.class);
+                        ds.getHead().getFieldDefs().add(def);
+                    });
+                    JsonArray body = meta.get("body").getAsJsonArray();
+                    body.forEach(item -> {
+                        FieldMeta def = context.deserialize(item, FieldMeta.class);
+                        ds.getFieldDefs().add(def);
+                    });
+                    ds.metaInfo = true;
+                }
+
+                if (root.has("head")) {
+                    JsonObject head = root.get("head").getAsJsonObject();
+                    head.keySet().forEach(key -> {
+                        Object obj = context.deserialize(head.get(key), Object.class);
+                        ds.getHead().setField(key, obj);
+                    });
+                }
+
+                JsonArray body = null;
+                if (root.has("body"))
+                    body = root.get("body").getAsJsonArray();
+                else if (root.has("dataset"))
+                    body = root.get("dataset").getAsJsonArray();
+                if (body != null) {
+                    JsonArray defs = null;
+                    for (int i = 0; i < body.size(); i++) {
+                        JsonArray item = body.get(i).getAsJsonArray();
+                        if (i == 0) {
+                            item.forEach(field -> ds.getFieldDefs().add(field.getAsString()));
+                            defs = item;
+                        } else {
+                            Record current = ds.append().getCurrent();
+                            for (int j = 0; j < defs.size(); j++) {
+                                Object obj = context.deserialize(item.get(j), Object.class);
+                                current.setField(defs.get(j).getAsString(), obj);
+                            }
+                        }
+                    }
+                }
+                return ds;
+            }
+        };
+
+        JsonSerializer<FieldDefs> gsonFieldDefs = new JsonSerializer<FieldDefs>() {
+            @Override
+            public JsonElement serialize(FieldDefs src, Type typeOfSrc, JsonSerializationContext context) {
+                JsonArray root = new JsonArray();
+                src.forEach(item -> root.add(item.getCode()));
+                return root;
+            }
+        };
+
+        GsonInterface<FieldMeta> gsonFieldMeta = new GsonInterface<FieldMeta>() {
+            @Override
+            public JsonElement serialize(FieldMeta src, Type typeOfSrc, JsonSerializationContext context) {
+                JsonObject json = new JsonObject();
+                JsonArray define = new JsonArray();
+                define.add(src.getName());
+                define.add(src.getType());
+                if (src.getRemark() != null)
+                    define.add(src.getRemark());
+                json.add(src.getCode(), define);
+                return json;
+            }
+
+            @Override
+            public FieldMeta deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                    throws JsonParseException {
+                JsonObject root = json.getAsJsonObject();
+
+                String[] list = root.keySet().toArray(new String[0]);
+                String field = list[0];
+
+                JsonArray def = root.get(field).getAsJsonArray();
+                FieldMeta meta = new FieldMeta(field);
+                meta.setName(def.get(0).getAsString());
+                meta.setType(def.get(1).getAsString());
+                if (def.size() > 2)
+                    meta.setRemark(def.get(2).getAsString());
+
+                return meta;
+            }
+
+        };
+
+        JsonSerializer<Record> gsonRecord = new JsonSerializer<Record>() {
+            @Override
+            public JsonElement serialize(Record src, Type typeOfSrc, JsonSerializationContext context) {
+                JsonArray item = new JsonArray();
+                src.getFieldDefs().forEach(def -> {
+                    Object obj = src.getField(def.getCode());
+                    if (obj == null) {
+                        item.add("{}");
+                    } else {
+                        item.add(context.serialize(obj));
+                    }
+                });
+                return item;
+            }
+        };
+
+        JsonSerializer<TDateTime> gsonTDateTime = new JsonSerializer<TDateTime>() {
+            @Override
+            public JsonElement serialize(TDateTime src, Type typeOfSrc, JsonSerializationContext context) {
+                return new JsonPrimitive(src.toString());
+            }
+        };
+
+        JsonSerializer<Date> gsonDate = new JsonSerializer<Date>() {
+            @Override
+            public JsonElement serialize(Date src, Type typeOfSrc, JsonSerializationContext context) {
+                return new JsonPrimitive((new TDateTime(src)).toString());
+            }
+        };
+
+        JsonSerializer<Double> gsonDouble = new JsonSerializer<Double>() {
+            @Override
+            public JsonElement serialize(Double src, Type typeOfSrc, JsonSerializationContext context) {
+                if (src == src.longValue())
+                    return new JsonPrimitive(src.longValue());
+                return new JsonPrimitive(src);
+            }
+        };
+
+        return new GsonBuilder().registerTypeAdapter(DataSet.class, gsonDataSet)
+                .registerTypeAdapter(FieldDefs.class, gsonFieldDefs).registerTypeAdapter(FieldMeta.class, gsonFieldMeta)
+                .registerTypeAdapter(Record.class, gsonRecord).registerTypeAdapter(TDateTime.class, gsonTDateTime)
+                .registerTypeAdapter(Date.class, gsonDate).registerTypeAdapter(Double.class, gsonDouble)
+                .serializeNulls().create();
+    }
+
+    public final boolean isMetaInfo() {
+        return metaInfo;
+    }
+
+    public final void setMetaInfo(boolean metaInfo) {
+        this.metaInfo = metaInfo;
+    }
+
     public static void main(String[] args) {
-        DataSet dataSet = new DataSet();
-        dataSet.onAppend((ds) -> {
+        DataSet ds1 = new DataSet();
+        ds1.onAppend((ds) -> {
             ds.setField("it", ds.size());
         });
-        dataSet.onBeforePost((rs) -> {
+        ds1.onBeforePost((rs) -> {
             System.out.println("onBeforePost: " + rs.toString());
         });
-        dataSet.onAfterPost((rs) -> {
+        ds1.onAfterPost((rs) -> {
             System.out.println("onAfterPost: " + rs.toString());
         });
-        dataSet.onBeforeDelete((rs) -> {
+        ds1.onBeforeDelete((rs) -> {
             System.out.println("onBeforeDelete: " + rs.toString());
         });
-        dataSet.onAfterDelete((rs) -> {
+        ds1.onAfterDelete((rs) -> {
             System.out.println("onAfterDelete: " + rs.toString());
         });
-        System.out.println(dataSet.getJSON());
+        System.out.println(ds1.getJSON());
 
-        dataSet.setState(1);
-        System.out.println(dataSet.getJSON());
+        ds1.setState(1);
+        System.out.println(ds1.getJSON());
 
-        dataSet.setMessage("hello");
-        System.out.println(dataSet.getJSON());
+        ds1.setMessage("hello");
+        System.out.println(ds1.getJSON());
 
-        dataSet.getHead().setField("token", "xxx");
-        System.out.println(dataSet.getJSON());
+        ds1.getHead().setField("token", "xxx");
+        System.out.println(ds1.getJSON());
 
-        dataSet.append();
-        dataSet.setField("code", "1");
-        dataSet.setField("name", "a");
-        dataSet.post();
-        dataSet.append();
-        dataSet.setField("code", "2");
-        dataSet.setField("name", "b");
-        dataSet.post();
-        dataSet.delete();
+        ds1.append();
+        ds1.setField("code", "1");
+        ds1.setField("name", "a");
+        ds1.setField("value", 10);
 
-        System.out.println(dataSet.getJSON());
-        DataSet ds2 = new DataSet();
-        ds2.setJSON(dataSet.toString());
+        List<String> list = new ArrayList<>();
+        list.add("a");
+        list.add("b");
+        ds1.setField("code", list);
+//
+//        DataSet ds0 = new DataSet();
+//        ds0.append();
+//        ds0.setField("partCode_", "p001");
+//        ds1.setField("name", ds0);
+
+        ds1.post();
+        ds1.append();
+        ds1.setField("code", "2");
+        ds1.setField("name", "b");
+        ds1.post();
+//        ds1.delete();
+
+        ds1.setState(1);
+        ds1.setMessage("test");
+
+        ds1.getHead().setField("title", "test");
+        ds1.getHead().setField("tbDate", TDateTime.now());
+        ds1.getHead().setField("appDate", new Date());
+        ds1.getHead().setField("user", null);
+
+        ds1.getFieldDefs().add("it").setName("序").setType("integer").setRemark("自动赋值");
+        ds1.getFieldDefs().add("code").setName("编号").setType("varchar(30)");
+        ds1.getFieldDefs().add("name").setName("名称").setType("varchar(30)");
+        ds1.getHead().getFieldDefs().add("title").setName("标题").setType("varchar(30)");
+
+        ds1.metaInfo = true;
+        System.out.println(ds1.toString());
+
+        DataSet ds2 = DataSet.fromJson(ds1.toString());
+        System.out.println(ds2.toString());
+
+        DataSet ds3 = new DataSet();
+        ds3.getHead().getFieldDefs().add("title").setName("标题").setType("varchar(30)");
+        ds3.getFieldDefs().add("it").setName("序").setType("integer").setRemark("自动增加");
+        ds3.getFieldDefs().add("code").setName("编号").setType("varchar(30)");
+        ds3.getFieldDefs().add("name").setName("名称").setType("varchar(30)");
+        ds3.setMetaInfo(true);
+
+        System.out.println(ds3.toString());
+
+        System.out.println(new Gson().toJson(TDateTime.now()));
+        System.out.println(new Gson().toJson(new Date()));
+
+        System.out.println(DataSet.fromJson("{}"));
     }
 
 }

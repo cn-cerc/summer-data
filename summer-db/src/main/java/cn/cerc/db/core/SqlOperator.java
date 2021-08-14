@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.cerc.core.ClassResource;
 import cn.cerc.core.FieldMeta;
-import cn.cerc.core.FieldMeta.FieldType;
+import cn.cerc.core.FieldMeta.FieldKind;
 import cn.cerc.core.Record;
 import cn.cerc.core.Utils;
 import cn.cerc.db.SummerDB;
@@ -85,7 +85,7 @@ public abstract class SqlOperator {
             int i = 0;
             for (String field : record.getItems().keySet()) {
                 FieldMeta meta = record.getFieldDefs().getItem(field);
-                if (meta.getType() == FieldType.Storage) {
+                if (meta.getKind() == FieldKind.Storage) {
                     if (!meta.isAutoincrement()) {
                         i++;
                         if (i > 1) {
@@ -99,7 +99,7 @@ public abstract class SqlOperator {
             i = 0;
             for (String field : record.getItems().keySet()) {
                 FieldMeta meta = record.getFieldDefs().getItem(field);
-                if (meta.getType() == FieldType.Storage) {
+                if (meta.getKind() == FieldKind.Storage) {
                     if (!meta.isAutoincrement()) {
                         i++;
                         if (i == 1) {
@@ -127,7 +127,7 @@ public abstract class SqlOperator {
 
             boolean find = false;
             for (FieldMeta meta : record.getFieldDefs()) {
-                if ((meta.getType() == FieldType.Storage) && meta.isAutoincrement()) {
+                if ((meta.getKind() == FieldKind.Storage) && meta.isAutoincrement()) {
                     if (find)
                         throw new RuntimeException("only support one Autoincrement field");
                     find = true;
@@ -167,7 +167,7 @@ public abstract class SqlOperator {
             int i = 0;
             for (String field : delta.keySet()) {
                 FieldMeta meta = record.getFieldDefs().getItem(field);
-                if (meta.getType() == FieldType.Storage) {
+                if (meta.getKind() == FieldKind.Storage) {
                     if (!meta.isAutoincrement()) {
                         i++;
                         bs.append(i == 1 ? " set " : ",");
@@ -188,7 +188,7 @@ public abstract class SqlOperator {
             int pkCount = 0;
             for (String field : searchKeys) {
                 FieldMeta meta = record.getFieldDefs().getItem(field);
-                if (meta.getType() == FieldType.Storage) {
+                if (meta.getKind() == FieldKind.Storage) {
                     i++;
                     bs.append(i == 1 ? " where " : " and ").append(field);
                     Object value = delta.containsKey(field) ? delta.get(field) : record.getField(field);
@@ -207,7 +207,7 @@ public abstract class SqlOperator {
                 for (String field : delta.keySet()) {
                     if (!searchKeys.contains(field)) {
                         FieldMeta meta = record.getFieldDefs().getItem(field);
-                        if (meta.getType() == FieldType.Storage) {
+                        if (meta.getKind() == FieldKind.Storage) {
                             i++;
                             bs.append(i == 1 ? " where " : " and ").append(field);
                             Object value = delta.get(field);
@@ -251,7 +251,7 @@ public abstract class SqlOperator {
             Map<String, Object> delta = record.getDelta();
             for (String field : searchKeys) {
                 FieldMeta meta = record.getFieldDefs().getItem(field);
-                if (meta.getType() == FieldType.Storage) {
+                if (meta.getKind() == FieldKind.Storage) {
                     Object value = delta.containsKey(field) ? delta.get(field) : record.getField(field);
                     if (value == null)
                         throw new RuntimeException("primary key is null");
@@ -289,7 +289,7 @@ public abstract class SqlOperator {
             }
         }
 
-        if (def != null && def.getType() == FieldType.Storage) {
+        if (def != null && def.getKind() == FieldKind.Storage) {
             if ("UID_".equals(this.updateKey))
                 def.setAutoincrement(true);
             if ("id".equals(this.updateKey))

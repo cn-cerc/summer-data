@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import cn.cerc.core.FieldMeta.FieldType;
+import cn.cerc.core.FieldMeta.FieldKind;
 import cn.cerc.core.ISession;
 import cn.cerc.core.Record;
 import cn.cerc.core.SqlText;
@@ -48,12 +48,12 @@ public class OperatorTest implements IHandle {
         obj.setTableName("temp");
         for (int i = 0; i < maxTest; i++) {
             Record record = new Record();
-            record.getFieldDefs().add("UID_", FieldType.Storage);
-            record.getFieldDefs().add("Code_", FieldType.Storage);
+            record.getFieldDefs().add("UID_", FieldKind.Storage);
+            record.getFieldDefs().add("Code_", FieldKind.Storage);
             record.setField("Code_", "code1");
-            record.getFieldDefs().add("Name_", FieldType.Storage);
+            record.getFieldDefs().add("Name_", FieldKind.Storage);
             record.setField("Name_", "new");
-            record.getFieldDefs().add("Value_", FieldType.Storage);
+            record.getFieldDefs().add("Value_", FieldKind.Storage);
             record.setField("Value_", i + 1);
             obj.insert(this.getMysql().getClient().getConnection(), record);
         }

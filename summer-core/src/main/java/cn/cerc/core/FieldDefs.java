@@ -8,7 +8,7 @@ import java.util.List;
 
 import com.google.gson.Gson;
 
-import cn.cerc.core.FieldMeta.FieldType;
+import cn.cerc.core.FieldMeta.FieldKind;
 
 public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     private static final long serialVersionUID = 7478897050846245325L;
@@ -28,31 +28,30 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return result;
     }
 
-    public List<String> getFields(FieldType fieldType) {
+    public List<String> getFields(FieldKind fieldType) {
         List<String> result = new ArrayList<>();
         for (FieldMeta meta : items) {
-            if (fieldType == meta.getType())
+            if (fieldType == meta.getKind())
                 result.add(meta.getCode());
         }
         return result;
     }
 
-    public FieldDefs add(String fieldCode) {
-        items.add(new FieldMeta(fieldCode));
-        return this;
+    public FieldMeta add(String fieldCode) {
+        FieldMeta item = new FieldMeta(fieldCode);
+        return items.add(item) ? item : this.getItem(fieldCode);
     }
 
-    public FieldDefs add(FieldMeta field) {
-        items.add(field);
-        return this;
+    public FieldMeta add(String fieldCode, FieldKind fieldType) {
+        FieldMeta item = new FieldMeta(fieldCode, fieldType);
+        return items.add(item) ? item : this.getItem(fieldCode);
     }
 
-    public FieldMeta add(String fieldCode, FieldType fieldType) {
-        FieldMeta meta = new FieldMeta(fieldCode, fieldType);
-        items.add(meta);
-        return meta;
+    public FieldMeta add(FieldMeta item) {
+        return items.add(item) ? item : this.getItem(item.getCode());
     }
 
+    @Deprecated
     public void add(String... strs) {
         for (String fieldCode : strs)
             this.add(fieldCode);
@@ -71,11 +70,6 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return this.items.iterator();
     }
 
-    @Override
-    public String toString() {
-        return new Gson().toJson(items);
-    }
-
     public void delete(String fieldCode) {
         FieldMeta field = new FieldMeta(fieldCode);
         items.remove(field);
@@ -89,19 +83,9 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return null;
     }
 
-    public static void main(String[] args) {
-        FieldDefs defs = new FieldDefs();
-        defs.add("id", FieldType.Storage);
-        defs.add("id");
-        defs.getItem("id").setUpdateKey(true).setAutoincrement(true);
-        System.out.println(defs.size());
-        defs.add("name");
-        System.out.println(defs.exists("id"));
-        System.out.println(defs.toString());
-        defs.delete("name");
-        System.out.println(defs.toString());
-        defs.delete("name");
-        System.out.println(defs.toString());
+    @Override
+    public String toString() {
+        return new Gson().toJson(this);
     }
 
 }
