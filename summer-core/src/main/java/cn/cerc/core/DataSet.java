@@ -42,7 +42,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     private int state = 0;
     private String message = null;
     private FieldDefs fieldDefs = new FieldDefs();
-    private List<Record> records = new ArrayList<Record>();
+    private List<Record> records = new ArrayList<>();
     private List<DataSetInsertEvent> appendListener;
     private List<DataSetBeforeUpdateEvent> beforePostListener;
     private List<DataSetAfterUpdateEvent> afterPostListener;
@@ -66,9 +66,13 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         super();
     }
 
-    public DataSet(String jsonData) {
+    public DataSet(String json) {
         super();
-        this.setJSON(jsonData);
+        DataSet src = buildGson().fromJson(json, DataSet.class);
+        if (src != null)
+            this.appendDataSet(src);
+        else
+            this.close();
     }
 
     protected Record newRecord() {
@@ -227,7 +231,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
 
     /**
      * 使用此方法只允许取数据，不允许进行变更
-     * 
+     *
      * @return List
      */
     public List<Record> getRecords() {
@@ -720,7 +724,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         return search;
     }
 
-    public static final Gson buildGson() {
+    public static Gson buildGson() {
         GsonInterface<DataSet> gsonDataSet = new GsonInterface<DataSet>() {
             @Override
             public JsonElement serialize(DataSet src, Type typeOfSrc, JsonSerializationContext context) {
@@ -828,13 +832,10 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
             }
         };
 
-        JsonSerializer<FieldDefs> gsonFieldDefs = new JsonSerializer<FieldDefs>() {
-            @Override
-            public JsonElement serialize(FieldDefs src, Type typeOfSrc, JsonSerializationContext context) {
-                JsonArray root = new JsonArray();
-                src.forEach(item -> root.add(item.getCode()));
-                return root;
-            }
+        JsonSerializer<FieldDefs> gsonFieldDefs = (src, typeOfSrc, context) -> {
+            JsonArray root = new JsonArray();
+            src.forEach(item -> root.add(item.getCode()));
+            return root;
         };
 
         GsonInterface<FieldMeta> gsonFieldMeta = new GsonInterface<FieldMeta>() {
@@ -870,43 +871,27 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
 
         };
 
-        JsonSerializer<Record> gsonRecord = new JsonSerializer<Record>() {
-            @Override
-            public JsonElement serialize(Record src, Type typeOfSrc, JsonSerializationContext context) {
-                JsonArray item = new JsonArray();
-                src.getFieldDefs().forEach(def -> {
-                    Object obj = src.getField(def.getCode());
-                    if (obj == null) {
-                        item.add("{}");
-                    } else {
-                        item.add(context.serialize(obj));
-                    }
-                });
-                return item;
-            }
+        JsonSerializer<Record> gsonRecord = (src, typeOfSrc, context) -> {
+            JsonArray item = new JsonArray();
+            src.getFieldDefs().forEach(def -> {
+                Object obj = src.getField(def.getCode());
+                if (obj == null) {
+                    item.add("{}");
+                } else {
+                    item.add(context.serialize(obj));
+                }
+            });
+            return item;
         };
 
-        JsonSerializer<TDateTime> gsonTDateTime = new JsonSerializer<TDateTime>() {
-            @Override
-            public JsonElement serialize(TDateTime src, Type typeOfSrc, JsonSerializationContext context) {
-                return new JsonPrimitive(src.toString());
-            }
-        };
+        JsonSerializer<TDateTime> gsonTDateTime = (src, typeOfSrc, context) -> new JsonPrimitive(src.toString());
 
-        JsonSerializer<Date> gsonDate = new JsonSerializer<Date>() {
-            @Override
-            public JsonElement serialize(Date src, Type typeOfSrc, JsonSerializationContext context) {
-                return new JsonPrimitive((new TDateTime(src)).toString());
-            }
-        };
+        JsonSerializer<Date> gsonDate = (src, typeOfSrc, context) -> new JsonPrimitive((new TDateTime(src)).toString());
 
-        JsonSerializer<Double> gsonDouble = new JsonSerializer<Double>() {
-            @Override
-            public JsonElement serialize(Double src, Type typeOfSrc, JsonSerializationContext context) {
-                if (src == src.longValue())
-                    return new JsonPrimitive(src.longValue());
-                return new JsonPrimitive(src);
-            }
+        JsonSerializer<Double> gsonDouble = (src, typeOfSrc, context) -> {
+            if (src == src.longValue())
+                return new JsonPrimitive(src.longValue());
+            return new JsonPrimitive(src);
         };
 
         return new GsonBuilder().registerTypeAdapter(DataSet.class, gsonDataSet)
