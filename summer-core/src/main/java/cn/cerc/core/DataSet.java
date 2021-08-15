@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,10 +27,12 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.google.gson.annotations.Expose;
 
 import cn.cerc.core.FieldMeta.FieldKind;
 
 public class DataSet implements IRecord, Serializable, Iterable<Record> {
+    @Expose
     private static final Logger log = LoggerFactory.getLogger(DataSet.class);
     private static final long serialVersionUID = 873159747066855363L;
     private static final ClassResource res = new ClassResource(DataSet.class, SummerCore.ID);
@@ -578,12 +581,14 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     }
 
     public final String toJson() {
-        return buildGson().toJson(this);
+//        return buildGson().toJson(this);
+        return getJSON();
     }
 
     @Override
     public final String toString() {
-        return buildGson().toJson(this);
+//        return buildGson().toJson(this);
+        return getJSON();
     }
 
     /**
@@ -679,6 +684,56 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
 
     public SearchDataSet getSearch() {
         return search;
+    }
+
+    public final String getJSON() {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("{");
+
+        if (this.state != 0)
+            builder.append("\"state\":").append(this.state);
+
+        if (this.message != null) {
+            if (builder.length() > 1)
+                builder.append(",");
+            builder.append("\"message\":\"").append(this.message).append("\"");
+        }
+
+        if (head != null) {
+            if (builder.length() > 1)
+                builder.append(",");
+            if (head.size() > 0)
+                builder.append("\"head\":").append(head.toString());
+        }
+        if (this.size() > 0) {
+            List<String> fields = this.getFieldDefs().getFields();
+            Gson gson = new Gson();
+            if (builder.length() > 1)
+                builder.append(",");
+            builder.append("\"dataset\":[").append(gson.toJson(fields));
+            for (int i = 0; i < this.size(); i++) {
+                Record record = this.getRecords().get(i);
+                Map<String, Object> tmp1 = record.getItems();
+                Map<String, Object> tmp2 = new LinkedHashMap<String, Object>();
+                for (String field : fields) {
+                    Object obj = tmp1.get(field);
+                    if (obj == null) {
+                        tmp2.put(field, "{}");
+                    } else if (obj instanceof TDateTime) {
+                        tmp2.put(field, obj.toString());
+                    } else if (obj instanceof Date) {
+                        tmp2.put(field, (new TDateTime((Date) obj)).toString());
+                    } else {
+                        tmp2.put(field, obj);
+                    }
+                }
+                builder.append(",").append(gson.toJson(tmp2.values()));
+            }
+            builder.append("]");
+        }
+        builder.append("}");
+        return builder.toString();
     }
 
     public static Gson buildGson() {
