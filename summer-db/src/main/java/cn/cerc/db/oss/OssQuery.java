@@ -31,7 +31,8 @@ public class OssQuery extends DataSet implements IHandle {
             if (ossMode == OssMode.readWrite) {
                 String value = connection.getContent(this.fileName);
                 if (value != null) {
-                    this.setJSON(value);
+                    DataSet dataSet = DataSet.fromJson(value);
+                    this.appendDataSet(dataSet, true);
                     this.setActive(true);
                 }
             }
@@ -49,7 +50,7 @@ public class OssQuery extends DataSet implements IHandle {
     }
 
     public void save() {
-        String content = this.getJSON();
+        String content = this.toJson();
         connection.upload(fileName, new ByteArrayInputStream(content.getBytes()));
     }
 

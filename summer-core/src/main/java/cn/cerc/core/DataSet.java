@@ -1,13 +1,9 @@
 package cn.cerc.core;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -574,7 +570,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         return head;
     }
 
-    public final static DataSet fromJson(String json) {
+    public static DataSet fromJson(String json) {
         if (Utils.isEmpty(json))
             return new DataSet();
         else
@@ -585,24 +581,9 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         return buildGson().toJson(this);
     }
 
-    @Deprecated
-    public final String getJSON() {
-        return buildGson().toJson(this);
-    }
-
     @Override
     public final String toString() {
         return buildGson().toJson(this);
-    }
-
-    @Deprecated
-    public final DataSet setJSON(String json) {
-        DataSet src = buildGson().fromJson(json, DataSet.class);
-        if (src != null) {
-            this.appendDataSet(src, true);
-        } else
-            this.close();
-        return this;
     }
 
     /**
@@ -641,23 +622,6 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
             this.post();
         }
         return this;
-    }
-
-    // 支持对象序列化
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        String json = this.toJson();
-        int strLen = json.length();
-        out.writeInt(strLen);
-        out.write(json.getBytes(StandardCharsets.UTF_8));
-    }
-
-    // 支持对象序列化
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        int strLen = in.readInt();
-        byte[] strBytes = new byte[strLen];
-        in.readFully(strBytes);
-        String json = new String(strBytes, StandardCharsets.UTF_8);
-        this.setJSON(json);
     }
 
     public boolean isReadonly() {

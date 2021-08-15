@@ -51,7 +51,8 @@ public class QueueQuery extends DataSet implements IHandle {
             Message message = connection.receive(queue);
             if (message != null) {
                 try {
-                    this.setJSON(message.getMessageBody());
+                    DataSet dataSet = DataSet.fromJson(message.getMessageBody());
+                    this.appendDataSet(dataSet, true);
                     receiptHandle = message.getReceiptHandle();
                     this.setActive(true);
                 } catch (JsonSyntaxException e) {
@@ -66,7 +67,7 @@ public class QueueQuery extends DataSet implements IHandle {
         if (this.queueMode != QueueMode.append) {
             throw new RuntimeException(res.getString(1, "当前作业模式下，不允许保存"));
         }
-        connection.append(queue, getJSON());
+        connection.append(queue, toJson());
         log.debug("message save success");
     }
 

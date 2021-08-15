@@ -24,7 +24,7 @@ public class QueueQueryTest_receive implements IHandle {
         dataSet.open();
 
         System.out.println(dataSet.getActive());
-        System.out.println(dataSet.getJSON());
+        System.out.println(dataSet.toJson());
         // do something
         dataSet.remove();
     }
