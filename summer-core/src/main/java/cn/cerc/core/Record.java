@@ -295,6 +295,8 @@ public class Record implements IRecord, Serializable {
             return ((Long) obj).intValue();
         } else if ((obj instanceof Boolean)) {
             return (Boolean) obj ? 1 : 0;
+        } else if ((obj instanceof Short)) {
+            return ((Short) obj).intValue();
         } else {
             return 0;
         }
@@ -367,6 +369,8 @@ public class Record implements IRecord, Serializable {
         }
         if (obj instanceof Integer) {
             return ((Integer) obj) * 1.0;
+        } else if ((obj instanceof Short)) {
+            return ((Short) obj) * 1.0;
         } else if (obj == null) {
             return 0.0;
         } else if (obj instanceof BigInteger) {
