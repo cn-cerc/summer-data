@@ -24,7 +24,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     // 若数据有取完，则为true，否则为false
     private boolean fetchFinish;
     // 数据库保存操作执行对象
-    private SqlOperator operator;
+    transient private SqlOperator operator;
     // SqlCommand 指令
     transient private SqlText sqlText = new SqlText();
     // 运行环境
