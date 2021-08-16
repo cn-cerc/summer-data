@@ -28,7 +28,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     // SqlCommand 指令
     transient private SqlText sqlText = new SqlText();
     // 运行环境
-    private ISession session;
+    transient private ISession session;
 
     public SqlQuery() {
         super();

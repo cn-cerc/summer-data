@@ -15,8 +15,8 @@ import cn.cerc.db.SummerDB;
 import cn.cerc.db.core.IHandle;
 
 public class QueueQuery extends DataSet implements IHandle {
-    private static final ClassResource res = new ClassResource(QueueQuery.class, SummerDB.ID);
     private static final long serialVersionUID = 7781788221337787366L;
+    private static final ClassResource res = new ClassResource(QueueQuery.class, SummerDB.ID);
 
     transient private static final Logger log = LoggerFactory.getLogger(QueueQuery.class);
     transient private QueueOperator operator;
