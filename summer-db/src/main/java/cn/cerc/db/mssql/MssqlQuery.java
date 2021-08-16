@@ -6,7 +6,7 @@ import cn.cerc.db.core.SqlQuery;
 
 public class MssqlQuery extends SqlQuery implements IHandle {
     private static final long serialVersionUID = -3510548502879617750L;
-    private MssqlServer server = null;
+    transient private MssqlServer server = null;
 
     public MssqlQuery() {
         super();

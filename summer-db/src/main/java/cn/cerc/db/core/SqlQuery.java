@@ -18,15 +18,15 @@ import cn.cerc.core.SqlText;
 
 public abstract class SqlQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = -6671201813972797639L;
-    private static final Logger log = LoggerFactory.getLogger(SqlQuery.class);
+    transient private static final Logger log = LoggerFactory.getLogger(SqlQuery.class);
     // 数据集是否有打开
     private boolean active = false;
     // 若数据有取完，则为true，否则为false
     private boolean fetchFinish;
     // 数据库保存操作执行对象
-    private SqlOperator operator;
+    transient private SqlOperator operator;
     // SqlCommand 指令
-    private SqlText sqlText = new SqlText();
+    transient private SqlText sqlText = new SqlText();
     // 运行环境
     private ISession session;
 

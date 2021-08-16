@@ -27,12 +27,12 @@ import cn.cerc.db.core.NosqlOperator;
 public class MongoQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = -1262005194419604476L;
     private static final ClassResource res = new ClassResource(MongoQuery.class, SummerDB.ID);
-    private MongoDB connection = null;
+    transient private MongoDB connection = null;
     // 数据库保存操作执行对象
-    private NosqlOperator operator;
-    private ISession session;
+    transient private NosqlOperator operator;
+    transient private ISession session;
     private boolean active;
-    private final SqlText sqlText = new SqlText();
+    transient private final SqlText sqlText = new SqlText();
 
     public MongoQuery(IHandle handle) {
         super();

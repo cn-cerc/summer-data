@@ -16,17 +16,18 @@ import cn.cerc.db.core.IHandle;
 
 public class QueueQuery extends DataSet implements IHandle {
     private static final ClassResource res = new ClassResource(QueueQuery.class, SummerDB.ID);
-    private static final Logger log = LoggerFactory.getLogger(QueueQuery.class);
     private static final long serialVersionUID = 7781788221337787366L;
-    private QueueOperator operator;
-    private String queueCode;
-    private QueueServer connection;
-    private CloudQueue queue;
-    private String receiptHandle;
+
+    transient private static final Logger log = LoggerFactory.getLogger(QueueQuery.class);
+    transient private QueueOperator operator;
+    transient private String queueCode;
+    transient private QueueServer connection;
+    transient private CloudQueue queue;
+    transient private String receiptHandle;
     private QueueMode queueMode = QueueMode.append;
-    private SqlText sqlText = new SqlText();
-    private boolean active;
-    private ISession session;
+    transient private SqlText sqlText = new SqlText();
+    transient private boolean active;
+    transient private ISession session;
 
     public QueueQuery(IHandle handle) {
         super();

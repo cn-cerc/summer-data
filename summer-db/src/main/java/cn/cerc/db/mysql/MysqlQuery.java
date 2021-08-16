@@ -5,9 +5,9 @@ import cn.cerc.db.core.SqlQuery;
 
 public class MysqlQuery extends SqlQuery implements IHandle {
     private static final long serialVersionUID = -400986212909017761L;
-    private MysqlServer server;
-    private MysqlServer master;
-    private MysqlServer salve;
+    transient private MysqlServer server;
+    transient private MysqlServer master;
+    transient private MysqlServer salve;
 
     public MysqlQuery() {
         super();
