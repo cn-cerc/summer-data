@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.cerc.core.DataSet;
+import cn.cerc.core.DataSetGson;
 import cn.cerc.core.ISession;
 import cn.cerc.core.Record;
 import cn.cerc.core.SqlText;
@@ -18,16 +19,16 @@ import cn.cerc.db.queue.QueueOperator;
 
 public class NasQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = 8879520916623870766L;
-    transient private static final Logger log = LoggerFactory.getLogger(NasQuery.class);
+    private static final Logger log = LoggerFactory.getLogger(NasQuery.class);
     // 文件目录
     private String filePath;
     // 文件名称
     private String fileName;
-    transient private QueueOperator operator;
+    private QueueOperator operator;
     private NasModel nasMode = NasModel.create;
-    transient private SqlText sqlText = new SqlText();
+    private SqlText sqlText = new SqlText();
     private boolean active;
-    transient private ISession session;
+    private ISession session;
 
     public NasQuery(IHandle handle) {
         super();
@@ -50,8 +51,7 @@ public class NasQuery extends DataSet implements IHandle {
             File file = FileUtils.getFile(this.filePath, this.fileName);
             try {
                 String json = FileUtils.readFileToString(file, StandardCharsets.UTF_8.name());
-                DataSet dataSet = DataSet.fromJson(json);
-                this.appendDataSet(dataSet, true);
+                this.fromJson(json);
                 this.setActive(true);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -125,6 +125,19 @@ public class NasQuery extends DataSet implements IHandle {
 
     public SqlText getSqlText() {
         return sqlText;
+    }
+
+    @Override
+    public String toJson() {
+        return new DataSetGson<NasQuery>(this).encode();
+    }
+
+    @Override
+    public NasQuery fromJson(String json) {
+        this.close();
+        if (!Utils.isEmpty(json))
+            new DataSetGson<NasQuery>(this).decode(json);
+        return this;
     }
 
 }

@@ -27,7 +27,7 @@ public class DataSetTest_JSON {
 
     @Test
     public void test_fromJSON() {
-        ds = DataSet.fromJson(jsonStr);
+        ds = new DataSet().fromJson(jsonStr);
         assertEquals(jsonStr, ds.toString());
         assertEquals("1", ds.getHead().getString("It"));
     }

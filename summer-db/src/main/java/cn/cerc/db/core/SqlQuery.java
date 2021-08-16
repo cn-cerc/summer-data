@@ -9,24 +9,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.cerc.core.DataSet;
+import cn.cerc.core.DataSetGson;
 import cn.cerc.core.FieldDefs;
 import cn.cerc.core.FieldMeta.FieldKind;
 import cn.cerc.core.ISession;
 import cn.cerc.core.Record;
 import cn.cerc.core.RecordState;
 import cn.cerc.core.SqlText;
+import cn.cerc.core.Utils;
 
 public abstract class SqlQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = -6671201813972797639L;
-    transient private static final Logger log = LoggerFactory.getLogger(SqlQuery.class);
+    private static final Logger log = LoggerFactory.getLogger(SqlQuery.class);
     // 数据集是否有打开
     private boolean active = false;
     // 若数据有取完，则为true，否则为false
     private boolean fetchFinish;
     // 数据库保存操作执行对象
-    transient private SqlOperator operator;
+    private SqlOperator operator;
     // SqlCommand 指令
-    transient private SqlText sqlText = new SqlText();
+    private SqlText sqlText = new SqlText();
     // 运行环境
     private ISession session;
 
@@ -299,5 +301,18 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     }
 
     protected abstract SqlServer getServer();
+
+    @Override
+    public String toJson() {
+        return new DataSetGson<SqlQuery>(this).encode();
+    }
+
+    @Override
+    public SqlQuery fromJson(String json) {
+        this.close();
+        if (!Utils.isEmpty(json))
+            new DataSetGson<SqlQuery>(this).decode(json);
+        return this;
+    }
 
 }

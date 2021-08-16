@@ -9,8 +9,10 @@ import com.google.gson.JsonSyntaxException;
 
 import cn.cerc.core.ClassResource;
 import cn.cerc.core.DataSet;
+import cn.cerc.core.DataSetGson;
 import cn.cerc.core.ISession;
 import cn.cerc.core.SqlText;
+import cn.cerc.core.Utils;
 import cn.cerc.db.SummerDB;
 import cn.cerc.db.core.IHandle;
 
@@ -18,16 +20,16 @@ public class QueueQuery extends DataSet implements IHandle {
     private static final ClassResource res = new ClassResource(QueueQuery.class, SummerDB.ID);
     private static final long serialVersionUID = 7781788221337787366L;
 
-    transient private static final Logger log = LoggerFactory.getLogger(QueueQuery.class);
-    transient private QueueOperator operator;
-    transient private String queueCode;
-    transient private QueueServer connection;
-    transient private CloudQueue queue;
-    transient private String receiptHandle;
+    private static final Logger log = LoggerFactory.getLogger(QueueQuery.class);
+    private QueueOperator operator;
+    private String queueCode;
+    private QueueServer connection;
+    private CloudQueue queue;
+    private String receiptHandle;
     private QueueMode queueMode = QueueMode.append;
-    transient private SqlText sqlText = new SqlText();
-    transient private boolean active;
-    transient private ISession session;
+    private SqlText sqlText = new SqlText();
+    private boolean active;
+    private ISession session;
 
     public QueueQuery(IHandle handle) {
         super();
@@ -52,8 +54,7 @@ public class QueueQuery extends DataSet implements IHandle {
             Message message = connection.receive(queue);
             if (message != null) {
                 try {
-                    DataSet dataSet = DataSet.fromJson(message.getMessageBody());
-                    this.appendDataSet(dataSet, true);
+                    this.fromJson(message.getMessageBody());
                     receiptHandle = message.getReceiptHandle();
                     this.setActive(true);
                 } catch (JsonSyntaxException e) {
@@ -144,6 +145,19 @@ public class QueueQuery extends DataSet implements IHandle {
 
     public SqlText getSqlText() {
         return sqlText;
+    }
+
+    @Override
+    public String toJson() {
+        return new DataSetGson<QueueQuery>(this).encode();
+    }
+
+    @Override
+    public QueueQuery fromJson(String json) {
+        this.close();
+        if (!Utils.isEmpty(json))
+            new DataSetGson<QueueQuery>(this).decode(json);
+        return this;
     }
 
 }

@@ -3,20 +3,22 @@ package cn.cerc.db.oss;
 import java.io.ByteArrayInputStream;
 
 import cn.cerc.core.DataSet;
+import cn.cerc.core.DataSetGson;
 import cn.cerc.core.ISession;
 import cn.cerc.core.SqlText;
+import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.queue.OssOperator;
 
 public class OssQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = 3346060985794794816L;
-    transient private OssConnection connection;
-    transient private OssOperator operator;
+    private OssConnection connection;
+    private OssOperator operator;
     // 文件名称
     private String fileName;
     private OssMode ossMode = OssMode.create;
-    transient private ISession session;
-    transient private SqlText sqlText = new SqlText();
+    private ISession session;
+    private SqlText sqlText = new SqlText();
     private boolean active;
 
     public OssQuery(IHandle handle) {
@@ -31,8 +33,7 @@ public class OssQuery extends DataSet implements IHandle {
             if (ossMode == OssMode.readWrite) {
                 String value = connection.getContent(this.fileName);
                 if (value != null) {
-                    DataSet dataSet = DataSet.fromJson(value);
-                    this.appendDataSet(dataSet, true);
+                    this.fromJson(value);
                     this.setActive(true);
                 }
             }
@@ -101,4 +102,16 @@ public class OssQuery extends DataSet implements IHandle {
         return sqlText;
     }
 
+    @Override
+    public String toJson() {
+        return new DataSetGson<OssQuery>(this).encode();
+    }
+
+    @Override
+    public OssQuery fromJson(String json) {
+        this.close();
+        if (!Utils.isEmpty(json))
+            new DataSetGson<OssQuery>(this).decode(json);
+        return this;
+    }
 }

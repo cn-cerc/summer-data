@@ -15,6 +15,7 @@ import com.mongodb.client.MongoCollection;
 
 import cn.cerc.core.ClassResource;
 import cn.cerc.core.DataSet;
+import cn.cerc.core.DataSetGson;
 import cn.cerc.core.ISession;
 import cn.cerc.core.Record;
 import cn.cerc.core.RecordState;
@@ -27,12 +28,12 @@ import cn.cerc.db.core.NosqlOperator;
 public class MongoQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = -1262005194419604476L;
     private static final ClassResource res = new ClassResource(MongoQuery.class, SummerDB.ID);
-    transient private MongoDB connection = null;
+    private MongoDB connection = null;
     // 数据库保存操作执行对象
-    transient private NosqlOperator operator;
-    transient private ISession session;
+    private NosqlOperator operator;
+    private ISession session;
     private boolean active;
-    transient private final SqlText sqlText = new SqlText();
+    private final SqlText sqlText = new SqlText();
 
     public MongoQuery(IHandle handle) {
         super();
@@ -309,4 +310,19 @@ public class MongoQuery extends DataSet implements IHandle {
     public SqlText getSqlText() {
         return sqlText;
     }
+    
+
+    @Override
+    public String toJson() {
+        return new DataSetGson<MongoQuery>(this).encode();
+    }
+
+    @Override
+    public MongoQuery fromJson(String json) {
+        this.close();
+        if (!Utils.isEmpty(json))
+            new DataSetGson<MongoQuery>(this).decode(json);
+        return this;
+    }
+
 }

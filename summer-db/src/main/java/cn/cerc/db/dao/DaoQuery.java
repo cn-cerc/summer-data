@@ -2,8 +2,10 @@ package cn.cerc.db.dao;
 
 import java.lang.reflect.ParameterizedType;
 
+import cn.cerc.core.DataSetGson;
 import cn.cerc.core.RecordUtils;
 import cn.cerc.core.SqlText;
+import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.mysql.MysqlQuery;
 
@@ -47,6 +49,19 @@ public class DaoQuery<T> extends MysqlQuery {
 
     public T read() {
         return this.getCurrent().asObject(clazz);
+    }
+
+    @Override
+    public String toJson() {
+        return new DataSetGson<DaoQuery<T>>(this).encode();
+    }
+
+    @Override
+    public DaoQuery<T> fromJson(String json) {
+        this.close();
+        if (!Utils.isEmpty(json))
+            new DataSetGson<DaoQuery<T>>(this).decode(json);
+        return this;
     }
 
 }

@@ -1,11 +1,13 @@
 package cn.cerc.db.sqlite;
 
+import cn.cerc.core.DataSetGson;
 import cn.cerc.core.SqlText;
+import cn.cerc.core.Utils;
 import cn.cerc.db.core.SqlQuery;
 
 public class SqliteQuery extends SqlQuery {
     private static final long serialVersionUID = 927151029588126209L;
-    transient private SqliteServer server = null;
+    private SqliteServer server = null;
 
     public SqliteQuery() {
         super();
@@ -21,6 +23,19 @@ public class SqliteQuery extends SqlQuery {
 
     public void setServer(SqliteServer server) {
         this.server = server;
+    }
+
+    @Override
+    public String toJson() {
+        return new DataSetGson<SqliteQuery>(this).encode();
+    }
+
+    @Override
+    public SqliteQuery fromJson(String json) {
+        this.close();
+        if (!Utils.isEmpty(json))
+            new DataSetGson<SqliteQuery>(this).decode(json);
+        return this;
     }
 
 }

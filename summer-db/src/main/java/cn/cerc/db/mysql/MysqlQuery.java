@@ -1,13 +1,15 @@
 package cn.cerc.db.mysql;
 
+import cn.cerc.core.DataSetGson;
+import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.SqlQuery;
 
 public class MysqlQuery extends SqlQuery implements IHandle {
     private static final long serialVersionUID = -400986212909017761L;
-    transient private MysqlServer server;
-    transient private MysqlServer master;
-    transient private MysqlServer salve;
+    private MysqlServer server;
+    private MysqlServer master;
+    private MysqlServer salve;
 
     public MysqlQuery() {
         super();
@@ -44,4 +46,17 @@ public class MysqlQuery extends SqlQuery implements IHandle {
         this.server = server;
     }
 
+    @Override
+    public String toJson() {
+        return new DataSetGson<MysqlQuery>(this).encode();
+    }
+
+    @Override
+    public MysqlQuery fromJson(String json) {
+        this.close();
+        if (!Utils.isEmpty(json))
+            new DataSetGson<MysqlQuery>(this).decode(json);
+        return this;
+    }
+    
 }
