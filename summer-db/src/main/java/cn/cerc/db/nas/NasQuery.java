@@ -17,17 +17,17 @@ import cn.cerc.db.core.IHandle;
 import cn.cerc.db.queue.QueueOperator;
 
 public class NasQuery extends DataSet implements IHandle {
-    private static final Logger log = LoggerFactory.getLogger(NasQuery.class);
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 8879520916623870766L;
+    transient private static final Logger log = LoggerFactory.getLogger(NasQuery.class);
     // 文件目录
     private String filePath;
     // 文件名称
     private String fileName;
-    private QueueOperator operator;
+    transient private QueueOperator operator;
     private NasModel nasMode = NasModel.create;
-    private SqlText sqlText = new SqlText();
+    transient private SqlText sqlText = new SqlText();
     private boolean active;
-    private ISession session;
+    transient private ISession session;
 
     public NasQuery(IHandle handle) {
         super();

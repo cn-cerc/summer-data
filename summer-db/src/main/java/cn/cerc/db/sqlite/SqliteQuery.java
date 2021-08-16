@@ -5,7 +5,7 @@ import cn.cerc.db.core.SqlQuery;
 
 public class SqliteQuery extends SqlQuery {
     private static final long serialVersionUID = 927151029588126209L;
-    private SqliteServer server = null;
+    transient private SqliteServer server = null;
 
     public SqliteQuery() {
         super();

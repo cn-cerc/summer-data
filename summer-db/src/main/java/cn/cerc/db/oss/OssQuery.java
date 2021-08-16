@@ -10,13 +10,13 @@ import cn.cerc.db.queue.OssOperator;
 
 public class OssQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = 3346060985794794816L;
-    private OssConnection connection;
-    private OssOperator operator;
+    transient private OssConnection connection;
+    transient private OssOperator operator;
     // 文件名称
     private String fileName;
     private OssMode ossMode = OssMode.create;
-    private ISession session;
-    private SqlText sqlText = new SqlText();
+    transient private ISession session;
+    transient private SqlText sqlText = new SqlText();
     private boolean active;
 
     public OssQuery(IHandle handle) {
