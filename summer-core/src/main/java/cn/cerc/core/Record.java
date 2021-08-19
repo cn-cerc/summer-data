@@ -419,6 +419,8 @@ public class Record implements IRecord, Serializable {
                 long value = temp.longValue();
                 if (temp == value) {
                     result = String.valueOf(value);
+                } else {
+                    result = temp.toString();
                 }
             } else {
                 result = obj.toString();
