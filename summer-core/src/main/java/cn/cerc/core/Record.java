@@ -28,8 +28,8 @@ public class Record implements IRecord, Serializable {
     private static final long serialVersionUID = 4454304132898734723L;
     private RecordState state = RecordState.dsNone;
     private FieldDefs defs;
-    private Map<String, Object> items = new LinkedHashMap<String, Object>();
-    private Map<String, Object> delta = new HashMap<String, Object>();
+    private Map<String, Object> items = new LinkedHashMap<>();
+    private Map<String, Object> delta = new HashMap<>();
     private DataSet dataSet;
 
     public Record() {
@@ -414,6 +414,12 @@ public class Record implements IRecord, Serializable {
             } else if (obj instanceof Date) {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 result = sdf.format(obj);
+            } else if (obj instanceof Double) {
+                Double temp = (Double) obj;
+                long value = temp.longValue();
+                if (temp == value) {
+                    result = String.valueOf(value);
+                }
             } else {
                 result = obj.toString();
             }
@@ -498,10 +504,10 @@ public class Record implements IRecord, Serializable {
     }
 
     public boolean isModify() {
-        switch (this.state) {
+        switch (this.state){
         case dsInsert:
             return true;
-        case dsEdit: {
+        case dsEdit:{
             if (delta.size() == 0) {
                 return false;
             }
