@@ -1,15 +1,15 @@
 package cn.cerc.core;
 
 public interface ISession extends AutoCloseable {
-    public static final String TOKEN = "sid"; // session id
-    public static final String EDITION = "edition";
-    public static final String CORP_NO = "corp_no";
-    public static final String USER_CODE = "user_code";
-    public static final String USER_NAME = "user_name";
-    public static final String LANGUAGE_ID = "language_id";
-    public static final String CLIENT_DEVICE = "device"; // client device
-    public static final String LOGIN_SERVER = "login_server";
-    public static final String REQUEST = "request";
+    String TOKEN = "sid"; // session id
+    String EDITION = "edition";
+    String CORP_NO = "corp_no";
+    String USER_CODE = "user_code";
+    String USER_NAME = "user_name";
+    String LANGUAGE_ID = "language_id";
+    String CLIENT_DEVICE = "device"; // client device
+    String LOGIN_SERVER = "login_server";
+    String REQUEST = "request";
 
     // 自定义参数，注：若key=null则返回实现接口的对象本身
     Object getProperty(String key);

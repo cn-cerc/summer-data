@@ -569,13 +569,13 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
     }
 
     public String toJson() {
-        return new DataSetGson<DataSet>(this).encode();
+        return new DataSetGson<>(this).encode();
     }
 
     public DataSet fromJson(String json) {
         this.close();
         if (!Utils.isEmpty(json))
-            new DataSetGson<DataSet>(this).decode(json);
+            new DataSetGson<>(this).decode(json);
         return this;
     }
 

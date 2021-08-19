@@ -304,14 +304,14 @@ public abstract class SqlQuery extends DataSet implements IHandle {
 
     @Override
     public String toJson() {
-        return new DataSetGson<SqlQuery>(this).encode();
+        return new DataSetGson<>(this).encode();
     }
 
     @Override
     public SqlQuery fromJson(String json) {
         this.close();
         if (!Utils.isEmpty(json))
-            new DataSetGson<SqlQuery>(this).decode(json);
+            new DataSetGson<>(this).decode(json);
         return this;
     }
 

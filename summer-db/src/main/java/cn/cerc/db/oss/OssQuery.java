@@ -104,14 +104,14 @@ public class OssQuery extends DataSet implements IHandle {
 
     @Override
     public String toJson() {
-        return new DataSetGson<OssQuery>(this).encode();
+        return new DataSetGson<>(this).encode();
     }
 
     @Override
     public OssQuery fromJson(String json) {
         this.close();
         if (!Utils.isEmpty(json))
-            new DataSetGson<OssQuery>(this).decode(json);
+            new DataSetGson<>(this).decode(json);
         return this;
     }
 }

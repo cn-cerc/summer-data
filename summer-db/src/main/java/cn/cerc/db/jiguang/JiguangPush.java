@@ -23,6 +23,11 @@ import cn.jpush.api.push.model.notification.Notification;
 public class JiguangPush {
     private static final Logger log = LoggerFactory.getLogger(JiguangPush.class);
 
+    /**
+     * 默认声音
+     */
+    public static final String DEFAULT_SOUND = "default";
+
     private JiguangConnection connection;
     // 消息id，回调时使用
     private String msgId;
@@ -31,7 +36,7 @@ public class JiguangPush {
     // 消息内容
     private String message;
     // 附加参数
-    private Map<String, String> params = new LinkedHashMap<>();
+    private final Map<String, String> params = new LinkedHashMap<>();
 
     public JiguangPush() {
     }
@@ -45,7 +50,7 @@ public class JiguangPush {
     }
 
     public void send(ClientType clientType, String clientId) {
-        this.send(clientType, clientId, "default");
+        this.send(clientType, clientId, JiguangPush.DEFAULT_SOUND);
     }
 
     /**
@@ -79,8 +84,7 @@ public class JiguangPush {
         builder.setNotification(Notification.newBuilder().setAlert(message)
                 .addPlatformNotification(AndroidNotification.newBuilder().setTitle(this.title).addExtras(params).build())
                 .addPlatformNotification(IosNotification.newBuilder().incrBadge(1).addExtras(params).setSound(sound).build())
-                .build()
-        ).build();
+                .build()).build();
         // 设置生产环境
         builder.setOptions(Options.newBuilder().setApnsProduction(true).build()).build();
         PushPayload payload = builder.build();

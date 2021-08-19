@@ -212,16 +212,21 @@ public class Utils {
     }
 
     /**
-     * @return 生成token字符串
+     * @return 生成全局唯一32位字符串
      */
-    public static String generateToken() {
+    public static String getGuid() {
         String uuid = UUID.randomUUID().toString();
         return uuid.replaceAll("-", "");
     }
 
     @Deprecated
-    public static final String guidFixStr() {
-        return generateToken();
+    public static String guidFixStr() {
+        return getGuid();
+    }
+
+    @Deprecated
+    public static String generateToken() {
+        return getGuid();
     }
 
     // 兼容 delphi 代码

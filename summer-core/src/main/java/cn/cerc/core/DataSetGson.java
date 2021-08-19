@@ -15,11 +15,11 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
-    private T ds;
+    private final T dataSet;
 
-    public DataSetGson(T ds) {
+    public DataSetGson(T dataSet) {
         super();
-        this.ds = ds;
+        this.dataSet = dataSet;
     }
 
     @Override
@@ -72,32 +72,32 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
     public T deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonObject root = json.getAsJsonObject();
         if (root.size() == 0)
-            return ds;
+            return dataSet;
         if (root.has("state"))
-            ds.state = root.get("state").getAsInt();
+            dataSet.state = root.get("state").getAsInt();
         if (root.has("message"))
-            ds.message = root.get("message").getAsString();
+            dataSet.message = root.get("message").getAsString();
 
         if (root.has("meta")) {
             JsonObject meta = root.get("meta").getAsJsonObject();
             JsonArray head = meta.get("head").getAsJsonArray();
             head.forEach(item -> {
                 FieldMeta def = context.deserialize(item, FieldMeta.class);
-                ds.getHead().getFieldDefs().add(def);
+                dataSet.getHead().getFieldDefs().add(def);
             });
             JsonArray body = meta.get("body").getAsJsonArray();
             body.forEach(item -> {
                 FieldMeta def = context.deserialize(item, FieldMeta.class);
-                ds.getFieldDefs().add(def);
+                dataSet.getFieldDefs().add(def);
             });
-            ds.metaInfo = true;
+            dataSet.metaInfo = true;
         }
 
         if (root.has("head")) {
             JsonObject head = root.get("head").getAsJsonObject();
             head.keySet().forEach(key -> {
                 Object obj = context.deserialize(head.get(key), Object.class);
-                ds.getHead().setField(key, obj);
+                dataSet.getHead().setField(key, obj);
             });
         }
 
@@ -111,10 +111,10 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
             for (int i = 0; i < body.size(); i++) {
                 JsonArray item = body.get(i).getAsJsonArray();
                 if (i == 0) {
-                    item.forEach(field -> ds.getFieldDefs().add(field.getAsString()));
+                    item.forEach(field -> dataSet.getFieldDefs().add(field.getAsString()));
                     defs = item;
                 } else {
-                    Record current = ds.append().getCurrent();
+                    Record current = dataSet.append().getCurrent();
                     for (int j = 0; j < defs.size(); j++) {
                         Object obj = context.deserialize(item.get(j), Object.class);
                         current.setField(defs.get(j).getAsString(), obj);
@@ -122,7 +122,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
                 }
             }
         }
-        return ds;
+        return dataSet;
     }
 
     private Gson build() {
@@ -193,16 +193,16 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
                 .registerTypeAdapter(TDateTime.class, gsonTDateTime).registerTypeAdapter(Date.class, gsonDate)
                 .registerTypeAdapter(Double.class, gsonDouble).serializeNulls();
 
-        build.registerTypeAdapter(ds.getClass(), this);
+        build.registerTypeAdapter(dataSet.getClass(), this);
 
         return build.create();
     }
 
     public final void decode(String json) {
-        build().fromJson(json, ds.getClass());
+        build().fromJson(json, dataSet.getClass());
     }
 
     public final String encode() {
-        return build().toJson(ds);
+        return build().toJson(dataSet);
     }
 }
