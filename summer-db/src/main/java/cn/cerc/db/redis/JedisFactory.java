@@ -135,7 +135,7 @@ public class JedisFactory {
             return jedisPool.getResource();
         } catch (JedisConnectionException e) {
             if (error < 3) {
-                log.error("redis server not run.");
+                log.error("redis server {}:{} not run.", host, port);
                 error++;
             }
             return null;
