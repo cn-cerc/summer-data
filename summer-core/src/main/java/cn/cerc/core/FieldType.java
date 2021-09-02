@@ -46,10 +46,10 @@ public final class FieldType {
             return dataType.length() == 1;
         }
         case "s": {
-            if (dataType.length() < 2)
-                return false;
-            String size = dataType.substring(1, dataType.length());
-            return Integer.parseInt(size) > 0;
+            String size = "0";
+            if (dataType.length() > 1)
+                dataType.substring(1, dataType.length());
+            return Integer.parseInt(size) >= 0;
         }
         case "n": {
             if (dataType.length() < 2)
@@ -90,7 +90,9 @@ public final class FieldType {
             break;
         }
         case "s": {
-            String size = dataType.substring(1, dataType.length());
+            String size = "0";
+            if (dataType.length() > 1)
+                size = dataType.substring(1, dataType.length());
             updateType(t, Integer.parseInt(size));
             break;
         }
@@ -122,7 +124,7 @@ public final class FieldType {
         else if ((TDateTime.class == clazz) || (java.util.Date.class == clazz))
             this.updateType("t", 0);
         else if (String.class == clazz) {
-            this.updateType("s", 1);
+            this.updateType("s", 0);
         } else if (Integer.class == clazz) {
             this.updateType("n", 1);
         } else if (Long.class == clazz) {
