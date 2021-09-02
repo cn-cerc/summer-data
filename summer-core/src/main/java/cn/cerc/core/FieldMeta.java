@@ -6,7 +6,7 @@ public final class FieldMeta implements Serializable {
     private static final long serialVersionUID = -6898050783447062943L;
     private String code;
     private String name;
-    private String type;
+    private FieldType type;
     private FieldKind kind;
     private String remark;
     private boolean updateKey;
@@ -39,8 +39,6 @@ public final class FieldMeta implements Serializable {
     }
 
     public final String getName() {
-        if (name == null)
-            name = "";
         return name;
     }
 
@@ -50,14 +48,32 @@ public final class FieldMeta implements Serializable {
     }
 
     public final String getType() {
-        if (type == null)
-            type = "";
-        return type;
+        return type == null ? null : type.toString();
     }
 
     public final FieldMeta setType(String type) {
-        this.type = type;
+        if (type == null) {
+            this.type = null;
+        } else {
+            if (this.type == null)
+                this.type = new FieldType();
+            this.type.setType(type);
+        }
         return this;
+    }
+
+    public final FieldType setType(Class<?> clazz) {
+        return getFieldType().setType(clazz);
+    }
+
+    public final FieldType setType(Class<?> clazz, int length) {
+        return getFieldType().setType(clazz).setLength(length);
+    }
+
+    public final FieldType getFieldType() {
+        if (this.type == null)
+            this.type = new FieldType();
+        return type;
     }
 
     public final FieldKind getKind() {
@@ -81,8 +97,9 @@ public final class FieldMeta implements Serializable {
         return remark;
     }
 
-    public final void setRemark(String remark) {
+    public final FieldMeta setRemark(String remark) {
         this.remark = remark;
+        return this;
     }
 
     public final FieldMeta setUpdateKey(boolean updateKey) {

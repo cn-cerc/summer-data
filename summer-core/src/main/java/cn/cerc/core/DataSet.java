@@ -678,8 +678,19 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         return metaInfo;
     }
 
-    public final void setMetaInfo(boolean metaInfo) {
+    public final DataSet setMetaInfo(boolean metaInfo) {
         this.metaInfo = metaInfo;
+        return this;
+    }
+
+    public final DataSet buildMeta() {
+        if (head != null && head.getFieldDefs().size() > 0) {
+            head.getFieldDefs().forEach(def -> def.getFieldType().put(head.getField(def.getCode())));
+        }
+        records.forEach(row -> {
+            this.getFieldDefs().forEach(def -> def.getFieldType().put(row.getField(def.getCode())));
+        });
+        return this;
     }
 
     public static void main(String[] args) {
@@ -740,22 +751,22 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         ds1.getHead().setField("appDate", new Date());
         ds1.getHead().setField("user", null);
 
-        ds1.getFieldDefs().add("it").setName("序").setType("integer").setRemark("自动赋值");
-        ds1.getFieldDefs().add("code").setName("编号").setType("varchar(30)");
-        ds1.getFieldDefs().add("name").setName("名称").setType("varchar(30)");
-        ds1.getHead().getFieldDefs().add("title").setName("标题").setType("varchar(30)");
+        ds1.getFieldDefs().add("it").setName("序").setRemark("自动赋值").setType(Integer.class);
+        ds1.getFieldDefs().add("code").setName("编号").setType(String.class, 30);
+        ds1.getFieldDefs().add("name").setName("名称").setType(String.class, 30);
+        ds1.getHead().getFieldDefs().add("title").setName("标题").setType(String.class, 30);
 
-        ds1.metaInfo = true;
+        ds1.buildMeta().setMetaInfo(true);
         System.out.println(ds1.toJson());
 
         DataSet ds2 = new DataSet().fromJson(ds1.toJson());
         System.out.println(ds2.toJson());
 
         DataSet ds3 = new DataSet();
-        ds3.getHead().getFieldDefs().add("title").setName("标题").setType("varchar(30)");
-        ds3.getFieldDefs().add("it").setName("序").setType("integer").setRemark("自动增加");
-        ds3.getFieldDefs().add("code").setName("编号").setType("varchar(30)");
-        ds3.getFieldDefs().add("name").setName("名称").setType("varchar(30)");
+        ds3.getHead().getFieldDefs().add("title").setName("标题").setType(String.class, 30);
+        ds3.getFieldDefs().add("it").setName("序").setRemark("自动增加").setType(Integer.class);
+        ds3.getFieldDefs().add("code").setName("编号").setType(String.class, 30);
+        ds3.getFieldDefs().add("name").setName("名称").setType(String.class, 30);
         ds3.setMetaInfo(true);
 
         System.out.println(ds3.toJson());
