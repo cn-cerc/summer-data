@@ -45,22 +45,30 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
         }
 
         if (src.head != null && src.head.size() > 0) {
-            JsonObject item = new JsonObject();
-            src.head.getFieldDefs().forEach(def -> {
-                String field = def.getCode();
-                Object obj = src.head.getField(field);
-                if (obj == null)
-                    item.addProperty(field, "{}");
-                else
+            if (src.metaInfo) {
+                JsonArray item = new JsonArray();
+                src.head.getFieldDefs().forEach(def -> {
+                    String field = def.getCode();
+                    Object obj = src.head.getField(field);
+                    item.add(context.serialize(obj));
+                });
+                root.add("head", item);
+            } else {
+                JsonObject item = new JsonObject();
+                src.head.getFieldDefs().forEach(def -> {
+                    String field = def.getCode();
+                    Object obj = src.head.getField(field);
                     item.add(field, context.serialize(obj));
-            });
-            root.add("head", item);
+                });
+                root.add("head", item);
+            }
         }
 
         if (src.size() > 0) {
             JsonArray body = new JsonArray();
             // 添加字段定义
-            body.add(context.serialize(src.getFieldDefs()));
+            if (!src.metaInfo)
+                body.add(context.serialize(src.getFieldDefs()));
             src.records.forEach(dataRow -> body.add(context.serialize(dataRow)));
             root.add("body", body);
         }
@@ -94,11 +102,20 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
         }
 
         if (root.has("head")) {
-            JsonObject head = root.get("head").getAsJsonObject();
-            head.keySet().forEach(key -> {
-                Object obj = context.deserialize(head.get(key), Object.class);
-                dataSet.getHead().setField(key, obj);
-            });
+            if (dataSet.metaInfo) {
+                JsonArray head = root.get("head").getAsJsonArray();
+                int i = 0;
+                for (String key : dataSet.getHead().getFieldDefs().getFields()) {
+                    Object obj = context.deserialize(head.get(i++), Object.class);
+                    dataSet.getHead().setField(key, obj);
+                }
+            } else {
+                JsonObject head = root.get("head").getAsJsonObject();
+                head.keySet().forEach(key -> {
+                    Object obj = context.deserialize(head.get(key), Object.class);
+                    dataSet.getHead().setField(key, obj);
+                });
+            }
         }
 
         JsonArray body = null;
@@ -108,9 +125,14 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
             body = root.get("dataset").getAsJsonArray();
         if (body != null) {
             JsonArray defs = null;
+            if (dataSet.metaInfo) {
+                defs = new JsonArray();
+                for (FieldMeta meta : dataSet.getFieldDefs())
+                    defs.add(meta.getCode());
+            }
             for (int i = 0; i < body.size(); i++) {
                 JsonArray item = body.get(i).getAsJsonArray();
-                if (i == 0) {
+                if (defs == null) {
                     item.forEach(field -> dataSet.getFieldDefs().add(field.getAsString()));
                     defs = item;
                 } else {
@@ -174,11 +196,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
             JsonArray item = new JsonArray();
             src.getFieldDefs().forEach(def -> {
                 Object obj = src.getField(def.getCode());
-                if (obj == null) {
-                    item.add("{}");
-                } else {
-                    item.add(context.serialize(obj));
-                }
+                item.add(context.serialize(obj));
             });
             return item;
         };
