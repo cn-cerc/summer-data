@@ -623,4 +623,9 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
         return inc(DateType.Month, offset);
     }
 
+    @Deprecated
+    public int compareMonth(Datetime target) {
+        return this.subtract(DateType.Month, target);
+    }
+
 }

@@ -1,19 +1,15 @@
 package cn.cerc.core;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.time.LocalDateTime;
 
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import cn.cerc.core.Datetime.DateType;
 
 public class DatetimeTest {
-    private static final Logger log = LoggerFactory.getLogger(DatetimeTest.class);
 
     @Test
     public void test_null() {
@@ -218,12 +214,4 @@ public class DatetimeTest {
         assertEquals(jsonStr, item.toString());
     }
 
-    @Test
-    public void test_timeout() {
-        TDateTime deadTime = new TDateTime("2021/09/05");
-        TDateTime current = new TDateTime("2021/09/06");
-        assertFalse(deadTime.getData().after(current.getData()));
-        assertTrue(TDateTime.isTimeOut(deadTime, current));
-        assertTrue(deadTime.before(new Datetime()));
-    }
 }

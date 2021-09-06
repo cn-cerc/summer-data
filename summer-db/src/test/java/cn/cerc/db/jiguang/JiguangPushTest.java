@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.cerc.core.TDateTime;
+import cn.cerc.core.Datetime;
 import cn.cerc.db.core.StubSession;
 
 public class JiguangPushTest {
@@ -26,7 +26,7 @@ public class JiguangPushTest {
         push.setTitle("消息推送测试");
 
         // 通知栏消息内容
-        String message = TDateTime.now().toString() + "这是系统向您发送的测试消息，如有打扰，请您忽略，谢谢！";
+        String message = new Datetime().toString() + "这是系统向您发送的测试消息，如有打扰，请您忽略，谢谢！";
         log.info(message);
         push.setMessage(message);
 

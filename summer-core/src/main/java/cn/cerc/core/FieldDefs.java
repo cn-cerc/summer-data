@@ -51,9 +51,8 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return items.add(item) ? item : this.getItem(item.getCode());
     }
 
-    @Deprecated
-    public void add(String... strs) {
-        for (String fieldCode : strs)
+    public void add(String... fields) {
+        for (String fieldCode : fields)
             this.add(fieldCode);
     }
 

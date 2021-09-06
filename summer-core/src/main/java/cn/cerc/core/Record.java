@@ -457,6 +457,14 @@ public class Record implements Serializable {
         }
     }
 
+    public FastDate getFastDate(String field) {
+        return this.getDatetime(field).toFastDate();
+    }
+
+    public FastTime getFastTime(String field) {
+        return this.getDatetime(field).toFastTime();
+    }
+
     @Deprecated
     public TDate getDate(String field) {
         return new TDate(this.getDateTime(field).getTimestamp());

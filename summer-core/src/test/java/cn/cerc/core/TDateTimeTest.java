@@ -1,6 +1,7 @@
 package cn.cerc.core;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -11,6 +12,7 @@ import org.junit.Test;
 
 import cn.cerc.core.Datetime.DateType;
 
+@SuppressWarnings("deprecation")
 public class TDateTimeTest {
     private String ym = "201512";
     private TDateTime obj;
@@ -166,10 +168,16 @@ public class TDateTimeTest {
                 + Integer.parseInt(obj.getYearMonth().substring(4, 6));
         assertEquals(v1 - v2, offset);
     }
-    
+
     @Test
     public void test_timeOut() {
         TDateTime dead = TDateTime.now().incDay(1);
         assertTrue(TDateTime.isTimeOut(dead, TDateTime.now()));
+
+        TDateTime deadTime = new TDateTime("2021/09/05");
+        TDateTime current = new TDateTime("2021/09/06");
+        assertFalse(deadTime.getData().after(current.getData()));
+        assertTrue(TDateTime.isTimeOut(deadTime, current));
+        assertTrue(deadTime.before(new Datetime()));
     }
 }

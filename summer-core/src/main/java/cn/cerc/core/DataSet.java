@@ -328,9 +328,17 @@ public class DataSet implements Serializable, Iterable<Record> {
     public BigDecimal getBigDecimal(String field) {
         return this.getCurrent().getBigDecimal(field);
     }
-    
+
     public Datetime getDatetime(String field) {
         return this.getCurrent().getDatetime(field);
+    }
+
+    public FastDate getFastDate(String field) {
+        return this.getCurrent().getDatetime(field).toFastDate();
+    }
+
+    public FastTime getFastTime(String field) {
+        return this.getCurrent().getDatetime(field).toFastTime();
     }
 
     @Deprecated

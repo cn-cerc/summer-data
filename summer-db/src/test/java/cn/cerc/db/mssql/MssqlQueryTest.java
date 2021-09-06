@@ -34,8 +34,8 @@ public class MssqlQueryTest implements IHandle {
 //        query.setField("Name_", "研发部");
 //        query.setField("UpdateUser_", "admin");
 //        query.setField("AppUser_", "admin");
-//        query.setField("UpdateDate_", TDateTime.now());
-//        query.setField("AppDate_", TDateTime.now());
+//        query.setField("UpdateDate_", new Datetime());
+//        query.setField("AppDate_", new Datetime());
 //        query.post();
     }
 

@@ -4,9 +4,9 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import cn.cerc.core.Datetime;
 import cn.cerc.core.ISession;
 import cn.cerc.core.PostFieldException;
-import cn.cerc.core.TDateTime;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.StubSession;
 
@@ -27,7 +27,7 @@ public class SqlQueryTest_post1 implements IHandle {
         ds.add("select * from Dept where CorpNo_='%s'", "144001");
         ds.open();
         ds.edit();
-        ds.setField("updateDate_", TDateTime.now().incDay(-1));
+        ds.setField("updateDate_", new Datetime().incDay(-1));
         ds.post();
     }
 
@@ -41,7 +41,7 @@ public class SqlQueryTest_post1 implements IHandle {
         });
         ds.edit();
         ds.setField("Test", "aOK");
-        ds.setField("UpdateDate_", TDateTime.now().incDay(-1));
+        ds.setField("UpdateDate_", new Datetime().incDay(-1));
         ds.post();
     }
 
