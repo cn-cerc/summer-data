@@ -201,9 +201,8 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
             return item;
         };
 
-        JsonSerializer<TDateTime> gsonTDateTime = (src, typeOfSrc, context) -> new JsonPrimitive(src.toString());
-
-        JsonSerializer<Date> gsonDate = (src, typeOfSrc, context) -> new JsonPrimitive((new TDateTime(src)).toString());
+        JsonSerializer<Date> gsonDate = (src, typeOfSrc,
+                context) -> new JsonPrimitive((new Datetime(src.getTime())).toString());
 
         JsonSerializer<Double> gsonDouble = (src, typeOfSrc, context) -> {
             if (src == src.longValue())
@@ -213,8 +212,8 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
 
         GsonBuilder build = new GsonBuilder().registerTypeAdapter(FieldDefs.class, gsonFieldDefs)
                 .registerTypeAdapter(FieldMeta.class, gsonFieldMeta).registerTypeAdapter(Record.class, gsonRecord)
-                .registerTypeAdapter(TDateTime.class, gsonTDateTime).registerTypeAdapter(Date.class, gsonDate)
-                .registerTypeAdapter(Double.class, gsonDouble).serializeNulls();
+                .registerTypeAdapter(Date.class, gsonDate).registerTypeAdapter(Double.class, gsonDouble)
+                .serializeNulls();
 
         build.registerTypeAdapter(dataSet.getClass(), this);
 

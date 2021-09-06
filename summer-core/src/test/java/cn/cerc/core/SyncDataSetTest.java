@@ -29,16 +29,21 @@ public class SyncDataSetTest {
     @Test
     public void test() throws SyncUpdateException {
         SyncDataSet sds = new SyncDataSet(src, tar, "code");
-        
-        int total = sds.execute(new ISyncDataSet(){
+
+        int total = sds.execute(new ISyncDataSet() {
             @Override
             public void process(Record src, Record tar) throws SyncUpdateException {
                 if (tar == null)
-                    System.out.println("insert record: " + src.getField("code"));
+                    assertEquals("insert record: b", "insert record: " + src.getField("code"));
                 else if (src == null)
-                    System.out.println("delete record: " + tar.getField("code"));
-                else
-                    System.out.println("update record: " + src.getField("code"));
+                    assertEquals("delete record: d", "delete record: " + tar.getField("code"));
+                else {
+                    String code = src.getString("code");
+                    if ("a".equals(code))
+                        assertEquals("update record: a", "update record: " + src.getField("code"));
+                    else
+                        assertEquals("update record: c", "update record: " + src.getField("code"));
+                }
             }
         });
         assertEquals(total, 4);

@@ -15,11 +15,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-
 import cn.cerc.core.FieldMeta.FieldKind;
 
-public class DataSet implements IRecord, Serializable, Iterable<Record> {
+public class DataSet implements Serializable, Iterable<Record> {
     transient private static final Logger log = LoggerFactory.getLogger(DataSet.class);
 
     private static final long serialVersionUID = 873159747066855363L;
@@ -294,7 +292,6 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         return search.get(fields, values);
     }
 
-    @Override
     public Object getField(String field) {
         return this.getCurrent().getField(field);
     }
@@ -308,47 +305,44 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         Collections.sort(this.getRecords(), func);
     }
 
-    @Override
     public String getString(String field) {
         return this.getCurrent().getString(field);
     }
 
-    @Override
     public double getDouble(String field) {
         return this.getCurrent().getDouble(field);
     }
 
-    @Override
     public boolean getBoolean(String field) {
         return this.getCurrent().getBoolean(field);
     }
 
-    @Override
     public int getInt(String field) {
         return this.getCurrent().getInt(field);
     }
 
-    @Override
     public BigInteger getBigInteger(String field) {
         return this.getCurrent().getBigInteger(field);
     }
 
-    @Override
     public BigDecimal getBigDecimal(String field) {
         return this.getCurrent().getBigDecimal(field);
     }
+    
+    public Datetime getDatetime(String field) {
+        return this.getCurrent().getDatetime(field);
+    }
 
-    @Override
+    @Deprecated
     public TDate getDate(String field) {
         return this.getCurrent().getDate(field);
     }
 
-    @Override
+    @Deprecated
     public TDateTime getDateTime(String field) {
         return this.getCurrent().getDateTime(field);
     }
 
-    @Override
     public DataSet setField(String field, Object value) {
         if (field == null || "".equals(field))
             throw new RuntimeException("field is null!");
@@ -418,7 +412,6 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         return records.iterator();
     }
 
-    @Override
     public boolean exists(String field) {
         return this.getFieldDefs().exists(field);
     }
@@ -747,7 +740,7 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         ds1.setMessage("test");
 
         ds1.getHead().setField("title", "test");
-        ds1.getHead().setField("tbDate", TDateTime.now());
+        ds1.getHead().setField("tbDate", Datetime.today());
         ds1.getHead().setField("appDate", new Date());
         ds1.getHead().setField("user", null);
 
@@ -770,9 +763,6 @@ public class DataSet implements IRecord, Serializable, Iterable<Record> {
         ds3.setMetaInfo(true);
 
         System.out.println(ds3.toJson());
-
-        System.out.println(new Gson().toJson(TDateTime.now()));
-        System.out.println(new Gson().toJson(new Date()));
 
         System.out.println(new DataSet().fromJson("{}"));
     }

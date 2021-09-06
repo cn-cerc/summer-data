@@ -3,6 +3,7 @@ package cn.cerc.core;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+@Deprecated
 public interface IRecord {
 
     boolean exists(String field);
@@ -18,8 +19,6 @@ public interface IRecord {
     double getDouble(String field);
 
     String getString(String field);
-
-    TDate getDate(String field);
 
     TDateTime getDateTime(String field);
 

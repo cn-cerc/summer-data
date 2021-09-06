@@ -5,7 +5,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -20,10 +19,12 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializer;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 
-public class Record implements IRecord, Serializable {
+public class Record implements Serializable {
     private static final Logger log = LoggerFactory.getLogger(Record.class);
     private static final long serialVersionUID = 4454304132898734723L;
     private RecordState state = RecordState.dsNone;
@@ -57,7 +58,6 @@ public class Record implements IRecord, Serializable {
         this.state = dataSetState;
     }
 
-    @Override
     public Record setField(String field, Object value) {
         if (field == null || "".equals(field)) {
             throw new RuntimeException("field is null!");
@@ -70,13 +70,17 @@ public class Record implements IRecord, Serializable {
         if (this.dataSet != null && this.dataSet.getSearch() != null)
             search = this.dataSet.getSearch();
 
+        Object data = value;
+        if (value instanceof Datetime) // 将Datetime转化为Date存储
+            data = ((Datetime) value).asBaseDate();
+
         if ((search == null) && (this.state != RecordState.dsEdit)) {
-            setValue(items, field, value);
+            setValue(items, field, data);
             return this;
         }
 
         Object oldValue = items.get(field);
-        if (compareValue(value, oldValue)) {
+        if (compareValue(data, oldValue)) {
             return this;
         }
 
@@ -89,7 +93,7 @@ public class Record implements IRecord, Serializable {
                 setValue(delta, field, oldValue);
             }
         }
-        setValue(items, field, value);
+        setValue(items, field, data);
 
         if (search != null)
             search.append(this);
@@ -110,10 +114,6 @@ public class Record implements IRecord, Serializable {
             map.put(field, ((BigDecimal) value).doubleValue());
         } else if (value instanceof LinkedTreeMap) {
             map.put(field, null);
-        } else if (value instanceof Date) {
-            map.put(field, value);
-        } else if (value instanceof TDateTime) {
-            map.put(field, ((TDateTime) value).getData());
         } else {
             map.put(field, value);
         }
@@ -138,7 +138,6 @@ public class Record implements IRecord, Serializable {
         }
     }
 
-    @Override
     public Object getField(String field) {
         if (field == null || "".equals(field)) {
             throw new RuntimeException("field is null!");
@@ -200,15 +199,22 @@ public class Record implements IRecord, Serializable {
         for (int i = 0; i < defs.size(); i++) {
             String field = defs.getFields().get(i);
             Object obj = this.getField(field);
-            if (obj instanceof TDateTime) {
+            if (obj instanceof Datetime) {
                 items.put(field, obj.toString());
             } else if (obj instanceof Date) {
-                items.put(field, (new TDateTime((Date) obj)).toString());
+                items.put(field, (new Datetime((Date) obj)).toString());
             } else {
                 items.put(field, obj);
             }
         }
-        Gson gson = new GsonBuilder().serializeNulls().create();
+
+        JsonSerializer<Double> gsonDouble = (src, typeOfSrc, context) -> {
+            if (src == src.longValue())
+                return new JsonPrimitive(src.longValue());
+            return new JsonPrimitive(src);
+        };
+
+        Gson gson = new GsonBuilder().registerTypeAdapter(Double.class, gsonDouble).serializeNulls().create();
         return gson.toJson(items);
     }
 
@@ -246,7 +252,6 @@ public class Record implements IRecord, Serializable {
         }
     }
 
-    @Override
     public boolean getBoolean(String field) {
         if (!defs.exists(field)) {
             defs.add(field);
@@ -266,7 +271,6 @@ public class Record implements IRecord, Serializable {
         }
     }
 
-    @Override
     public int getInt(String field) {
         if (!defs.exists(field)) {
             defs.add(field);
@@ -302,7 +306,6 @@ public class Record implements IRecord, Serializable {
         }
     }
 
-    @Override
     public BigInteger getBigInteger(String field) {
         if (!defs.exists(field)) {
             defs.add(field);
@@ -328,7 +331,6 @@ public class Record implements IRecord, Serializable {
         }
     }
 
-    @Override
     public BigDecimal getBigDecimal(String field) {
         if (!defs.exists(field)) {
             defs.add(field);
@@ -353,7 +355,6 @@ public class Record implements IRecord, Serializable {
         }
     }
 
-    @Override
     public double getDouble(String field) {
         if (!defs.exists(field)) {
             defs.add(field);
@@ -397,7 +398,6 @@ public class Record implements IRecord, Serializable {
         return Double.parseDouble(df.format(result));
     }
 
-    @Override
     public String getString(String field) {
         if (field == null) {
             throw new RuntimeException("field is null");
@@ -441,39 +441,30 @@ public class Record implements IRecord, Serializable {
         return value == null ? "" : value.replaceAll("'", "''");
     }
 
-    @Override
-    public TDate getDate(String field) {
-        return this.getDateTime(field).asDate();
-    }
-
-    @Override
-    public TDateTime getDateTime(String field) {
-        if (!defs.exists(field)) {
+    public Datetime getDatetime(String field) {
+        if (!defs.exists(field))
             defs.add(field);
-        }
 
         Object obj = this.getField(field);
         if (obj == null) {
-            return new TDateTime();
-        } else if (obj instanceof TDateTime) {
-            // return (TDateTime) obj;
-            throw new RuntimeException("Record not support TDateTime");
+            return Datetime.zero();
         } else if (obj instanceof String) {
-            String val = (String) obj;
-            TDateTime tdt = new TDateTime();
-            SimpleDateFormat sdf = new SimpleDateFormat(val.length() == 10 ? "yyyy-MM-dd" : "yyyy-MM-dd HH:mm:ss");
-            try {
-                Date date = sdf.parse(val);
-                tdt.setData(date);
-                return tdt;
-            } catch (ParseException e) {
-                throw new RuntimeException(e.getMessage());
-            }
+            return new Datetime((String) obj);
         } else if (obj instanceof Date) {
-            return new TDateTime((Date) obj);
+            return new Datetime((Date) obj);
         } else {
             throw new RuntimeException(String.format("%s Field not is %s.", field, obj.getClass().getName()));
         }
+    }
+
+    @Deprecated
+    public TDate getDate(String field) {
+        return new TDate(this.getDateTime(field).getTimestamp());
+    }
+
+    @Deprecated
+    public TDateTime getDateTime(String field) {
+        return new TDateTime(getDatetime(field).getTimestamp());
     }
 
     public void clear() {
@@ -481,7 +472,6 @@ public class Record implements IRecord, Serializable {
         delta.clear();
     }
 
-    @Override
     public boolean exists(String field) {
         return this.defs.exists(field);
     }
@@ -506,10 +496,10 @@ public class Record implements IRecord, Serializable {
     }
 
     public boolean isModify() {
-        switch (this.state){
+        switch (this.state) {
         case dsInsert:
             return true;
-        case dsEdit:{
+        case dsEdit: {
             if (delta.size() == 0) {
                 return false;
             }

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import cn.cerc.core.Datetime;
 import cn.cerc.core.ISession;
 import cn.cerc.core.Record;
 import cn.cerc.core.TDateTime;
@@ -150,7 +151,7 @@ public class BuildQuery implements IHandle {
 
     public BuildQuery byField(String field, TDateTime value) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        sqlWhere.add(String.format("%s='%s'", field, sdf.format(value.getData())));
+        sqlWhere.add(String.format("%s='%s'", field, sdf.format(value.asBaseDate())));
         return this;
     }
 
@@ -175,10 +176,10 @@ public class BuildQuery implements IHandle {
         return this;
     }
 
-    public BuildQuery byBetween(String field, TDateTime value1, TDateTime value2) {
+    public BuildQuery byBetween(String field, Datetime value1, Datetime value2) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        sqlWhere.add(String.format(" %s between '%s' and '%s' ", field, sdf.format(value1.getData()),
-                sdf.format(value2.getData())));
+        sqlWhere.add(String.format(" %s between '%s' and '%s' ", field, sdf.format(value1.asBaseDate()),
+                sdf.format(value2.asBaseDate())));
         return this;
     }
 

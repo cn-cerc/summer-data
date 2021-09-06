@@ -100,6 +100,8 @@ public class RecordUtils {
                                 field.setBoolean(obj, (Boolean) val);
                             } else if (TDateTime.class.getName().equals(field.getType().getName())) {
                                 field.set(obj, new TDateTime((Date) val));
+                            } else if (Datetime.class.getName().equals(field.getType().getName())) {
+                                field.set(obj, new Datetime((Date) val));
                             } else {
                                 throw new RuntimeException("error: " + field.getType().getName() + " as " + val.getClass().getName());
                             }

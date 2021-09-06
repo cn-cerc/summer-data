@@ -6,12 +6,11 @@ import java.math.BigInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.cerc.core.IRecord;
 import cn.cerc.core.Record;
 import cn.cerc.core.TDate;
 import cn.cerc.core.TDateTime;
 
-public class RedisRecord implements IRecord {
+public class RedisRecord {
     private static final Logger log = LoggerFactory.getLogger(RedisRecord.class);
 
     private String key;
@@ -122,38 +121,31 @@ public class RedisRecord implements IRecord {
         return connected;
     }
 
-    @Override
     public boolean getBoolean(String field) {
         return record.getBoolean(field);
     }
 
-    @Override
     public int getInt(String field) {
         return record.getInt(field);
     }
 
-    @Override
     public double getDouble(String field) {
         return record.getDouble(field);
     }
 
-    @Override
     public String getString(String field) {
         return record.getString(field);
     }
 
-    @Override
-    public TDate getDate(String field) {
-        return record.getDate(field);
-    }
-
-    @Override
     public TDateTime getDateTime(String field) {
         return record.getDateTime(field);
     }
 
-    @Override
-    public IRecord setField(String field, Object value) {
+    public TDate getDate(String field) {
+        return record.getDate(field);
+    }
+    
+    public RedisRecord setField(String field, Object value) {
         this.modified = true;
         record.setField(field, value);
         return this;
@@ -172,22 +164,18 @@ public class RedisRecord implements IRecord {
         return this.record;
     }
 
-    @Override
     public boolean exists(String field) {
         return record.exists(field);
     }
 
-    @Override
     public Object getField(String field) {
         return record.getField(field);
     }
 
-    @Override
     public BigInteger getBigInteger(String field) {
         return record.getBigInteger(field);
     }
 
-    @Override
     public BigDecimal getBigDecimal(String field) {
         return record.getBigDecimal(field);
     }

@@ -10,9 +10,9 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
+import cn.cerc.core.Datetime;
 import cn.cerc.core.ISession;
 import cn.cerc.core.Record;
-import cn.cerc.core.TDateTime;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.NosqlOperator;
 
@@ -70,10 +70,8 @@ public class MongoOperator implements NosqlOperator {
                 continue;
             }
             Object obj = record.getField(field);
-            if (obj instanceof TDateTime) {
-                doc.append(field, obj.toString());
-            } else if (obj instanceof Date) {
-                doc.append(field, (new TDateTime((Date) obj)).toString());
+            if (obj instanceof Date) {
+                doc.append(field, (new Datetime((Date) obj)).toString());
             } else {
                 doc.append(field, obj);
             }

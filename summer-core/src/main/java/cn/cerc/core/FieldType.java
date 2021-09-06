@@ -12,11 +12,14 @@ public final class FieldType {
 
     static {
         names.put("b", "boolean");
-        names.put("d", "TDate"); // TDate
-        names.put("t", "TDateTime"); // TDateTime or Date
-        names.put("s", "string"); // nvarchar
         names.put("n", "numeric"); // 整数 integer or long
         names.put("f", "float"); // 浮点 float or double
+        names.put("s", "string"); // nvarchar
+        //
+        names.put("d", "FastDate"); // FastDate
+        names.put("t", "FastTime"); // FastTime
+        names.put("dt", "Dateime"); // Datetime
+        //
         names.put("o", "other"); // other object
     }
 
@@ -41,9 +44,11 @@ public final class FieldType {
         switch (t) {
         case "o":
         case "b":
-        case "d":
         case "t": {
             return dataType.length() == 1;
+        }
+        case "d": {
+            return dataType.length() == 1 || "t".equals(dataType.substring(1, dataType.length()));
         }
         case "s": {
             String size = "0";
@@ -84,9 +89,9 @@ public final class FieldType {
         switch (t) {
         case "o":
         case "b":
-        case "d":
-        case "t": {
-            updateType(t, 0);
+        case "t":
+        case "d": {
+            updateType(dataType, 0);
             break;
         }
         case "s": {
@@ -119,10 +124,12 @@ public final class FieldType {
     public FieldType setType(Class<?> clazz) {
         if (Boolean.class == clazz)
             this.updateType("b", 0);
-        else if (TDate.class == clazz)
+        else if (FastDate.class.isAssignableFrom(clazz))
             this.updateType("d", 0);
-        else if ((TDateTime.class == clazz) || (java.util.Date.class == clazz))
+        else if (FastTime.class.isAssignableFrom(clazz))
             this.updateType("t", 0);
+        else if ((Datetime.class.isAssignableFrom(clazz)) || java.util.Date.class == clazz)
+            this.updateType("dt", 0);
         else if (String.class == clazz) {
             this.updateType("s", 0);
         } else if (Integer.class == clazz) {
@@ -186,7 +193,7 @@ public final class FieldType {
         }
 
         if (!dataType.equals(this.dataType))
-            throw new RuntimeException("dataType not update");
+            throw new RuntimeException(String.format("dataType not update from %s to: %s", this.dataType, dataType));
 
         if (length > this.length)
             this.length = length;
@@ -210,36 +217,4 @@ public final class FieldType {
         return this;
     }
 
-    public static void main(String[] args) {
-        System.out.println(new FieldType().setType("b"));
-        System.out.println(new FieldType().setType("d"));
-        System.out.println(new FieldType().setType("t"));
-        System.out.println(new FieldType().setType("s10"));
-        System.out.println(new FieldType().setType("n1"));
-        System.out.println(new FieldType().setType("n2"));
-        System.out.println(new FieldType().setType("f2"));
-        System.out.println(new FieldType().setType("f1,5"));
-
-        System.out.println("*****");
-        System.out.println(new FieldType().setType(Boolean.class));
-        System.out.println(new FieldType().setType(TDate.class));
-        System.out.println(new FieldType().setType(TDateTime.class));
-        System.out.println(new FieldType().setType(String.class).setLength(50));
-        System.out.println(new FieldType().setType(Integer.class));
-        System.out.println(new FieldType().setType(Long.class));
-        System.out.println(new FieldType().setType(Float.class).setDecimal(4));
-        System.out.println(new FieldType().setType(Double.class).setDecimal(4));
-
-        System.out.println("*****");
-        System.out.println(new FieldType().put(true));
-        System.out.println(new FieldType().put(TDateTime.now().asDate()));
-        System.out.println(new FieldType().put(TDateTime.now()));
-        System.out.println(new FieldType().put("a").put("abc"));
-        System.out.println(new FieldType().put(1));
-        System.out.println(new FieldType().put(12121l));
-        System.out.println(new FieldType().put(12121f));
-        System.out.println(new FieldType().put(12121.32f));
-        System.out.println(new FieldType().put(12.323).put(12.3233));
-//        System.out.println(new FieldType().put(new Date()));
-    }
 }

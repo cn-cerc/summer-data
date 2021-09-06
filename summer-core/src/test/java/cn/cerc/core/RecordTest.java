@@ -26,7 +26,7 @@ public class RecordTest {
         String field1 = "code";
         String value1 = "value";
         item.setField(field1, value1);
-        assertEquals(value1, (String) item.getField(field1));
+        assertEquals(value1, item.getField(field1));
 
         String field2 = "num";
         Double value2 = 1.12345678;
@@ -81,5 +81,19 @@ public class RecordTest {
         rs.setField("Code_", "d");
         assertEquals(rs.getDelta().size(), 1);
         assertTrue(rs.getOldField("Code_") == val);
+    }
+
+    @Test
+    public void test_map() {
+        Record rs = new Record();
+        rs.setField("A", "A001");
+        rs.setField("B", "B001");
+        rs.setField("C", "C001");
+        int i = 0;
+        for (@SuppressWarnings("unused")
+        String key : rs.getItems().keySet()) {
+            i++;
+        }
+        assertEquals(i, rs.size());
     }
 }

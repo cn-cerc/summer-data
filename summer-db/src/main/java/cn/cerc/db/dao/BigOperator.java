@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.cerc.core.ClassData;
 import cn.cerc.core.ClassFactory;
-import cn.cerc.core.TDate;
+import cn.cerc.core.Datetime;
 import cn.cerc.core.TDateTime;
 
 public class BigOperator {
@@ -84,13 +84,9 @@ public class BigOperator {
                         } else if ("boolean".equals(field.getType().getName())) {
                             field.setBoolean(obj, (Boolean) val);
                         } else if (TDateTime.class.getName().equals(field.getType().getName())) {
-                            if (val instanceof TDate) {
-                                field.set(obj, new TDateTime(((TDate) val).getData()));
-                            } else if (val instanceof TDateTime) {
-                                field.set(obj, new TDateTime(((TDateTime) val).getData()));
-                            } else {
-                                field.set(obj, new TDateTime((Date) val));
-                            }
+                            field.set(obj, new TDateTime((Date) val));
+                        } else if (Datetime.class.getName().equals(field.getType().getName())) {
+                            field.set(obj, new Datetime((Date) val));
                         } else {
                             throw new RuntimeException(String.format("error: fieldCode-%s, value-%s %s as %s",
                                     fieldCode, val, field.getType().getName(), val.getClass().getName()));

@@ -28,10 +28,8 @@ public class RecordComparator implements Comparator<Record> {
                 }
             } else if (v1 instanceof Integer) {
                 tmp = o1.getInt(field) - o2.getInt(field);
-            } else if (v1 instanceof TDate) {
-                tmp = o1.getDate(field).compareTo(o2.getDate(field));
-            } else if (v1 instanceof TDateTime) {
-                tmp = o1.getDateTime(field).compareTo(o2.getDateTime(field));
+            } else if (v1 instanceof Datetime) {
+                tmp = o1.getDatetime(field).compareTo(o2.getDatetime(field));
             } else {
                 tmp = o1.getString(field).compareTo(o2.getString(field));
             }

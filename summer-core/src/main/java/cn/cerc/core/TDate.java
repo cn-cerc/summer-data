@@ -1,25 +1,24 @@
 package cn.cerc.core;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/**
- * 日期对象
- *
- * @author 张弓
- */
+@Deprecated
 public class TDate extends TDateTime {
-    private static final ClassResource res = new ClassResource(TDate.class, SummerCore.ID);
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -8262001955911346741L;
 
     public TDate(Date date) {
-        this.setData(date);
+        super(date);
+        this.setDateKind(DateKind.OnlyDate);
+    }
+
+    public TDate(long date) {
+        super(date);
+        this.setDateKind(DateKind.OnlyDate);
     }
 
     public TDate(String dateValue) {
-        TDateTime val = new TDateTime(dateValue);
-        this.setData(val.getData());
+        super(dateValue);
+        this.setDateKind(DateKind.OnlyDate);
     }
 
     @Deprecated
@@ -27,41 +26,11 @@ public class TDate extends TDateTime {
         return TDate.today();
     }
 
-    // 当天，不带时分秒
+    @Deprecated
     public static TDate today() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = new Date();
-        String str = sdf.format(date);
-        try {
-            date = sdf.parse(str);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            throw new RuntimeException(res.getString(2, "日期类型转换错误"));
-        }
-        return new TDate(date);
+        TDate result = new TDate(System.currentTimeMillis());
+        result.cut(DateType.Hour);
+        return result;
     }
 
-    public static void main(String[] args) {
-        TDate val;
-        val = new TDate(TDateTime.now().incMonth(-13).getData());
-        System.out.println(val.getShortValue());
-        val = TDate.today();
-        System.out.println(val.getShortValue());
-    }
-
-    @Override
-    public String toString() {
-        return this.getDate();
-    }
-
-    public String getShortValue() {
-        String year = this.getYearMonth().substring(2, 4);
-        int month = this.getMonth();
-        int day = this.getDay();
-        if (TDateTime.now().compareYear(this) != 0) {
-            return String.format("%s年%d月", year, month);
-        } else {
-            return String.format("%d月%d日", month, day);
-        }
-    }
 }
