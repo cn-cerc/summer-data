@@ -157,7 +157,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
 
     /**
      * this 减 target
-     * 
+     *
      * @param dateType 指定字段
      * @param target   目标
      * @return 返回指定的字段数据差值
@@ -195,7 +195,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
 
     /**
      * 增、减指定的字段数据
-     * 
+     *
      * @param dateType 指定字段
      * @param offset   偏移量，可为正，也可为负
      * @return this 当前对象
@@ -238,7 +238,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
 
     /**
      * 仅返回日期部分
-     * 
+     *
      * @return 创建新的对象 FastDate
      */
     public final FastDate toFastDate() {
@@ -247,7 +247,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
 
     /**
      * 仅返回时间部分
-     * 
+     *
      * @return 创建新的对象 FastTime
      */
     public final FastTime toFastTime() {
@@ -310,7 +310,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
 
     /**
      * 切除指定的字段数据
-     * 
+     *
      * @param dateType 从指定的字段开始切除（年月日设置为1，时分秒设置为0）
      * @return this 当前对象
      */
@@ -341,7 +341,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
 
     /**
      * 返回起始日期，等同于new Datetime("0001-01-01 00:00:00")
-     * 
+     *
      * @return 返回新的对象
      */
     public static Datetime zero() {
@@ -350,7 +350,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
 
     /**
      * 返回当前时间的当月第1天
-     * 
+     *
      * @return 返回新的对象
      */
     public Datetime toMonthBof() {
@@ -361,7 +361,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
 
     /**
      * 返回当前时间的当月最后1天
-     * 
+     *
      * @return 返回新的对象
      */
     public final Datetime toMonthEof() {
@@ -505,9 +505,9 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
 
     /**
      * 判断当前对象是否在指定对象之后
-     * 
+     *
      * @param target 比较对象
-     * @return this > target
+     * @return 当前时间戳 大于 目标时间戳
      */
     public boolean after(Datetime target) {
         return this.getTimestamp() > target.getTimestamp();
@@ -515,9 +515,9 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
 
     /**
      * 判断当前对象是否在指定对象之前
-     * 
+     *
      * @param target 比较对象
-     * @return this < target
+     * @return 当前时间戳 小于 目标时间戳
      */
     public boolean before(Datetime target) {
         return this.getTimestamp() < target.getTimestamp();
@@ -525,7 +525,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
 
     /**
      * 获取指定日期的开始时间
-     * 
+     *
      * @return 返回新的对象
      */
     public final Datetime toDayStart() {
@@ -536,7 +536,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
 
     /**
      * 获取指定日期的结束时刻
-     * 
+     *
      * @return 返回新的对象
      */
     public final Datetime toDayEnd() {

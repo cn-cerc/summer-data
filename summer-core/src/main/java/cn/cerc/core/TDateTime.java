@@ -200,7 +200,7 @@ public class TDateTime extends Datetime {
     }
 
     @Deprecated
-    public static final String FormatDateTime(String fmt, Datetime value) {
+    public static String FormatDateTime(String fmt, Datetime value) {
         Map<String, String> map = new HashMap<>();
         map.put("YYYYMMDD", "yyyyMMdd");
         map.put("YYMMDD", "yyMMdd");
@@ -220,7 +220,7 @@ public class TDateTime extends Datetime {
     }
 
     @Deprecated
-    public static final String FormatDateTime(String fmt, Date value) {
+    public static String FormatDateTime(String fmt, Date value) {
         return new Datetime(value).format(fmt);
     }
 
@@ -229,9 +229,9 @@ public class TDateTime extends Datetime {
      *
      * @param deadTime    起始时间
      * @param currentTime 截止时间
-     * @return 若 deadTime < currentTime 返回 true;
+     * @return 若 截至时间 小于 当前时间 返回 true;
      */
-    public static final boolean isTimeOut(Datetime deadTime, Datetime currentTime) {
+    public static boolean isTimeOut(Datetime deadTime, Datetime currentTime) {
         return deadTime.before(currentTime);
     }
 

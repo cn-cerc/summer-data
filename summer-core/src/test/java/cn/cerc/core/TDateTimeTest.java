@@ -171,7 +171,7 @@ public class TDateTimeTest {
 
     @Test
     public void test_timeOut() {
-        TDateTime dead = TDateTime.now().incDay(1);
+        TDateTime dead = TDateTime.now().incDay(-1);
         assertTrue(TDateTime.isTimeOut(dead, TDateTime.now()));
 
         TDateTime deadTime = new TDateTime("2021/09/05");
