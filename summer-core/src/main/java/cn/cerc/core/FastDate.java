@@ -33,20 +33,5 @@ public class FastDate extends Datetime {
         this.cut(DateType.Hour);
         return this;
     }
-    
-    public FastDate incYear(int offset) {
-        inc(DateType.Year, offset);
-        return this;
-    }
-    
-    public FastDate incMonth(int offset) {
-        inc(DateType.Month, offset);
-        return this;
-    }
-    
-    public FastDate incDay(int offset) {
-        inc(DateType.Day, offset);
-        return this;
-    }
 
 }

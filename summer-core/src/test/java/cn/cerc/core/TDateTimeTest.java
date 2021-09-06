@@ -166,4 +166,10 @@ public class TDateTimeTest {
                 + Integer.parseInt(obj.getYearMonth().substring(4, 6));
         assertEquals(v1 - v2, offset);
     }
+    
+    @Test
+    public void test_timeOut() {
+        TDateTime dead = TDateTime.now().incDay(1);
+        assertTrue(TDateTime.isTimeOut(dead, TDateTime.now()));
+    }
 }

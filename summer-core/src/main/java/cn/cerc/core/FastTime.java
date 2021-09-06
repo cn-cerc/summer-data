@@ -36,19 +36,4 @@ public class FastTime extends Datetime {
         return this;
     }
 
-    public FastTime incHour(int offset) {
-        inc(DateType.Hour, offset);
-        return this;
-    }
-
-    public FastTime incMinuteh(int offset) {
-        inc(DateType.Minute, offset);
-        return this;
-    }
-
-    public FastTime incSecond(int offset) {
-        inc(DateType.Second, offset);
-        return this;
-    }
-
 }

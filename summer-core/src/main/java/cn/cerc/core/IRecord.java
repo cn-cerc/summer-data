@@ -20,7 +20,7 @@ public interface IRecord {
 
     String getString(String field);
 
-    TDateTime getDateTime(String field);
+    Datetime getDatetime(String field);
 
     Object setField(String field, Object value);
 

@@ -10,7 +10,6 @@ import java.util.Map;
 import cn.cerc.core.Datetime;
 import cn.cerc.core.ISession;
 import cn.cerc.core.Record;
-import cn.cerc.core.TDateTime;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
 
@@ -149,9 +148,8 @@ public class BuildQuery implements IHandle {
         return this;
     }
 
-    public BuildQuery byField(String field, TDateTime value) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        sqlWhere.add(String.format("%s='%s'", field, sdf.format(value.asBaseDate())));
+    public BuildQuery byField(String field, Datetime value) {
+        sqlWhere.add(String.format("%s='%s'", field, value.format("yyyy-MM-dd HH:mm:ss")));
         return this;
     }
 

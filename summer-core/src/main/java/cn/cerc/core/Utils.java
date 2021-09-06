@@ -419,7 +419,6 @@ public class Utils {
                         int value = record.getInt(dbField);
                         Method set = clazz.getMethod("set" + field, int.class);
                         set.invoke(obj, value);
-
                     } else if ((method.getType().equals(Double.class))) {
                         Double value = record.getDouble(dbField);
                         Method set = clazz.getMethod("set" + field, value.getClass());
@@ -428,7 +427,6 @@ public class Utils {
                         double value = record.getDouble(dbField);
                         Method set = clazz.getMethod("set" + field, double.class);
                         set.invoke(obj, value);
-
                     } else if ((method.getType().equals(Long.class))) {
                         Double value = record.getDouble(dbField);
                         Method set = clazz.getMethod("set" + field, value.getClass());
@@ -437,7 +435,6 @@ public class Utils {
                         long value = (long) record.getDouble(dbField);
                         Method set = clazz.getMethod("set" + field, long.class);
                         set.invoke(obj, value);
-
                     } else if (method.getType().equals(Boolean.class)) {
                         Boolean value = record.getBoolean(dbField);
                         Method set = clazz.getMethod("set" + field, value.getClass());
@@ -446,13 +443,16 @@ public class Utils {
                         boolean value = record.getBoolean(dbField);
                         Method set = clazz.getMethod("set" + field, boolean.class);
                         set.invoke(obj, value);
-
+                    } else if (method.getType().equals(TDate.class)) {
+                        TDate value = record.getDate(dbField);
+                        Method set = clazz.getMethod("set" + field, value.getClass());
+                        set.invoke(obj, value);
                     } else if (method.getType().equals(TDateTime.class)) {
                         TDateTime value = record.getDateTime(dbField);
                         Method set = clazz.getMethod("set" + field, value.getClass());
                         set.invoke(obj, value);
-                    } else if (method.getType().equals(TDate.class)) {
-                        TDate value = record.getDate(dbField);
+                    } else if (method.getType().equals(Datetime.class)) {
+                        Datetime value = record.getDatetime(dbField);
                         Method set = clazz.getMethod("set" + field, value.getClass());
                         set.invoke(obj, value);
                     } else if (method.getType().equals(String.class)) {

@@ -340,15 +340,6 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
     }
 
     /**
-     * 返回今天的日期，不带时间
-     * 
-     * @return 返回新的对象
-     */
-    public static Datetime today() {
-        return new Datetime().cut(DateType.Hour);
-    }
-
-    /**
      * 返回起始日期，等同于new Datetime("0001-01-01 00:00:00")
      * 
      * @return 返回新的对象
@@ -512,10 +503,22 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
         }
     }
 
+    /**
+     * 判断当前对象是否在指定对象之后
+     * 
+     * @param target 比较对象
+     * @return this > target
+     */
     public boolean after(Datetime target) {
         return this.getTimestamp() > target.getTimestamp();
     }
 
+    /**
+     * 判断当前对象是否在指定对象之前
+     * 
+     * @param target 比较对象
+     * @return this < target
+     */
     public boolean before(Datetime target) {
         return this.getTimestamp() < target.getTimestamp();
     }
@@ -598,6 +601,26 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
         if (source.size() != target.size())
             return false;
         return source.containsAll(target);
+    }
+
+    @Deprecated
+    public Datetime incDay(int offset) {
+        return inc(DateType.Day, offset);
+    }
+
+    @Deprecated
+    public int getDay() {
+        return get(DateType.Day);
+    }
+
+    @Deprecated
+    public int compareDay(Datetime target) {
+        return this.subtract(DateType.Day, target);
+    }
+
+    @Deprecated
+    public Datetime incMonth(int offset) {
+        return inc(DateType.Month, offset);
     }
 
 }

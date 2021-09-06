@@ -63,11 +63,13 @@ public class TDateTime extends Datetime {
         return this;
     }
 
+    @Override
     public TDateTime incDay(int offset) {
         inc(DateType.Day, offset);
         return this;
     }
 
+    @Override
     public TDateTime incMonth(int offset) {
         TDateTime result = this.clone();
         result.inc(DateType.Month, offset);
@@ -80,6 +82,7 @@ public class TDateTime extends Datetime {
     }
 
     // 返回value的日值
+    @Override
     public final int getDay() {
         return get(DateType.Day);
     }
@@ -224,12 +227,12 @@ public class TDateTime extends Datetime {
     /**
      * 计算时间是否到期(精确到秒)
      *
-     * @param startTime 起始时间
-     * @param endTime   截止时间
-     * @return 是否超时
+     * @param deadTime    起始时间
+     * @param currentTime 截止时间
+     * @return 若 deadTime < currentTime 返回 true;
      */
-    public static final boolean isTimeOut(Datetime startTime, Datetime endTime) {
-        return startTime.after(endTime);
+    public static final boolean isTimeOut(Datetime deadTime, Datetime currentTime) {
+        return deadTime.before(currentTime);
     }
 
     public final Date getData() {
@@ -260,6 +263,7 @@ public class TDateTime extends Datetime {
 
     // 若当前值大，则返回正数，否则返回负数
     // 返回this - to 的差异天数 ,返回相对值
+    @Override
     public final int compareDay(Datetime from) {
         return this.subtract(DateType.Day, from);
     }

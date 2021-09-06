@@ -6,9 +6,8 @@ import java.math.BigInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.cerc.core.Datetime;
 import cn.cerc.core.Record;
-import cn.cerc.core.TDate;
-import cn.cerc.core.TDateTime;
 
 public class RedisRecord {
     private static final Logger log = LoggerFactory.getLogger(RedisRecord.class);
@@ -137,14 +136,15 @@ public class RedisRecord {
         return record.getString(field);
     }
 
-    public TDateTime getDateTime(String field) {
-        return record.getDateTime(field);
+    public Datetime getDatetime(String field) {
+        return record.getDatetime(field);
     }
 
-    public TDate getDate(String field) {
-        return record.getDate(field);
+    @Deprecated
+    public Datetime getDateTime(String field) {
+        return record.getDatetime(field);
     }
-    
+
     public RedisRecord setField(String field, Object value) {
         this.modified = true;
         record.setField(field, value);

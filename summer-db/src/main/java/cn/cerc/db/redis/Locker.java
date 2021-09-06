@@ -1,7 +1,6 @@
 package cn.cerc.db.redis;
 
 import java.io.Closeable;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.cerc.core.ClassResource;
-import cn.cerc.core.TDateTime;
+import cn.cerc.core.Datetime;
 import cn.cerc.db.SummerDB;
 import redis.clients.jedis.Jedis;
 
@@ -87,7 +86,7 @@ public class Locker implements Closeable {
                             break;
                         }
                     }
-                    TDateTime tmp = new TDateTime(new Date(lastTime));
+                    Datetime tmp = new Datetime(lastTime);
                     this.message = String.format(res.getString(3, "[%s]%s锁定失败， %s完成后(%s)再试"), key, flag, args[1], tmp.getTime());
                 } else {
                     this.message = String.format(res.getString(4, "[%s]%s锁定失败， %s完成后再试"), key, flag, currentValue);

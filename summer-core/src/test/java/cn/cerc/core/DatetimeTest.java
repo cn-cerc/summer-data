@@ -1,10 +1,10 @@
 package cn.cerc.core;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -85,12 +85,12 @@ public class DatetimeTest {
         assertEquals(9, self.getMonthValue());// 本年第 ? 月
         assertEquals(249, self.getDayOfYear());// 本年第 ? 天
         assertEquals(6, self.getDayOfMonth());// 本月第 ? 天
-        assertEquals(1, dt2.subtract(DateType.Year, dt1));//差异年数
-        assertEquals(12, dt2.subtract(DateType.Month, dt1));//差异月数
-        assertEquals(364, dt2.subtract(DateType.Day, dt1));//差异日数
-        assertEquals(8760, dt2.subtract(DateType.Hour, dt1));//差异时数
-        assertEquals(525600, dt2.subtract(DateType.Minute, dt1));//差异分数
-        assertEquals(31536000, dt2.subtract(DateType.Second, dt1));//差异秒数
+        assertEquals(1, dt2.subtract(DateType.Year, dt1));// 差异年数
+        assertEquals(12, dt2.subtract(DateType.Month, dt1));// 差异月数
+        assertEquals(364, dt2.subtract(DateType.Day, dt1));// 差异日数
+        assertEquals(8760, dt2.subtract(DateType.Hour, dt1));// 差异时数
+        assertEquals(525600, dt2.subtract(DateType.Minute, dt1));// 差异分数
+        assertEquals(31536000, dt2.subtract(DateType.Second, dt1));// 差异秒数
     }
 
     @Test
@@ -218,4 +218,12 @@ public class DatetimeTest {
         assertEquals(jsonStr, item.toString());
     }
 
+    @Test
+    public void test_timeout() {
+        TDateTime deadTime = new TDateTime("2021/09/05");
+        TDateTime current = new TDateTime("2021/09/06");
+        assertFalse(deadTime.getData().after(current.getData()));
+        assertTrue(TDateTime.isTimeOut(deadTime, current));
+        assertTrue(deadTime.before(new Datetime()));
+    }
 }

@@ -740,7 +740,7 @@ public class DataSet implements Serializable, Iterable<Record> {
         ds1.setMessage("test");
 
         ds1.getHead().setField("title", "test");
-        ds1.getHead().setField("tbDate", Datetime.today());
+        ds1.getHead().setField("tbDate", new FastDate());
         ds1.getHead().setField("appDate", new Date());
         ds1.getHead().setField("user", null);
 
