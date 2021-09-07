@@ -146,6 +146,8 @@ public class DatetimeTest {
         assertEquals(text, new Datetime(text).toString());
         text = "23:59";
         assertEquals("23:59:00", new Datetime(text).toString());
+        text = "2015-03-17";
+        assertEquals("2015-03-17", new Datetime(text).toString());
     }
 
     @Test
@@ -213,5 +215,4 @@ public class DatetimeTest {
         assertEquals("AAA", item.getString("String"));
         assertEquals(jsonStr, item.toString());
     }
-
 }
