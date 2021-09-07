@@ -445,10 +445,12 @@ public class Utils {
                         Method set = clazz.getMethod("set" + field, boolean.class);
                         set.invoke(obj, value);
                     } else if (method.getType().equals(TDate.class)) {
+                        @SuppressWarnings("deprecation")
                         TDate value = record.getDate(dbField);
                         Method set = clazz.getMethod("set" + field, value.getClass());
                         set.invoke(obj, value);
                     } else if (method.getType().equals(TDateTime.class)) {
+                        @SuppressWarnings("deprecation")
                         TDateTime value = record.getDateTime(dbField);
                         Method set = clazz.getMethod("set" + field, value.getClass());
                         set.invoke(obj, value);
