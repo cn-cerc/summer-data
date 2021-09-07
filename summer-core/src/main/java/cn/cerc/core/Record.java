@@ -322,6 +322,8 @@ public class Record implements Serializable {
             return new BigInteger(str);
         } else if (obj instanceof Integer) {
             return BigInteger.valueOf((Integer) obj);
+        } else if ((obj instanceof Short)) {
+            return BigInteger.valueOf((Short) obj);
         } else if (obj instanceof Double) {
             return BigInteger.valueOf(((Double) obj).longValue());
         } else if (obj instanceof Long) {
@@ -346,6 +348,8 @@ public class Record implements Serializable {
             return new BigDecimal(str);
         } else if (obj instanceof Integer) {
             return BigDecimal.valueOf((Integer) obj);
+        } else if (obj instanceof Short) {
+            return BigDecimal.valueOf((Short) obj);
         } else if (obj instanceof Double) {
             return BigDecimal.valueOf(((Double) obj).longValue());
         } else if (obj instanceof Long) {
