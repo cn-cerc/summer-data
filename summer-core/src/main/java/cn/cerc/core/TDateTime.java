@@ -48,32 +48,31 @@ public class TDateTime extends Datetime {
         return new TDateTime(System.currentTimeMillis());
     }
 
+    @Override
+    public final TDateTime inc(DateType dateType, int offset) {
+        return new TDateTime(super.inc(dateType, offset).getTimestamp());
+    }
+
     public final TDateTime incSecond(int offset) {
-        inc(DateType.Second, offset);
-        return this;
+        return inc(DateType.Second, offset);
     }
 
     public final TDateTime incMinute(int offset) {
-        inc(DateType.Minute, offset);
-        return this;
+        return inc(DateType.Minute, offset);
     }
 
     public final TDateTime incHour(int offset) {
-        inc(DateType.Hour, offset);
-        return this;
+        return inc(DateType.Hour, offset);
     }
 
     @Override
     public TDateTime incDay(int offset) {
-        inc(DateType.Day, offset);
-        return this;
+        return inc(DateType.Day, offset);
     }
 
     @Override
     public TDateTime incMonth(int offset) {
-        TDateTime result = this.clone();
-        result.inc(DateType.Month, offset);
-        return result;
+        return inc(DateType.Month, offset);
     }
 
     // 返回value的月值 1-12
@@ -98,13 +97,11 @@ public class TDateTime extends Datetime {
     }
 
     public final TDateTime monthBof() {
-        Datetime result = this.toMonthBof();
-        return new TDateTime(result.getTimestamp());
+        return new TDateTime(this.toMonthBof().getTimestamp());
     }
 
     public final TDateTime monthEof() {
-        Datetime result = this.toMonthEof();
-        return new TDateTime(result.getTimestamp());
+        return new TDateTime(this.toMonthEof().getTimestamp());
     }
 
     public static TDateTime fromDate(String dateValue) {
@@ -242,7 +239,7 @@ public class TDateTime extends Datetime {
     public final TDateTime setData(Date date) {
         if (date == null)
             throw new RuntimeException("data is null");
-        setTimestamp(date.getTime());
+        this.setTimestamp(date.getTime());
         return this;
     }
 
@@ -265,16 +262,17 @@ public class TDateTime extends Datetime {
     // 返回this - to 的差异天数 ,返回相对值
     @Override
     public final int compareDay(Datetime from) {
-        return this.subtract(DateType.Day, from);
+        return subtract(DateType.Day, from);
     }
 
     // 原MonthsBetween，改名为：compareMonth
+    @Override
     public final int compareMonth(Datetime from) {
-        return this.subtract(DateType.Month, from);
+        return subtract(DateType.Month, from);
     }
 
     public final int compareYear(Datetime from) {
-        return this.subtract(DateType.Year, from);
+        return subtract(DateType.Year, from);
     }
 
     @Override

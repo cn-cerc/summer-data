@@ -200,7 +200,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
      * @param offset   偏移量，可为正，也可为负
      * @return this 新的对象
      */
-    public final Datetime inc(DateType dateType, int offset) {
+    public Datetime inc(DateType dateType, int offset) {
         LocalDateTime ldt = this.asLocalDateTime();
         switch (dateType) {
         case Year:
@@ -224,7 +224,9 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
         default:
             break;
         }
-        return new Datetime(ldt.atZone(LocalZone).toInstant().toEpochMilli());
+        Datetime result = this.clone();
+        result.setTimestamp(ldt.atZone(LocalZone).toInstant().toEpochMilli());
+        return result;
     }
 
     public final Date asBaseDate() {

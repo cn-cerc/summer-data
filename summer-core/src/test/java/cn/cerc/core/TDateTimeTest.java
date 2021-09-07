@@ -14,11 +14,11 @@ import cn.cerc.core.Datetime.DateType;
 
 @SuppressWarnings("deprecation")
 public class TDateTimeTest {
-    private String ym = "201512";
     private TDateTime obj;
 
     @Test
     public void test_getYearMonth() throws ParseException {
+        String ym = "201512";
         obj = TDateTime.StrToDate(ym);
         String val = obj.getYearMonth();
         assertEquals("年月与日期互转", ym, val);
@@ -26,6 +26,7 @@ public class TDateTimeTest {
 
     @Test
     public void test_incHour() throws ParseException {
+        String ym = "201512";
         obj = TDateTime.StrToDate(ym).incHour(-1);
         obj.setOptions(Datetime.yyyyMMdd_HHmmss);
         assertEquals("减1小时", obj.toString(), "2015-11-30 23:00:00");
@@ -42,6 +43,7 @@ public class TDateTimeTest {
 
     @Test
     public void test_incMonth() throws ParseException {
+        String ym = "201512";
         obj = TDateTime.StrToDate(ym).incMonth(-1);
         assertEquals("取上月初", obj.getYearMonth(), "201511");
 
@@ -69,6 +71,7 @@ public class TDateTimeTest {
 
     @Test
     public void test_monthEof() throws ParseException {
+        String ym = "201512";
         obj = TDateTime.StrToDate(ym).monthEof();
         assertEquals("取上月末", obj.getDate(), "2015-12-31");
     }

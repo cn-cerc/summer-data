@@ -1,5 +1,7 @@
 package cn.cerc.core;
 
+import java.time.LocalDateTime;
+
 public class FastTime extends Datetime {
     private static final long serialVersionUID = -5117772213865216275L;
 
@@ -30,9 +32,11 @@ public class FastTime extends Datetime {
     }
 
     public FastTime cutDate() {
-        this.inc(DateType.Year, -this.get(DateType.Year) + 1);
-        this.inc(DateType.Month, -this.get(DateType.Month) + 1);
-        this.inc(DateType.Day, -this.get(DateType.Day) + 1);
+        LocalDateTime ldt = this.asLocalDateTime();
+        ldt = ldt.plusYears(1 - ldt.getYear());
+        ldt = ldt.plusMonths(1 - ldt.getMonthValue());
+        ldt = ldt.plusDays(1 - ldt.getDayOfMonth());
+        this.setTimestamp(ldt.atZone(LocalZone).toInstant().toEpochMilli());
         return this;
     }
 

@@ -93,20 +93,20 @@ public class DatetimeTest {
     public void test_inc() {
         String text = "2021/09/03 08:23:50";
         Datetime dt = new Datetime(text).setDateSeparator("/");
-        dt.inc(DateType.Second, 5);
+        dt = dt.inc(DateType.Second, 5);
         assertEquals(dt.toString(), "2021/09/03 08:23:55");
-        dt.inc(DateType.Minute, 5);
+        dt = dt.inc(DateType.Minute, 5);
         assertEquals(dt.toString(), "2021/09/03 08:28:55");
-        dt.inc(DateType.Hour, 2);
+        dt = dt.inc(DateType.Hour, 2);
         assertEquals(dt.toString(), "2021/09/03 10:28:55");
-        dt.inc(DateType.Day, 2);
+        dt = dt.inc(DateType.Day, 2);
         assertEquals(dt.toString(), "2021/09/05 10:28:55");
-        dt.inc(DateType.Month, 2);
+        dt = dt.inc(DateType.Month, 2);
         assertEquals(dt.toString(), "2021/11/05 10:28:55");
-        dt.inc(DateType.Year, 3);
+        dt = dt.inc(DateType.Year, 3);
         assertEquals(dt.toString(), "2024/11/05 10:28:55");
         // 跨年
-        dt.inc(DateType.Month, 13);
+        dt = dt.inc(DateType.Month, 13);
         assertEquals(dt.toString(), "2025/12/05 10:28:55");
     }
 
