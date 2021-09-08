@@ -416,8 +416,8 @@ public class Record implements Serializable {
             if (obj instanceof String) {
                 result = (String) obj;
             } else if (obj instanceof Date) {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                result = sdf.format(obj);
+                Datetime tmp = new Datetime(((Date) obj).getTime());
+                result = tmp.isEmpty() ? "" : tmp.toString();
             } else if (obj instanceof Double) {
                 Double temp = (Double) obj;
                 long value = temp.longValue();
