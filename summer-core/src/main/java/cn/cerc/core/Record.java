@@ -5,7 +5,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -567,40 +566,15 @@ public class Record implements Serializable {
         }
     }
 
-    public static void main(String[] args) {
-        Record record = new Record();
-        // 打印getInt()堆栈测试
-        record.setField("UID_", new BigInteger("121"));
-        System.out.println(record.getInt("UID_"));
+    public String getText(String field) {
+        FieldMeta meta = this.getFieldDefs().get(field);
+        return meta.getText(this);
+    }
 
-        // record.getFieldDefs().add("num", new DoubleField(18, 4));
-        record.setField("num", 12345);
-        record.setState(RecordState.dsEdit);
-        record.setField("num", 0);
-        record.setField("num", 123452);
-
-        // 增加对BigInteger的测试
-        record.setField("num2", 123);
-        System.out.println(record.getBigInteger("num2"));
-        record.setField("num2", 123452L);
-        System.out.println(record.getBigInteger("num2"));
-        record.setField("num2", 123452d);
-        System.out.println(record.getBigInteger("num2"));
-        record.setField("num2", "123452");
-        System.out.println(record.getBigInteger("num2"));
-        record.setField("num2", new Object());
-        System.out.println(record.getBigInteger("num2"));
-
-        if (record.isModify()) {
-            System.out.println("num old: " + record.getOldField("num"));
-            System.out.println("num new: " + record.getField("num"));
-        }
-        System.out.println(record);
-        record.delete("num2");
-        record.getFieldDefs().add("num3");
-        System.out.println(record);
-        record.delete("num3");
-        System.out.println(record);
+    public Record setText(String field, String value) {
+        FieldMeta meta = this.getFieldDefs().get(field);
+        this.setField(field, meta.setText(value));
+        return this;
     }
 
 }

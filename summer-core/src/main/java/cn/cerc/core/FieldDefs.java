@@ -2,6 +2,7 @@ package cn.cerc.core;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -12,7 +13,7 @@ import cn.cerc.core.FieldMeta.FieldKind;
 
 public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     private static final long serialVersionUID = 7478897050846245325L;
-    private LinkedHashSet<FieldMeta> items = new LinkedHashSet<>();
+    private HashSet<FieldMeta> items = new LinkedHashSet<>();
 
     public boolean exists(String fieldCode) {
         return items.contains(new FieldMeta(fieldCode));
@@ -74,7 +75,7 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         items.remove(field);
     }
 
-    public FieldMeta getItem(String fieldCode) {
+    public FieldMeta get(String fieldCode) {
         for (FieldMeta meta : items) {
             if (fieldCode.equals(meta.getCode()))
                 return meta;
@@ -82,9 +83,18 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return null;
     }
 
+    @Deprecated
+    public FieldMeta getItem(String fieldCode) {
+        return get(fieldCode);
+    }
+
     @Override
     public String toString() {
         return new Gson().toJson(this);
+    }
+
+    public HashSet<FieldMeta> getItems() {
+        return items;
     }
 
 }

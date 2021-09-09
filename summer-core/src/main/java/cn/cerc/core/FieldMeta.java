@@ -2,6 +2,10 @@ package cn.cerc.core;
 
 import java.io.Serializable;
 
+import cn.cerc.db.editor.GetSetTextEvent;
+import cn.cerc.db.editor.GetTextEvent;
+import cn.cerc.db.editor.SetTextEvent;
+
 public final class FieldMeta implements Serializable {
     private static final long serialVersionUID = -6898050783447062943L;
     private String code;
@@ -11,6 +15,8 @@ public final class FieldMeta implements Serializable {
     private String remark;
     private boolean updateKey;
     private boolean autoincrement;
+    private GetTextEvent getTextEvent;
+    private SetTextEvent setTextEvent;
 
     public enum FieldKind {
         Memory, Storage, Calculated;
@@ -133,4 +139,30 @@ public final class FieldMeta implements Serializable {
         return false;
     }
 
+    public FieldMeta onGetText(GetTextEvent getTextEvent) {
+        this.getTextEvent = getTextEvent;
+        return this;
+    }
+
+    public FieldMeta onSetText(SetTextEvent setTextEvent) {
+        this.setTextEvent = setTextEvent;
+        return this;
+    }
+
+    public String getText(Record record) {
+        if (getTextEvent == null)
+            return record.getString(code);
+        return getTextEvent.getText(record, this);
+    }
+
+    public Object setText(String value) {
+        if (setTextEvent == null)
+            return value;
+        return setTextEvent.setText(value);
+    }
+
+    public void onGetSetText(GetSetTextEvent getsetTextEvent) {
+        this.onGetText(getsetTextEvent);
+        this.onSetText(getsetTextEvent);
+    }
 }
