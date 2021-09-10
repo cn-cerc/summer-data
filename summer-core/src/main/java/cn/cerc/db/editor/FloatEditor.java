@@ -20,8 +20,10 @@ public class FloatEditor implements GetSetTextEvent {
 
     @Override
     public String getText(Record record, FieldMeta meta) {
-        String fmt = "0." + pattern.repeat(decimal);
-        DecimalFormat df = new DecimalFormat(fmt);
+        StringBuffer fmt = new StringBuffer("0.");
+        for (int i = 0; i < this.decimal; i++)
+            fmt.append(this.pattern);
+        DecimalFormat df = new DecimalFormat(fmt.toString());
         return df.format(record.getDouble(meta.getCode()));
     }
 
