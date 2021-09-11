@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.cerc.core.FieldMeta.FieldKind;
 
-public class DataSet implements Serializable, Iterable<Record> {
+public class DataSet implements Serializable, DataSource, Iterable<Record> {
     transient private static final Logger log = LoggerFactory.getLogger(DataSet.class);
 
     private static final long serialVersionUID = 873159747066855363L;
@@ -197,6 +197,7 @@ public class DataSet implements Serializable, Iterable<Record> {
         return this.records.size() == 0 || this.recNo > this.records.size();
     }
 
+    @Override
     public Record getCurrent() {
         if (this.eof()) {
             throw new RuntimeException(String.format("[%s]eof == true", this.getClass().getName()));
@@ -618,6 +619,7 @@ public class DataSet implements Serializable, Iterable<Record> {
         return this;
     }
 
+    @Override
     public boolean isReadonly() {
         return readonly;
     }
