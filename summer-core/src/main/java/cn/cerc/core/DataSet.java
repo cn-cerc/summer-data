@@ -430,7 +430,7 @@ public class DataSet implements Serializable, DataSource, Iterable<Record> {
     }
 
     public interface DataSetInsertEvent {
-        void insertRecord(Record record);
+        void insertRecord(DataSet record);
     }
 
     // 用于设置字段的初始值，如 pid, it 等
@@ -448,7 +448,7 @@ public class DataSet implements Serializable, DataSource, Iterable<Record> {
 
     protected final void doAppend(Record record) {
         if (appendListener != null)
-            appendListener.forEach(event -> event.insertRecord(record));
+            appendListener.forEach(event -> event.insertRecord(this));
         if (search != null)
             search.append(record);
     }
