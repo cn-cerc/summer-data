@@ -322,6 +322,10 @@ public class DataSet implements Serializable, DataSource, Iterable<Record> {
         return this.getCurrent().getInt(field);
     }
 
+    public long getLong(String field) {
+        return this.getCurrent().getLong(field);
+    }
+
     public BigInteger getBigInteger(String field) {
         return this.getCurrent().getBigInteger(field);
     }

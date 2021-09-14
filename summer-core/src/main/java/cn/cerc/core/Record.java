@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -194,7 +193,7 @@ public class Record implements Serializable {
 
     @Override
     public String toString() {
-        Map<String, Object> items = new TreeMap<>();
+        Map<String, Object> items = new LinkedHashMap<>();
         for (int i = 0; i < defs.size(); i++) {
             String field = defs.getFields().get(i);
             Object obj = this.getField(field);
@@ -296,6 +295,41 @@ public class Record implements Serializable {
             return (int) val;
         } else if (obj instanceof Long) {
             return ((Long) obj).intValue();
+        } else if ((obj instanceof Boolean)) {
+            return (Boolean) obj ? 1 : 0;
+        } else if ((obj instanceof Short)) {
+            return ((Short) obj).intValue();
+        } else {
+            return 0;
+        }
+    }
+
+    public long getLong(String field) {
+        if (!defs.exists(field)) {
+            defs.add(field);
+        }
+
+        Object obj = this.getField(field);
+        if (obj instanceof Integer) {
+            return (Integer) obj;
+        } else if (obj instanceof BigInteger) {
+            StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
+            for (StackTraceElement item : stacktrace) {
+                log.warn("{}.{}:{}", item.getClassName(), item.getMethodName(), item.getLineNumber());
+            }
+            log.warn("type error: getInt() can not use BigInteger");
+            return ((BigInteger) obj).intValue();
+        } else if (obj instanceof Double) {
+            return ((Double) obj).intValue();
+        } else if (obj instanceof String) {
+            String str = (String) obj;
+            if ("".equals(str)) {
+                return 0;
+            }
+            Long val = Long.parseLong(str);
+            return val;
+        } else if (obj instanceof Long) {
+            return ((Long) obj);
         } else if ((obj instanceof Boolean)) {
             return (Boolean) obj ? 1 : 0;
         } else if ((obj instanceof Short)) {
