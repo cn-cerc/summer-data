@@ -201,14 +201,14 @@ public class DatetimeTest {
                 + "\"DateTime\":\"2016-06-20 09:26:35\"," + "\"Double\":3.12," + "\"Integer\":123," + "\"Null\":null,"
                 + "\"OldDate\":\"2016-06-20 09:26:35\"," + "\"String\":\"AAA\"}";
 
-        item.setField("String", "AAA");
-        item.setField("Double", 3.12);
-        item.setField("Integer", 123);
-        item.setField("OldDate", "2016-06-20 09:26:35");
+        item.setField("Boolean", true);
         item.setField("Date", "2016-06-20 00:00:00");
         item.setField("DateTime", "2016-06-20 09:26:35");
-        item.setField("Boolean", true);
+        item.setField("Double", 3.12);
+        item.setField("Integer", 123);
         item.setField("Null", null);
+        item.setField("OldDate", "2016-06-20 09:26:35");
+        item.setField("String", "AAA");
         assertEquals(jsonStr, item.toString());
 
         item.setJSON(jsonStr);
