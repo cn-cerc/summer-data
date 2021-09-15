@@ -197,9 +197,7 @@ public class DatetimeTest {
     public void test_toJson() {
         FieldDefs def = new FieldDefs();
         Record item = new Record(def);
-        String jsonStr = "{\"Boolean\":true," + "\"Date\":\"2016-06-20 00:00:00\","
-                + "\"DateTime\":\"2016-06-20 09:26:35\"," + "\"Double\":3.12," + "\"Integer\":123," + "\"Null\":null,"
-                + "\"OldDate\":\"2016-06-20 09:26:35\"," + "\"String\":\"AAA\"}";
+        String jsonStr = "{\"String\":\"AAA\",\"Double\":3.12,\"Integer\":123,\"OldDate\":\"2016-06-20 09:26:35\",\"Date\":\"2016-06-20 00:00:00\",\"DateTime\":\"2016-06-20 09:26:35\",\"Boolean\":true,\"Null\":null}";
 
         item.setField("String", "AAA");
         item.setField("Double", 3.12);
