@@ -142,6 +142,10 @@ public class DataSetTest extends TestCase {
         System.out.println(json);
         DataSet dataSet = new DataSet();
         dataSet.fromJson(json);
+        dataSet.first();
+        while (dataSet.fetch()) {
+            dataSet.setField("it_", dataSet.getRecNo());
+        }
         buildField(dataSet.getFieldDefs());
 
         dataSet.buildMeta().setMetaInfo(true);
@@ -157,6 +161,9 @@ public class DataSetTest extends TestCase {
         for (FieldMeta meta : defs) {
             System.out.println(meta.getCode());
             switch (meta.getCode()) {
+                case "it_":
+                    meta.setName("序");
+                    break;
                 case "corpId_":
                     meta.setName("单位编号");
                     break;
