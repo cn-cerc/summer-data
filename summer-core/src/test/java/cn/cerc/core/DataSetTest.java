@@ -1,7 +1,5 @@
 package cn.cerc.core;
 
-import java.util.List;
-
 import org.junit.Test;
 
 import junit.framework.TestCase;
@@ -23,7 +21,7 @@ public class DataSetTest extends TestCase {
 
         int i = 0;
         for (@SuppressWarnings("unused")
-        Record record : ds) {
+                Record record : ds) {
             i++;
         }
         assertEquals(i, ds.size());
@@ -144,13 +142,9 @@ public class DataSetTest extends TestCase {
         System.out.println(json);
         DataSet dataSet = new DataSet();
         dataSet.fromJson(json);
-        List<String> fields = dataSet.getFieldDefs().getFields();
-        for (String field : fields) {
-            System.out.println(field);
-            String fieldName = getFieldName(field);
-            dataSet.getFieldDefs().add(field).setName(fieldName);
-        }
-        dataSet.setMetaInfo(true);
+        buildField(dataSet.getFieldDefs());
+
+        dataSet.buildMeta().setMetaInfo(true);
         System.out.println(dataSet.toJson());
         System.out.println(json.equals(dataSet.toJson()));
         dataSet.first();
@@ -159,26 +153,29 @@ public class DataSetTest extends TestCase {
 //        }
     }
 
-    private String getFieldName(String field) {
-        switch (field){
-        case "corpId_":
-            return "单位编号";
-        case "corpName_":
-            return "单位名称";
-        case "v1_":
-            return "指标_完成值";
-        case "v2_":
-            return "得分_(15分)";
-        case "tbDate_":
-            return "统计日期";
-        case "v1_name_":
-            return "v1_name_";
-        case "v2_name_":
-            return "v2_name_";
-        default:
-            break;
+    private void buildField(FieldDefs defs) {
+        for (FieldMeta meta : defs) {
+            System.out.println(meta.getCode());
+            switch (meta.getCode()) {
+                case "corpId_":
+                    meta.setName("单位编号");
+                    break;
+                case "corpName_":
+                    meta.setName("单位名称");
+                    break;
+                case "v1_":
+                    meta.setName("指标_完成值");
+                    break;
+                case "v2_":
+                    meta.setName("得分_(15分)");
+                    break;
+                case "tbDate_":
+                    meta.setName("统计日期");
+                    break;
+                default:
+                    break;
+            }
         }
-        return "";
     }
 
 }
