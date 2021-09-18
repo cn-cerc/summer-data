@@ -142,6 +142,15 @@ public class DataSetTest extends TestCase {
         System.out.println(json);
         DataSet dataSet = new DataSet();
         dataSet.fromJson(json);
+
+        Record head = dataSet.getHead();
+        head.setField("timestamp", System.currentTimeMillis());
+        head.setField("success", true);
+        head.setField("message", "操作成功！");
+        head.setField("code", 200);
+
+        buildField(dataSet.getHead().getFieldDefs());
+
         dataSet.first();
         while (dataSet.fetch()) {
             dataSet.setField("it_", dataSet.getRecNo());
@@ -161,6 +170,20 @@ public class DataSetTest extends TestCase {
         for (FieldMeta meta : defs) {
             System.out.println(meta.getCode());
             switch (meta.getCode()) {
+                // head
+                case "timestamp":
+                    meta.setName("时间戳");
+                    break;
+                case "success":
+                    meta.setName("成功与否");
+                    break;
+                case "message":
+                    meta.setName("消息提示");
+                    break;
+                case "code":
+                    meta.setName("状态码");
+                    break;
+                // body
                 case "it_":
                     meta.setName("序");
                     break;
