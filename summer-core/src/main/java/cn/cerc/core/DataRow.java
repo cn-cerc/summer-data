@@ -46,17 +46,18 @@ public class DataRow implements Serializable {
         return state;
     }
 
-    public void setState(RecordState dataSetState) {
-        if (dataSetState == RecordState.dsEdit) {
+    public DataRow setState(RecordState recordState) {
+        if (recordState == RecordState.dsEdit) {
             if (this.state == RecordState.dsInsert) {
                 // throw new RuntimeException("当前记录为插入状态 不允许被修改");
-                return;
+                return this;
             }
         }
-        if (dataSetState.equals(RecordState.dsNone)) {
+        if (recordState.equals(RecordState.dsNone)) {
             delta.clear();
         }
-        this.state = dataSetState;
+        this.state = recordState;
+        return this;
     }
 
     public DataRow setField(String field, Object value) {

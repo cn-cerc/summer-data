@@ -8,12 +8,12 @@ import java.sql.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.cerc.core.DataRow;
 import cn.cerc.core.DataSet;
 import cn.cerc.core.DataSetGson;
 import cn.cerc.core.FieldDefs;
 import cn.cerc.core.FieldMeta.FieldKind;
 import cn.cerc.core.ISession;
-import cn.cerc.core.DataRow;
 import cn.cerc.core.RecordState;
 import cn.cerc.core.SqlText;
 import cn.cerc.core.Utils;
@@ -120,7 +120,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
                 client = getConnectionClient();
 
             // 先执行删除
-            for (DataRow record : delList) {
+            for (DataRow record : getDelList()) {
                 doBeforeDelete(record);
                 if (this.isStorage())
                     getOperator().delete(client.getConnection(), record);
@@ -142,7 +142,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
                     doAfterPost(record);
                 }
             }
-            delList.clear();
+            getDelList().clear();
         } finally {
             if (client != null) {
                 try {
@@ -172,7 +172,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
                 setFetchFinish(false);
                 break;
             }
-            DataRow record = this.newRecord();
+            DataRow record = new DataRow(this).setState(RecordState.dsInsert);
             for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
                 String fn = rs.getMetaData().getColumnLabel(i);
                 record.setField(fn, rs.getObject(fn));

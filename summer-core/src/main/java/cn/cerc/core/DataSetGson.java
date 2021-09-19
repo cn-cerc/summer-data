@@ -25,17 +25,17 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
     @Override
     public JsonElement serialize(T src, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject root = new JsonObject();
-        if (src.state != 0)
-            root.addProperty("state", src.state);
-        if (src.message != null)
-            root.addProperty("message", src.message);
+        if (src.getState() != 0)
+            root.addProperty("state", src.getState());
+        if (src.getMessage() != null)
+            root.addProperty("message", src.getMessage());
 
         // 输出metaInfo
-        if (src.metaInfo) {
+        if (src.isMetaInfo()) {
             JsonObject meta = new JsonObject();
-            if (src.head != null && src.head.getFieldDefs().size() > 0) {
+            if (src.getHead().getFieldDefs().size() > 0) {
                 JsonArray head = new JsonArray();
-                src.head.getFieldDefs().forEach(def -> head.add(context.serialize(def)));
+                src.getHead().getFieldDefs().forEach(def -> head.add(context.serialize(def)));
                 meta.add("head", head);
             }
             JsonArray body = new JsonArray();
@@ -43,21 +43,20 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
             meta.add("body", body);
             root.add("meta", meta);
         }
-
-        if (src.head != null && src.head.size() > 0) {
-            if (src.metaInfo) {
+        if (src.getHead().getFieldDefs().size() > 0) {
+            if (src.isMetaInfo()) {
                 JsonArray item = new JsonArray();
-                src.head.getFieldDefs().forEach(def -> {
+                src.getHead().getFieldDefs().forEach(def -> {
                     String field = def.getCode();
-                    Object obj = src.head.getField(field);
+                    Object obj = src.getHead().getField(field);
                     item.add(context.serialize(obj));
                 });
                 root.add("head", item);
             } else {
                 JsonObject item = new JsonObject();
-                src.head.getFieldDefs().forEach(def -> {
+                src.getHead().getFieldDefs().forEach(def -> {
                     String field = def.getCode();
-                    Object obj = src.head.getField(field);
+                    Object obj = src.getHead().getField(field);
                     item.add(field, context.serialize(obj));
                 });
                 root.add("head", item);
@@ -67,9 +66,9 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
         if (src.size() > 0) {
             JsonArray body = new JsonArray();
             // 添加字段定义
-            if (!src.metaInfo)
+            if (!src.isMetaInfo())
                 body.add(context.serialize(src.getFieldDefs()));
-            src.records.forEach(dataRow -> body.add(context.serialize(dataRow)));
+            src.getRecords().forEach(dataRow -> body.add(context.serialize(dataRow)));
             root.add("body", body);
         }
 
@@ -82,9 +81,9 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
         if (root.size() == 0)
             return dataSet;
         if (root.has("state"))
-            dataSet.state = root.get("state").getAsInt();
+            dataSet.setState(root.get("state").getAsInt());
         if (root.has("message"))
-            dataSet.message = root.get("message").getAsString();
+            dataSet.setMessage(root.get("message").getAsString());
 
         if (root.has("meta")) {
             JsonObject meta = root.get("meta").getAsJsonObject();
@@ -98,11 +97,11 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
                 FieldMeta def = context.deserialize(item, FieldMeta.class);
                 dataSet.getFieldDefs().add(def);
             });
-            dataSet.metaInfo = true;
+            dataSet.setMetaInfo(true);
         }
 
         if (root.has("head")) {
-            if (dataSet.metaInfo) {
+            if (dataSet.isMetaInfo()) {
                 JsonArray head = root.get("head").getAsJsonArray();
                 int i = 0;
                 for (String key : dataSet.getHead().getFieldDefs().getFields()) {
@@ -125,7 +124,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
             body = root.get("dataset").getAsJsonArray();
         if (body != null) {
             JsonArray defs = null;
-            if (dataSet.metaInfo) {
+            if (dataSet.isMetaInfo()) {
                 defs = new JsonArray();
                 for (FieldMeta meta : dataSet.getFieldDefs())
                     defs.add(meta.getCode());
@@ -227,4 +226,5 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
     public final String encode() {
         return build().toJson(dataSet);
     }
+
 }

@@ -18,48 +18,43 @@ import org.slf4j.LoggerFactory;
 import cn.cerc.core.FieldMeta.FieldKind;
 
 public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
-    transient private static final Logger log = LoggerFactory.getLogger(DataSet.class);
-
+    private static final Logger log = LoggerFactory.getLogger(DataSet.class);
     private static final long serialVersionUID = 873159747066855363L;
     private static final ClassResource res = new ClassResource(DataSet.class, SummerCore.ID);
     private int recNo = 0;
     private int fetchNo = -1;
-    protected int state = 0;
-    protected String message = null;
-    private FieldDefs fieldDefs = new FieldDefs();
-    protected List<DataRow> records = new ArrayList<>();
-
-    transient private List<DataSetInsertEvent> appendListener;
-    transient private List<DataSetBeforeUpdateEvent> beforePostListener;
-    transient private List<DataSetAfterUpdateEvent> afterPostListener;
-    transient private List<DataSetBeforeDeleteEvent> beforeDeleteListener;
-    transient private List<DataSetAfterDeleteEvent> afterDeleteListener;
+    private int state = 0;
+    private String message = null;
+    private List<DataSetInsertEvent> appendListener;
+    private List<DataSetBeforeUpdateEvent> beforePostListener;
+    private List<DataSetAfterUpdateEvent> afterPostListener;
+    private List<DataSetBeforeDeleteEvent> beforeDeleteListener;
+    private List<DataSetAfterDeleteEvent> afterDeleteListener;
 
     private boolean readonly;
-    protected DataRow head = null;
     // 在变更时，是否需要同步保存到数据库中
     private boolean storage;
     // 批次保存模式，默认为post与delete立即保存
     private boolean batchSave = false;
     // 仅当batchSave为true时，delList才有记录存在
-    protected List<DataRow> delList = new ArrayList<>();
+    private List<DataRow> delList = new ArrayList<>();
     // 搜索加速器
     private SearchDataSet search;
     // gson时，是否输出meta讯息
-    protected boolean metaInfo;
+    private boolean metaInfo;
+    // 头部记录
+    private DataRow head = new DataRow();
+    // 明细记录
+    private List<DataRow> records = new ArrayList<>();
+    // 明细字段定义
+    private FieldDefs fieldDefs = new FieldDefs();
 
     public DataSet() {
         super();
     }
 
-    protected DataRow newRecord() {
-        DataRow record = new DataRow(this);
-        record.setState(RecordState.dsInsert);
-        return record;
-    }
-
     public DataSet append() {
-        DataRow record = newRecord();
+        DataRow record = new DataRow(this).setState(RecordState.dsInsert);
         this.records.add(record);
         recNo = records.size();
         doAppend(record);
@@ -68,7 +63,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
 
     @Deprecated
     public DataSet append(int index) {
-        DataRow record = newRecord();
+        DataRow record = new DataRow(this).setState(RecordState.dsInsert);
         if (index == -1 || index == records.size()) {
             this.records.add(record);
             recNo = records.size();
@@ -539,9 +534,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
     }
 
     public void close() {
-        if (this.head != null) {
-            this.head.clear();
-        }
+        this.head.clear();
         if (search != null) {
             search.clear();
             search = null;
@@ -553,8 +546,6 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
     }
 
     public DataRow getHead() {
-        if (head == null)
-            head = new DataRow();
         return head;
     }
 
@@ -680,13 +671,17 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
     }
 
     public final DataSet buildMeta() {
-        if (head != null && head.getFieldDefs().size() > 0) {
+        if (head.getFieldDefs().size() > 0) {
             head.getFieldDefs().forEach(def -> def.getFieldType().put(head.getField(def.getCode())));
         }
         records.forEach(row -> {
             this.getFieldDefs().forEach(def -> def.getFieldType().put(row.getField(def.getCode())));
         });
         return this;
+    }
+
+    protected final List<DataRow> getDelList() {
+        return delList;
     }
 
     public static void main(String[] args) {
