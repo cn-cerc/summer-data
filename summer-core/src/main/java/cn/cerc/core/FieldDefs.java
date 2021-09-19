@@ -83,6 +83,17 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return null;
     }
 
+    public FieldMeta get(int fieldNo) {
+        int i = 0;
+        for (FieldMeta meta : items) {
+            if (i == fieldNo) {
+                return meta;
+            }
+            i++;
+        }
+        return null;
+    }
+
     @Deprecated
     public FieldMeta getItem(String fieldCode) {
         return get(fieldCode);

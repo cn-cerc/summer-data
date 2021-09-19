@@ -1,10 +1,10 @@
 package cn.cerc.db.other;
 
-import cn.cerc.core.DataSet;
-import cn.cerc.core.Record;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import cn.cerc.core.DataSet;
+import cn.cerc.core.Record;
 
 public class SumRecord extends Record {
     private static final long serialVersionUID = -8836802853579764175L;
@@ -12,7 +12,7 @@ public class SumRecord extends Record {
     private Map<String, Double> fields = new HashMap<>();
 
     public SumRecord(DataSet dataSet) {
-        this.setDataSet(dataSet);
+        super(dataSet);
     }
 
     public SumRecord addField(String field) {
@@ -49,11 +49,6 @@ public class SumRecord extends Record {
     @Override
     public DataSet getDataSet() {
         return dataSet;
-    }
-
-    @Override
-    public void setDataSet(DataSet dataSet) {
-        this.dataSet = dataSet;
     }
 
     public Map<String, Double> getFields() {

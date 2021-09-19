@@ -37,7 +37,6 @@ public class DataSet implements Serializable, DataSource, Iterable<Record> {
 
     private boolean readonly;
     protected Record head = null;
-    private FieldDefs head_defs = null;
     // 在变更时，是否需要同步保存到数据库中
     private boolean storage;
     // 批次保存模式，默认为post与delete立即保存
@@ -54,8 +53,7 @@ public class DataSet implements Serializable, DataSource, Iterable<Record> {
     }
 
     protected Record newRecord() {
-        Record record = new Record(this.fieldDefs);
-        record.setDataSet(this);
+        Record record = new Record(this);
         record.setState(RecordState.dsInsert);
         return record;
     }
@@ -546,9 +544,6 @@ public class DataSet implements Serializable, DataSource, Iterable<Record> {
         if (this.head != null) {
             this.head.clear();
         }
-        if (this.head_defs != null) {
-            this.head_defs.clear();
-        }
         if (search != null) {
             search.clear();
             search = null;
@@ -560,12 +555,8 @@ public class DataSet implements Serializable, DataSource, Iterable<Record> {
     }
 
     public Record getHead() {
-        if (head_defs == null) {
-            head_defs = new FieldDefs();
-        }
-        if (head == null) {
-            head = new Record(head_defs);
-        }
+        if (head == null) 
+            head = new Record();
         return head;
     }
 

@@ -26,17 +26,20 @@ public class Record implements Serializable {
     private static final Logger log = LoggerFactory.getLogger(Record.class);
     private static final long serialVersionUID = 4454304132898734723L;
     private RecordState state = RecordState.dsNone;
-    private FieldDefs defs;
     private Map<String, Object> items = new LinkedHashMap<>();
     private Map<String, Object> delta = new HashMap<>();
     private DataSet dataSet;
+    private FieldDefs defs;
 
     public Record() {
+        super();
         this.defs = new FieldDefs();
     }
 
-    public Record(FieldDefs defs) {
-        this.defs = defs;
+    public Record(DataSet dataSet) {
+        super();
+        this.dataSet = dataSet;
+        this.defs = dataSet.getFieldDefs();
     }
 
     public RecordState getState() {
@@ -60,9 +63,7 @@ public class Record implements Serializable {
         if (field == null || "".equals(field)) {
             throw new RuntimeException("field is null!");
         }
-        if (!defs.exists(field)) {
-            defs.add(field);
-        }
+        this.addFieldDef(field);
 
         SearchDataSet search = null;
         if (this.dataSet != null && this.dataSet.getSearch() != null)
@@ -195,7 +196,7 @@ public class Record implements Serializable {
     public String toString() {
         Map<String, Object> items = new LinkedHashMap<>();
         for (int i = 0; i < defs.size(); i++) {
-            String field = defs.getFields().get(i);
+            String field = defs.get(i).getCode();
             Object obj = this.getField(field);
             if (obj instanceof Datetime) {
                 items.put(field, obj.toString());
@@ -238,12 +239,12 @@ public class Record implements Serializable {
     }
 
     public void setJSON(String jsonStr) {
+        this.clear();
         Gson gson = new GsonBuilder().serializeNulls().create();
         items = gson.fromJson(jsonStr, new TypeToken<Map<String, Object>>() {
         }.getType());
-        defs.clear();
         for (String key : items.keySet()) {
-            defs.add(key);
+            this.addFieldDef(key);
             if ("{}".equals(items.get(key))) {
                 items.put(key, null);
             }
@@ -251,10 +252,7 @@ public class Record implements Serializable {
     }
 
     public boolean getBoolean(String field) {
-        if (!defs.exists(field)) {
-            defs.add(field);
-        }
-
+        this.addFieldDef(field);
         Object obj = this.getField(field);
         if (obj instanceof Boolean) {
             return (Boolean) obj;
@@ -270,10 +268,7 @@ public class Record implements Serializable {
     }
 
     public int getInt(String field) {
-        if (!defs.exists(field)) {
-            defs.add(field);
-        }
-
+        this.addFieldDef(field);
         Object obj = this.getField(field);
         if (obj instanceof Integer) {
             return (Integer) obj;
@@ -305,10 +300,7 @@ public class Record implements Serializable {
     }
 
     public long getLong(String field) {
-        if (!defs.exists(field)) {
-            defs.add(field);
-        }
-
+        this.addFieldDef(field);
         Object obj = this.getField(field);
         if (obj instanceof Integer) {
             return (Integer) obj;
@@ -340,10 +332,7 @@ public class Record implements Serializable {
     }
 
     public BigInteger getBigInteger(String field) {
-        if (!defs.exists(field)) {
-            defs.add(field);
-        }
-
+        this.addFieldDef(field);
         Object obj = this.getField(field);
         if (obj instanceof BigInteger) {
             return (BigInteger) obj;
@@ -367,9 +356,7 @@ public class Record implements Serializable {
     }
 
     public BigDecimal getBigDecimal(String field) {
-        if (!defs.exists(field)) {
-            defs.add(field);
-        }
+        this.addFieldDef(field);
         Object obj = this.getField(field);
         if (obj instanceof BigInteger) {
             return (BigDecimal) obj;
@@ -393,10 +380,7 @@ public class Record implements Serializable {
     }
 
     public double getDouble(String field) {
-        if (!defs.exists(field)) {
-            defs.add(field);
-        }
-
+        this.addFieldDef(field);
         Object obj = this.getField(field);
         if (obj instanceof String) {
             String str = (String) obj;
@@ -436,13 +420,7 @@ public class Record implements Serializable {
     }
 
     public String getString(String field) {
-        if (field == null) {
-            throw new RuntimeException("field is null");
-        }
-        if (!defs.exists(field)) {
-            defs.add(field);
-        }
-
+        this.addFieldDef(field);
         String result = "";
         Object obj = this.getField(field);
         if (obj != null) {
@@ -479,9 +457,7 @@ public class Record implements Serializable {
     }
 
     public Datetime getDatetime(String field) {
-        if (!defs.exists(field))
-            defs.add(field);
-
+        this.addFieldDef(field);
         Object obj = this.getField(field);
         if (obj == null) {
             return Datetime.zero();
@@ -515,6 +491,8 @@ public class Record implements Serializable {
     public void clear() {
         items.clear();
         delta.clear();
+        if (this.dataSet == null)
+            defs.clear();
     }
 
     public boolean exists(String field) {
@@ -527,10 +505,6 @@ public class Record implements Serializable {
 
     public DataSet getDataSet() {
         return dataSet;
-    }
-
-    public void setDataSet(DataSet dataSet) {
-        this.dataSet = dataSet;
     }
 
     @Deprecated
@@ -582,8 +556,16 @@ public class Record implements Serializable {
     public void delete(String field) {
         delta.remove(field);
         items.remove(field);
-        if (defs != null) {
+        if (this.dataSet == null) {
             defs.delete(field);
+        }
+    }
+
+    private void addFieldDef(String field) {
+        if (field == null)
+            throw new RuntimeException("field is null");
+        if (!defs.exists(field)) {
+            defs.add(field);
         }
     }
 

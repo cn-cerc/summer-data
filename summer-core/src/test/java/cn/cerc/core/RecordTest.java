@@ -6,12 +6,10 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 public class RecordTest {
-    private FieldDefs def = new FieldDefs();
-    private Record item = new Record(def);
+    private Record item = new Record();
 
     @Test
     public void test_create() {
-        assertEquals(def, item.getFieldDefs());
         assertEquals(item.getState(), RecordState.dsNone);
     }
 
