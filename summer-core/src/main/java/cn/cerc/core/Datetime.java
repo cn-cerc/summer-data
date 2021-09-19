@@ -629,9 +629,4 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
         return this.subtract(DateType.Month, target);
     }
 
-    @Deprecated
-    public FastDate asDate() {
-        return this.toFastDate();
-    }
-
 }
