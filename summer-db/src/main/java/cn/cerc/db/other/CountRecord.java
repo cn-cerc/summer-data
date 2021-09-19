@@ -1,7 +1,7 @@
 package cn.cerc.db.other;
 
 import cn.cerc.core.DataSet;
-import cn.cerc.core.Record;
+import cn.cerc.core.DataRow;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +16,7 @@ public class CountRecord {
     }
 
     public CountRecord run(CountRecordInterface count) {
-        for (Record rs : dataSet) {
+        for (DataRow rs : dataSet) {
             String group = count.getGroup(rs);
             Integer value = groups.get(group);
             if (value == null) {

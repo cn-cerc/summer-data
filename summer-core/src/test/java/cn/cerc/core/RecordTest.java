@@ -6,7 +6,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 public class RecordTest {
-    private Record item = new Record();
+    private DataRow item = new DataRow();
 
     @Test
     public void test_create() {
@@ -34,7 +34,7 @@ public class RecordTest {
 
     @Test
     public void test_setField_error1() {
-        Record obj = new Record();
+        DataRow obj = new DataRow();
         item.setField("object", obj);
         assertEquals(obj, item.getField("object"));
     }
@@ -62,7 +62,7 @@ public class RecordTest {
 
     @Test
     public void test_setField_delta() {
-        Record rs = new Record();
+        DataRow rs = new DataRow();
         rs.setField("Code_", "a");
         assertEquals(rs.getDelta().size(), 0);
 
@@ -83,7 +83,7 @@ public class RecordTest {
 
     @Test
     public void test_map() {
-        Record rs = new Record();
+        DataRow rs = new DataRow();
         rs.setField("A", "A001");
         rs.setField("B", "B001");
         rs.setField("C", "C001");

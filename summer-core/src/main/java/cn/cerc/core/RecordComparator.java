@@ -2,7 +2,7 @@ package cn.cerc.core;
 
 import java.util.Comparator;
 
-public class RecordComparator implements Comparator<Record> {
+public class RecordComparator implements Comparator<DataRow> {
     private String[] fields;
 
     public RecordComparator(String[] fields) {
@@ -10,7 +10,7 @@ public class RecordComparator implements Comparator<Record> {
     }
 
     @Override
-    public int compare(Record o1, Record o2) {
+    public int compare(DataRow o1, DataRow o2) {
         long tmp = 0;
         for (String item : fields) {
             if (item == null || "".equals(item)) {

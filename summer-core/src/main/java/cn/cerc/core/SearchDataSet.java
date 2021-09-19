@@ -6,7 +6,7 @@ import java.util.List;
 
 public class SearchDataSet {
     private final DataSet dataSet;
-    private final HashMap<String, Record> items = new HashMap<>();
+    private final HashMap<String, DataRow> items = new HashMap<>();
     private final List<String> keys = new ArrayList<>();
     private String fields;
 
@@ -14,7 +14,7 @@ public class SearchDataSet {
         this.dataSet = dataSet;
     }
 
-    public final Record get(String fields, Object[] values) {
+    public final DataRow get(String fields, Object[] values) {
         if (fields == null || "".equals(fields))
             throw new RuntimeException("fields can't be null");
         if (values.length == 0)
@@ -41,11 +41,11 @@ public class SearchDataSet {
         return items.get(buildObjectKey(values));
     }
 
-    public final void remove(Record record) {
+    public final void remove(DataRow record) {
         items.remove(buildRecordKey(record));
     }
 
-    public final void append(Record record) {
+    public final void append(DataRow record) {
         items.put(buildRecordKey(record), record);
     }
 
@@ -55,7 +55,7 @@ public class SearchDataSet {
         items.clear();
     }
 
-    private final String buildRecordKey(Record record) {
+    private final String buildRecordKey(DataRow record) {
         String result = null;
         for (String field : keys) {
             Object val = record.getField(field);

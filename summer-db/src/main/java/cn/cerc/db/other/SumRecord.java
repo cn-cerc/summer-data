@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cn.cerc.core.DataSet;
-import cn.cerc.core.Record;
+import cn.cerc.core.DataRow;
 
-public class SumRecord extends Record {
+public class SumRecord extends DataRow {
     private static final long serialVersionUID = -8836802853579764175L;
     private DataSet dataSet;
     private Map<String, Double> fields = new HashMap<>();
@@ -32,7 +32,7 @@ public class SumRecord extends Record {
     }
 
     public SumRecord run() {
-        for (Record rs : this.dataSet) {
+        for (DataRow rs : this.dataSet) {
             for (String field : this.fields.keySet()) {
                 Double value = fields.get(field);
                 value += rs.getDouble(field);

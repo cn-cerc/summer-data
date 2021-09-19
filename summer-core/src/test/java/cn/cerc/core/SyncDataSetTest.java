@@ -32,7 +32,7 @@ public class SyncDataSetTest {
 
         int total = sds.execute(new ISyncDataSet() {
             @Override
-            public void process(Record src, Record tar) throws SyncUpdateException {
+            public void process(DataRow src, DataRow tar) throws SyncUpdateException {
                 if (tar == null)
                     assertEquals("insert record: b", "insert record: " + src.getField("code"));
                 else if (src == null)

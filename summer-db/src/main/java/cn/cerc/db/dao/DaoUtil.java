@@ -7,7 +7,7 @@ import java.sql.Timestamp;
 import javax.persistence.Entity;
 
 import cn.cerc.core.ISession;
-import cn.cerc.core.Record;
+import cn.cerc.core.DataRow;
 import cn.cerc.core.RecordUtils;
 import cn.cerc.db.core.Handle;
 import cn.cerc.db.mysql.MysqlQuery;
@@ -15,13 +15,13 @@ import cn.cerc.db.mysql.MysqlQuery;
 public class DaoUtil {
     // 将obj的数据，复制到record中
     @Deprecated
-    public static void copy(Object obj, Record record) {
+    public static void copy(Object obj, DataRow record) {
         RecordUtils.copyToRecord(obj, record);
     }
 
     // 将record的数据，复制到obj中
     @Deprecated
-    public static void copy(Record record, Object obj) {
+    public static void copy(DataRow record, Object obj) {
         RecordUtils.copyToObject(record, obj);
     }
 
@@ -55,7 +55,7 @@ public class DaoUtil {
         ds.add("select * from " + tableName);
         ds.getSqlText().setMaximum(1);
         ds.open();
-        Record record = ds.eof() ? null : ds.getCurrent();
+        DataRow record = ds.eof() ? null : ds.getCurrent();
         for (String field : ds.getFieldDefs().getFields()) {
             if ("UID_".equals(field)) {
                 sb.append("@Id").append("\r\n");

@@ -19,7 +19,7 @@ public class RecordUtils {
     private static int PROTECTED = 4;
 
     // 将obj的数据，复制到record中
-    public static void copyToRecord(Object obj, Record record) {
+    public static void copyToRecord(Object obj, DataRow record) {
         try {
             Field[] fields = obj.getClass().getDeclaredFields();
             for (Field field : fields) {
@@ -43,7 +43,7 @@ public class RecordUtils {
     }
 
     // 将record的数据，复制到obj中
-    public static void copyToObject(Record record, Object obj) {
+    public static void copyToObject(DataRow record, Object obj) {
         try {
             Field[] fields = obj.getClass().getDeclaredFields();
             // 找出所有的数据字段

@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import com.google.gson.Gson;
 
-import cn.cerc.core.Record;
+import cn.cerc.core.DataRow;
 import cn.cerc.core.RecordUtils;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.StubSession;
@@ -20,7 +20,7 @@ public class DaoUtilTest {
 
     @Test
     public void testCopy() {
-        Record record = new Record();
+        DataRow record = new DataRow();
         record.setField("ID_", Utils.newGuid());
         record.setField("Code_", "18100101");
         record.setField("Name_", "王五");
@@ -28,7 +28,7 @@ public class DaoUtilTest {
         UserTest user = record.asObject(UserTest.class);
         System.out.println(new Gson().toJson(user));
 
-        record = new Record();
+        record = new DataRow();
         record.setField("ID_", Utils.newGuid());
         record.setField("Code_", "18100101");
         record.setField("Name_", "王五");
@@ -40,7 +40,7 @@ public class DaoUtilTest {
 
     @Test(expected = RuntimeException.class)
     public void testCopy2() {
-        Record record = new Record();
+        DataRow record = new DataRow();
         record.setField("ID_", Utils.newGuid());
         record.setField("Code_", "18100101");
         record.setField("Name_", "王五");

@@ -195,7 +195,7 @@ public class DatetimeTest {
 
     @Test
     public void test_toJson() {
-        Record item = new Record();
+        DataRow item = new DataRow();
         String jsonStr = "{\"String\":\"AAA\",\"Double\":3.12,\"Integer\":123,\"OldDate\":\"2016-06-20 09:26:35\",\"Date\":\"2016-06-20 00:00:00\",\"DateTime\":\"2016-06-20 09:26:35\",\"Boolean\":true,\"Null\":null}";
 
         item.setField("String", "AAA");

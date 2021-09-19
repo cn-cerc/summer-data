@@ -3,7 +3,7 @@ package cn.cerc.db.editor;
 import java.text.DecimalFormat;
 
 import cn.cerc.core.FieldMeta;
-import cn.cerc.core.Record;
+import cn.cerc.core.DataRow;
 
 public class FloatEditor implements GetSetTextEvent {
     private String pattern;
@@ -19,7 +19,7 @@ public class FloatEditor implements GetSetTextEvent {
     }
 
     @Override
-    public String getText(Record record, FieldMeta meta) {
+    public String getText(DataRow record, FieldMeta meta) {
         StringBuffer fmt = new StringBuffer("0.");
         for (int i = 0; i < this.decimal; i++)
             fmt.append(this.pattern);

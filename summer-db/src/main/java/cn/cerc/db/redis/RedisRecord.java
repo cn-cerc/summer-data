@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.cerc.core.Datetime;
-import cn.cerc.core.Record;
+import cn.cerc.core.DataRow;
 
 public class RedisRecord {
     private static final Logger log = LoggerFactory.getLogger(RedisRecord.class);
@@ -16,7 +16,7 @@ public class RedisRecord {
     private boolean existsData = false;
     private int expires = 3600; // 单位：秒
 
-    private Record record = new Record();
+    private DataRow record = new DataRow();
     private boolean modified = false;
 
     // 缓存对象
@@ -160,7 +160,7 @@ public class RedisRecord {
         }
     }
 
-    public Record getRecord() {
+    public DataRow getRecord() {
         return this.record;
     }
 

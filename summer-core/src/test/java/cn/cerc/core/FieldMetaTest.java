@@ -13,7 +13,7 @@ public class FieldMetaTest {
 
     @Test
     public void test_getset_diy() {
-        Record rs = new Record();
+        DataRow rs = new DataRow();
         rs.getFieldDefs().add("state").onGetText((record, meta) -> {
             return record.getInt(meta.getCode()) == 0 ? "停用" : "启用";
         }).onSetText(text -> {
@@ -30,7 +30,7 @@ public class FieldMetaTest {
 
     @Test
     public void test_getset_bool() {
-        Record rs = new Record();
+        DataRow rs = new DataRow();
         rs.getFieldDefs().add("used").onGetSetText(new BooleanEditor("停用", "启用"));
 
         rs.setField("used", false);
@@ -43,7 +43,7 @@ public class FieldMetaTest {
 
     @Test
     public void test_getset_int() {
-        Record rs = new Record();
+        DataRow rs = new DataRow();
         rs.getFieldDefs().add("state").onGetSetText(new OptionEditor("停用", "启用"));
 
         rs.setField("state", 0);
@@ -56,7 +56,7 @@ public class FieldMetaTest {
 
     @Test
     public void test_getset_float() {
-        Record rs = new Record();
+        DataRow rs = new DataRow();
         rs.getFieldDefs().add("price").onGetSetText(new FloatEditor(2));
 
         rs.setField("price", 1.06);
@@ -73,7 +73,7 @@ public class FieldMetaTest {
     @Test
     public void test_getset_datetime() {
         String field = "date";
-        Record rs = new Record();
+        DataRow rs = new DataRow();
         rs.getFieldDefs().add(field).onGetSetText(new DatetimeEditor(Datetime.yyyyMM));
         rs.setField(field, new Datetime("2021-12-09"));
         assertEquals("202112", rs.getText(field));

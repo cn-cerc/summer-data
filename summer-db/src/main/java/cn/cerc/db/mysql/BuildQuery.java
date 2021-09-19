@@ -9,7 +9,7 @@ import java.util.Map;
 
 import cn.cerc.core.Datetime;
 import cn.cerc.core.ISession;
-import cn.cerc.core.Record;
+import cn.cerc.core.DataRow;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
 
@@ -322,7 +322,7 @@ public class BuildQuery implements IHandle {
     }
 
     @Deprecated
-    public MysqlQuery open(Record head, Record foot) {
+    public MysqlQuery open(DataRow head, DataRow foot) {
         MysqlQuery ds = getDataSet();
         if (!head.exists("__offset__")) {
         } else {
@@ -339,7 +339,7 @@ public class BuildQuery implements IHandle {
     }
 
     @Deprecated
-    public MysqlQuery openReadonly(Record head, Record foot) {
+    public MysqlQuery openReadonly(DataRow head, DataRow foot) {
         MysqlQuery ds = getDataSet();
         if (head.exists("__offset__")) {
             this.setOffset(head.getInt("__offset__"));

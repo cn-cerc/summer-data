@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import cn.cerc.core.ClassResource;
 import cn.cerc.core.FieldMeta;
 import cn.cerc.core.FieldMeta.FieldKind;
-import cn.cerc.core.Record;
+import cn.cerc.core.DataRow;
 import cn.cerc.core.Utils;
 import cn.cerc.db.SummerDB;
 import cn.cerc.db.mysql.BuildStatement;
@@ -71,7 +71,7 @@ public abstract class SqlOperator {
         this.setUpdateKey(primaryKey);
     }
 
-    public final boolean insert(Connection connection, Record record) {
+    public final boolean insert(Connection connection, DataRow record) {
         resetUpdateKey(connection, record);
 
         if ("UpdateKey_".equalsIgnoreCase(this.updateKey)) {
@@ -149,7 +149,7 @@ public abstract class SqlOperator {
         }
     }
 
-    public final boolean update(Connection connection, Record record) {
+    public final boolean update(Connection connection, DataRow record) {
         if (!record.isModify()) {
             return false;
         }
@@ -241,7 +241,7 @@ public abstract class SqlOperator {
         }
     }
 
-    public final boolean delete(Connection connection, Record record) {
+    public final boolean delete(Connection connection, DataRow record) {
         resetUpdateKey(connection, record);
 
         String lastCommand = null;
@@ -279,7 +279,7 @@ public abstract class SqlOperator {
         }
     }
 
-    private void resetUpdateKey(Connection connection, Record record) {
+    private void resetUpdateKey(Connection connection, DataRow record) {
         FieldMeta def = null;
         if (!Utils.isEmpty(this.updateKey)) {
             def = record.getFieldDefs().getItem(this.updateKey);

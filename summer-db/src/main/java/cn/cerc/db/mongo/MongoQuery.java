@@ -17,7 +17,7 @@ import cn.cerc.core.ClassResource;
 import cn.cerc.core.DataSet;
 import cn.cerc.core.DataSetGson;
 import cn.cerc.core.ISession;
-import cn.cerc.core.Record;
+import cn.cerc.core.DataRow;
 import cn.cerc.core.RecordState;
 import cn.cerc.core.SqlText;
 import cn.cerc.core.Utils;
@@ -58,7 +58,7 @@ public class MongoQuery extends DataSet implements IHandle {
         }
 
         for (Document doc : list) {
-            Record record = append().getCurrent();
+            DataRow record = append().getCurrent();
             for (String field : doc.keySet()) {
                 if ("_id".equals(field)) {
                     Object uid = doc.get(field);
@@ -193,17 +193,17 @@ public class MongoQuery extends DataSet implements IHandle {
     }
 
     @Override
-    protected final void insertStorage(Record record) {
+    protected final void insertStorage(DataRow record) {
         getOperator().insert(record);
     }
 
     @Override
-    protected final void updateStorage(Record record) {
+    protected final void updateStorage(DataRow record) {
         getOperator().update(record);
     }
 
     @Override
-    protected final void deleteStorage(Record record) {
+    protected final void deleteStorage(DataRow record) {
         getOperator().delete(record);
     }
 
@@ -233,7 +233,7 @@ public class MongoQuery extends DataSet implements IHandle {
         List<Map<String, Object>> items = (List<Map<String, Object>>) value;
         DataSet dataSet = new DataSet();
         for (Map<String, Object> item : items) {
-            Record record = dataSet.append().getCurrent();
+            DataRow record = dataSet.append().getCurrent();
             for (String key : item.keySet()) {
                 record.setField(key, item.get(key));
             }
@@ -245,7 +245,7 @@ public class MongoQuery extends DataSet implements IHandle {
     // 将DataSet转成通用类型，方便存入MongoDB
     public void setChildDataSet(String field, DataSet dataSet) {
         List<Map<String, Object>> items = new ArrayList<>();
-        for (Record child : dataSet.getRecords()) {
+        for (DataRow child : dataSet.getRecords()) {
             items.add(child.getItems());
         }
         this.setField(field, items);

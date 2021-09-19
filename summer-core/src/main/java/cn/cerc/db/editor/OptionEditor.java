@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.cerc.core.FieldMeta;
-import cn.cerc.core.Record;
+import cn.cerc.core.DataRow;
 
 public class OptionEditor implements GetSetTextEvent {
     private List<String> items = new ArrayList<>();
@@ -16,7 +16,7 @@ public class OptionEditor implements GetSetTextEvent {
     }
 
     @Override
-    public String getText(Record record, FieldMeta meta) {
+    public String getText(DataRow record, FieldMeta meta) {
         int index = record.getInt(meta.getCode());
         return items.get(index);
     }

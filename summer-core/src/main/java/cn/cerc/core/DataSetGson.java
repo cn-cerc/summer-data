@@ -136,7 +136,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
                     item.forEach(field -> dataSet.getFieldDefs().add(field.getAsString()));
                     defs = item;
                 } else {
-                    Record current = dataSet.append().getCurrent();
+                    DataRow current = dataSet.append().getCurrent();
                     for (int j = 0; j < defs.size(); j++) {
                         Object obj = context.deserialize(item.get(j), Object.class);
                         current.setField(defs.get(j).getAsString(), obj);
@@ -192,7 +192,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
 
         };
 
-        JsonSerializer<Record> gsonRecord = (src, typeOfSrc, context) -> {
+        JsonSerializer<DataRow> gsonRecord = (src, typeOfSrc, context) -> {
             JsonArray item = new JsonArray();
             src.getFieldDefs().forEach(def -> {
                 Object obj = src.getField(def.getCode());
@@ -211,7 +211,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
         };
 
         GsonBuilder build = new GsonBuilder().registerTypeAdapter(FieldDefs.class, gsonFieldDefs)
-                .registerTypeAdapter(FieldMeta.class, gsonFieldMeta).registerTypeAdapter(Record.class, gsonRecord)
+                .registerTypeAdapter(FieldMeta.class, gsonFieldMeta).registerTypeAdapter(DataRow.class, gsonRecord)
                 .registerTypeAdapter(Date.class, gsonDate).registerTypeAdapter(Double.class, gsonDouble)
                 .serializeNulls();
 

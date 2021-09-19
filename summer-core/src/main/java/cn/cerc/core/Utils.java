@@ -392,7 +392,7 @@ public class Utils {
     }
 
     // 转成指定类型的对象
-    public static <T> T recordAsObject(Record record, Class<T> clazz) {
+    public static <T> T recordAsObject(DataRow record, Class<T> clazz) {
         T obj;
         try {
             obj = clazz.getDeclaredConstructor().newInstance();
@@ -477,7 +477,7 @@ public class Utils {
         return obj;
     }
 
-    public static <T> void objectAsRecord(Record record, T object) {
+    public static <T> void objectAsRecord(DataRow record, T object) {
         Class<?> clazz = object.getClass();
         for (Field method : clazz.getDeclaredFields()) {
             if (method.getAnnotation(Transient.class) != null) {
@@ -511,7 +511,7 @@ public class Utils {
     // 将内容转成 Map
     public static <T> Map<String, T> dataSetAsMap(DataSet dataSet, Class<T> clazz, String... keys) {
         Map<String, T> items = new HashMap<>();
-        for (Record rs : dataSet) {
+        for (DataRow rs : dataSet) {
             String key = "";
             for (String field : keys) {
                 if ("".equals(key)) {
@@ -528,7 +528,7 @@ public class Utils {
     // 将内容转成 List
     public static <T> List<T> dataSetAsList(DataSet dataSet, Class<T> clazz) {
         List<T> items = new ArrayList<>();
-        for (Record rs : dataSet) {
+        for (DataRow rs : dataSet) {
             items.add(recordAsObject(rs, clazz));
         }
         return items;

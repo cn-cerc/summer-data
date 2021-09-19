@@ -149,7 +149,7 @@ public final class FieldMeta implements Serializable {
         return this;
     }
 
-    public String getText(Record record) {
+    public String getText(DataRow record) {
         if (getTextEvent == null)
             return record.getString(code);
         return getTextEvent.getText(record, this);

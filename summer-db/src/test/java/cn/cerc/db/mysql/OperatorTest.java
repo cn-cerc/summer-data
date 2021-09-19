@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import cn.cerc.core.FieldMeta.FieldKind;
 import cn.cerc.core.ISession;
-import cn.cerc.core.Record;
+import cn.cerc.core.DataRow;
 import cn.cerc.core.SqlText;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.StubSession;
@@ -47,7 +47,7 @@ public class OperatorTest implements IHandle {
         MysqlOperator obj = new MysqlOperator(this);
         obj.setTableName("temp");
         for (int i = 0; i < maxTest; i++) {
-            Record record = new Record();
+            DataRow record = new DataRow();
             record.getFieldDefs().add("UID_", FieldKind.Storage);
             record.getFieldDefs().add("Code_", FieldKind.Storage);
             record.setField("Code_", "code1");

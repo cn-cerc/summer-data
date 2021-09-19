@@ -1,13 +1,13 @@
 package cn.cerc.db.core;
 
-import cn.cerc.core.Record;
+import cn.cerc.core.DataRow;
 
 public interface NosqlOperator {
 
-    boolean insert(Record record);
+    boolean insert(DataRow record);
 
-    boolean update(Record record);
+    boolean update(DataRow record);
 
-    boolean delete(Record record);
+    boolean delete(DataRow record);
 
 }

@@ -60,7 +60,7 @@ public class DataSetTest_timeout {
         ds.post();
         assertTrue(ds.lookup("value", "xx") != null);
 
-        Record record = ds.lookup("value", "xx");
+        DataRow record = ds.lookup("value", "xx");
         record.setField("code", "value");
         assertEquals(ds.getString("code"), "value");
         assertEquals(10001, ds.getRecNo());

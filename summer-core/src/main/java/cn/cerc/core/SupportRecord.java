@@ -2,13 +2,13 @@ package cn.cerc.core;
 
 public interface SupportRecord {
 
-    default Record asRecord() {
-        Record result = new Record();
+    default DataRow asRecord() {
+        DataRow result = new DataRow();
         RecordUtils.copyToRecord(this, result);
         return result;
     }
 
-    default void copyTo(Record record) {
+    default void copyTo(DataRow record) {
         RecordUtils.copyToRecord(this, record);
     }
 

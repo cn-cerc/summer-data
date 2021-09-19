@@ -21,7 +21,7 @@ public class DataSetTest extends TestCase {
 
         int i = 0;
         for (@SuppressWarnings("unused")
-        Record record : ds) {
+        DataRow record : ds) {
             i++;
         }
         assertEquals(i, ds.size());
@@ -89,7 +89,7 @@ public class DataSetTest extends TestCase {
         DataSet ds = new DataSet();
         String jsonStr = "{\"head\":{\"It\":1,\"TBNo\":\"OD001\"},"
                 + "\"body\":[[\"It\",\"Part\",\"Desc\"],[1,\"001\",\"desc\"],[2,\"001\",\"desc\"]]}";
-        Record head = ds.getHead();
+        DataRow head = ds.getHead();
         head.setField("It", 1);
         head.setField("TBNo", "OD001");
         ds.append();

@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cn.cerc.core.ISession;
-import cn.cerc.core.Record;
+import cn.cerc.core.DataRow;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.StubSession;
 
@@ -24,7 +24,7 @@ public class SqlQueryTest_attach implements IHandle {
         ds.attach(String.format(sql, "000000"));
         ds.attach(String.format(sql, "144001"));
         ds.attach(String.format(sql, "911001"));
-        for (Record record : ds) {
+        for (DataRow record : ds) {
             System.out.println(record.toString());
         }
     }

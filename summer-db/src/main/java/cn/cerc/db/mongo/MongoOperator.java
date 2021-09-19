@@ -12,7 +12,7 @@ import com.mongodb.client.result.UpdateResult;
 
 import cn.cerc.core.Datetime;
 import cn.cerc.core.ISession;
-import cn.cerc.core.Record;
+import cn.cerc.core.DataRow;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.NosqlOperator;
 
@@ -29,7 +29,7 @@ public class MongoOperator implements NosqlOperator {
     }
 
     @Override
-    public boolean insert(Record record) {
+    public boolean insert(DataRow record) {
         MongoCollection<Document> coll = connection.getClient().getCollection(this.tableName);
         Document doc = getValue(record);
         coll.insertOne(doc);
@@ -37,7 +37,7 @@ public class MongoOperator implements NosqlOperator {
     }
 
     @Override
-    public boolean update(Record record) {
+    public boolean update(DataRow record) {
         MongoCollection<Document> coll = connection.getClient().getCollection(this.tableName);
         Document doc = getValue(record);
         String uid = record.getString("_id");
@@ -47,7 +47,7 @@ public class MongoOperator implements NosqlOperator {
     }
 
     @Override
-    public boolean delete(Record record) {
+    public boolean delete(DataRow record) {
         MongoCollection<Document> coll = connection.getClient().getCollection(this.tableName);
         String uid = record.getString("_id");
         Object key = "".equals(uid) ? "null" : new ObjectId(uid);
@@ -63,7 +63,7 @@ public class MongoOperator implements NosqlOperator {
         this.tableName = tableName;
     }
 
-    private Document getValue(Record record) {
+    private Document getValue(DataRow record) {
         Document doc = new Document();
         for(String field : record.getFieldDefs().getFields()) {
             if ("_id".equals(field)) {

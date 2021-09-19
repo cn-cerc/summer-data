@@ -16,18 +16,18 @@ public class SyncDataSet {
         source.first();
         while (source.fetch()) {
             result++;
-            Record src = source.getCurrent();
+            DataRow src = source.getCurrent();
             String[] fields = keyFields.split(";");
             Object[] values = new Object[fields.length];
             for (int i = 0; i < fields.length; i++) {
                 values[i] = src.getField(fields[i]);
             }
-            Record tar = target.locate(keyFields, values) ? target.getCurrent() : null;
+            DataRow tar = target.locate(keyFields, values) ? target.getCurrent() : null;
             sync.process(src, tar);
         }
         target.first();
         while (target.fetch()) {
-            Record tar = target.getCurrent();
+            DataRow tar = target.getCurrent();
             String[] fields = keyFields.split(";");
             Object[] values = new Object[fields.length];
             for (int i = 0; i < fields.length; i++) {

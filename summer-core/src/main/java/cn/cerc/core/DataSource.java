@@ -2,7 +2,7 @@ package cn.cerc.core;
 
 public interface DataSource {
 
-    Record getCurrent();
+    DataRow getCurrent();
 
     boolean isReadonly();
 }

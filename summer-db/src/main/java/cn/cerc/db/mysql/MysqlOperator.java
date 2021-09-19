@@ -10,7 +10,7 @@ import java.sql.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.cerc.core.Record;
+import cn.cerc.core.DataRow;
 import cn.cerc.core.SqlText;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.SqlOperator;
@@ -31,21 +31,21 @@ public class MysqlOperator extends SqlOperator {
     }
 
     @Deprecated
-    public boolean insert(Record record) {
+    public boolean insert(DataRow record) {
         try (MysqlClient client = handle.getMysql().getClient()) {
             return insert(client.getConnection(), record);
         }
     }
 
     @Deprecated
-    public boolean update(Record record) {
+    public boolean update(DataRow record) {
         try (MysqlClient client = handle.getMysql().getClient()) {
             return update(client.getConnection(), record);
         }
     }
 
     @Deprecated
-    public boolean delete(Record record) {
+    public boolean delete(DataRow record) {
         try (MysqlClient client = handle.getMysql().getClient()) {
             return delete(client.getConnection(), record);
         }

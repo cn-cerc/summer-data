@@ -1,10 +1,10 @@
 package cn.cerc.db.editor;
 
 import cn.cerc.core.FieldMeta;
-import cn.cerc.core.Record;
+import cn.cerc.core.DataRow;
 
 public interface GetTextEvent {
     
-    String getText(Record record, FieldMeta meta);
+    String getText(DataRow record, FieldMeta meta);
     
 }

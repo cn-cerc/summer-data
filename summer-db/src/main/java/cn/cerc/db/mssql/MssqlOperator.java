@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import cn.cerc.core.Record;
+import cn.cerc.core.DataRow;
 import cn.cerc.core.SqlText;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.SqlOperator;
@@ -24,7 +24,7 @@ public class MssqlOperator extends SqlOperator {
     }
 
     @Deprecated
-    public boolean insert(Record record) {
+    public boolean insert(DataRow record) {
         MssqlServer server = (MssqlServer) handle.getSession().getProperty(MssqlServer.SessionId);
         try (MssqlClient client = server.getClient()) {
             return insert(client.getConnection(), record);
@@ -32,7 +32,7 @@ public class MssqlOperator extends SqlOperator {
     }
 
     @Deprecated
-    public boolean update(Record record) {
+    public boolean update(DataRow record) {
         MssqlServer server = (MssqlServer) handle.getSession().getProperty(MssqlServer.SessionId);
         try (MssqlClient client = server.getClient()) {
             return update(client.getConnection(), record);
@@ -40,7 +40,7 @@ public class MssqlOperator extends SqlOperator {
     }
 
     @Deprecated
-    public boolean delete(Record record) {
+    public boolean delete(DataRow record) {
         MssqlServer server = (MssqlServer) handle.getSession().getProperty(MssqlServer.SessionId);
         try (MssqlClient client = server.getClient()) {
             return delete(client.getConnection(), record);

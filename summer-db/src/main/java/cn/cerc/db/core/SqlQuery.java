@@ -13,7 +13,7 @@ import cn.cerc.core.DataSetGson;
 import cn.cerc.core.FieldDefs;
 import cn.cerc.core.FieldMeta.FieldKind;
 import cn.cerc.core.ISession;
-import cn.cerc.core.Record;
+import cn.cerc.core.DataRow;
 import cn.cerc.core.RecordState;
 import cn.cerc.core.SqlText;
 import cn.cerc.core.Utils;
@@ -120,7 +120,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
                 client = getConnectionClient();
 
             // 先执行删除
-            for (Record record : delList) {
+            for (DataRow record : delList) {
                 doBeforeDelete(record);
                 if (this.isStorage())
                     getOperator().delete(client.getConnection(), record);
@@ -129,7 +129,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
             // 再执行增加、修改
             this.first();
             while (this.fetch()) {
-                Record record = this.getCurrent();
+                DataRow record = this.getCurrent();
                 if (record.getState().equals(RecordState.dsInsert)) {
                     doBeforePost(record);
                     if (this.isStorage())
@@ -172,7 +172,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
                 setFetchFinish(false);
                 break;
             }
-            Record record = this.newRecord();
+            DataRow record = this.newRecord();
             for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
                 String fn = rs.getMetaData().getColumnLabel(i);
                 record.setField(fn, rs.getObject(fn));
@@ -187,21 +187,21 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     }
 
     @Override
-    protected final void insertStorage(Record record) throws Exception {
+    protected final void insertStorage(DataRow record) throws Exception {
         try (ConnectionClient client = getConnectionClient()) {
             getOperator().insert(client.getConnection(), record);
         }
     }
 
     @Override
-    protected final void updateStorage(Record record) throws Exception {
+    protected final void updateStorage(DataRow record) throws Exception {
         try (ConnectionClient client = getConnectionClient()) {
             getOperator().update(client.getConnection(), record);
         }
     }
 
     @Override
-    protected final void deleteStorage(Record record) throws Exception {
+    protected final void deleteStorage(DataRow record) throws Exception {
         try (ConnectionClient client = getConnectionClient()) {
             getOperator().delete(client.getConnection(), record);
         }
