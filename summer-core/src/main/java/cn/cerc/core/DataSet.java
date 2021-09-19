@@ -215,11 +215,10 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
         return records;
     }
 
-    @Deprecated
-    public DataRow getIndex(int index) {
-        this.setRecNo(index + 1);
-        return this.getCurrent();
-    }
+//    @Deprecated
+//    public DataRow getIndex(int index) {
+//        return this.setRecNo(index + 1).getCurrent();
+//    }
 
     public int getRecNo() {
         return recNo;
@@ -554,7 +553,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
     }
 
     public DataRow getHead() {
-        if (head == null) 
+        if (head == null)
             head = new DataRow();
         return head;
     }
