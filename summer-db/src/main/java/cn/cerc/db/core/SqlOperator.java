@@ -84,7 +84,7 @@ public abstract class SqlOperator {
             bs.append("insert into ").append(getTableName()).append(" (");
             int i = 0;
             for (String field : record.getItems().keySet()) {
-                FieldMeta meta = record.getFieldDefs().getItem(field);
+                FieldMeta meta = record.getFieldDefs().get(field);
                 if (meta.getKind() == FieldKind.Storage) {
                     if (!meta.isAutoincrement()) {
                         i++;
@@ -98,7 +98,7 @@ public abstract class SqlOperator {
             bs.append(") values (");
             i = 0;
             for (String field : record.getItems().keySet()) {
-                FieldMeta meta = record.getFieldDefs().getItem(field);
+                FieldMeta meta = record.getFieldDefs().get(field);
                 if (meta.getKind() == FieldKind.Storage) {
                     if (!meta.isAutoincrement()) {
                         i++;
@@ -166,7 +166,7 @@ public abstract class SqlOperator {
             // 加入set条件
             int i = 0;
             for (String field : delta.keySet()) {
-                FieldMeta meta = record.getFieldDefs().getItem(field);
+                FieldMeta meta = record.getFieldDefs().get(field);
                 if (meta.getKind() == FieldKind.Storage) {
                     if (!meta.isAutoincrement()) {
                         i++;
@@ -187,7 +187,7 @@ public abstract class SqlOperator {
             i = 0;
             int pkCount = 0;
             for (String field : searchKeys) {
-                FieldMeta meta = record.getFieldDefs().getItem(field);
+                FieldMeta meta = record.getFieldDefs().get(field);
                 if (meta.getKind() == FieldKind.Storage) {
                     i++;
                     bs.append(i == 1 ? " where " : " and ").append(field);
@@ -206,7 +206,7 @@ public abstract class SqlOperator {
             if (getUpdateMode() == UpdateMode.strict) {
                 for (String field : delta.keySet()) {
                     if (!searchKeys.contains(field)) {
-                        FieldMeta meta = record.getFieldDefs().getItem(field);
+                        FieldMeta meta = record.getFieldDefs().get(field);
                         if (meta.getKind() == FieldKind.Storage) {
                             i++;
                             bs.append(i == 1 ? " where " : " and ").append(field);
@@ -250,7 +250,7 @@ public abstract class SqlOperator {
             int count = 0;
             Map<String, Object> delta = record.getDelta();
             for (String field : searchKeys) {
-                FieldMeta meta = record.getFieldDefs().getItem(field);
+                FieldMeta meta = record.getFieldDefs().get(field);
                 if (meta.getKind() == FieldKind.Storage) {
                     Object value = delta.containsKey(field) ? delta.get(field) : record.getField(field);
                     if (value == null)
@@ -282,7 +282,7 @@ public abstract class SqlOperator {
     private void resetUpdateKey(Connection connection, DataRow record) {
         FieldMeta def = null;
         if (!Utils.isEmpty(this.updateKey)) {
-            def = record.getFieldDefs().getItem(this.updateKey);
+            def = record.getFieldDefs().get(this.updateKey);
             if (def == null) {
                 log.debug(String.format("not find primary key %s in %s", this.updateKey, getTableName()));
                 this.updateKey = null;
