@@ -29,15 +29,6 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return result;
     }
 
-    public List<String> getFields(FieldKind fieldType) {
-        List<String> result = new ArrayList<>();
-        for (FieldMeta meta : items) {
-            if (fieldType == meta.getKind())
-                result.add(meta.getCode());
-        }
-        return result;
-    }
-
     public FieldMeta add(String fieldCode) {
         FieldMeta item = new FieldMeta(fieldCode);
         return items.add(item) ? item : this.getItem(fieldCode);
