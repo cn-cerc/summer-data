@@ -8,7 +8,6 @@ import cn.cerc.core.DataRow;
 
 public class SumRecord extends DataRow {
     private static final long serialVersionUID = -8836802853579764175L;
-    private DataSet dataSet;
     private Map<String, Double> fields = new HashMap<>();
 
     public SumRecord(DataSet dataSet) {
@@ -32,7 +31,7 @@ public class SumRecord extends DataRow {
     }
 
     public SumRecord run() {
-        for (DataRow rs : this.dataSet) {
+        for (DataRow rs : getDataSet()) {
             for (String field : this.fields.keySet()) {
                 Double value = fields.get(field);
                 value += rs.getDouble(field);
@@ -44,11 +43,6 @@ public class SumRecord extends DataRow {
             this.setField(field, value);
         }
         return this;
-    }
-
-    @Override
-    public DataSet getDataSet() {
-        return dataSet;
     }
 
     public Map<String, Double> getFields() {
