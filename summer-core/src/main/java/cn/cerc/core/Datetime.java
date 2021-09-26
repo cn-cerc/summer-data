@@ -1,6 +1,7 @@
 package cn.cerc.core;
 
 import java.io.Serializable;
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -10,11 +11,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.EnumSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
-    private static final Logger log = LoggerFactory.getLogger(Datetime.class);
     private static final long serialVersionUID = -7395748632907604015L;
     // 常见输出组合
     public static final EnumSet<DateType> yyyyMMdd_HHmmss = EnumSet.of(DateType.Year, DateType.Month, DateType.Day,
@@ -74,8 +71,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
             ldt = build(dateValue);
             Instant data = ldt.atZone(LocalZone).toInstant();
             this.setTimestamp(data.toEpochMilli());
-        } catch (DateFormatErrorException e) {
-            log.warn("dateValue format error: {}", dateValue);
+        } catch (DateFormatErrorException | DateTimeException e) {
             this.timestamp = StartPoint;
         }
     }
