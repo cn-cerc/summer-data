@@ -113,29 +113,30 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
     public final void post() {
         if (this.isBatchSave())
             return;
-        DataRow record = this.getCurrent();
-        if (record.getState() == RecordState.dsInsert) {
-            doBeforePost(record);
+        DataRow dataRow = this.getCurrent();
+        if (dataRow.getState() == RecordState.dsInsert) {
+            doBeforePost(dataRow);
             if (this.isStorage()) {
                 try {
-                    insertStorage(record);
+                    insertStorage(dataRow);
+                } catch (Exception e) {
+                    if (e.getMessage().contains("Data too long"))
+                        log.error(dataRow.toString());
+                    throw new RuntimeException(e);
+                }
+            }
+            doAfterPost(dataRow);
+        } else if (dataRow.getState() == RecordState.dsEdit) {
+            doBeforePost(dataRow);
+            if (this.isStorage()) {
+                try {
+                    updateStorage(dataRow);
                 } catch (Exception e) {
                     log.error(e.getMessage());
                     throw new RuntimeException(e.getMessage());
                 }
             }
-            doAfterPost(record);
-        } else if (record.getState() == RecordState.dsEdit) {
-            doBeforePost(record);
-            if (this.isStorage()) {
-                try {
-                    updateStorage(record);
-                } catch (Exception e) {
-                    log.error(e.getMessage());
-                    throw new RuntimeException(e.getMessage());
-                }
-            }
-            doAfterPost(record);
+            doAfterPost(dataRow);
         }
     }
 
