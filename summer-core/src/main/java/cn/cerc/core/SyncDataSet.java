@@ -20,7 +20,7 @@ public class SyncDataSet {
             String[] fields = keyFields.split(";");
             Object[] values = new Object[fields.length];
             for (int i = 0; i < fields.length; i++) {
-                values[i] = src.getField(fields[i]);
+                values[i] = src.getValue(fields[i]);
             }
             DataRow tar = target.locate(keyFields, values) ? target.getCurrent() : null;
             sync.process(src, tar);
@@ -31,7 +31,7 @@ public class SyncDataSet {
             String[] fields = keyFields.split(";");
             Object[] values = new Object[fields.length];
             for (int i = 0; i < fields.length; i++) {
-                values[i] = tar.getField(fields[i]);
+                values[i] = tar.getValue(fields[i]);
             }
             if (!source.locate(keyFields, values)) {
                 result++;

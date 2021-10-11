@@ -76,7 +76,7 @@ public abstract class SqlOperator {
 
         if ("UpdateKey_".equalsIgnoreCase(this.updateKey)) {
             if ("".equals(record.getString(this.updateKey)))
-                record.setField(this.updateKey, Utils.newGuid());
+                record.setValue(this.updateKey, Utils.newGuid());
         }
 
         String lastCommand = null;
@@ -103,9 +103,9 @@ public abstract class SqlOperator {
                     if (!meta.isAutoincrement()) {
                         i++;
                         if (i == 1) {
-                            bs.append("?", record.getField(field));
+                            bs.append("?", record.getValue(field));
                         } else {
-                            bs.append(",?", record.getField(field));
+                            bs.append(",?", record.getValue(field));
                         }
                     }
                 }
@@ -134,9 +134,9 @@ public abstract class SqlOperator {
                     BigInteger uidvalue = findAutoUid(connection);
                     log.debug("自增列uid value：" + uidvalue);
                     if (uidvalue.intValue() <= Integer.MAX_VALUE) {
-                        record.setField(meta.getCode(), uidvalue.intValue());
+                        record.setValue(meta.getCode(), uidvalue.intValue());
                     } else {
-                        record.setField(meta.getCode(), uidvalue);
+                        record.setValue(meta.getCode(), uidvalue);
                     }
                 }
             }
@@ -173,9 +173,9 @@ public abstract class SqlOperator {
                         bs.append(i == 1 ? " set " : ",");
                         bs.append(field);
                         if (field.indexOf("+") >= 0 || field.indexOf("-") >= 0) {
-                            bs.append("?", record.getField(field));
+                            bs.append("?", record.getValue(field));
                         } else {
-                            bs.append("=?", record.getField(field));
+                            bs.append("=?", record.getValue(field));
                         }
                     }
                 }
@@ -191,7 +191,7 @@ public abstract class SqlOperator {
                 if (meta.getKind() == FieldKind.Storage) {
                     i++;
                     bs.append(i == 1 ? " where " : " and ").append(field);
-                    Object value = delta.containsKey(field) ? delta.get(field) : record.getField(field);
+                    Object value = delta.containsKey(field) ? delta.get(field) : record.getValue(field);
                     if (value != null) {
                         bs.append("=?", value);
                         pkCount++;
@@ -252,7 +252,7 @@ public abstract class SqlOperator {
             for (String field : searchKeys) {
                 FieldMeta meta = record.getFieldDefs().get(field);
                 if (meta.getKind() == FieldKind.Storage) {
-                    Object value = delta.containsKey(field) ? delta.get(field) : record.getField(field);
+                    Object value = delta.containsKey(field) ? delta.get(field) : record.getValue(field);
                     if (value == null)
                         throw new RuntimeException("primary key is null");
                     count++;

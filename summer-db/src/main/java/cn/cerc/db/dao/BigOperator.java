@@ -14,6 +14,7 @@ import cn.cerc.core.ClassFactory;
 import cn.cerc.core.Datetime;
 import cn.cerc.core.TDateTime;
 
+@SuppressWarnings("deprecation")
 public class BigOperator {
     private static final Logger log = LoggerFactory.getLogger(BigOperator.class);
 

@@ -30,10 +30,10 @@ public class RecordUtils {
                         fieldName = column.name();
                     }
                     if (field.getModifiers() == PUBLIC) {
-                        record.setField(fieldName, field.get(obj));
+                        record.setValue(fieldName, field.get(obj));
                     } else if (field.getModifiers() == PRIVATE || field.getModifiers() == PROTECTED) {
                         field.setAccessible(true);
-                        record.setField(fieldName, field.get(obj));
+                        record.setValue(fieldName, field.get(obj));
                     }
                 }
             }
@@ -43,6 +43,7 @@ public class RecordUtils {
     }
 
     // 将record的数据，复制到obj中
+    @SuppressWarnings("deprecation")
     public static void copyToObject(DataRow record, Object obj) {
         try {
             Field[] fields = obj.getClass().getDeclaredFields();
@@ -80,7 +81,7 @@ public class RecordUtils {
                         propertyName = column.name();
                     }
                     if (propertyName.equals(fieldName)) {
-                        Object val = record.getField(fieldName);
+                        Object val = record.getValue(fieldName);
                         if (val == null) {
                             field.set(obj, null);
                         } else if (field.getType().equals(val.getClass())) {

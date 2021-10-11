@@ -392,6 +392,7 @@ public class Utils {
     }
 
     // 转成指定类型的对象
+    @SuppressWarnings("deprecation")
     public static <T> T recordAsObject(DataRow record, Class<T> clazz) {
         T obj;
         try {
@@ -445,12 +446,10 @@ public class Utils {
                         Method set = clazz.getMethod("set" + field, boolean.class);
                         set.invoke(obj, value);
                     } else if (method.getType().equals(TDate.class)) {
-                        @SuppressWarnings("deprecation")
                         TDate value = record.getDate(dbField);
                         Method set = clazz.getMethod("set" + field, value.getClass());
                         set.invoke(obj, value);
                     } else if (method.getType().equals(TDateTime.class)) {
-                        @SuppressWarnings("deprecation")
                         TDateTime value = record.getDateTime(dbField);
                         Method set = clazz.getMethod("set" + field, value.getClass());
                         set.invoke(obj, value);
@@ -500,7 +499,7 @@ public class Utils {
                 field = field.substring(0, 1).toUpperCase() + field.substring(1);
                 get = clazz.getMethod("get" + field);
                 Object value = get.invoke(object);
-                record.setField(dbField, value);
+                record.setValue(dbField, value);
             } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException e) {
                 // e.printStackTrace();

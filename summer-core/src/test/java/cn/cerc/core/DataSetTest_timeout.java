@@ -14,7 +14,7 @@ public class DataSetTest_timeout {
     @Test
     public void test_append() {
         ds.append();
-        ds.setField("code", "value");
+        ds.setValue("code", "value");
         ds.post();
         assertEquals(1, ds.size());
     }
@@ -34,8 +34,8 @@ public class DataSetTest_timeout {
         for (int i = 0; i < MAX; i++) {
             String key = "code" + i;
             ds.append();
-            ds.setField("code", key);
-            ds.setField("value", i);
+            ds.setValue("code", key);
+            ds.setValue("value", i);
             ds.post();
         }
         for (int i = 100; i < MAX; i++)
@@ -47,25 +47,25 @@ public class DataSetTest_timeout {
         for (int i = 0; i < MAX; i++) {
             String key = "code" + i;
             ds.append();
-            ds.setField("code", key);
-            ds.setField("value", i);
+            ds.setValue("code", key);
+            ds.setValue("value", i);
             ds.post();
         }
         for (int i = 100; i < MAX; i++) {
             assertTrue(ds.lookup("value", i) != null);
         }
         ds.append();
-        ds.setField("code", "codexx");
-        ds.setField("value", "xx");
+        ds.setValue("code", "codexx");
+        ds.setValue("value", "xx");
         ds.post();
         assertTrue(ds.lookup("value", "xx") != null);
 
         DataRow record = ds.lookup("value", "xx");
-        record.setField("code", "value");
+        record.setValue("code", "value");
         assertEquals(ds.getString("code"), "value");
         assertEquals(10001, ds.getRecNo());
 
-        ds.setField("code", "value2");
+        ds.setValue("code", "value2");
         assertEquals(record.getString("code"), "value2");
 
         assertTrue(ds.lookup("value", "xx") != null);

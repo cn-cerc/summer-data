@@ -21,19 +21,19 @@ public class DaoUtilTest {
     @Test
     public void testCopy() {
         DataRow record = new DataRow();
-        record.setField("ID_", Utils.newGuid());
-        record.setField("Code_", "18100101");
-        record.setField("Name_", "王五");
-        record.setField("Mobile_", "1350019101");
+        record.setValue("ID_", Utils.newGuid());
+        record.setValue("Code_", "18100101");
+        record.setValue("Name_", "王五");
+        record.setValue("Mobile_", "1350019101");
         UserTest user = record.asObject(UserTest.class);
         System.out.println(new Gson().toJson(user));
 
         record = new DataRow();
-        record.setField("ID_", Utils.newGuid());
-        record.setField("Code_", "18100101");
-        record.setField("Name_", "王五");
-        record.setField("Mobile_", "1350019101");
-        record.setField("Web_", true);
+        record.setValue("ID_", Utils.newGuid());
+        record.setValue("Code_", "18100101");
+        record.setValue("Name_", "王五");
+        record.setValue("Mobile_", "1350019101");
+        record.setValue("Web_", true);
         user = record.asObject(UserTest.class);
         System.out.println(new Gson().toJson(user));
     }
@@ -41,9 +41,9 @@ public class DaoUtilTest {
     @Test(expected = RuntimeException.class)
     public void testCopy2() {
         DataRow record = new DataRow();
-        record.setField("ID_", Utils.newGuid());
-        record.setField("Code_", "18100101");
-        record.setField("Name_", "王五");
+        record.setValue("ID_", Utils.newGuid());
+        record.setValue("Code_", "18100101");
+        record.setValue("Name_", "王五");
         UserTest user = new UserTest();
         RecordUtils.copyToObject(record, user);
     }

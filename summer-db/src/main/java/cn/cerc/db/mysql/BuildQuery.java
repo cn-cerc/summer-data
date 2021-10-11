@@ -334,7 +334,7 @@ public class BuildQuery implements IHandle {
         if (foot == null) {
             return ds;
         }
-        foot.setField("__finish__", ds.isFetchFinish());
+        foot.setValue("__finish__", ds.isFetchFinish());
         return ds;
     }
 
@@ -348,7 +348,7 @@ public class BuildQuery implements IHandle {
         ds.add(this.getSelectCommand());
         ds.openReadonly();
         if (foot != null) {
-            foot.setField("__finish__", ds.isFetchFinish());
+            foot.setValue("__finish__", ds.isFetchFinish());
         }
         return ds;
     }

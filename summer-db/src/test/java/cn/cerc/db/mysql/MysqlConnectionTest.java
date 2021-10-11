@@ -27,15 +27,15 @@ public class MysqlConnectionTest {
                         e.printStackTrace();
                     }
                     ds.append();
-                    ds.setField("code_", "a1");
-                    ds.setField("name_", "xxx");
-                    ds.setField("num_", 1);
+                    ds.setValue("code_", "a1");
+                    ds.setValue("name_", "xxx");
+                    ds.setValue("num_", 1);
                     ds.post();
 
                     ds.append();
-                    ds.setField("code_", "a1");
-                    ds.setField("name_", "xxx");
-                    ds.setField("num_", 2);
+                    ds.setValue("code_", "a1");
+                    ds.setValue("name_", "xxx");
+                    ds.setValue("num_", 2);
                     ds.post();
                     tx.commit();
                 }

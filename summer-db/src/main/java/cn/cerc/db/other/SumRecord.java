@@ -40,7 +40,7 @@ public class SumRecord extends DataRow {
         }
         for (String field : this.fields.keySet()) {
             Double value = fields.get(field);
-            this.setField(field, value);
+            this.setValue(field, value);
         }
         return this;
     }

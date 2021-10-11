@@ -10,14 +10,14 @@ public class DataSetTest extends TestCase {
     public void test_list() {
         DataSet ds = new DataSet();
         ds.append();
-        ds.setField("A", "A01");
-        ds.setField("B", "B01");
+        ds.setValue("A", "A01");
+        ds.setValue("B", "B01");
         ds.append();
-        ds.setField("A", "A02");
-        ds.setField("B", "B02");
+        ds.setValue("A", "A02");
+        ds.setValue("B", "B02");
         ds.append();
-        ds.setField("A", "A03");
-        ds.setField("B", "B03");
+        ds.setValue("A", "A03");
+        ds.setValue("B", "B03");
 
         int i = 0;
         for (@SuppressWarnings("unused")
@@ -30,9 +30,9 @@ public class DataSetTest extends TestCase {
     @Test
     public void test_delete_a() {
         DataSet ds = new DataSet();
-        ds.append().setField("code", "a");
-        ds.append().setField("code", "b");
-        ds.append().setField("code", "c");
+        ds.append().setValue("code", "a");
+        ds.append().setValue("code", "b");
+        ds.append().setValue("code", "c");
 
         int i = 0;
         ds.first();
@@ -49,9 +49,9 @@ public class DataSetTest extends TestCase {
     @Test
     public void test_delete_b() {
         DataSet ds = new DataSet();
-        ds.append().setField("code", "a");
-        ds.append().setField("code", "b");
-        ds.append().setField("code", "c");
+        ds.append().setValue("code", "a");
+        ds.append().setValue("code", "b");
+        ds.append().setValue("code", "c");
 
         int i = 0;
         ds.first();
@@ -68,9 +68,9 @@ public class DataSetTest extends TestCase {
     @Test
     public void test_delete_c() {
         DataSet ds = new DataSet();
-        ds.append().setField("code", "a");
-        ds.append().setField("code", "b");
-        ds.append().setField("code", "c");
+        ds.append().setValue("code", "a");
+        ds.append().setValue("code", "b");
+        ds.append().setValue("code", "c");
 
         int i = 0;
         ds.first();
@@ -90,16 +90,16 @@ public class DataSetTest extends TestCase {
         String jsonStr = "{\"head\":{\"It\":1,\"TBNo\":\"OD001\"},"
                 + "\"body\":[[\"It\",\"Part\",\"Desc\"],[1,\"001\",\"desc\"],[2,\"001\",\"desc\"]]}";
         DataRow head = ds.getHead();
-        head.setField("It", 1);
-        head.setField("TBNo", "OD001");
+        head.setValue("It", 1);
+        head.setValue("TBNo", "OD001");
         ds.append();
-        ds.setField("It", 1);
-        ds.setField("Part", "001");
-        ds.setField("Desc", "desc");
+        ds.setValue("It", 1);
+        ds.setValue("Part", "001");
+        ds.setValue("Desc", "desc");
         ds.append();
-        ds.setField("It", 2);
-        ds.setField("Part", "001");
-        ds.setField("Desc", "desc");
+        ds.setValue("It", 2);
+        ds.setValue("Part", "001");
+        ds.setValue("Desc", "desc");
         assertEquals(jsonStr, ds.toString());
     }
 
@@ -110,6 +110,8 @@ public class DataSetTest extends TestCase {
         DataSet ds = new DataSet().fromJson(jsonStr);
         assertEquals(jsonStr, ds.toString());
         assertEquals("1", ds.getHead().getString("It"));
+        assertTrue(ds.getValue("It") instanceof Integer);
+        assertTrue(ds.getHead().getValue("It") instanceof Integer);
     }
 
     /**
@@ -122,7 +124,7 @@ public class DataSetTest extends TestCase {
         assertEquals(json, dataSet.toString());
         assertTrue(dataSet.getHead().hasValue("Discount_"));
         assertEquals("0.91", dataSet.getHead().getString("Discount_"));
-        assertEquals(0, dataSet.getHead().getInt("Discount_"));
+        assertEquals(0.91, dataSet.getHead().getDouble("Discount_"));
     }
 
     /**
@@ -134,6 +136,8 @@ public class DataSetTest extends TestCase {
         DataSet dataSet = new DataSet().fromJson(json);
         assertTrue(dataSet.getHead().hasValue("Discount_"));
         assertEquals("1", dataSet.getHead().getString("Discount_"));
+        assertTrue(dataSet.getHead().getValue("Discount_") instanceof Integer);
         assertEquals(1, dataSet.getHead().getInt("Discount_"));
     }
+
 }

@@ -12,9 +12,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonPrimitive;
@@ -22,8 +19,7 @@ import com.google.gson.JsonSerializer;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 
-public class DataRow implements Serializable {
-    private static final Logger log = LoggerFactory.getLogger(DataRow.class);
+public class DataRow implements Serializable, IRecord {
     private static final long serialVersionUID = 4454304132898734723L;
     private RecordState state = RecordState.dsNone;
     private Map<String, Object> items = new LinkedHashMap<>();
@@ -60,10 +56,16 @@ public class DataRow implements Serializable {
         return this;
     }
 
+    @Deprecated
     public DataRow setField(String field, Object value) {
-        if (field == null || "".equals(field)) {
+        return setValue(field, value);
+    }
+
+    @Override
+    public DataRow setValue(String field, Object value) {
+        if (field == null || "".equals(field)) 
             throw new RuntimeException("field is null!");
-        }
+        
         this.addFieldDef(field);
 
         SearchDataSet search = null;
@@ -75,7 +77,7 @@ public class DataRow implements Serializable {
             data = ((Datetime) value).asBaseDate();
 
         if ((search == null) && (this.state != RecordState.dsEdit)) {
-            setValue(items, field, data);
+            setMapValue(items, field, data);
             return this;
         }
 
@@ -90,17 +92,18 @@ public class DataRow implements Serializable {
 
         if (this.state == RecordState.dsEdit) {
             if (!delta.containsKey(field)) {
-                setValue(delta, field, oldValue);
+                setMapValue(delta, field, oldValue);
             }
         }
-        setValue(items, field, data);
+        setMapValue(items, field, data);
 
         if (search != null)
             search.append(this);
+        
         return this;
     }
 
-    private void setValue(Map<String, Object> map, String field, Object value) {
+    private void setMapValue(Map<String, Object> map, String field, Object value) {
         if (value == null || value instanceof Integer || value instanceof Double || value instanceof Boolean
                 || value instanceof Long) {
             map.put(field, value);
@@ -138,7 +141,13 @@ public class DataRow implements Serializable {
         }
     }
 
+    @Deprecated
     public Object getField(String field) {
+        return getValue(field);
+    }
+
+    @Override
+    public Object getValue(String field) {
         if (field == null || "".equals(field)) {
             throw new RuntimeException("field is null!");
         }
@@ -179,16 +188,17 @@ public class DataRow implements Serializable {
             items[i] = tmp.get(i);
         }
         copyValues(source, items);
+        items = null;
     }
 
     public void copyValues(DataRow source, String... fields) {
         if (fields.length > 0) {
             for (String field : fields) {
-                this.setField(field, source.getField(field));
+                this.setValue(field, source.getValue(field));
             }
         } else {
             for (String field : source.getFieldDefs().getFields()) {
-                this.setField(field, source.getField(field));
+                this.setValue(field, source.getValue(field));
             }
         }
     }
@@ -198,7 +208,7 @@ public class DataRow implements Serializable {
         Map<String, Object> items = new LinkedHashMap<>();
         for (int i = 0; i < defs.size(); i++) {
             String field = defs.get(i).getCode();
-            Object obj = this.getField(field);
+            Object obj = this.getValue(field);
             if (obj instanceof Datetime) {
                 items.put(field, obj.toString());
             } else if (obj instanceof Date) {
@@ -235,7 +245,7 @@ public class DataRow implements Serializable {
                     }
                 }
             }
-            setField(field, obj);
+            setValue(field, obj);
         }
     }
 
@@ -252,197 +262,12 @@ public class DataRow implements Serializable {
         }
     }
 
-    public boolean getBoolean(String field) {
-        this.addFieldDef(field);
-        Object obj = this.getField(field);
-        if (obj instanceof Boolean) {
-            return (Boolean) obj;
-        } else if (obj instanceof String) {
-            String str = (String) obj;
-            return !"".equals(str) && !"0".equals(str) && !"false".equals(str);
-        } else if (obj instanceof Integer) {
-            int value = (Integer) obj;
-            return value > 0;
-        } else {
-            return false;
-        }
-    }
-
-    public int getInt(String field) {
-        this.addFieldDef(field);
-        Object obj = this.getField(field);
-        if (obj instanceof Integer) {
-            return (Integer) obj;
-        } else if (obj instanceof BigInteger) {
-            StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
-            for (StackTraceElement item : stacktrace) {
-                log.warn("{}.{}:{}", item.getClassName(), item.getMethodName(), item.getLineNumber());
-            }
-            log.warn("type error: getInt() can not use BigInteger");
-            return ((BigInteger) obj).intValue();
-        } else if (obj instanceof Double) {
-            return ((Double) obj).intValue();
-        } else if (obj instanceof String) {
-            String str = (String) obj;
-            if ("".equals(str)) {
-                return 0;
-            }
-            double val = Double.parseDouble(str);
-            return (int) val;
-        } else if (obj instanceof Long) {
-            return ((Long) obj).intValue();
-        } else if ((obj instanceof Boolean)) {
-            return (Boolean) obj ? 1 : 0;
-        } else if ((obj instanceof Short)) {
-            return ((Short) obj).intValue();
-        } else {
-            return 0;
-        }
-    }
-
-    public long getLong(String field) {
-        this.addFieldDef(field);
-        Object obj = this.getField(field);
-        if (obj instanceof Integer) {
-            return (Integer) obj;
-        } else if (obj instanceof BigInteger) {
-            StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
-            for (StackTraceElement item : stacktrace) {
-                log.warn("{}.{}:{}", item.getClassName(), item.getMethodName(), item.getLineNumber());
-            }
-            log.warn("type error: getInt() can not use BigInteger");
-            return ((BigInteger) obj).intValue();
-        } else if (obj instanceof Double) {
-            return ((Double) obj).intValue();
-        } else if (obj instanceof String) {
-            String str = (String) obj;
-            if ("".equals(str)) {
-                return 0;
-            }
-            Long val = Long.parseLong(str);
-            return val;
-        } else if (obj instanceof Long) {
-            return ((Long) obj);
-        } else if ((obj instanceof Boolean)) {
-            return (Boolean) obj ? 1 : 0;
-        } else if ((obj instanceof Short)) {
-            return ((Short) obj).intValue();
-        } else {
-            return 0;
-        }
-    }
-
-    public BigInteger getBigInteger(String field) {
-        this.addFieldDef(field);
-        Object obj = this.getField(field);
-        if (obj instanceof BigInteger) {
-            return (BigInteger) obj;
-        } else if (obj instanceof String) {
-            String str = (String) obj;
-            if ("".equals(str)) {
-                return BigInteger.valueOf(0);
-            }
-            return new BigInteger(str);
-        } else if (obj instanceof Integer) {
-            return BigInteger.valueOf((Integer) obj);
-        } else if ((obj instanceof Short)) {
-            return BigInteger.valueOf((Short) obj);
-        } else if (obj instanceof Double) {
-            return BigInteger.valueOf(((Double) obj).longValue());
-        } else if (obj instanceof Long) {
-            return BigInteger.valueOf((Long) obj);
-        } else {
-            return BigInteger.valueOf(0);
-        }
-    }
-
-    public BigDecimal getBigDecimal(String field) {
-        this.addFieldDef(field);
-        Object obj = this.getField(field);
-        if (obj instanceof BigInteger) {
-            return (BigDecimal) obj;
-        } else if (obj instanceof String) {
-            String str = (String) obj;
-            if ("".equals(str)) {
-                return BigDecimal.valueOf(0);
-            }
-            return new BigDecimal(str);
-        } else if (obj instanceof Integer) {
-            return BigDecimal.valueOf((Integer) obj);
-        } else if (obj instanceof Short) {
-            return BigDecimal.valueOf((Short) obj);
-        } else if (obj instanceof Double) {
-            return BigDecimal.valueOf(((Double) obj).longValue());
-        } else if (obj instanceof Long) {
-            return BigDecimal.valueOf((Long) obj);
-        } else {
-            return BigDecimal.valueOf(0);
-        }
-    }
-
-    public double getDouble(String field) {
-        this.addFieldDef(field);
-        Object obj = this.getField(field);
-        if (obj instanceof String) {
-            String str = (String) obj;
-            if ("".equals(str)) {
-                return 0;
-            }
-            return Double.parseDouble((String) obj);
-        }
-        if (obj instanceof Integer) {
-            return ((Integer) obj) * 1.0;
-        } else if ((obj instanceof Short)) {
-            return ((Short) obj) * 1.0;
-        } else if (obj == null) {
-            return 0.0;
-        } else if (obj instanceof BigInteger) {
-            return ((BigInteger) obj).doubleValue();
-        } else if (obj instanceof Long) {
-            Long tmp = (Long) obj;
-            return tmp * 1.0;
-        } else if ((obj instanceof Boolean)) {
-            return (Boolean) obj ? 1 : 0;
-        } else {
-            double d = (Double) obj;
-            if (d == 0) {
-                d = 0;
-            }
-            return d;
-        }
-    }
-
     public double getDouble(String field, int digit) {
         double result = this.getDouble(field);
         String str = "0.00000000";
         str = str.substring(0, str.indexOf(".") + (-digit) + 1);
         DecimalFormat df = new DecimalFormat(str);
         return Double.parseDouble(df.format(result));
-    }
-
-    public String getString(String field) {
-        this.addFieldDef(field);
-        String result = "";
-        Object obj = this.getField(field);
-        if (obj != null) {
-            if (obj instanceof String) {
-                result = (String) obj;
-            } else if (obj instanceof Date) {
-                Datetime tmp = new Datetime(((Date) obj).getTime());
-                result = tmp.isEmpty() ? "" : tmp.toString();
-            } else if (obj instanceof Double) {
-                Double temp = (Double) obj;
-                long value = temp.longValue();
-                if (temp == value) {
-                    result = String.valueOf(value);
-                } else {
-                    result = temp.toString();
-                }
-            } else {
-                result = obj.toString();
-            }
-        }
-        return result;
     }
 
     /**
@@ -455,28 +280,6 @@ public class DataRow implements Serializable {
     public String getSafeString(String field) {
         String value = getString(field);
         return value == null ? "" : value.replaceAll("'", "''");
-    }
-
-    public Datetime getDatetime(String field) {
-        this.addFieldDef(field);
-        Object obj = this.getField(field);
-        if (obj == null) {
-            return Datetime.zero();
-        } else if (obj instanceof String) {
-            return new Datetime((String) obj);
-        } else if (obj instanceof Date) {
-            return new Datetime((Date) obj);
-        } else {
-            throw new RuntimeException(String.format("%s Field not is %s.", field, obj.getClass().getName()));
-        }
-    }
-
-    public FastDate getFastDate(String field) {
-        return this.getDatetime(field).toFastDate();
-    }
-
-    public FastTime getFastTime(String field) {
-        return this.getDatetime(field).toFastTime();
     }
 
     @Deprecated
@@ -496,6 +299,7 @@ public class DataRow implements Serializable {
             defs.clear();
     }
 
+    @Override
     public boolean exists(String field) {
         return this.defs.exists(field);
     }
@@ -543,7 +347,7 @@ public class DataRow implements Serializable {
 
     public boolean equalsValues(Map<String, Object> values) {
         for (String field : values.keySet()) {
-            Object obj1 = getField(field);
+            Object obj1 = getValue(field);
             String value = obj1 == null ? "null" : obj1.toString();
             Object obj2 = values.get(field);
             String compareValue = obj2 == null ? "null" : obj2.toString();
@@ -590,8 +394,13 @@ public class DataRow implements Serializable {
 
     public DataRow setText(String field, String value) {
         FieldMeta meta = this.getFieldDefs().get(field);
-        this.setField(field, meta.setText(value));
+        this.setValue(field, meta.setText(value));
         return this;
     }
 
+    public static void main(String[] args) {
+        DataRow row = new DataRow();
+        row.setValue("num", BigInteger.valueOf(Long.MAX_VALUE));
+        System.out.println(row.getInt("num"));
+    }
 }

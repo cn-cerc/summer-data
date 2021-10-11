@@ -58,7 +58,7 @@ public class SearchDataSet {
     private final String buildRecordKey(DataRow record) {
         String result = null;
         for (String field : keys) {
-            Object val = record.getField(field);
+            Object val = record.getValue(field);
             if (val == null)
                 val = "null";
             result = result == null ? val.toString() : result + ";" + val.toString();

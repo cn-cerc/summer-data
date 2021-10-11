@@ -7,7 +7,7 @@ public class QueryLocateTest {
         DataSet ds = new DataSet();
         long start = System.currentTimeMillis();
         for (int i = 0; i < 50000; i++)
-            ds.append().setField("code", "a").setField("value", i + 1);
+            ds.append().setValue("code", "a").setValue("value", i + 1);
         long end = System.currentTimeMillis() - start;
         start = System.currentTimeMillis();
         for (int i = 0; i < 50000; i++) {

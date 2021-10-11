@@ -37,26 +37,26 @@ public class MongoQueryTest implements IHandle {
     public void test_append() {
         DataSet data = new DataSet();
         data.append();
-        data.setField("it", 1);
-        data.setField("month", "201609");
+        data.setValue("it", 1);
+        data.setValue("month", "201609");
         data.append();
-        data.setField("it", 2);
-        data.setField("month", "201610");
+        data.setValue("it", 2);
+        data.setValue("month", "201610");
         //
         ds.add("select * from tmp2 where code='a001'");
         ds.open();
         for (int i = 1; i < 20; i++) {
             ds.append();
-            ds.setField("code", "a001");
-            ds.setField("value", i);
+            ds.setValue("code", "a001");
+            ds.setValue("value", i);
             ds.setChildDataSet("data", data);
             DataSet ds2 = ds.getChildDataSet("data");
             System.out.println(ds2);
             ds.post();
         }
         ds.append();
-        ds.setField("code", "a001QQ");
-        ds.setField("value", 30);
+        ds.setValue("code", "a001QQ");
+        ds.setValue("value", 30);
         ds.setChildDataSet("data", data);
         DataSet ds2 = ds.getChildDataSet("data");
         System.out.println(ds2);
@@ -70,7 +70,7 @@ public class MongoQueryTest implements IHandle {
         ds.open();
         while (ds.fetch()) {
             ds.edit();
-            ds.setField("value", ds.getInt("value") + 1);
+            ds.setValue("value", ds.getInt("value") + 1);
             ds.post();
         }
     }

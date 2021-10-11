@@ -1,8 +1,6 @@
 package cn.cerc.core;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -17,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.cerc.core.FieldMeta.FieldKind;
 
-public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
+public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRecord {
     private static final Logger log = LoggerFactory.getLogger(DataSet.class);
     private static final long serialVersionUID = 873159747066855363L;
     private static final ClassResource res = new ClassResource(DataSet.class, SummerCore.ID);
@@ -286,8 +284,14 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
         return search.get(fields, values);
     }
 
+    @Deprecated
     public Object getField(String field) {
-        return this.getCurrent().getField(field);
+        return getValue(field);
+    }
+
+    @Override
+    public Object getValue(String field) {
+        return this.getCurrent().getValue(field);
     }
 
     // 排序
@@ -297,46 +301,6 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
 
     public void setSort(Comparator<DataRow> func) {
         Collections.sort(this.getRecords(), func);
-    }
-
-    public String getString(String field) {
-        return this.getCurrent().getString(field);
-    }
-
-    public double getDouble(String field) {
-        return this.getCurrent().getDouble(field);
-    }
-
-    public boolean getBoolean(String field) {
-        return this.getCurrent().getBoolean(field);
-    }
-
-    public int getInt(String field) {
-        return this.getCurrent().getInt(field);
-    }
-
-    public long getLong(String field) {
-        return this.getCurrent().getLong(field);
-    }
-
-    public BigInteger getBigInteger(String field) {
-        return this.getCurrent().getBigInteger(field);
-    }
-
-    public BigDecimal getBigDecimal(String field) {
-        return this.getCurrent().getBigDecimal(field);
-    }
-
-    public Datetime getDatetime(String field) {
-        return this.getCurrent().getDatetime(field);
-    }
-
-    public FastDate getFastDate(String field) {
-        return this.getCurrent().getDatetime(field).toFastDate();
-    }
-
-    public FastTime getFastTime(String field) {
-        return this.getCurrent().getDatetime(field).toFastTime();
     }
 
     @Deprecated
@@ -349,15 +313,19 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
         return this.getCurrent().getDateTime(field);
     }
 
+    @Deprecated
     public DataSet setField(String field, Object value) {
-        if (field == null || "".equals(field))
-            throw new RuntimeException("field is null!");
-        this.getCurrent().setField(field, value);
+        return setValue(field, value);
+    }
+
+    @Override
+    public DataSet setValue(String field, Object value) {
+        this.getCurrent().setValue(field, value);
         return this;
     }
 
     public DataSet setNull(String field) {
-        return setField(field, null);
+        return setValue(field, null);
     }
 
     public boolean fetch() {
@@ -399,16 +367,16 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
         if (search != null) {
             search.remove(record);
             for (int i = 0; i < sourceFields.length; i++)
-                record.setField(targetFields[i], sourceRecord.getField(sourceFields[i]));
+                record.setValue(targetFields[i], sourceRecord.getValue(sourceFields[i]));
             search.append(record);
         } else {
             for (int i = 0; i < sourceFields.length; i++)
-                record.setField(targetFields[i], sourceRecord.getField(sourceFields[i]));
+                record.setValue(targetFields[i], sourceRecord.getValue(sourceFields[i]));
         }
     }
 
     public boolean isNull(String field) {
-        Object obj = getCurrent().getField(field);
+        Object obj = getCurrent().getValue(field);
         return obj == null || "".equals(obj);
     }
 
@@ -417,6 +385,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
         return records.iterator();
     }
 
+    @Override
     public boolean exists(String field) {
         return this.getFieldDefs().exists(field);
     }
@@ -546,7 +515,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
         fetchNo = -1;
     }
 
-    public DataRow getHead() {
+    public final DataRow getHead() {
         return head;
     }
 
@@ -597,7 +566,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
             DataRow src_row = source.records.get(i);
             DataRow tar_row = this.append().getCurrent();
             for (String field : src_row.getFieldDefs().getFields()) {
-                tar_row.setField(field, src_row.getField(field));
+                tar_row.setValue(field, src_row.getValue(field));
             }
             this.post();
         }
@@ -673,10 +642,10 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
 
     public final DataSet buildMeta() {
         if (head.getFieldDefs().size() > 0) {
-            head.getFieldDefs().forEach(def -> def.getFieldType().put(head.getField(def.getCode())));
+            head.getFieldDefs().forEach(def -> def.getFieldType().put(head.getValue(def.getCode())));
         }
         records.forEach(row -> {
-            this.getFieldDefs().forEach(def -> def.getFieldType().put(row.getField(def.getCode())));
+            this.getFieldDefs().forEach(def -> def.getFieldType().put(row.getValue(def.getCode())));
         });
         return this;
     }
@@ -688,7 +657,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
     public static void main(String[] args) {
         DataSet ds1 = new DataSet();
         ds1.onAppend((ds) -> {
-            ds.setField("it", ds.size());
+            ds.setValue("it", ds.size());
         });
         ds1.onBeforePost((rs) -> {
             System.out.println("onBeforePost: " + rs.toString());
@@ -710,18 +679,18 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
         ds1.setMessage("hello");
         System.out.println(ds1.toJson());
 
-        ds1.getHead().setField("token", "xxx");
+        ds1.getHead().setValue("token", "xxx");
         System.out.println(ds1.toJson());
 
         ds1.append();
-        ds1.setField("code", "1");
-        ds1.setField("name", "a");
-        ds1.setField("value", 10);
+        ds1.setValue("code", "1");
+        ds1.setValue("name", "a");
+        ds1.setValue("value", 10);
 
         List<String> list = new ArrayList<>();
         list.add("a");
         list.add("b");
-        ds1.setField("code", list);
+        ds1.setValue("code", list);
 //
 //        DataSet ds0 = new DataSet();
 //        ds0.append();
@@ -730,18 +699,18 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow> {
 
         ds1.post();
         ds1.append();
-        ds1.setField("code", "2");
-        ds1.setField("name", "b");
+        ds1.setValue("code", "2");
+        ds1.setValue("name", "b");
         ds1.post();
 //        ds1.delete();
 
         ds1.setState(1);
         ds1.setMessage("test");
 
-        ds1.getHead().setField("title", "test");
-        ds1.getHead().setField("tbDate", new FastDate());
-        ds1.getHead().setField("appDate", new Date());
-        ds1.getHead().setField("user", null);
+        ds1.getHead().setValue("title", "test");
+        ds1.getHead().setValue("tbDate", new FastDate());
+        ds1.getHead().setValue("appDate", new Date());
+        ds1.getHead().setValue("user", null);
 
         ds1.getFieldDefs().add("it").setName("序").setRemark("自动赋值").setType(Integer.class);
         ds1.getFieldDefs().add("code").setName("编号").setType(String.class, 30);

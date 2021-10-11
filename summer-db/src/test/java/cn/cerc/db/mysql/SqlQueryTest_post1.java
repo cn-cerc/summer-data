@@ -28,7 +28,7 @@ public class SqlQueryTest_post1 implements IHandle {
         ds.add("select * from Dept where CorpNo_='%s'", "144001");
         ds.open();
         ds.edit();
-        ds.setField("updateDate_", new Datetime().inc(DateType.Day, -1));
+        ds.setValue("updateDate_", new Datetime().inc(DateType.Day, -1));
         ds.post();
     }
 
@@ -41,8 +41,8 @@ public class SqlQueryTest_post1 implements IHandle {
             System.out.println("before post");
         });
         ds.edit();
-        ds.setField("Test", "aOK");
-        ds.setField("UpdateDate_", new Datetime().inc(DateType.Day, -1));
+        ds.setValue("Test", "aOK");
+        ds.setValue("UpdateDate_", new Datetime().inc(DateType.Day, -1));
         ds.post();
     }
 

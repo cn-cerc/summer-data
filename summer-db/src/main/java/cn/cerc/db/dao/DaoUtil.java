@@ -65,7 +65,7 @@ public class DaoUtil {
             String remark = null;
             sb.append("private ");
             if (record != null) {
-                Object val = record.getField(field);
+                Object val = record.getValue(field);
                 if (val != null) {
                     // Class<?> clazz = val.getClass();
                     if (val instanceof Integer) {

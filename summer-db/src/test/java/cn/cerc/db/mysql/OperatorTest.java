@@ -34,9 +34,9 @@ public class OperatorTest implements IHandle {
         ds.open();
         for (int i = 0; i < maxTest; i++) {
             ds.append();
-            ds.setField("Code_", "new" + i);
-            ds.setField("Name_", "new");
-            ds.setField("Value_", i + 1);
+            ds.setValue("Code_", "new" + i);
+            ds.setValue("Name_", "new");
+            ds.setValue("Value_", i + 1);
             ds.post();
         }
     }
@@ -50,11 +50,11 @@ public class OperatorTest implements IHandle {
             DataRow record = new DataRow();
             record.getFieldDefs().add("UID_", FieldKind.Storage);
             record.getFieldDefs().add("Code_", FieldKind.Storage);
-            record.setField("Code_", "code1");
+            record.setValue("Code_", "code1");
             record.getFieldDefs().add("Name_", FieldKind.Storage);
-            record.setField("Name_", "new");
+            record.setValue("Name_", "new");
             record.getFieldDefs().add("Value_", FieldKind.Storage);
-            record.setField("Value_", i + 1);
+            record.setValue("Value_", i + 1);
             obj.insert(this.getMysql().getClient().getConnection(), record);
         }
     }
@@ -67,8 +67,8 @@ public class OperatorTest implements IHandle {
         ds.open();
         while (ds.fetch()) {
             ds.edit();
-            ds.setField("Code_", ds.getString("Code_") + "a");
-            ds.setField("Value_", ds.getDouble("Value_") + 1);
+            ds.setValue("Code_", ds.getString("Code_") + "a");
+            ds.setValue("Value_", ds.getDouble("Value_") + 1);
             ds.post();
         }
     }

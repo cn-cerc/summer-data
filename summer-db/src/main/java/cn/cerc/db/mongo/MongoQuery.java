@@ -62,9 +62,9 @@ public class MongoQuery extends DataSet implements IHandle {
             for (String field : doc.keySet()) {
                 if ("_id".equals(field)) {
                     Object uid = doc.get(field);
-                    record.setField(field, uid != null ? uid.toString() : uid);
+                    record.setValue(field, uid != null ? uid.toString() : uid);
                 } else {
-                    record.setField(field, doc.get(field));
+                    record.setValue(field, doc.get(field));
                 }
             }
             record.setState(RecordState.dsNone);
@@ -222,7 +222,7 @@ public class MongoQuery extends DataSet implements IHandle {
 
     // 将通用类型，转成DataSet，方便操作
     public DataSet getChildDataSet(String field) {
-        Object value = this.getField(field);
+        Object value = this.getValue(field);
         if (value == null) {
             return null;
         }
@@ -235,7 +235,7 @@ public class MongoQuery extends DataSet implements IHandle {
         for (Map<String, Object> item : items) {
             DataRow record = dataSet.append().getCurrent();
             for (String key : item.keySet()) {
-                record.setField(key, item.get(key));
+                record.setValue(key, item.get(key));
             }
             record.setState(RecordState.dsNone);
         }
@@ -248,15 +248,15 @@ public class MongoQuery extends DataSet implements IHandle {
         for (DataRow child : dataSet.getRecords()) {
             items.add(child.getItems());
         }
-        this.setField(field, items);
+        this.setValue(field, items);
     }
 
     @SuppressWarnings("unchecked")
     public List<Object> assignList(String field) {
-        Object value = this.getField(field);
+        Object value = this.getValue(field);
         if (value == null) {
             List<Object> items = new ArrayList<>();
-            this.setField(field, items);
+            this.setValue(field, items);
             return items;
         }
         if (!(value instanceof List<?>)) {
@@ -267,10 +267,10 @@ public class MongoQuery extends DataSet implements IHandle {
 
     @SuppressWarnings("unchecked")
     public Map<String, Object> assignMap(String field) {
-        Object value = this.getField(field);
+        Object value = this.getValue(field);
         if (value == null) {
             Map<String, Object> items = new LinkedHashMap<>();
-            this.setField(field, items);
+            this.setValue(field, items);
             return items;
         }
         if (!(value instanceof List<?>)) {

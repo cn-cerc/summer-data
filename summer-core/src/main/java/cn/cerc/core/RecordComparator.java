@@ -18,7 +18,7 @@ public class RecordComparator implements Comparator<DataRow> {
             }
             String[] params = item.split(" ");
             String field = params[0];
-            Object v1 = o1.getField(field);
+            Object v1 = o1.getValue(field);
             if (v1 instanceof Double || v1 instanceof Long) {
                 double df = o1.getDouble(field) - o2.getDouble(field);
                 if (df == 0) {

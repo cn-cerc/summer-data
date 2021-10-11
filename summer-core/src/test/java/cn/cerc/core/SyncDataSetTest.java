@@ -12,18 +12,18 @@ public class SyncDataSetTest {
     @Before
     public void setUp() throws Exception {
         src.append();
-        src.setField("code", "a");
+        src.setValue("code", "a");
         src.append();
-        src.setField("code", "b");
+        src.setValue("code", "b");
         src.append();
-        src.setField("code", "c");
+        src.setValue("code", "c");
 
         tar.append();
-        tar.setField("code", "a");
+        tar.setValue("code", "a");
         tar.append();
-        tar.setField("code", "c");
+        tar.setValue("code", "c");
         tar.append();
-        tar.setField("code", "d");
+        tar.setValue("code", "d");
     }
 
     @Test
@@ -34,15 +34,15 @@ public class SyncDataSetTest {
             @Override
             public void process(DataRow src, DataRow tar) throws SyncUpdateException {
                 if (tar == null)
-                    assertEquals("insert record: b", "insert record: " + src.getField("code"));
+                    assertEquals("insert record: b", "insert record: " + src.getValue("code"));
                 else if (src == null)
-                    assertEquals("delete record: d", "delete record: " + tar.getField("code"));
+                    assertEquals("delete record: d", "delete record: " + tar.getValue("code"));
                 else {
                     String code = src.getString("code");
                     if ("a".equals(code))
-                        assertEquals("update record: a", "update record: " + src.getField("code"));
+                        assertEquals("update record: a", "update record: " + src.getValue("code"));
                     else
-                        assertEquals("update record: c", "update record: " + src.getField("code"));
+                        assertEquals("update record: c", "update record: " + src.getValue("code"));
                 }
             }
         });

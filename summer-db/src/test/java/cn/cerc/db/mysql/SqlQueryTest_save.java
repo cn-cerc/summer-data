@@ -32,13 +32,13 @@ public class SqlQueryTest_save implements IHandle {
         ds.open();
 
         ds.append();
-        ds.setField("Code_", "codeA");
-        ds.setField("Name_", "name");
-        ds.setField("Value_", 1);
+        ds.setValue("Code_", "codeA");
+        ds.setValue("Name_", "name");
+        ds.setValue("Value_", 1);
         ds.post();
 
         ds.edit();
-        ds.setField("Value_", 2);
+        ds.setValue("Value_", 2);
         ds.post();
         System.out.println("after insert, record count: " + getTotal("temp"));
 
@@ -71,13 +71,13 @@ public class SqlQueryTest_save implements IHandle {
         ds.open();
 
         ds.append();
-        ds.setField("Code_", "codeA");
-        ds.setField("Name_", "name");
-        ds.setField("Value_", 1);
+        ds.setValue("Code_", "codeA");
+        ds.setValue("Name_", "name");
+        ds.setValue("Value_", 1);
         ds.post();
 
         ds.edit();
-        ds.setField("Value_", 2);
+        ds.setValue("Value_", 2);
         ds.post();
 
         if (batchSave)
@@ -85,9 +85,9 @@ public class SqlQueryTest_save implements IHandle {
 
         ds.setBatchSave(false);
         ds.append();
-        ds.setField("Code_", "codeB");
-        ds.setField("Name_", "name");
-        ds.setField("Value_", 3);
+        ds.setValue("Code_", "codeB");
+        ds.setValue("Name_", "name");
+        ds.setValue("Value_", 3);
         ds.post();
     }
 

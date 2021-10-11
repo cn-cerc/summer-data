@@ -48,7 +48,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
                 JsonArray item = new JsonArray();
                 src.getHead().getFieldDefs().forEach(def -> {
                     String field = def.getCode();
-                    Object obj = src.getHead().getField(field);
+                    Object obj = src.getHead().getValue(field);
                     item.add(context.serialize(obj));
                 });
                 root.add("head", item);
@@ -56,7 +56,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
                 JsonObject item = new JsonObject();
                 src.getHead().getFieldDefs().forEach(def -> {
                     String field = def.getCode();
-                    Object obj = src.getHead().getField(field);
+                    Object obj = src.getHead().getValue(field);
                     item.add(field, context.serialize(obj));
                 });
                 root.add("head", item);
@@ -106,13 +106,18 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
                 int i = 0;
                 for (String key : dataSet.getHead().getFieldDefs().getFields()) {
                     Object obj = context.deserialize(head.get(i++), Object.class);
-                    dataSet.getHead().setField(key, obj);
+                    dataSet.getHead().setValue(key, obj);
                 }
             } else {
                 JsonObject head = root.get("head").getAsJsonObject();
                 head.keySet().forEach(key -> {
-                    Object obj = context.deserialize(head.get(key), Object.class);
-                    dataSet.getHead().setField(key, obj);
+                    Object value = context.deserialize(head.get(key), Object.class);
+                    if (value instanceof Double) {
+                        Double tmp = (Double) value;
+                        if (tmp.toString().endsWith(".0") && tmp >= Integer.MIN_VALUE && tmp <= Integer.MAX_VALUE)
+                            value = tmp.intValue();
+                    }
+                    dataSet.getHead().setValue(key, value);
                 });
             }
         }
@@ -137,8 +142,13 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
                 } else {
                     DataRow current = dataSet.append().getCurrent();
                     for (int j = 0; j < defs.size(); j++) {
-                        Object obj = context.deserialize(item.get(j), Object.class);
-                        current.setField(defs.get(j).getAsString(), obj);
+                        Object value = context.deserialize(item.get(j), Object.class);
+                        if (value instanceof Double) {
+                            Double tmp = (Double) value;
+                            if (tmp.toString().endsWith(".0") && tmp >= Integer.MIN_VALUE && tmp <= Integer.MAX_VALUE)
+                                value = tmp.intValue();
+                        }
+                        current.setValue(defs.get(j).getAsString(), value);
                     }
                 }
             }
@@ -194,7 +204,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
         JsonSerializer<DataRow> gsonRecord = (src, typeOfSrc, context) -> {
             JsonArray item = new JsonArray();
             src.getFieldDefs().forEach(def -> {
-                Object obj = src.getField(def.getCode());
+                Object obj = src.getValue(def.getCode());
                 item.add(context.serialize(obj));
             });
             return item;

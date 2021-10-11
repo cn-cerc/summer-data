@@ -198,14 +198,14 @@ public class DatetimeTest {
         DataRow item = new DataRow();
         String jsonStr = "{\"String\":\"AAA\",\"Double\":3.12,\"Integer\":123,\"OldDate\":\"2016-06-20 09:26:35\",\"Date\":\"2016-06-20 00:00:00\",\"DateTime\":\"2016-06-20 09:26:35\",\"Boolean\":true,\"Null\":null}";
 
-        item.setField("String", "AAA");
-        item.setField("Double", 3.12);
-        item.setField("Integer", 123);
-        item.setField("OldDate", "2016-06-20 09:26:35");
-        item.setField("Date", "2016-06-20 00:00:00");
-        item.setField("DateTime", "2016-06-20 09:26:35");
-        item.setField("Boolean", true);
-        item.setField("Null", null);
+        item.setValue("String", "AAA");
+        item.setValue("Double", 3.12);
+        item.setValue("Integer", 123);
+        item.setValue("OldDate", "2016-06-20 09:26:35");
+        item.setValue("Date", "2016-06-20 00:00:00");
+        item.setValue("DateTime", "2016-06-20 09:26:35");
+        item.setValue("Boolean", true);
+        item.setValue("Null", null);
         assertEquals(jsonStr, item.toString());
 
         item.setJSON(jsonStr);

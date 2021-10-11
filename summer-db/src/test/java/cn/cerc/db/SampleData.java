@@ -13,9 +13,9 @@ public class SampleData {
         DataSet ds = new DataSet();
         for (int i = 1; i < 10; i++) {
             ds.append();
-            ds.setField("code", "code" + i);
-            ds.setField("name", "name" + i);
-            ds.setField("num", i);
+            ds.setValue("code", "code" + i);
+            ds.setValue("name", "name" + i);
+            ds.setValue("num", i);
         }
         return ds;
     }

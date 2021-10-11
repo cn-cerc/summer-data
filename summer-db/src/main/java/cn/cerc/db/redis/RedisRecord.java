@@ -1,15 +1,13 @@
 package cn.cerc.db.redis;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.cerc.core.Datetime;
 import cn.cerc.core.DataRow;
+import cn.cerc.core.Datetime;
+import cn.cerc.core.IRecord;
 
-public class RedisRecord {
+public class RedisRecord implements IRecord {
     private static final Logger log = LoggerFactory.getLogger(RedisRecord.class);
 
     private String key;
@@ -60,8 +58,9 @@ public class RedisRecord {
         return !this.existsData;
     }
 
+    @Deprecated
     public void setNull(String field) {
-        setField(field, null);
+        setValue(field, null);
     }
 
     public String getKey() {
@@ -119,36 +118,22 @@ public class RedisRecord {
     public boolean Connected() {
         return connected;
     }
-
-    public boolean getBoolean(String field) {
-        return record.getBoolean(field);
-    }
-
-    public int getInt(String field) {
-        return record.getInt(field);
-    }
-
-    public double getDouble(String field) {
-        return record.getDouble(field);
-    }
-
-    public String getString(String field) {
-        return record.getString(field);
-    }
-
-    public Datetime getDatetime(String field) {
-        return record.getDatetime(field);
-    }
-
+    
     @Deprecated
     public Datetime getDateTime(String field) {
         return record.getDatetime(field);
     }
 
-    public RedisRecord setField(String field, Object value) {
+    @Override
+    public RedisRecord setValue(String field, Object value) {
         this.modified = true;
-        record.setField(field, value);
+        record.setValue(field, value);
         return this;
+    }
+
+    @Deprecated
+    public RedisRecord setField(String field, Object value) {
+        return setValue(field, value);
     }
 
     @Override
@@ -164,19 +149,19 @@ public class RedisRecord {
         return this.record;
     }
 
+    @Override
     public boolean exists(String field) {
         return record.exists(field);
     }
 
+    @Override
+    public Object getValue(String field) {
+        return record.getValue(field);
+    }
+    
+    @Deprecated
     public Object getField(String field) {
-        return record.getField(field);
+        return getValue(field);
     }
 
-    public BigInteger getBigInteger(String field) {
-        return record.getBigInteger(field);
-    }
-
-    public BigDecimal getBigDecimal(String field) {
-        return record.getBigDecimal(field);
-    }
 }

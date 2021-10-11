@@ -69,7 +69,7 @@ public class MongoOperator implements NosqlOperator {
             if ("_id".equals(field)) {
                 continue;
             }
-            Object obj = record.getField(field);
+            Object obj = record.getValue(field);
             if (obj instanceof Date) {
                 doc.append(field, (new Datetime((Date) obj)).toString());
             } else {

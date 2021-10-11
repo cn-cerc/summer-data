@@ -36,12 +36,12 @@ public class NasQueryTest implements IHandle {
         ds.setNasMode(NasModel.create);
         ds.open();
         ds.append();
-        ds.setField("key", "一大串字符串................................................");
+        ds.setValue("key", "一大串字符串................................................");
         ds.save();
         // update
-        ds.setField("key", "一大串字符串2................................................");
+        ds.setValue("key", "一大串字符串2................................................");
         ds.save();
-        ds.setField("key2", "一大串字符串3................................................");
+        ds.setValue("key2", "一大串字符串3................................................");
         ds.save();
     }
 
@@ -59,8 +59,8 @@ public class NasQueryTest implements IHandle {
         ds.add("select test.txt from %s", "D://testFolder1/testFolder2");
         ds.setNasMode(NasModel.readWrite);
         ds.open();
-        log.info("获取到的文件内容为:\n" + ds.getField("key"));
-        log.info("获取到的文件内容为:\n" + ds.getField("key2"));
+        log.info("获取到的文件内容为:\n" + ds.getValue("key"));
+        log.info("获取到的文件内容为:\n" + ds.getValue("key2"));
     }
 
     /**

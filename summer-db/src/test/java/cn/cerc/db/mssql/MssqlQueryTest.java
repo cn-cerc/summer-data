@@ -23,7 +23,7 @@ public class MssqlQueryTest implements IHandle {
         query.open();
         if (!query.eof()) {
             query.edit();
-            query.setField("Name_", "rd-new");
+            query.setValue("Name_", "rd-new");
             query.post();
 //            query.delete();
         }

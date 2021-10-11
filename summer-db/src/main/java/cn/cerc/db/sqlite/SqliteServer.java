@@ -168,13 +168,13 @@ public class SqliteServer implements SqlServer {
         query.add("select * from user");
         query.open();
         query.append();
-        query.setField("code", "001");
-        query.setField("name", "张三");
+        query.setValue("code", "001");
+        query.setValue("name", "张三");
         query.post();
 
         query.append();
-        query.setField("code", "002");
-        query.setField("name", "李四");
+        query.setValue("code", "002");
+        query.setValue("name", "李四");
         query.post();
 
         showTable("user", "增加后");
@@ -183,7 +183,7 @@ public class SqliteServer implements SqlServer {
         query.first();
         while (query.fetch()) {
             query.edit();
-            query.setField("value", query.getInt("id") + 1);
+            query.setValue("value", query.getInt("id") + 1);
             query.post();
         }
         showTable("user", "修改后");

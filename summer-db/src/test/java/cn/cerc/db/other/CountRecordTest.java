@@ -13,13 +13,13 @@ public class CountRecordTest {
     public void setUp() throws Exception {
         ds = new DataSet();
         ds.append();
-        ds.setField("a", 1);
+        ds.setValue("a", 1);
         ds.append();
-        ds.setField("a", 2);
+        ds.setValue("a", 2);
         ds.append();
-        ds.setField("a", 3);
+        ds.setValue("a", 3);
         ds.append();
-        ds.setField("a", 4);
+        ds.setValue("a", 4);
     }
 
     @Test

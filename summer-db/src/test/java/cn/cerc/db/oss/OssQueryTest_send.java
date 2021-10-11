@@ -27,7 +27,7 @@ public class OssQueryTest_send implements IHandle {
         ds.setOssMode(OssMode.readWrite);
         ds.open();
         ds.append();
-        ds.setField("num", ds.getInt("num") + 1);
+        ds.setValue("num", ds.getInt("num") + 1);
         ds.save();
     }
 

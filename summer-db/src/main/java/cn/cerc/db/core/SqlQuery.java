@@ -175,7 +175,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
             DataRow record = new DataRow(this).setState(RecordState.dsInsert);
             for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
                 String fn = rs.getMetaData().getColumnLabel(i);
-                record.setField(fn, rs.getObject(fn));
+                record.setValue(fn, rs.getObject(fn));
             }
             record.setState(RecordState.dsNone);
             this.getRecords().add(record);
