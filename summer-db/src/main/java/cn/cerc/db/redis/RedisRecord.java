@@ -96,11 +96,11 @@ public class RedisRecord implements IRecord {
         if (this.existsData) {
             // log.info("cache delete:" + key.toString());
             Redis.delete(key);
-            this.modified = false;
             this.existsData = false;
         }
         record.clear();
         record.getFieldDefs().clear();
+        this.modified = false;
     }
 
     public boolean hasValue(String field) {

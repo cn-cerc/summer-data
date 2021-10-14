@@ -25,21 +25,21 @@ public class DataRow implements Serializable, IRecord {
     private Map<String, Object> items = new LinkedHashMap<>();
     private Map<String, Object> delta = new HashMap<>();
     private DataSet dataSet;
-    private FieldDefs defs;
+    private FieldDefs fieldDefs;
 
     public DataRow() {
         super();
-        this.defs = new FieldDefs();
+        this.fieldDefs = new FieldDefs();
     }
 
     public DataRow(DataSet dataSet) {
         super();
         this.dataSet = dataSet;
-        this.defs = dataSet.getFieldDefs();
+        this.fieldDefs = dataSet.getFieldDefs();
     }
 
     public RecordState getState() {
-        return state;
+        return this.state;
     }
 
     public DataRow setState(RecordState recordState) {
@@ -151,18 +151,18 @@ public class DataRow implements Serializable, IRecord {
         if (field == null || "".equals(field)) {
             throw new RuntimeException("field is null!");
         }
-        return items.get(field);
+        return this.items.get(field);
     }
 
     public Map<String, Object> getDelta() {
-        return delta;
+        return this.delta;
     }
 
     public Object getOldField(String field) {
         if (field == null || "".equals(field)) {
             throw new RuntimeException("field is null!");
         }
-        return delta.get(field);
+        return this.delta.get(field);
     }
 
     public int size() {
@@ -174,7 +174,7 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public FieldDefs getFieldDefs() {
-        return defs;
+        return fieldDefs;
     }
 
     public void copyValues(DataRow source) {
@@ -206,8 +206,8 @@ public class DataRow implements Serializable, IRecord {
     @Override
     public String toString() {
         Map<String, Object> items = new LinkedHashMap<>();
-        for (int i = 0; i < defs.size(); i++) {
-            String field = defs.get(i).getCode();
+        for (int i = 0; i < fieldDefs.size(); i++) {
+            String field = fieldDefs.get(i).getCode();
             Object obj = this.getValue(field);
             if (obj instanceof Datetime) {
                 items.put(field, obj.toString());
@@ -296,16 +296,16 @@ public class DataRow implements Serializable, IRecord {
         items.clear();
         delta.clear();
         if (this.dataSet == null)
-            defs.clear();
+            fieldDefs.clear();
     }
 
     @Override
     public boolean exists(String field) {
-        return this.defs.exists(field);
+        return this.fieldDefs.exists(field);
     }
 
     public boolean hasValue(String field) {
-        return defs.exists(field) && !"".equals(getString(field));
+        return fieldDefs.exists(field) && !"".equals(getString(field));
     }
 
     public DataSet getDataSet() {
@@ -362,15 +362,15 @@ public class DataRow implements Serializable, IRecord {
         delta.remove(field);
         items.remove(field);
         if (this.dataSet == null) {
-            defs.delete(field);
+            fieldDefs.delete(field);
         }
     }
 
     private void addFieldDef(String field) {
         if (field == null)
             throw new RuntimeException("field is null");
-        if (!defs.exists(field)) {
-            defs.add(field);
+        if (!fieldDefs.exists(field)) {
+            fieldDefs.add(field);
         }
     }
 
