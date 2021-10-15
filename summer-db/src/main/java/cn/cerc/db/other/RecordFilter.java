@@ -7,16 +7,15 @@ import cn.cerc.core.FieldMeta;
 import cn.cerc.core.Utils;
 
 public class RecordFilter {
-    private String sql;
     private DataSet dataSet;
+    private SqlTextDecode processor;
 
-    public RecordFilter(String sql, DataSet dataSet) {
-        this.sql = sql;
+    public RecordFilter(DataSet dataSet, String sql) {
         this.dataSet = dataSet;
+        this.processor = new SqlTextDecode(sql);
     }
 
     private DataSet get() {
-        SqlTextDecode decode = new SqlTextDecode(sql);
 
         // 复制head
         DataSet out = new DataSet();
@@ -24,7 +23,7 @@ public class RecordFilter {
         out.getHead().copyValues(this.dataSet.getHead());
 
         // 复制body.meta
-        FieldDefs fieldDefs = decode.getFieldDefs();
+        FieldDefs fieldDefs = processor.getFieldDefs();
         if (fieldDefs != null) {
             for (FieldMeta meta : this.dataSet.getFieldDefs()) {
                 if (fieldDefs.exists(meta.getCode()))
@@ -37,7 +36,7 @@ public class RecordFilter {
         this.dataSet.first();
         while (this.dataSet.fetch()) {
             DataRow src = this.dataSet.getCurrent();
-            if (decode.filter(src)) {
+            if (processor.filter(src)) {
                 out.append();
                 out.getCurrent().copyValues(src, fieldDefs);
             }
@@ -50,8 +49,12 @@ public class RecordFilter {
         return out;
     }
 
-    public static DataSet execute(String sql, DataSet dataSet) {
-        return Utils.isEmpty(sql) ? dataSet : new RecordFilter(sql, dataSet).get();
+    public static DataSet execute(DataSet dataSet, String sql) {
+        return Utils.isEmpty(sql) ? dataSet : new RecordFilter(dataSet, sql).get();
+    }
+
+    public final SqlTextDecode getDecode() {
+        return processor;
     }
 
 }
