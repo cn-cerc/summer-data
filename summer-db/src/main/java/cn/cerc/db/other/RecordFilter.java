@@ -6,11 +6,11 @@ import cn.cerc.core.FieldDefs;
 import cn.cerc.core.FieldMeta;
 import cn.cerc.core.Utils;
 
-public class ServiceDataFilter {
+public class RecordFilter {
     private String sql;
     private DataSet dataSet;
 
-    public ServiceDataFilter(String sql, DataSet dataSet) {
+    public RecordFilter(String sql, DataSet dataSet) {
         this.sql = sql;
         this.dataSet = dataSet;
     }
@@ -51,7 +51,7 @@ public class ServiceDataFilter {
     }
 
     public static DataSet execute(String sql, DataSet dataSet) {
-        return Utils.isEmpty(sql) ? dataSet : new ServiceDataFilter(sql, dataSet).get();
+        return Utils.isEmpty(sql) ? dataSet : new RecordFilter(sql, dataSet).get();
     }
 
 }
