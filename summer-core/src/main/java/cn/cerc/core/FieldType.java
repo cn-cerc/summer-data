@@ -22,6 +22,16 @@ public final class FieldType {
         //
         names.put("o", "other"); // other object
     }
+    
+    @Override
+    public FieldType clone() {
+        FieldType result = new FieldType();
+        result.dataType = this.dataType;
+        result.length = this.length;
+        result.decimal = this.decimal;
+        return result;
+    }
+    
 
     public static String getName(String key) {
         return names.get(key);

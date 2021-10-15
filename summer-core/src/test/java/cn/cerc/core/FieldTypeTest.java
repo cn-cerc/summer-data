@@ -6,6 +6,8 @@ import java.util.Date;
 
 import org.junit.Test;
 
+import com.google.gson.Gson;
+
 public class FieldTypeTest {
 
     @Test
@@ -62,5 +64,16 @@ public class FieldTypeTest {
         assertEquals("s2", fieldType.put("ab").toString());
         assertEquals("s4", fieldType.put("abcd").toString());
         assertEquals("s4", fieldType.put("abc").toString());
+    }
+    
+    @Test
+    public void test_clone() {
+        FieldType type1 = new FieldType();
+        type1.setType(String.class);
+        type1.setDecimal(1);
+        type1.setLength(2);
+        FieldType type2 = type1.clone();
+        Gson gson = new Gson();
+        assertEquals(gson.toJson(type1), gson.toJson(type2));
     }
 }

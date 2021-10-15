@@ -17,7 +17,7 @@ public final class FieldMeta implements Serializable {
     private boolean autoincrement;
     private GetTextEvent getTextEvent;
     private SetTextEvent setTextEvent;
-
+    
     public enum FieldKind {
         Memory, Storage, Calculated;
     }
@@ -38,6 +38,21 @@ public final class FieldMeta implements Serializable {
             throw new RuntimeException("fieldKind is null!");
         this.code = code;
         this.kind = kind;
+    }
+
+    @Override
+    public FieldMeta clone() {
+        FieldMeta result = new FieldMeta(this.code);
+        result.name = this.name;
+        if(this.type != null)
+            result.type = this.type.clone();
+        result.kind = this.kind;
+        result.remark = this.remark;
+        result.updateKey = this.updateKey;
+        result.autoincrement = this.autoincrement;
+        result.getTextEvent = this.getTextEvent;
+        result.setTextEvent = this.setTextEvent;
+        return result;
     }
 
     public final String getCode() {

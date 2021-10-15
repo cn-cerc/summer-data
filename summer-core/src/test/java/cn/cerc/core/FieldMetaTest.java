@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.google.gson.Gson;
+
 import cn.cerc.db.editor.BooleanEditor;
 import cn.cerc.db.editor.DatetimeEditor;
 import cn.cerc.db.editor.FloatEditor;
@@ -81,4 +83,13 @@ public class FieldMetaTest {
         assertEquals("00:00", rs.getText(field));
     }
 
+    @Test
+    public void test_clone() {
+        FieldMeta type1 = new FieldMeta("code");
+        type1.setType(String.class);
+        type1.setRemark("abc");
+        FieldMeta type2 = type1.clone();
+        Gson gson = new Gson();
+        assertEquals(gson.toJson(type1), gson.toJson(type2));
+    }
 }
