@@ -48,13 +48,14 @@ public class RecordFilter {
         out.setMetaInfo(this.dataSet.isMetaInfo());
         return out;
     }
-
-    public static DataSet execute(DataSet dataSet, String sql) {
-        return Utils.isEmpty(sql) ? dataSet : new RecordFilter(dataSet, sql).get();
-    }
-
+    
     public final SqlTextDecode getDecode() {
         return processor;
+    }
+    
+    public static DataSet execute(DataSet dataIn, DataSet dataOut) {
+        String sql = dataIn.getHead().getString("_RecordFilter_");
+        return Utils.isEmpty(sql) ? dataOut : new RecordFilter(dataOut, sql).get();
     }
 
 }
