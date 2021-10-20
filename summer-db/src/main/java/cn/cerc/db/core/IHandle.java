@@ -3,6 +3,8 @@ package cn.cerc.db.core;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
+import javax.servlet.http.HttpServletRequest;
+
 import cn.cerc.core.ISession;
 import cn.cerc.db.mysql.MysqlClient;
 import cn.cerc.db.mysql.MysqlServerMaster;
@@ -23,6 +25,10 @@ public interface IHandle {
 
     default MysqlServerMaster getMysql() {
         return (MysqlServerMaster) getSession().getProperty(MysqlServerMaster.SessionId);
+    }
+
+    default HttpServletRequest getRequest() {
+        return (HttpServletRequest) getSession().getProperty(ISession.REQUEST);
     }
 
     /**
