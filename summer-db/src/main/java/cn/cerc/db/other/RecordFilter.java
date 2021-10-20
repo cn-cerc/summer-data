@@ -48,14 +48,26 @@ public class RecordFilter {
         out.setMetaInfo(this.dataSet.isMetaInfo());
         return out;
     }
-    
+
     public final SqlTextDecode getDecode() {
         return processor;
     }
-    
+
     public static DataSet execute(DataSet dataIn, DataSet dataOut) {
         String sql = dataIn.getHead().getString("_RecordFilter_");
-        return Utils.isEmpty(sql) ? dataOut : new RecordFilter(dataOut, sql).get();
+        if (Utils.isEmpty(sql) || dataOut.getState() < 1)
+            return dataOut;
+        return new RecordFilter(dataOut, sql).get();
     }
 
+    public static void main(String[] args) {
+        DataSet ds1 = new DataSet();
+        ds1.append();
+        ds1.setValue("code", "a01");
+        ds1.getFieldDefs().get("code").setName("代码");
+        ds1.setMetaInfo(true);
+        DataSet ds2 = RecordFilter.execute(new DataSet(), ds1);
+        System.out.println(ds1.toJson());
+        System.out.println(ds2.toJson());
+    }
 }
