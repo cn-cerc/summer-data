@@ -168,12 +168,15 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
             public JsonElement serialize(FieldMeta src, Type typeOfSrc, JsonSerializationContext context) {
                 JsonObject json = new JsonObject();
                 JsonArray define = new JsonArray();
-                define.add(src.getName());
                 if (src.getRemark() != null) {
                     define.add(src.getName());
+                    define.add(src.getType());
                     define.add(src.getRemark());
                 } else if (src.getType() != null) {
+                    define.add(src.getName());
                     define.add(src.getType());
+                } else if (src.getName() != null) {
+                    define.add(src.getName());
                 }
                 json.add(src.getCode(), define);
                 return json;
@@ -189,13 +192,18 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
 
                 JsonArray def = root.get(field).getAsJsonArray();
                 FieldMeta meta = new FieldMeta(field);
-                if (!def.get(0).isJsonNull())
-                    meta.setName(def.get(0).getAsString());
-                if (def.size() > 1)
-                    meta.setType(def.get(1).getAsString());
-                if (def.size() > 2)
-                    meta.setRemark(def.get(2).getAsString());
-
+                if (def.size() > 0) {
+                    if (!def.get(0).isJsonNull())
+                        meta.setName(def.get(0).getAsString());
+                }
+                if (def.size() > 1) {
+                    if (!def.get(1).isJsonNull())
+                        meta.setType(def.get(1).getAsString());
+                }
+                if (def.size() > 2) {
+                    if (!def.get(2).isJsonNull())
+                        meta.setRemark(def.get(2).getAsString());
+                }
                 return meta;
             }
 
