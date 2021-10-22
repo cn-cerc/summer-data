@@ -19,6 +19,15 @@ public class KeyValue {
         this.value(data);
     }
 
+    public final String key() {
+        return this.key;
+    }
+
+    public final KeyValue key(String value) {
+        this.key = value;
+        return this;
+    }
+
     public Object value() {
         return this.value;
     }
@@ -28,11 +37,20 @@ public class KeyValue {
         return this;
     }
 
-    public final String key() {
+    public Object getValue() {
+        return this.value;
+    }
+
+    public KeyValue setValue(Object data) {
+        this.value = data;
+        return this;
+    }
+
+    public final String getKey() {
         return this.key;
     }
 
-    public final KeyValue key(String value) {
+    public final KeyValue getKey(String value) {
         this.key = value;
         return this;
     }
