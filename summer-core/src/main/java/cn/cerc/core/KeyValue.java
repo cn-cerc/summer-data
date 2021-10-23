@@ -50,7 +50,7 @@ public class KeyValue {
         return this.key;
     }
 
-    public final KeyValue getKey(String value) {
+    public final KeyValue setKey(String value) {
         this.key = value;
         return this;
     }
