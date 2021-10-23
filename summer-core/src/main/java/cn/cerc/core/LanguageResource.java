@@ -74,7 +74,7 @@ public class LanguageResource {
             }
             if (inputStream != null) {
                 this.resourceFileName = resourceFileName;
-                log.info("{} is loaded.", resourceFileName);
+                log.debug("{} is loaded.", resourceFileName);
                 resourceProperties = new Properties();
                 resourceProperties.load(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
                 items.put(resourceFileName, resourceProperties);

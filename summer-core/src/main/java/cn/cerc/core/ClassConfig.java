@@ -84,7 +84,7 @@ public class ClassConfig implements IConfig {
                     final InputStream configFile = ClassConfig.class.getResourceAsStream(configFileName);
                     if (configFile != null) {
                         packageConfig.load(new InputStreamReader(configFile, StandardCharsets.UTF_8));
-                        log.info("{} is loaded.", configFileName);
+                        log.debug("{} is loaded.", configFileName);
                     } else {
                         log.warn("{} doesn't exist.", configFileName);
                     }
