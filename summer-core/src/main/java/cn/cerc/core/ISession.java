@@ -6,6 +6,7 @@ public interface ISession extends AutoCloseable {
     String CORP_NO = "corp_no";
     String USER_CODE = "user_code";
     String USER_NAME = "user_name";
+    String VERSION = "version";
     String LANGUAGE_ID = "language_id";
     String CLIENT_DEVICE = "device"; // client device
     String LOGIN_SERVER = "login_server";
@@ -38,6 +39,10 @@ public interface ISession extends AutoCloseable {
 
     default String getUserName() {
         return (String) getProperty(USER_NAME);
+    }
+
+    default String getVersion() {
+        return (String) getProperty(VERSION);
     }
 
     default String getLanguageId() {
