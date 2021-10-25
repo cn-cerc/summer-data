@@ -14,27 +14,29 @@ public class KeyValue {
         super();
     }
 
-    public KeyValue(Object data) {
+    public KeyValue(Object value) {
         super();
-        this.value(data);
+        this.setValue(value);
     }
 
+    @Deprecated
     public final String key() {
-        return this.key;
+        return this.getKey();
     }
 
-    public final KeyValue key(String value) {
-        this.key = value;
-        return this;
+    @Deprecated
+    public final KeyValue key(String key) {
+        return this.setKey(key);
     }
 
-    public Object value() {
-        return this.value;
+    @Deprecated
+    public final Object value() {
+        return this.getValue();
     }
 
-    public KeyValue value(Object data) {
-        this.value = data;
-        return this;
+    @Deprecated
+    public KeyValue value(Object value) {
+        return this.setValue(value);
     }
 
     public Object getValue() {
@@ -56,7 +58,7 @@ public class KeyValue {
     }
 
     public final String asString() {
-        Object value = this.value();
+        Object value = this.getValue();
         if (value == null) {
             return "";
         } else if (value instanceof String) {
@@ -76,7 +78,7 @@ public class KeyValue {
     }
 
     public final boolean asBoolean() {
-        Object value = this.value();
+        Object value = this.getValue();
         if (value == null) {
             return false;
         } else if (value instanceof Boolean) {
@@ -94,7 +96,7 @@ public class KeyValue {
     }
 
     public final int asInt() {
-        Object value = this.value();
+        Object value = this.getValue();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -133,7 +135,7 @@ public class KeyValue {
     }
 
     public final long asLong() {
-        Object value = this.value();
+        Object value = this.getValue();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -169,7 +171,7 @@ public class KeyValue {
     }
 
     public final float asFloat() {
-        Object value = this.value();
+        Object value = this.getValue();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -201,7 +203,7 @@ public class KeyValue {
     }
 
     public final double asDouble() {
-        Object value = this.value();
+        Object value = this.getValue();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -227,7 +229,7 @@ public class KeyValue {
     }
 
     public final BigInteger asBigInteger() {
-        Object value = this.value();
+        Object value = this.getValue();
         if (value instanceof BigInteger) {
             return (BigInteger) value;
         } else
@@ -235,7 +237,7 @@ public class KeyValue {
     }
 
     public final BigDecimal asBigDecimal() {
-        Object value = this.value();
+        Object value = this.getValue();
         if (value instanceof BigDecimal)
             return (BigDecimal) value;
         else
@@ -243,7 +245,7 @@ public class KeyValue {
     }
 
     public final Datetime asDatetime() {
-        Object value = this.value();
+        Object value = this.getValue();
         if (value == null) {
             return Datetime.zero();
         } else if (value instanceof Datetime) {
@@ -273,10 +275,10 @@ public class KeyValue {
     public static void main(String[] args) {
         System.out.println(new KeyValue());
         System.out.println(new KeyValue("202109"));
-        System.out.println(new KeyValue("202109").key("date"));
+        System.out.println(new KeyValue("202109").setKey("date"));
 
-        KeyValue kv = new KeyValue("3").key("id");
-        System.out.println(kv.key());
+        KeyValue kv = new KeyValue("3").setKey("id");
+        System.out.println(kv.getKey());
     }
 
 }
