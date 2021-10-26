@@ -1,4 +1,4 @@
-package cn.cerc.core;
+package cn.cerc.db.core;
 
 import static org.junit.Assert.assertEquals;
 

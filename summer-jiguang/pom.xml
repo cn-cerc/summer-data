@@ -8,7 +8,7 @@
     </parent>
     <artifactId>summer-jiguang</artifactId>
     <packaging>jar</packaging>
-    <description>极光推送api支持包</description>
+    <description>提供极光API的支持</description>
     <build>
         <plugins>
             <plugin>

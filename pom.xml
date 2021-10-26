@@ -14,5 +14,6 @@
     <modules>
         <module>summer-db</module>
         <module>summer-aliyun</module>
+        <module>summer-jiguang</module>
     </modules>
 </project>

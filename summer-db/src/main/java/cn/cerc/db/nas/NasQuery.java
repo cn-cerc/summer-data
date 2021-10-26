@@ -15,7 +15,6 @@ import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
 import cn.cerc.db.core.SqlText;
 import cn.cerc.db.core.Utils;
-import cn.cerc.db.queue.QueueOperator;
 
 public class NasQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = 8879520916623870766L;
@@ -24,7 +23,7 @@ public class NasQuery extends DataSet implements IHandle {
     private String filePath;
     // 文件名称
     private String fileName;
-    private QueueOperator operator;
+    private NasOperator operator;
     private NasModel nasMode = NasModel.create;
     private SqlText sqlText = new SqlText();
     private boolean active;
@@ -80,9 +79,9 @@ public class NasQuery extends DataSet implements IHandle {
         log.info("文件:" + file.getPath() + "保存成功");
     }
 
-    public QueueOperator getOperator() {
+    public NasOperator getOperator() {
         if (operator == null) {
-            operator = new QueueOperator();
+            operator = new NasOperator();
         }
         return operator;
     }
