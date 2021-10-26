@@ -13,5 +13,6 @@
 
     <modules>
         <module>summer-db</module>
+        <module>summer-aliyun</module>
     </modules>
 </project>
