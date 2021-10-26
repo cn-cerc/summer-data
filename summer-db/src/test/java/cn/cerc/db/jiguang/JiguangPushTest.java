@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.cerc.core.Datetime;
+import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.StubSession;
 
 public class JiguangPushTest {

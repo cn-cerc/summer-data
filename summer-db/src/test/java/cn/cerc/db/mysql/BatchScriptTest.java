@@ -1,7 +1,8 @@
 package cn.cerc.db.mysql;
 
-import cn.cerc.core.Utils;
 import cn.cerc.db.core.StubSession;
+import cn.cerc.db.core.Utils;
+
 import org.junit.Before;
 import org.junit.Test;
 

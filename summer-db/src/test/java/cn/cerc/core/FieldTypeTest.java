@@ -8,6 +8,11 @@ import org.junit.Test;
 
 import com.google.gson.Gson;
 
+import cn.cerc.db.core.Datetime;
+import cn.cerc.db.core.FastDate;
+import cn.cerc.db.core.FastTime;
+import cn.cerc.db.core.FieldType;
+
 public class FieldTypeTest {
 
     @Test

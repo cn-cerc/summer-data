@@ -1,7 +1,5 @@
 package cn.cerc.db.core;
 
-import cn.cerc.core.ClassConfig;
-import cn.cerc.core.IConfig;
 import cn.cerc.db.SummerDB;
 
 public enum ServerConfig implements IConfig {

@@ -3,9 +3,9 @@ package cn.cerc.db.mysql;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.cerc.core.ISession;
-import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.ISession;
+import cn.cerc.db.core.Utils;
 
 public class BatchScript implements IHandle {
     private static final Logger log = LoggerFactory.getLogger(BatchScript.class);

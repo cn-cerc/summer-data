@@ -3,9 +3,9 @@ package cn.cerc.db.redis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.cerc.core.DataRow;
-import cn.cerc.core.Datetime;
-import cn.cerc.core.IRecord;
+import cn.cerc.db.core.DataRow;
+import cn.cerc.db.core.Datetime;
+import cn.cerc.db.core.IRecord;
 
 public class RedisRecord implements IRecord {
     private static final Logger log = LoggerFactory.getLogger(RedisRecord.class);

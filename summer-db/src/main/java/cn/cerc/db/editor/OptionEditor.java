@@ -3,8 +3,8 @@ package cn.cerc.db.editor;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.cerc.core.FieldMeta;
-import cn.cerc.core.DataRow;
+import cn.cerc.db.core.DataRow;
+import cn.cerc.db.core.FieldMeta;
 
 public class OptionEditor implements GetSetTextEvent {
     private List<String> items = new ArrayList<>();

@@ -2,8 +2,8 @@ package cn.cerc.db.editor;
 
 import java.text.DecimalFormat;
 
-import cn.cerc.core.FieldMeta;
-import cn.cerc.core.DataRow;
+import cn.cerc.db.core.DataRow;
+import cn.cerc.db.core.FieldMeta;
 
 public class FloatEditor implements GetSetTextEvent {
     private String pattern;

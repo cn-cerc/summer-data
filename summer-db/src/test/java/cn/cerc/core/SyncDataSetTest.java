@@ -5,6 +5,12 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
+import cn.cerc.db.core.DataRow;
+import cn.cerc.db.core.DataSet;
+import cn.cerc.db.core.ISyncDataSet;
+import cn.cerc.db.core.SyncDataSet;
+import cn.cerc.db.core.SyncUpdateException;
+
 public class SyncDataSetTest {
     private DataSet src = new DataSet();
     private DataSet tar = new DataSet();

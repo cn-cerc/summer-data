@@ -8,9 +8,9 @@ import com.aliyun.dysmsapi20170525.models.SendSmsRequest;
 import com.aliyun.dysmsapi20170525.models.SendSmsResponseBody;
 import com.aliyun.teaopenapi.models.Config;
 
-import cn.cerc.core.ClassResource;
-import cn.cerc.core.IConfig;
 import cn.cerc.db.SummerDB;
+import cn.cerc.db.core.ClassResource;
+import cn.cerc.db.core.IConfig;
 
 public class Aliyundysms {
     private static final ClassResource res = new ClassResource(Aliyundysms.class, SummerDB.ID);

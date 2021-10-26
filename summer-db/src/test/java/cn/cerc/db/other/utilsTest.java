@@ -1,16 +1,17 @@
 package cn.cerc.db.other;
 
-import cn.cerc.core.Utils;
 import org.junit.Test;
 
-import static cn.cerc.core.Utils.assigned;
-import static cn.cerc.core.Utils.ceil;
-import static cn.cerc.core.Utils.copy;
-import static cn.cerc.core.Utils.floatToStr;
-import static cn.cerc.core.Utils.isNumeric;
-import static cn.cerc.core.Utils.roundTo;
-import static cn.cerc.core.Utils.strToDoubleDef;
-import static cn.cerc.core.Utils.trunc;
+import cn.cerc.db.core.Utils;
+
+import static cn.cerc.db.core.Utils.assigned;
+import static cn.cerc.db.core.Utils.ceil;
+import static cn.cerc.db.core.Utils.copy;
+import static cn.cerc.db.core.Utils.floatToStr;
+import static cn.cerc.db.core.Utils.isNumeric;
+import static cn.cerc.db.core.Utils.roundTo;
+import static cn.cerc.db.core.Utils.strToDoubleDef;
+import static cn.cerc.db.core.Utils.trunc;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

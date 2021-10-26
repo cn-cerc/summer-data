@@ -26,8 +26,6 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.cerc.core.Utils;
-
 /**
  * HTTP请求代理类
  *

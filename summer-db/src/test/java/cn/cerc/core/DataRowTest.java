@@ -5,6 +5,10 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import cn.cerc.db.core.DataRow;
+import cn.cerc.db.core.Datetime;
+import cn.cerc.db.core.RecordState;
+
 public class DataRowTest {
 
     @Test

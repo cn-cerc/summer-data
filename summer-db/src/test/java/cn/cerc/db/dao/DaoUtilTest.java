@@ -4,10 +4,10 @@ import org.junit.Test;
 
 import com.google.gson.Gson;
 
-import cn.cerc.core.DataRow;
-import cn.cerc.core.RecordUtils;
-import cn.cerc.core.Utils;
+import cn.cerc.db.core.DataRow;
+import cn.cerc.db.core.RecordUtils;
 import cn.cerc.db.core.StubSession;
+import cn.cerc.db.core.Utils;
 
 public class DaoUtilTest {
 

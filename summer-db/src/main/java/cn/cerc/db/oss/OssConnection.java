@@ -20,8 +20,8 @@ import com.aliyun.oss.model.GetObjectRequest;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.ObjectMetadata;
 
-import cn.cerc.core.IConfig;
-import cn.cerc.core.IConnection;
+import cn.cerc.db.core.IConfig;
+import cn.cerc.db.core.IConnection;
 import cn.cerc.db.core.ServerConfig;
 
 @Component

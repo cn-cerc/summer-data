@@ -1,11 +1,11 @@
 package cn.cerc.db.other;
 
-import cn.cerc.core.DataSet;
-import cn.cerc.core.DataRow;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import cn.cerc.db.core.DataRow;
+import cn.cerc.db.core.DataSet;
 
 public class CountRecord {
     private DataSet dataSet;

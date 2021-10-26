@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import com.aliyun.mns.client.CloudQueue;
 import com.aliyun.mns.model.Message;
 
-import cn.cerc.core.Utils;
+import cn.cerc.db.core.Utils;
 
 public class Queue {
     private static final Logger log = LoggerFactory.getLogger(Queue.class);

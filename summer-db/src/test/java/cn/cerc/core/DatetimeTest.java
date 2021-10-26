@@ -7,7 +7,11 @@ import java.time.LocalDateTime;
 
 import org.junit.Test;
 
-import cn.cerc.core.Datetime.DateType;
+import cn.cerc.db.core.DataRow;
+import cn.cerc.db.core.Datetime;
+import cn.cerc.db.core.FastDate;
+import cn.cerc.db.core.FastTime;
+import cn.cerc.db.core.Datetime.DateType;
 
 public class DatetimeTest {
 

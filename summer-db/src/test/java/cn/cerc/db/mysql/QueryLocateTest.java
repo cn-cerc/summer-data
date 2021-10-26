@@ -1,6 +1,6 @@
 package cn.cerc.db.mysql;
 
-import cn.cerc.core.DataSet;
+import cn.cerc.db.core.DataSet;
 
 public class QueryLocateTest {
     private static void locateTest(int flag) {

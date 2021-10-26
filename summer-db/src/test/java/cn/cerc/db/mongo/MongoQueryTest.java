@@ -4,9 +4,9 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import cn.cerc.core.DataSet;
-import cn.cerc.core.ISession;
+import cn.cerc.db.core.DataSet;
 import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.ISession;
 import cn.cerc.db.core.StubSession;
 
 public class MongoQueryTest implements IHandle {

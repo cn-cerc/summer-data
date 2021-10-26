@@ -1,10 +1,10 @@
 package cn.cerc.db.other;
 
-import cn.cerc.core.DataRow;
-import cn.cerc.core.DataSet;
-import cn.cerc.core.FieldDefs;
-import cn.cerc.core.FieldMeta;
-import cn.cerc.core.Utils;
+import cn.cerc.db.core.DataRow;
+import cn.cerc.db.core.DataSet;
+import cn.cerc.db.core.FieldDefs;
+import cn.cerc.db.core.FieldMeta;
+import cn.cerc.db.core.Utils;
 
 public class RecordFilter {
     private DataSet dataSet;

@@ -7,9 +7,9 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 
-import cn.cerc.core.DataRow;
-import cn.cerc.core.FieldDefs;
-import cn.cerc.core.SqlText;
+import cn.cerc.db.core.DataRow;
+import cn.cerc.db.core.FieldDefs;
+import cn.cerc.db.core.SqlText;
 import cn.cerc.db.other.SqlFieldFilter.FieldWhereRelation;
 
 /**

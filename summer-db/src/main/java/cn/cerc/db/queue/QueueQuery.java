@@ -7,14 +7,14 @@ import com.aliyun.mns.client.CloudQueue;
 import com.aliyun.mns.model.Message;
 import com.google.gson.JsonSyntaxException;
 
-import cn.cerc.core.ClassResource;
-import cn.cerc.core.DataSet;
-import cn.cerc.core.DataSetGson;
-import cn.cerc.core.ISession;
-import cn.cerc.core.SqlText;
-import cn.cerc.core.Utils;
 import cn.cerc.db.SummerDB;
+import cn.cerc.db.core.ClassResource;
+import cn.cerc.db.core.DataSet;
+import cn.cerc.db.core.DataSetGson;
 import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.ISession;
+import cn.cerc.db.core.SqlText;
+import cn.cerc.db.core.Utils;
 
 public class QueueQuery extends DataSet implements IHandle {
     private static final ClassResource res = new ClassResource(QueueQuery.class, SummerDB.ID);

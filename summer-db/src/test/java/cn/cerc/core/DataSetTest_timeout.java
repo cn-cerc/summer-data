@@ -7,6 +7,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import cn.cerc.db.core.DataRow;
+import cn.cerc.db.core.DataSet;
+
 public class DataSetTest_timeout {
     private DataSet ds = new DataSet();;
     private static final int MAX = 10000;

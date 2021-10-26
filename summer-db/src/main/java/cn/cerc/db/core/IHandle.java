@@ -5,7 +5,6 @@ import java.sql.Statement;
 
 import javax.servlet.http.HttpServletRequest;
 
-import cn.cerc.core.ISession;
 import cn.cerc.db.mysql.MysqlClient;
 import cn.cerc.db.mysql.MysqlServerMaster;
 

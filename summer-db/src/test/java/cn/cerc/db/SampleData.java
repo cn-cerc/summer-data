@@ -1,6 +1,6 @@
 package cn.cerc.db;
 
-import cn.cerc.core.DataSet;
+import cn.cerc.db.core.DataSet;
 
 /**
  * 专用于建立测试类数据

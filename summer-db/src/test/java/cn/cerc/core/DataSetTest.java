@@ -2,6 +2,8 @@ package cn.cerc.core;
 
 import org.junit.Test;
 
+import cn.cerc.db.core.DataRow;
+import cn.cerc.db.core.DataSet;
 import junit.framework.TestCase;
 
 public class DataSetTest extends TestCase {

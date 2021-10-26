@@ -10,10 +10,10 @@ import java.sql.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.cerc.core.DataRow;
-import cn.cerc.core.SqlText;
+import cn.cerc.db.core.DataRow;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.SqlOperator;
+import cn.cerc.db.core.SqlText;
 
 public class MysqlOperator extends SqlOperator {
     private static final Logger log = LoggerFactory.getLogger(MysqlOperator.class);

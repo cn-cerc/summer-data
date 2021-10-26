@@ -8,15 +8,7 @@ import java.sql.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.cerc.core.DataRow;
-import cn.cerc.core.DataSet;
-import cn.cerc.core.DataSetGson;
-import cn.cerc.core.FieldDefs;
-import cn.cerc.core.FieldMeta.FieldKind;
-import cn.cerc.core.ISession;
-import cn.cerc.core.RecordState;
-import cn.cerc.core.SqlText;
-import cn.cerc.core.Utils;
+import cn.cerc.db.core.FieldMeta.FieldKind;
 
 public abstract class SqlQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = -6671201813972797639L;

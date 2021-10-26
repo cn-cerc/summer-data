@@ -3,8 +3,8 @@ package cn.cerc.db.queue;
 import org.junit.Before;
 import org.junit.Test;
 
-import cn.cerc.core.ISession;
 import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.ISession;
 import cn.cerc.db.core.StubSession;
 
 public class QueueQueryTest_append implements IHandle {

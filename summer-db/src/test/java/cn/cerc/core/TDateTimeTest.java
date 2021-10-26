@@ -10,7 +10,9 @@ import java.util.Date;
 
 import org.junit.Test;
 
-import cn.cerc.core.Datetime.DateType;
+import cn.cerc.db.core.Datetime;
+import cn.cerc.db.core.TDateTime;
+import cn.cerc.db.core.Datetime.DateType;
 
 @SuppressWarnings("deprecation")
 public class TDateTimeTest {

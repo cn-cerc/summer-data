@@ -1,6 +1,6 @@
 package cn.cerc.db.other;
 
-import cn.cerc.core.DataRow;
+import cn.cerc.db.core.DataRow;
 
 public class SqlFieldFilter {
     // 关系：and or

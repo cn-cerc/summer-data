@@ -1,7 +1,7 @@
 package cn.cerc.db.editor;
 
-import cn.cerc.core.FieldMeta;
-import cn.cerc.core.DataRow;
+import cn.cerc.db.core.DataRow;
+import cn.cerc.db.core.FieldMeta;
 
 public interface GetTextEvent {
     

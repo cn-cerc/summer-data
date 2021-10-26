@@ -6,8 +6,8 @@ import org.junit.Test;
 
 import com.mongodb.BasicDBObject;
 
-import cn.cerc.core.ISession;
 import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.ISession;
 import cn.cerc.db.core.StubSession;
 
 public class MongoQueryTest_addWhereFields implements IHandle {

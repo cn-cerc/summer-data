@@ -2,8 +2,6 @@ package cn.cerc.db.core;
 
 import java.io.Serializable;
 
-import cn.cerc.core.ClassResource;
-import cn.cerc.core.DataSet;
 import cn.cerc.db.SummerDB;
 
 /**

@@ -6,12 +6,12 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import cn.cerc.core.FieldMeta.FieldKind;
-import cn.cerc.core.ISession;
-import cn.cerc.core.DataRow;
-import cn.cerc.core.SqlText;
+import cn.cerc.db.core.DataRow;
 import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.ISession;
+import cn.cerc.db.core.SqlText;
 import cn.cerc.db.core.StubSession;
+import cn.cerc.db.core.FieldMeta.FieldKind;
 
 public class OperatorTest implements IHandle {
     private int maxTest = 50;

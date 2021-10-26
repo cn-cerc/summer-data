@@ -2,8 +2,8 @@ package cn.cerc.db.jiguang;
 
 import org.springframework.stereotype.Component;
 
-import cn.cerc.core.IConfig;
-import cn.cerc.core.IConnection;
+import cn.cerc.db.core.IConfig;
+import cn.cerc.db.core.IConnection;
 import cn.cerc.db.core.ServerConfig;
 import cn.jpush.api.JPushClient;
 

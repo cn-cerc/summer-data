@@ -1,6 +1,5 @@
 package cn.cerc.db.core;
 
-import cn.cerc.core.ISession;
 import cn.cerc.db.jiguang.JiguangConnection;
 import cn.cerc.db.mongo.MongoDB;
 import cn.cerc.db.mssql.MssqlServer;

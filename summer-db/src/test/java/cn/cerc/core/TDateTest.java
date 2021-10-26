@@ -4,6 +4,9 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import cn.cerc.db.core.TDate;
+import cn.cerc.db.core.TDateTime;
+
 @SuppressWarnings("deprecation")
 public class TDateTest {
 

@@ -6,6 +6,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import cn.cerc.db.core.ClassFactory;
+import cn.cerc.db.core.SearchKey;
+
 @Entity(name = "s_user")
 public class StubUser {
 

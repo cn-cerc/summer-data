@@ -6,10 +6,10 @@ import java.sql.Timestamp;
 
 import javax.persistence.Entity;
 
-import cn.cerc.core.ISession;
-import cn.cerc.core.DataRow;
-import cn.cerc.core.RecordUtils;
+import cn.cerc.db.core.DataRow;
 import cn.cerc.db.core.Handle;
+import cn.cerc.db.core.ISession;
+import cn.cerc.db.core.RecordUtils;
 import cn.cerc.db.mysql.MysqlQuery;
 
 public class DaoUtil {

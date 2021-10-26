@@ -4,10 +4,10 @@ import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import cn.cerc.core.DataRow;
-import cn.cerc.core.SqlText;
+import cn.cerc.db.core.DataRow;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.SqlOperator;
+import cn.cerc.db.core.SqlText;
 
 public class MssqlOperator extends SqlOperator {
     private final IHandle handle;

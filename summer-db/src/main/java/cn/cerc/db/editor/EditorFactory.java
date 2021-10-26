@@ -2,7 +2,7 @@ package cn.cerc.db.editor;
 
 import java.util.EnumSet;
 
-import cn.cerc.core.Datetime.DateType;
+import cn.cerc.db.core.Datetime.DateType;
 
 public class EditorFactory {
 
