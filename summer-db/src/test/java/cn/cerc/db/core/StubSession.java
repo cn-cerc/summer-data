@@ -1,5 +1,8 @@
 package cn.cerc.db.core;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import cn.cerc.core.ISession;
 import cn.cerc.db.jiguang.JiguangConnection;
 import cn.cerc.db.mongo.MongoDB;
@@ -86,6 +89,30 @@ public class StubSession implements ISession {
     @Override
     public void loadToken(String token) {
         throw new RuntimeException("not support loadToken");
+    }
+
+    @Override
+    public HttpServletRequest getRequest() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void setRequest(HttpServletRequest request) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public HttpServletResponse getResponse() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void setResponse(HttpServletResponse response) {
+        // TODO Auto-generated method stub
+        
     }
 
 }

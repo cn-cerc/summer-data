@@ -1,9 +1,15 @@
 package cn.cerc.db.core;
 
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import com.google.gson.annotations.Expose;
 
 import cn.cerc.core.ISession;
 
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class Handle implements IHandle {
 
     @Expose(serialize = false, deserialize = false)

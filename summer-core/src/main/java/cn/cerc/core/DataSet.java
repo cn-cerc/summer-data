@@ -619,12 +619,13 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     /**
      * 关闭写入存储设备功能
      */
-    public final void disableStorage() {
+    public DataSet disableStorage() {
         this.getFieldDefs().forEach(meta -> {
             if (meta.getKind() == FieldKind.Storage)
                 meta.setKind(FieldKind.Memory);
         });
         this.setStorage(false);
+        return this;
     }
 
     public SearchDataSet getSearch() {

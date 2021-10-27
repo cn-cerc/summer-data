@@ -1,5 +1,8 @@
 package cn.cerc.core;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 public interface ISession extends AutoCloseable {
     String TOKEN = "sid"; // session id
     String EDITION = "edition";
@@ -72,4 +75,12 @@ public interface ISession extends AutoCloseable {
     default String getPermissions() {
         return null;
     }
+
+    HttpServletRequest getRequest();
+
+    void setRequest(HttpServletRequest request);
+
+    HttpServletResponse getResponse();
+
+    void setResponse(HttpServletResponse response);
 }
