@@ -22,7 +22,7 @@ public final class FieldType {
         //
         names.put("o", "other"); // other object
     }
-    
+
     @Override
     public FieldType clone() {
         FieldType result = new FieldType();
@@ -31,7 +31,6 @@ public final class FieldType {
         result.decimal = this.decimal;
         return result;
     }
-    
 
     public static String getName(String key) {
         return names.get(key);
@@ -199,6 +198,15 @@ public final class FieldType {
         if ("o".equals(dataType)) {
             this.dataType = dataType;
             this.length = 0;
+            return;
+        }
+
+        if ("f".equals(dataType) && "n".equals(this.dataType)) {
+            this.dataType = dataType;
+            this.length = length;
+            return;
+        }
+        if ("n".equals(dataType) && "f".equals(this.dataType)) {
             return;
         }
 
