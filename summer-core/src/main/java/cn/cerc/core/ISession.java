@@ -72,9 +72,7 @@ public interface ISession extends AutoCloseable {
      * 
      * @return 返回当前用户已取得的授权码清单，若返回null则表示不判断，返回空字符串则等于Permission.USERS
      */
-    default String getPermissions() {
-        return null;
-    }
+    String getPermissions();
 
     HttpServletRequest getRequest();
 

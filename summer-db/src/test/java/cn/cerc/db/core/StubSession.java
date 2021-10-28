@@ -115,4 +115,9 @@ public class StubSession implements ISession {
         
     }
 
+    @Override
+    public String getPermissions() {
+        return null;
+    }
+
 }
