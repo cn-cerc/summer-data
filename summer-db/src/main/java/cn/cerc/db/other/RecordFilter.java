@@ -1,5 +1,8 @@
 package cn.cerc.db.other;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import cn.cerc.core.DataRow;
 import cn.cerc.core.DataSet;
 import cn.cerc.core.FieldMeta;
@@ -26,7 +29,10 @@ public class RecordFilter {
         dataOut.disableStorage();
         // 删减字段
         if (processor.getFieldDefs() != null) {
-            for (FieldMeta meta : dataOut.getFieldDefs()) {
+            List<FieldMeta> items = new ArrayList<>();
+            for (FieldMeta meta : dataOut.getFieldDefs()) 
+                items.add(meta);
+            for (FieldMeta meta : items) {
                 if (!processor.getFieldDefs().exists(meta.getCode()))
                     dataOut.getFieldDefs().delete(meta.getCode());
             }
