@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -63,9 +64,9 @@ public class DataRow implements Serializable, IRecord {
 
     @Override
     public DataRow setValue(String field, Object value) {
-        if (field == null || "".equals(field)) 
+        if (field == null || "".equals(field))
             throw new RuntimeException("field is null!");
-        
+
         this.addFieldDef(field);
 
         SearchDataSet search = null;
@@ -99,7 +100,7 @@ public class DataRow implements Serializable, IRecord {
 
         if (search != null)
             search.append(this);
-        
+
         return this;
     }
 
@@ -262,12 +263,9 @@ public class DataRow implements Serializable, IRecord {
         }
     }
 
-    public double getDouble(String field, int digit) {
-        double result = this.getDouble(field);
-        String str = "0.00000000";
-        str = str.substring(0, str.indexOf(".") + (-digit) + 1);
-        DecimalFormat df = new DecimalFormat(str);
-        return Double.parseDouble(df.format(result));
+    public double getDouble(String field, int scale) {
+        double value = this.getDouble(field);
+        return Utils.roundTo(value, scale);
     }
 
     /**

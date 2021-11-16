@@ -68,21 +68,21 @@ public class DataRowTest {
         row.setValue("num", Long.valueOf(Integer.MAX_VALUE));
         assertEquals(row.getInt("num"), Integer.MAX_VALUE);
     }
-    
+
     @Test(expected = ClassCastException.class)
     public void test_getInt_Float1() {
         DataRow row = new DataRow();
         row.setValue("num", Float.valueOf(21474836471f));
         assertTrue(row.getInt("num") > 0);
     }
-    
+
     @Test(expected = ClassCastException.class)
     public void test_getInt_Float2() {
         DataRow row = new DataRow();
         row.setValue("num", 2.1f);
         assertTrue(row.getInt("num") > 0);
     }
-    
+
     @Test(expected = ClassCastException.class)
     public void test_getInt_Float3() {
         DataRow row = new DataRow();
@@ -126,7 +126,7 @@ public class DataRowTest {
         rs.setValue("C", "C001");
         int i = 0;
         for (@SuppressWarnings("unused")
-        String key : rs.getItems().keySet()) {
+                String key : rs.getItems().keySet()) {
             i++;
         }
         assertEquals(i, rs.size());
@@ -139,4 +139,20 @@ public class DataRowTest {
         System.out.println(row.getBoolean("a"));
     }
 
+    @Test
+    public void test_getDouble() {
+        DataRow row = new DataRow();
+        row.setValue("a", 9.82575d);
+        assertEquals(row.getDouble("a"), 9.82575d, 0);
+        assertEquals(row.getDouble("a", -4), 9.8258, 0);
+    }
+
+    @Test
+    public void testGetDouble() {
+        DataRow row = new DataRow();
+        row.setValue("a", 1193.75);
+        row.setValue("b", 1162.89);
+//        1193.75 + 1162.89 = 2356.64
+        System.out.println(row.getDouble("a") + row.getDouble("b"));// 2356.6400000000003
+    }
 }

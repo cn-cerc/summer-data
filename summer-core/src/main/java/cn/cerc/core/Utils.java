@@ -143,25 +143,14 @@ public class Utils {
      *              当scale = -2时，精确后为2351.25 <br>
      *              当scale = -1时，精确后为2351.3 正数表示小数向前的位数，例如：2351.2513 <br>
      *              当scale = 2时，精确后为2400.0 当scale = 3时，精确后为2000.0 <br>
-     * @return 指定小数点的double类型
+     * @return 指定小数点的四舍六入
      */
     public static double roundTo(double val, int scale) {
-        if (scale <= 0) {
-            String str = "0.000000000000";
-            str = str.substring(0, str.indexOf(".") - scale + 1);
-            DecimalFormat df = new DecimalFormat(str);
-            if (LanguageResource.isLanguageTW()) {
-                df.setRoundingMode(RoundingMode.HALF_UP);
-            }
-            return Double.parseDouble(df.format(val));
-        } else {
-            String str = val + "";
-            int pointPosition = str.indexOf(".");
-            String tempStr = str.substring(0, pointPosition - scale + 1);
-            double tempD = Double.parseDouble(tempStr) / 10;
-            int tempInt = Math.round((float) tempD);
-            return tempInt * Math.pow(10, scale);
-        }
+        BigDecimal bigDecimal = new BigDecimal(Double.toString(val));
+        if (LanguageResource.isLanguageTW())
+            return bigDecimal.setScale(-scale, RoundingMode.HALF_UP).doubleValue();
+        else
+            return bigDecimal.setScale(-scale, RoundingMode.HALF_EVEN).doubleValue();
     }
 
     // 兼容 delphi 代码
@@ -194,7 +183,7 @@ public class Utils {
     public static double strToDoubleDef(String str, double def) {
         double result;
         try {
-            result = Double.parseDouble(str);
+            result = new BigDecimal(str).doubleValue();
         } catch (Exception e) {
             result = def;
         }
@@ -359,8 +348,7 @@ public class Utils {
         if (LanguageResource.isLanguageTW()) {
             df.setRoundingMode(RoundingMode.HALF_UP);
         }
-        fmt = df.format(value);
-        return fmt;
+        return df.format(new BigDecimal(Double.toString(value)));
     }
 
     /**
