@@ -87,16 +87,20 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
 
         if (root.has("meta")) {
             JsonObject meta = root.get("meta").getAsJsonObject();
-            JsonArray head = meta.get("head").getAsJsonArray();
-            head.forEach(item -> {
-                FieldMeta def = context.deserialize(item, FieldMeta.class);
-                dataSet.getHead().getFieldDefs().add(def);
-            });
-            JsonArray body = meta.get("body").getAsJsonArray();
-            body.forEach(item -> {
-                FieldMeta def = context.deserialize(item, FieldMeta.class);
-                dataSet.getFieldDefs().add(def);
-            });
+            if (meta.has("head")) {
+                JsonArray head = meta.get("head").getAsJsonArray();
+                head.forEach(item -> {
+                    FieldMeta def = context.deserialize(item, FieldMeta.class);
+                    dataSet.getHead().getFieldDefs().add(def);
+                });
+            }
+            if (meta.has("body")) {
+                JsonArray body = meta.get("body").getAsJsonArray();
+                body.forEach(item -> {
+                    FieldMeta def = context.deserialize(item, FieldMeta.class);
+                    dataSet.getFieldDefs().add(def);
+                });
+            }
             dataSet.setMetaInfo(true);
         }
 
@@ -218,8 +222,8 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
             return item;
         };
 
-        JsonSerializer<Date> gsonDate = (src, typeOfSrc,
-                context) -> new JsonPrimitive((new Datetime(src.getTime())).toString());
+        JsonSerializer<Date> gsonDate =
+                (src, typeOfSrc, context) -> new JsonPrimitive((new Datetime(src.getTime())).toString());
 
         JsonSerializer<Double> gsonDouble = (src, typeOfSrc, context) -> {
             if (src == src.longValue())
