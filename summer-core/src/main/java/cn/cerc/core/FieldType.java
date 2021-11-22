@@ -8,7 +8,7 @@ public final class FieldType {
     private int length = 0; // 包含decimal的长度
     private int decimal = 0; // 小数点位数
 
-    private static Map<String, String> names = new HashMap<>();
+    private static final Map<String, String> names = new HashMap<>();
 
     static {
         names.put("b", "boolean");
@@ -62,13 +62,13 @@ public final class FieldType {
         case "s": {
             String size = "0";
             if (dataType.length() > 1)
-                dataType.substring(1, dataType.length());
+                dataType.substring(1);
             return Integer.parseInt(size) >= 0;
         }
         case "n": {
             if (dataType.length() < 2)
                 return false;
-            String size = dataType.substring(1, dataType.length());
+            String size = dataType.substring(1);
             if ((!"1".equals(size)) && (!"2".equals(size)))
                 return false;
             return true;
@@ -77,7 +77,7 @@ public final class FieldType {
             String[] params = dataType.split(",");
             if (params.length > 2)
                 return false;
-            String size = params[0].substring(1, params[0].length());
+            String size = params[0].substring(1);
             if ((!"1".equals(size)) && (!"2".equals(size)))
                 return false;
             return true;
