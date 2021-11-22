@@ -10,6 +10,7 @@ import cn.jpush.api.push.model.PushPayload;
 import cn.jpush.api.push.model.PushPayload.Builder;
 import cn.jpush.api.push.model.audience.Audience;
 import cn.jpush.api.push.model.notification.AndroidNotification;
+import cn.jpush.api.push.model.notification.IosAlert;
 import cn.jpush.api.push.model.notification.IosNotification;
 import cn.jpush.api.push.model.notification.Notification;
 import org.slf4j.Logger;
@@ -46,23 +47,26 @@ public class JPushBuilder {
      * @param alias 设备id，对应极光推送的设备别名
      */
     public void send(String... alias) {
+        if (alias == null || alias.length == 0)
+            return;
+
         // 发送给指定的设备
         Builder builder = PushPayload.newBuilder();
-        if (alias != null) {
-            builder.setAudience(Audience.alias(alias));
-            builder.setPlatform(Platform.android_ios());
-        } else {
-            builder.setAudience(Audience.all());
-        }
+        builder.setAudience(Audience.alias(alias));
+        builder.setPlatform(Platform.android_ios());
 
-        builder.setNotification(Notification.newBuilder().setAlert(message)
+        IosAlert iosAlert = IosAlert.newBuilder()
+                .setTitleAndBody(this.title, "", this.message)
+                .build();
+
+        builder.setNotification(Notification.newBuilder()
                         .addPlatformNotification(
-                                AndroidNotification.newBuilder()
+                                AndroidNotification.newBuilder().setAlert(message)
                                         .setTitle(this.title)
                                         .addExtras(this.extras)
                                         .build())
                         .addPlatformNotification(
-                                IosNotification.newBuilder()
+                                IosNotification.newBuilder().setAlert(iosAlert)
                                         .incrBadge(1)
                                         .addExtras(this.extras)
                                         .setSound(this.sound)
