@@ -4,7 +4,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import cn.cerc.core.ISession;
-import cn.cerc.db.jiguang.JPushConfig;
 import cn.cerc.db.mongo.MongoDB;
 import cn.cerc.db.mssql.MssqlServer;
 import cn.cerc.db.mysql.MysqlServerMaster;
@@ -17,7 +16,6 @@ public class StubSession implements ISession {
     private MongoDB mgConn;
     private QueueServer queConn;
     private OssConnection ossConn;
-    private JPushConfig pushConn;
 
     public StubSession() {
         mysql = new MysqlServerMaster();
@@ -25,7 +23,6 @@ public class StubSession implements ISession {
         mgConn = new MongoDB();
         queConn = new QueueServer();
         ossConn = new OssConnection();
-        pushConn = new JPushConfig();
     }
 
     @Override
