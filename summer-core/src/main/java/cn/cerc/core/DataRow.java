@@ -7,6 +7,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ public class DataRow implements Serializable, IRecord {
     private Map<String, Object> delta = new HashMap<>();
     private DataSet dataSet;
     private FieldDefs fieldDefs;
+    private DataRow history;
 
     public DataRow() {
         super();
@@ -398,5 +400,25 @@ public class DataRow implements Serializable, IRecord {
         DataRow row = new DataRow();
         row.setValue("num", BigInteger.valueOf(Long.MAX_VALUE));
         System.out.println(row.getInt("num"));
+    }
+
+    public HashSet<FieldMeta> getFields() {
+        return this.getFieldDefs().getItems();
+    }
+
+    public final DataRow getHistory() {
+        return history;
+    }
+
+    public final void setHistory(DataRow history) {
+        this.history = history;
+    }
+
+    @Override
+    public DataRow clone() {
+        DataRow row = new DataRow();
+        for (String key : this.getFieldDefs().getFields())
+            row.setValue(key, this.getValue(key));
+        return row;
     }
 }

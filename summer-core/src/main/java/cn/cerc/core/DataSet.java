@@ -73,13 +73,13 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this;
     }
 
-    public final void edit() {
+    public void edit() {
         if (bof() || eof())
             throw new RuntimeException(res.getString(1, "当前记录为空，无法修改"));
         this.getCurrent().setState(RecordState.dsEdit);
     }
 
-    public final void delete() {
+    public void delete() {
         if (bof() || eof())
             throw new RuntimeException(res.getString(2, "当前记录为空，无法删除"));
         DataRow record = this.getCurrent();

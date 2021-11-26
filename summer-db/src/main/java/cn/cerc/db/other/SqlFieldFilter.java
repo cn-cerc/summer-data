@@ -47,4 +47,16 @@ public class SqlFieldFilter {
         row.setValue("code", "value2");
         System.out.println(fw.pass(row));
     }
+
+    public final String getField() {
+        return field;
+    }
+
+    public final String getOperation() {
+        return operation;
+    }
+
+    public final String getValue() {
+        return value;
+    }
 }
