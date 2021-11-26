@@ -3,8 +3,8 @@ package cn.cerc.db.other;
 import java.util.HashMap;
 import java.util.Map;
 
-import cn.cerc.core.DataSet;
 import cn.cerc.core.DataRow;
+import cn.cerc.core.DataSet;
 
 public class SumRecord extends DataRow {
     private static final long serialVersionUID = -8836802853579764175L;
@@ -45,7 +45,7 @@ public class SumRecord extends DataRow {
         return this;
     }
 
-    public Map<String, Double> getFields() {
+    public Map<String, Double> getFieldsMap() {
         return fields;
     }
 
