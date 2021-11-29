@@ -246,8 +246,8 @@ public class MongoQuery extends DataSet implements IHandle {
     // 将DataSet转成通用类型，方便存入MongoDB
     public void setChildDataSet(String field, DataSet dataSet) {
         List<Map<String, Object>> items = new ArrayList<>();
-        for (DataRow child : dataSet.getRecords()) {
-            items.add(child.getItems());
+        for (DataRow child : dataSet.records()) {
+            items.add(child.items());
         }
         this.setValue(field, items);
     }

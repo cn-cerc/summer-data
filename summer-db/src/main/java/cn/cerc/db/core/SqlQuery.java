@@ -115,13 +115,13 @@ public abstract class SqlQuery extends DataSet implements IHandle {
             throw new RuntimeException("batchSave is false");
         ConnectionClient client = null;
         try {
-            if (this.isStorage())
+            if (this.storage())
                 client = getConnectionClient();
 
             // 先执行删除
             for (DataRow record : garbage()) {
                 doBeforeDelete(record);
-                if (this.isStorage())
+                if (this.storage())
                     getOperator().delete(client.getConnection(), record);
                 doAfterDelete(record);
             }
@@ -129,14 +129,14 @@ public abstract class SqlQuery extends DataSet implements IHandle {
             this.first();
             while (this.fetch()) {
                 DataRow record = this.current();
-                if (record.getState().equals(DataRowState.Insert)) {
+                if (record.state().equals(DataRowState.Insert)) {
                     doBeforePost(record);
-                    if (this.isStorage())
+                    if (this.storage())
                         getOperator().insert(client.getConnection(), record);
                     doAfterPost(record);
-                } else if (record.getState().equals(DataRowState.Update)) {
+                } else if (record.state().equals(DataRowState.Update)) {
                     doBeforePost(record);
-                    if (this.isStorage())
+                    if (this.storage())
                         getOperator().update(client.getConnection(), record);
                     doAfterPost(record);
                 }
@@ -177,7 +177,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
                 record.setValue(fn, rs.getObject(fn));
             }
             record.setState(DataRowState.None);
-            this.getRecords().add(record);
+            this.records().add(record);
             this.last();
         }
         if (this.getMaximum() > -1) {

@@ -187,8 +187,13 @@ public class DataRow implements Serializable, IRecord {
         return _items.size();
     }
 
-    public Map<String, Object> getItems() {
+    public Map<String, Object> items() {
         return this._items;
+    }
+
+    @Deprecated
+    public Map<String, Object> getItems() {
+        return items();
     }
 
     public FieldDefs fields() {

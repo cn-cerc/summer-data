@@ -83,7 +83,7 @@ public abstract class SqlOperator {
         try (BuildStatement bs = new BuildStatement(connection)) {
             bs.append("insert into ").append(getTableName()).append(" (");
             int i = 0;
-            for (String field : record.getItems().keySet()) {
+            for (String field : record.items().keySet()) {
                 FieldMeta meta = record.fields().get(field);
                 if (meta.getKind() == FieldKind.Storage) {
                     if (!meta.isAutoincrement()) {
@@ -97,7 +97,7 @@ public abstract class SqlOperator {
             }
             bs.append(") values (");
             i = 0;
-            for (String field : record.getItems().keySet()) {
+            for (String field : record.items().keySet()) {
                 FieldMeta meta = record.fields().get(field);
                 if (meta.getKind() == FieldKind.Storage) {
                     if (!meta.isAutoincrement()) {

@@ -26,7 +26,7 @@ public class MysqlQuery extends SqlQuery implements IHandle {
 
         if (master == null)
             master = (MysqlServer) getSession().getProperty(MysqlServerMaster.SessionId);
-        if (this.isStorage()) {
+        if (this.storage()) {
             return master;
         } else {
             if (salve == null) {
