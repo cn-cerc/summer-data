@@ -3,7 +3,6 @@ package cn.cerc.core;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -21,45 +20,68 @@ import com.google.gson.reflect.TypeToken;
 
 public class DataRow implements Serializable, IRecord {
     private static final long serialVersionUID = 4454304132898734723L;
-    private DataRowState state = DataRowState.None;
-    private Map<String, Object> items = new LinkedHashMap<>();
-    private Map<String, Object> delta = new HashMap<>();
-    private DataSet dataSet;
-    private FieldDefs fieldDefs;
-    private DataRow history;
+    private DataRowState _state = DataRowState.None;
+    private Map<String, Object> _items = new LinkedHashMap<>();
+    private Map<String, Object> _delta = new HashMap<>();
+    private DataSet _dataSet;
+    private FieldDefs _fields;
+    private boolean _createFieldDefs;
+    private DataRow _history;
 
     public DataRow() {
         super();
-        this.fieldDefs = new FieldDefs();
+        this._fields = new FieldDefs();
+        this._createFieldDefs = true;
     }
 
     public DataRow(DataSet dataSet) {
         super();
-        this.dataSet = dataSet;
-        this.fieldDefs = dataSet.getFieldDefs();
+        this._dataSet = dataSet;
+        this._fields = dataSet.fields();
     }
 
-    public DataRowState getState() {
-        return this.state;
+    public DataRow(FieldDefs fieldDefs) {
+        super();
+        this._fields = fieldDefs;
     }
 
-    public DataRow setState(DataRowState recordState) {
-        if (recordState == DataRowState.Update) {
-            if (this.state == DataRowState.Insert) {
-                // throw new RuntimeException("当前记录为插入状态 不允许被修改");
-                return this;
-            }
-        }
-        if (recordState.equals(DataRowState.None)) {
-            delta.clear();
-        }
-        this.state = recordState;
-        return this;
+    public DataRowState state() {
+        return this._state;
     }
 
     @Deprecated
-    public DataRow setField(String field, Object value) {
-        return setValue(field, value);
+    public DataRowState getState() {
+        return this.state();
+    }
+
+    public DataRow setState(DataRowState value) {
+        if (_state == value)
+            return this;
+
+        if (value.equals(DataRowState.None))
+            _delta.clear();
+
+        if ((_state == DataRowState.Insert) && (value == DataRowState.Update))
+            return this;
+        if ((_state == DataRowState.None) && (value == DataRowState.Update)) {
+            this._history = this.clone();
+            this._history._state = DataRowState.History;
+            _state = value;
+            return this;
+        }
+        if ((_state == DataRowState.None) && (value == DataRowState.Update)) {
+            this._history = null;
+            _state = value;
+            return this;
+        }
+
+        if ((_state == DataRowState.None) || (value == DataRowState.None))
+            this._state = value;
+        else if ((_state == DataRowState.Insert) || (value == DataRowState.History))
+            this._state = value;
+        else
+            throw new RuntimeException("setState change error");
+        return this;
     }
 
     @Override
@@ -70,19 +92,19 @@ public class DataRow implements Serializable, IRecord {
         this.addFieldDef(field);
 
         SearchDataSet search = null;
-        if (this.dataSet != null && this.dataSet.getSearch() != null)
-            search = this.dataSet.getSearch();
+        if (this._dataSet != null && this._dataSet.search() != null)
+            search = this._dataSet.search();
 
         Object data = value;
         if (value instanceof Datetime) // 将Datetime转化为Date存储
             data = ((Datetime) value).asBaseDate();
 
-        if ((search == null) && (this.state != DataRowState.Update)) {
-            setMapValue(items, field, data);
+        if ((search == null) && (this._state != DataRowState.Update)) {
+            setMapValue(_items, field, data);
             return this;
         }
 
-        Object oldValue = items.get(field);
+        Object oldValue = _items.get(field);
         if (compareValue(data, oldValue)) {
             return this;
         }
@@ -91,12 +113,12 @@ public class DataRow implements Serializable, IRecord {
         if (search != null)
             search.remove(this);
 
-        if (this.state == DataRowState.Update) {
-            if (!delta.containsKey(field)) {
-                setMapValue(delta, field, oldValue);
+        if (this._state == DataRowState.Update) {
+            if (!_delta.containsKey(field)) {
+                setMapValue(_delta, field, oldValue);
             }
         }
-        setMapValue(items, field, data);
+        setMapValue(_items, field, data);
 
         if (search != null)
             search.append(this);
@@ -142,44 +164,44 @@ public class DataRow implements Serializable, IRecord {
         }
     }
 
-    @Deprecated
-    public Object getField(String field) {
-        return getValue(field);
-    }
-
     @Override
     public Object getValue(String field) {
         if (field == null || "".equals(field)) {
             throw new RuntimeException("field is null!");
         }
-        return this.items.get(field);
+        return this._items.get(field);
     }
 
     public Map<String, Object> getDelta() {
-        return this.delta;
+        return this._delta;
     }
 
     public Object getOldField(String field) {
         if (field == null || "".equals(field)) {
             throw new RuntimeException("field is null!");
         }
-        return this.delta.get(field);
+        return this._delta.get(field);
     }
 
     public int size() {
-        return items.size();
+        return _items.size();
     }
 
     public Map<String, Object> getItems() {
-        return this.items;
+        return this._items;
     }
 
+    public FieldDefs fields() {
+        return _fields;
+    }
+
+    @Deprecated
     public FieldDefs getFieldDefs() {
-        return fieldDefs;
+        return fields();
     }
 
     public void copyValues(DataRow source) {
-        this.copyValues(source, source.getFieldDefs());
+        this.copyValues(source, source.fields());
     }
 
     public void copyValues(DataRow source, FieldDefs defs) {
@@ -198,7 +220,7 @@ public class DataRow implements Serializable, IRecord {
                 this.setValue(field, source.getValue(field));
             }
         } else {
-            for (String field : source.getFieldDefs().getFields()) {
+            for (String field : source.fields().getFields()) {
                 this.setValue(field, source.getValue(field));
             }
         }
@@ -207,8 +229,8 @@ public class DataRow implements Serializable, IRecord {
     @Override
     public String toString() {
         Map<String, Object> items = new LinkedHashMap<>();
-        for (int i = 0; i < fieldDefs.size(); i++) {
-            String field = fieldDefs.get(i).getCode();
+        for (int i = 0; i < _fields.size(); i++) {
+            String field = _fields.getItems(i).getCode();
             Object obj = this.getValue(field);
             if (obj instanceof Datetime) {
                 items.put(field, obj.toString());
@@ -253,12 +275,12 @@ public class DataRow implements Serializable, IRecord {
     public void setJSON(String jsonStr) {
         this.clear();
         Gson gson = new GsonBuilder().serializeNulls().create();
-        items = gson.fromJson(jsonStr, new TypeToken<Map<String, Object>>() {
+        _items = gson.fromJson(jsonStr, new TypeToken<Map<String, Object>>() {
         }.getType());
-        for (String key : items.keySet()) {
+        for (String key : _items.keySet()) {
             this.addFieldDef(key);
-            if ("{}".equals(items.get(key))) {
-                items.put(key, null);
+            if ("{}".equals(_items.get(key))) {
+                _items.put(key, null);
             }
         }
     }
@@ -291,52 +313,57 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public void clear() {
-        items.clear();
-        delta.clear();
-        if (this.dataSet == null)
-            fieldDefs.clear();
+        _items.clear();
+        _delta.clear();
+        if (this._dataSet == null)
+            _fields.clear();
     }
 
     @Override
     public boolean exists(String field) {
-        return this.fieldDefs.exists(field);
+        return this._fields.exists(field);
     }
 
     public boolean hasValue(String field) {
-        return fieldDefs.exists(field) && !"".equals(getString(field));
+        return _fields.exists(field) && !"".equals(getString(field));
     }
 
+    public DataSet dataSet() {
+        return _dataSet;
+    }
+
+    @Deprecated
     public DataSet getDataSet() {
-        return dataSet;
+        return dataSet();
     }
 
     @Deprecated
     public DataSet locate() {
-        int recNo = dataSet.getRecords().indexOf(this) + 1;
-        dataSet.setRecNo(recNo);
-        return dataSet;
+        int recNo = _dataSet.getRecords().indexOf(this) + 1;
+        _dataSet.setRecNo(recNo);
+        return _dataSet;
     }
 
     public boolean isModify() {
-        switch (this.state) {
+        switch (this._state) {
         case Insert:
             return true;
         case Update: {
-            if (delta.size() == 0) {
+            if (_delta.size() == 0) {
                 return false;
             }
             List<String> delList = new ArrayList<>();
-            for (String field : delta.keySet()) {
-                Object value = items.get(field);
-                Object oldValue = delta.get(field);
+            for (String field : _delta.keySet()) {
+                Object value = _items.get(field);
+                Object oldValue = _delta.get(field);
                 if (compareValue(value, oldValue)) {
                     delList.add(field);
                 }
             }
             for (String field : delList) {
-                delta.remove(field);
+                _delta.remove(field);
             }
-            return delta.size() > 0;
+            return _delta.size() > 0;
         }
         default:
             return false;
@@ -357,18 +384,17 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public void delete(String field) {
-        delta.remove(field);
-        items.remove(field);
-        if (this.dataSet == null) {
-            fieldDefs.delete(field);
-        }
+        _delta.remove(field);
+        _items.remove(field);
+        if (this._dataSet == null)
+            _fields.remove(field);
     }
 
     private void addFieldDef(String field) {
         if (field == null)
             throw new RuntimeException("field is null");
-        if (!fieldDefs.exists(field)) {
-            fieldDefs.add(field);
+        if (!_fields.exists(field)) {
+            _fields.add(field);
         }
     }
 
@@ -386,39 +412,37 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public String getText(String field) {
-        FieldMeta meta = this.getFieldDefs().get(field);
+        FieldMeta meta = this.fields().get(field);
         return meta.getText(this);
     }
 
     public DataRow setText(String field, String value) {
-        FieldMeta meta = this.getFieldDefs().get(field);
+        FieldMeta meta = this.fields().get(field);
         this.setValue(field, meta.setText(value));
         return this;
     }
 
-    public static void main(String[] args) {
-        DataRow row = new DataRow();
-        row.setValue("num", BigInteger.valueOf(Long.MAX_VALUE));
-        System.out.println(row.getInt("num"));
-    }
-
     public HashSet<FieldMeta> getFields() {
-        return this.getFieldDefs().getItems();
+        return this.fields().getItems();
     }
 
-    public final DataRow getHistory() {
-        return history;
+    public final DataRow history() {
+        return _history;
     }
 
-    public final void setHistory(DataRow history) {
-        this.history = history;
+    public final DataRow setHistory(DataRow history) {
+        this._history = history;
+        return this;
     }
 
     @Override
     public DataRow clone() {
-        DataRow row = new DataRow();
-        for (String key : this.getFieldDefs().getFields())
+        DataRow row = new DataRow(this._fields);
+        for (String key : this.fields().getFields())
             row.setValue(key, this.getValue(key));
+        row._dataSet = this._dataSet;
+        row._createFieldDefs = this._createFieldDefs;
         return row;
     }
+
 }

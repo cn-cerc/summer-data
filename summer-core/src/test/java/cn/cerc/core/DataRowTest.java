@@ -10,14 +10,14 @@ public class DataRowTest {
     @Test
     public void test_create() {
         DataRow item = new DataRow();
-        assertEquals(item.getState(), DataRowState.None);
+        assertEquals(item.state(), DataRowState.None);
     }
 
     @Test
     public void test_setState() {
         DataRow item = new DataRow();
         item.setState(DataRowState.Insert);
-        assertEquals(item.getState(), DataRowState.Insert);
+        assertEquals(item.state(), DataRowState.Insert);
     }
 
     @Test

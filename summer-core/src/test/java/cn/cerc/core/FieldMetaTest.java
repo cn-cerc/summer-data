@@ -16,7 +16,7 @@ public class FieldMetaTest {
     @Test
     public void test_getset_diy() {
         DataRow rs = new DataRow();
-        rs.getFieldDefs().add("state").onGetText((record, meta) -> {
+        rs.fields().add("state").onGetText((record, meta) -> {
             return record.getInt(meta.getCode()) == 0 ? "停用" : "启用";
         }).onSetText(text -> {
             return "启用".equals(text) ? 1 : 0;
@@ -33,7 +33,7 @@ public class FieldMetaTest {
     @Test
     public void test_getset_bool() {
         DataRow rs = new DataRow();
-        rs.getFieldDefs().add("used").onGetSetText(new BooleanEditor("停用", "启用"));
+        rs.fields().add("used").onGetSetText(new BooleanEditor("停用", "启用"));
 
         rs.setValue("used", false);
         assertEquals("{\"used\":false}:停用", rs + ":" + rs.getText("used"));
@@ -46,7 +46,7 @@ public class FieldMetaTest {
     @Test
     public void test_getset_int() {
         DataRow rs = new DataRow();
-        rs.getFieldDefs().add("state").onGetSetText(new OptionEditor("停用", "启用"));
+        rs.fields().add("state").onGetSetText(new OptionEditor("停用", "启用"));
 
         rs.setValue("state", 0);
         assertEquals("{\"state\":0}:停用", rs + ":" + rs.getText("state"));
@@ -59,7 +59,7 @@ public class FieldMetaTest {
     @Test
     public void test_getset_float() {
         DataRow rs = new DataRow();
-        rs.getFieldDefs().add("price").onGetSetText(new FloatEditor(2));
+        rs.fields().add("price").onGetSetText(new FloatEditor(2));
 
         rs.setValue("price", 1.06);
         assertEquals("1.06", rs.getText("price"));
@@ -68,7 +68,7 @@ public class FieldMetaTest {
         rs.setText("price", "1.3");
         assertEquals("1.3", rs.getText("price"));
 
-        rs.getFieldDefs().add("price").onGetSetText(new FloatEditor(2, "0"));
+        rs.fields().add("price").onGetSetText(new FloatEditor(2, "0"));
         assertEquals("1.30", rs.getText("price"));
     }
 
@@ -76,10 +76,10 @@ public class FieldMetaTest {
     public void test_getset_datetime() {
         String field = "date";
         DataRow rs = new DataRow();
-        rs.getFieldDefs().add(field).onGetSetText(new DatetimeEditor(Datetime.yyyyMM));
+        rs.fields().add(field).onGetSetText(new DatetimeEditor(Datetime.yyyyMM));
         rs.setValue(field, new Datetime("2021-12-09"));
         assertEquals("202112", rs.getText(field));
-        rs.getFieldDefs().get(field).onGetSetText(new DatetimeEditor(Datetime.HHmm));
+        rs.fields().get(field).onGetSetText(new DatetimeEditor(Datetime.HHmm));
         assertEquals("00:00", rs.getText(field));
     }
 

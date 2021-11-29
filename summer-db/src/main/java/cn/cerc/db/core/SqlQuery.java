@@ -9,12 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.cerc.core.DataRow;
+import cn.cerc.core.DataRowState;
 import cn.cerc.core.DataSet;
 import cn.cerc.core.DataSetGson;
 import cn.cerc.core.FieldDefs;
 import cn.cerc.core.FieldMeta.FieldKind;
 import cn.cerc.core.ISession;
-import cn.cerc.core.DataRowState;
 import cn.cerc.core.SqlText;
 import cn.cerc.core.Utils;
 
@@ -120,7 +120,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
                 client = getConnectionClient();
 
             // 先执行删除
-            for (DataRow record : getDelList()) {
+            for (DataRow record : garbage()) {
                 doBeforeDelete(record);
                 if (this.isStorage())
                     getOperator().delete(client.getConnection(), record);
@@ -142,7 +142,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
                     doAfterPost(record);
                 }
             }
-            getDelList().clear();
+            garbage().clear();
         } finally {
             if (client != null) {
                 try {
@@ -203,7 +203,8 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     @Override
     protected final void deleteStorage(DataRow record) throws Exception {
         try (ConnectionClient client = getConnectionClient()) {
-            getOperator().delete(client.getConnection(), record);
+            if (getOperator().delete(client.getConnection(), record))
+                garbage().remove(record);
         }
     }
 
@@ -278,6 +279,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
         this.active = value;
     }
 
+    @Override
     public final void clear() {
         close();
         this.getSqlText().clear();

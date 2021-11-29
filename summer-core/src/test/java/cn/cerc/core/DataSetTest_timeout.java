@@ -26,7 +26,7 @@ public class DataSetTest_timeout {
 
     @After
     public void tearDown() throws Exception {
-        ds.close();
+        ds.clear();
     }
 
     @Test(timeout = 10000)
@@ -63,7 +63,7 @@ public class DataSetTest_timeout {
         DataRow record = ds.lookup("value", "xx");
         record.setValue("code", "value");
         assertEquals(ds.getString("code"), "value");
-        assertEquals(10001, ds.getRecNo());
+        assertEquals(10001, ds.recNo());
 
         ds.setValue("code", "value2");
         assertEquals(record.getString("code"), "value2");

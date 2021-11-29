@@ -14,11 +14,11 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 
 import cn.cerc.core.ClassResource;
+import cn.cerc.core.DataRow;
+import cn.cerc.core.DataRowState;
 import cn.cerc.core.DataSet;
 import cn.cerc.core.DataSetGson;
 import cn.cerc.core.ISession;
-import cn.cerc.core.DataRow;
-import cn.cerc.core.DataRowState;
 import cn.cerc.core.SqlText;
 import cn.cerc.core.Utils;
 import cn.cerc.db.SummerDB;
@@ -204,7 +204,8 @@ public class MongoQuery extends DataSet implements IHandle {
 
     @Override
     protected final void deleteStorage(DataRow record) {
-        getOperator().delete(record);
+        if (getOperator().delete(record))
+            garbage().remove(record);
     }
 
     private NosqlOperator getOperator() {
@@ -310,7 +311,6 @@ public class MongoQuery extends DataSet implements IHandle {
     public SqlText getSqlText() {
         return sqlText;
     }
-    
 
     @Override
     public String toJson() {

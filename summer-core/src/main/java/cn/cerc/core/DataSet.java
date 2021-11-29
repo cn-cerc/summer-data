@@ -19,33 +19,35 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     private static final Logger log = LoggerFactory.getLogger(DataSet.class);
     private static final long serialVersionUID = 873159747066855363L;
     private static final ClassResource res = new ClassResource(DataSet.class, SummerCore.ID);
-    private int recNo = 0;
-    private int fetchNo = -1;
-    private int state = 0;
-    private String message = null;
+    private int _recNo = 0;
+    private int _fetchNo = -1;
+    private int _state = 0;
+    private String _message = null;
     private List<DataSetInsertEvent> appendListener;
     private List<DataSetBeforeUpdateEvent> beforePostListener;
     private List<DataSetAfterUpdateEvent> afterPostListener;
     private List<DataSetBeforeDeleteEvent> beforeDeleteListener;
     private List<DataSetAfterDeleteEvent> afterDeleteListener;
 
-    private boolean readonly;
+    private boolean _readonly;
     // 在变更时，是否需要同步保存到数据库中
-    private boolean storage;
+    private boolean _storage;
     // 批次保存模式，默认为post与delete立即保存
-    private boolean batchSave = false;
-    // 仅当batchSave为true时，delList才有记录存在
-    private List<DataRow> delList = new ArrayList<>();
+    private boolean _batchSave = false;
+    // 仅当batchSave为true时，garbage才有记录存在
+    private List<DataRow> _garbage = new ArrayList<>();
     // 搜索加速器
-    private SearchDataSet search;
+    private SearchDataSet _search;
     // gson时，是否输出meta讯息
-    private boolean metaInfo;
+    private boolean _metaInfo;
     // 头部记录
-    private DataRow head = new DataRow();
+    private DataRow _head = new DataRow();
     // 明细记录
-    private List<DataRow> records = new ArrayList<>();
+    private List<DataRow> _records = new ArrayList<>();
     // 明细字段定义
-    private FieldDefs fieldDefs = new FieldDefs();
+    private FieldDefs _fields = new FieldDefs();
+    // 是否进入CURD模式
+    private boolean _curd;
 
     public DataSet() {
         super();
@@ -53,8 +55,8 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
 
     public DataSet append() {
         DataRow record = new DataRow(this).setState(DataRowState.Insert);
-        this.records.add(record);
-        recNo = records.size();
+        _records.add(record);
+        _recNo = _records.size();
         doAppend(record);
         return this;
     }
@@ -62,57 +64,61 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     @Deprecated
     public DataSet append(int index) {
         DataRow record = new DataRow(this).setState(DataRowState.Insert);
-        if (index == -1 || index == records.size()) {
-            this.records.add(record);
-            recNo = records.size();
+        if (index == -1 || index == _records.size()) {
+            this._records.add(record);
+            _recNo = _records.size();
         } else {
-            this.records.add(index, record);
-            recNo = index + 1;
+            this._records.add(index, record);
+            _recNo = index + 1;
         }
         doAppend(record);
         return this;
     }
 
-    public void edit() {
+    public DataSet edit() {
         if (bof() || eof())
             throw new RuntimeException(res.getString(1, "当前记录为空，无法修改"));
-        this.getCurrent().setState(DataRowState.Update);
+        this.current().setState(DataRowState.Update);
+        return this;
     }
 
-    public void delete() {
+    public DataSet delete() {
         if (bof() || eof())
             throw new RuntimeException(res.getString(2, "当前记录为空，无法删除"));
-        DataRow record = this.getCurrent();
-        if (search != null)
-            search.remove(record);
-        records.remove(recNo - 1);
-        if (this.fetchNo > -1) {
-            this.fetchNo--;
+        DataRow record = this.current();
+        if (_search != null)
+            _search.remove(record);
+        _records.remove(_recNo - 1);
+        if (_fetchNo > -1) {
+            _fetchNo--;
         }
-        if (record.getState() == DataRowState.Insert) {
-            return;
-        }
-        if (this.isBatchSave()) {
-            delList.add(record);
-        } else {
+        if (record.state() == DataRowState.Insert)
+            return this;
+
+        if (record.state() == DataRowState.Update)
+            _garbage.add(record.history().setState(DataRowState.Delete));
+        else
+            _garbage.add(record.setState(DataRowState.Delete));
+
+        if (!this.isBatchSave()) {
             doBeforeDelete(record);
             if (this.isStorage()) {
                 try {
                     deleteStorage(record);
                 } catch (Exception e) {
-                    log.error(e.getMessage());
                     throw new RuntimeException(e.getMessage());
                 }
             }
             doAfterDelete(record);
         }
+        return this;
     }
 
     public final void post() {
         if (this.isBatchSave())
             return;
-        DataRow dataRow = this.getCurrent();
-        if (dataRow.getState() == DataRowState.Insert) {
+        DataRow dataRow = this.current();
+        if (dataRow.state() == DataRowState.Insert) {
             doBeforePost(dataRow);
             if (this.isStorage()) {
                 try {
@@ -124,7 +130,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
                 }
             }
             doAfterPost(dataRow);
-        } else if (dataRow.getState() == DataRowState.Update) {
+        } else if (dataRow.state() == DataRowState.Update) {
             doBeforePost(dataRow);
             if (this.isStorage()) {
                 try {
@@ -151,30 +157,30 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     public boolean first() {
-        if (records.size() > 0) {
-            this.recNo = 1;
+        if (_records.size() > 0) {
+            this._recNo = 1;
         } else {
-            this.recNo = 0;
+            this._recNo = 0;
         }
-        fetchNo = -1;
-        return this.recNo > 0;
+        _fetchNo = -1;
+        return this._recNo > 0;
     }
 
     public boolean last() {
-        this.recNo = this.records.size();
-        return this.recNo > 0;
+        this._recNo = this._records.size();
+        return this._recNo > 0;
     }
 
     public boolean prior() {
-        if (this.recNo > 0) {
-            this.recNo--;
+        if (this._recNo > 0) {
+            this._recNo--;
         }
-        return this.recNo > 0;
+        return this._recNo > 0;
     }
 
     public boolean next() {
-        if (this.records.size() > 0 && recNo <= this.records.size()) {
-            recNo++;
+        if (this._records.size() > 0 && _recNo <= this._records.size()) {
+            _recNo++;
             return true;
         } else {
             return false;
@@ -182,13 +188,14 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     public boolean bof() {
-        return this.recNo == 0;
+        return this._recNo == 0;
     }
 
     public boolean eof() {
-        return this.records.size() == 0 || this.recNo > this.records.size();
+        return this._records.size() == 0 || this._recNo > this._records.size();
     }
 
+    @Deprecated
     @Override
     public DataRow getCurrent() {
         if (this.eof()) {
@@ -196,8 +203,15 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         } else if (this.bof()) {
             throw new RuntimeException(String.format("[%s]bof == true", this.getClass().getName()));
         } else {
-            return records.get(recNo - 1);
+            return _records.get(_recNo - 1);
         }
+    }
+
+    public DataRow current() {
+        if ((_recNo > 0) && (_recNo <= _records.size()))
+            return _records.get(_recNo - 1);
+        else
+            return null;
     }
 
     /**
@@ -205,36 +219,46 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
      *
      * @return List
      */
-    public List<DataRow> getRecords() {
-        return records;
+    public List<DataRow> records() {
+        return _records;
     }
 
-//    @Deprecated
-//    public DataRow getIndex(int index) {
-//        return this.setRecNo(index + 1).getCurrent();
-//    }
+    @Deprecated
+    public List<DataRow> getRecords() {
+        return records();
+    }
 
+    public int recNo() {
+        return _recNo;
+    }
+
+    @Deprecated
     public int getRecNo() {
-        return recNo;
+        return recNo();
     }
 
     public DataSet setRecNo(int recNo) {
-        if (recNo > this.records.size()) {
+        if (recNo > this._records.size()) {
             String msg = String.format(res.getString(3, "[%s]RecNo %d 大于总长度 %d"), this.getClass().getName(), recNo,
-                    this.records.size());
+                    this._records.size());
             throw new RuntimeException(msg);
         } else {
-            this.recNo = recNo;
+            this._recNo = recNo;
         }
         return this;
     }
 
     public int size() {
-        return this.records.size();
+        return this._records.size();
     }
 
+    public FieldDefs fields() {
+        return this._fields;
+    }
+
+    @Deprecated
     public FieldDefs getFieldDefs() {
-        return this.fieldDefs;
+        return fields();
     }
 
     // 仅用于查找一次时，调用此函数，速度最快
@@ -256,7 +280,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
 
         this.first();
         while (this.fetch()) {
-            if (this.getCurrent().equalsValues(fieldValueMap)) {
+            if (this.current().equalsValues(fieldValueMap)) {
                 return true;
             }
         }
@@ -265,12 +289,12 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
 
     // 用于查找多次，调用时，会先进行排序，以方便后续的相同Key查找
     public boolean locate(String fields, Object... values) {
-        if (search == null)
-            search = new SearchDataSet(this);
+        if (_search == null)
+            _search = new SearchDataSet(this);
 
-        DataRow record = search.get(fields, values);
+        DataRow record = _search.get(fields, values);
         if (record != null) {
-            this.setRecNo(this.records.indexOf(record) + 1);
+            this.setRecNo(this._records.indexOf(record) + 1);
             return true;
         } else {
             return false;
@@ -278,20 +302,15 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     public DataRow lookup(String fields, Object... values) {
-        if (search == null)
-            search = new SearchDataSet(this);
+        if (_search == null)
+            _search = new SearchDataSet(this);
 
-        return search.get(fields, values);
-    }
-
-    @Deprecated
-    public Object getField(String field) {
-        return getValue(field);
+        return _search.get(fields, values);
     }
 
     @Override
     public Object getValue(String field) {
-        return this.getCurrent().getValue(field);
+        return this.current().getValue(field);
     }
 
     // 排序
@@ -305,22 +324,17 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
 
     @Deprecated
     public TDate getDate(String field) {
-        return this.getCurrent().getDate(field);
+        return this.current().getDate(field);
     }
 
     @Deprecated
     public TDateTime getDateTime(String field) {
-        return this.getCurrent().getDateTime(field);
-    }
-
-    @Deprecated
-    public DataSet setField(String field, Object value) {
-        return setValue(field, value);
+        return this.current().getDateTime(field);
     }
 
     @Override
     public DataSet setValue(String field, Object value) {
-        this.getCurrent().setValue(field, value);
+        this.current().setValue(field, value);
         return this;
     }
 
@@ -330,31 +344,31 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
 
     public boolean fetch() {
         boolean result = false;
-        if (this.fetchNo < (this.records.size() - 1)) {
-            this.fetchNo++;
-            this.setRecNo(this.fetchNo + 1);
+        if (this._fetchNo < (this._records.size() - 1)) {
+            this._fetchNo++;
+            this.setRecNo(this._fetchNo + 1);
             result = true;
         }
         return result;
     }
 
     public void copyRecord(DataRow source, FieldDefs defs) {
-        DataRow record = this.getCurrent();
-        if (search != null) {
-            search.remove(record);
+        DataRow record = this.current();
+        if (_search != null) {
+            _search.remove(record);
             record.copyValues(source, defs);
-            search.append(record);
+            _search.append(record);
         } else {
             record.copyValues(source, defs);
         }
     }
 
     public void copyRecord(DataRow source, String... fields) {
-        DataRow record = this.getCurrent();
-        if (search != null) {
-            search.remove(record);
+        DataRow record = this.current();
+        if (_search != null) {
+            _search.remove(record);
             record.copyValues(source, fields);
-            search.append(record);
+            _search.append(record);
         } else {
             record.copyValues(source, fields);
         }
@@ -363,12 +377,12 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     public void copyRecord(DataRow sourceRecord, String[] sourceFields, String[] targetFields) {
         if (targetFields.length != sourceFields.length)
             throw new RuntimeException(res.getString(7, "前后字段数目不一样，请您确认！"));
-        DataRow record = this.getCurrent();
-        if (search != null) {
-            search.remove(record);
+        DataRow record = this.current();
+        if (_search != null) {
+            _search.remove(record);
             for (int i = 0; i < sourceFields.length; i++)
                 record.setValue(targetFields[i], sourceRecord.getValue(sourceFields[i]));
-            search.append(record);
+            _search.append(record);
         } else {
             for (int i = 0; i < sourceFields.length; i++)
                 record.setValue(targetFields[i], sourceRecord.getValue(sourceFields[i]));
@@ -376,18 +390,18 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     public boolean isNull(String field) {
-        Object obj = getCurrent().getValue(field);
+        Object obj = current().getValue(field);
         return obj == null || "".equals(obj);
     }
 
     @Override
     public Iterator<DataRow> iterator() {
-        return records.iterator();
+        return _records.iterator();
     }
 
     @Override
     public boolean exists(String field) {
-        return this.getFieldDefs().exists(field);
+        return this.fields().exists(field);
     }
 
     public interface DataSetInsertEvent {
@@ -410,8 +424,8 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     protected final void doAppend(DataRow record) {
         if (appendListener != null)
             appendListener.forEach(event -> event.insertRecord(this));
-        if (search != null)
-            search.append(record);
+        if (_search != null)
+            _search.append(record);
     }
 
     public interface DataSetBeforeUpdateEvent {
@@ -503,20 +517,35 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
             afterDeleteListener.forEach(event -> event.deleteRecordAfter(record));
     }
 
-    public void close() {
-        this.head.clear();
-        if (search != null) {
-            search.clear();
-            search = null;
-        }
-        fieldDefs.clear();
-        records.clear();
-        recNo = 0;
-        fetchNo = -1;
+    public void emptyDataSet() {
+        _garbage.clear();
+        _records.clear();
+        _recNo = 0;
+        _fetchNo = -1;
     }
 
+    public void clear() {
+        emptyDataSet();
+        _fields.clear();
+        _head.clear();
+        if (_search != null) {
+            _search.clear();
+            _search = null;
+        }
+    }
+
+    @Deprecated
+    public void close() {
+        clear();
+    }
+
+    public final DataRow head() {
+        return _head;
+    }
+
+    @Deprecated
     public final DataRow getHead() {
-        return head;
+        return head();
     }
 
     @Override
@@ -524,15 +553,26 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return toJson();
     }
 
-    public String toJson() {
+    public String json() {
         return new DataSetGson<>(this).encode();
     }
 
-    public DataSet fromJson(String json) {
-        this.close();
+    @Deprecated
+    public String toJson() {
+        return json();
+    }
+
+    public DataSet setJson(String json) {
+        this.clear();
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);
+        this.first();
         return this;
+    }
+
+    @Deprecated
+    public DataSet fromJson(String json) {
+        return setJson(json);
     }
 
     /**
@@ -542,30 +582,29 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
      */
     public DataSet appendDataSet(DataSet source, boolean includeHead) {
         this.appendDataSet(source);
-        if (includeHead) {
-            this.getHead().copyValues(source.getHead(), source.getHead().getFieldDefs());
-        }
+        if (includeHead)
+            this.head().copyValues(source.head(), source.head().fields());
         return this;
     }
 
     public DataSet appendDataSet(DataSet source) {
-        if (search != null) {
-            search.clear();
-            search = null;
+        if (_search != null) {
+            _search.clear();
+            _search = null;
         }
         // 先复制字段定义
-        FieldDefs tarDefs = this.getFieldDefs();
-        for (String field : source.getFieldDefs().getFields()) {
+        FieldDefs tarDefs = this.fields();
+        for (String field : source.fields().getFields()) {
             if (!tarDefs.exists(field)) {
                 tarDefs.add(field);
             }
         }
 
         // 再复制所有数据
-        for (int i = 0; i < source.records.size(); i++) {
-            DataRow src_row = source.records.get(i);
-            DataRow tar_row = this.append().getCurrent();
-            for (String field : src_row.getFieldDefs().getFields()) {
+        for (int i = 0; i < source._records.size(); i++) {
+            DataRow src_row = source._records.get(i);
+            DataRow tar_row = this.append().current();
+            for (String field : src_row.fields().getFields()) {
                 tar_row.setValue(field, src_row.getValue(field));
             }
             this.post();
@@ -575,52 +614,67 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
 
     @Override
     public boolean isReadonly() {
-        return readonly;
+        return _readonly;
     }
 
     public void setReadonly(boolean readonly) {
-        this.readonly = readonly;
+        this._readonly = readonly;
     }
 
+    public int state() {
+        return _state;
+    }
+
+    @Deprecated
     public int getState() {
-        return state;
+        return state();
     }
 
     public DataSet setState(int state) {
-        this.state = state;
+        this._state = state;
         return this;
     }
 
+    public String message() {
+        return _message;
+    }
+
+    @Deprecated
     public String getMessage() {
-        return message;
+        return message();
     }
 
     public DataSet setMessage(String message) {
-        this.message = message;
+        this._message = message;
         return this;
     }
 
-    protected final void setStorage(boolean storage) {
-        this.storage = storage;
+    public boolean storage() {
+        return _storage;
     }
 
+    protected final void setStorage(boolean storage) {
+        this._storage = storage;
+    }
+
+    @Deprecated
     public final boolean isStorage() {
-        return storage;
+        return storage();
     }
 
     protected boolean isBatchSave() {
-        return batchSave;
+        return _batchSave;
     }
 
     protected void setBatchSave(boolean batchSave) {
-        this.batchSave = batchSave;
+        this._batchSave = batchSave;
     }
 
     /**
      * 关闭写入存储设备功能
      */
     public DataSet disableStorage() {
-        this.getFieldDefs().forEach(meta -> {
+        this.fields().forEach(meta -> {
             if (meta.getKind() == FieldKind.Storage)
                 meta.setKind(FieldKind.Memory);
         });
@@ -628,31 +682,64 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this;
     }
 
-    public SearchDataSet getSearch() {
-        return search;
+    public SearchDataSet search() {
+        return _search;
     }
 
+    @Deprecated
+    public SearchDataSet getSearch() {
+        return _search;
+    }
+
+    public boolean metaInfo() {
+        return _metaInfo;
+    }
+
+    @Deprecated
     public final boolean isMetaInfo() {
-        return metaInfo;
+        return metaInfo();
     }
 
     public final DataSet setMetaInfo(boolean metaInfo) {
-        this.metaInfo = metaInfo;
+        this._metaInfo = metaInfo;
         return this;
     }
 
     public final DataSet buildMeta() {
-        if (head.getFieldDefs().size() > 0) {
-            head.getFieldDefs().forEach(def -> def.getFieldType().put(head.getValue(def.getCode())));
+        if (_head.fields().size() > 0) {
+            _head.fields().forEach(def -> def.getFieldType().put(_head.getValue(def.getCode())));
         }
-        records.forEach(row -> {
-            this.getFieldDefs().forEach(def -> def.getFieldType().put(row.getValue(def.getCode())));
+        _records.forEach(row -> {
+            this.fields().forEach(def -> def.getFieldType().put(row.getValue(def.getCode())));
         });
         return this;
     }
 
+    public List<DataRow> garbage() {
+        return _garbage;
+    }
+
+    @Deprecated
     protected final List<DataRow> getDelList() {
-        return delList;
+        return garbage();
+    }
+
+    public boolean curd() {
+        return _curd;
+    }
+
+    public DataSet setCurd(boolean value) {
+        _curd = value;
+        return this;
+    }
+
+    public DataSet mergeChangeLog() {
+        for (int i = 0; i < this.size(); i++) {
+            DataRow row = _records.get(i);
+            row.setState(DataRowState.None);
+        }
+        _garbage.clear();
+        return this;
     }
 
     public static void main(String[] args) {
@@ -708,32 +795,53 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         ds1.setState(1);
         ds1.setMessage("test");
 
-        ds1.getHead().setValue("title", "test");
-        ds1.getHead().setValue("tbDate", new FastDate());
-        ds1.getHead().setValue("appDate", new Date());
-        ds1.getHead().setValue("user", null);
+        ds1.head().setValue("title", "test");
+        ds1.head().setValue("tbDate", new FastDate());
+        ds1.head().setValue("appDate", new Date());
+        ds1.head().setValue("user", null);
 
-        ds1.getFieldDefs().add("it").setName("序").setRemark("自动赋值").setType(Integer.class);
-        ds1.getFieldDefs().add("code").setName("编号").setType(String.class, 30);
-        ds1.getFieldDefs().add("name").setName("名称").setType(String.class, 30);
-        ds1.getHead().getFieldDefs().add("title").setName("标题").setType(String.class, 30);
+        ds1.fields().add("it").setName("序").setRemark("自动赋值").setType(Integer.class);
+        ds1.fields().add("code").setName("编号").setType(String.class, 30);
+        ds1.fields().add("name").setName("名称").setType(String.class, 30);
+        ds1.head().fields().add("title").setName("标题").setType(String.class, 30);
 
         ds1.buildMeta().setMetaInfo(true);
-        System.out.println(ds1.toJson());
+        System.out.println(ds1.json());
 
-        DataSet ds2 = new DataSet().fromJson(ds1.toJson());
-        System.out.println(ds2.toJson());
+        DataSet ds2 = new DataSet().setJson(ds1.json());
+        System.out.println(ds2.json());
 
         DataSet ds3 = new DataSet();
-        ds3.getHead().getFieldDefs().add("title").setName("标题").setType(String.class, 30);
-        ds3.getFieldDefs().add("it").setName("序").setRemark("自动增加").setType(Integer.class);
-        ds3.getFieldDefs().add("code").setName("编号").setType(String.class, 30);
-        ds3.getFieldDefs().add("name").setName("名称").setType(String.class, 30);
+        ds3.head().fields().add("title").setName("标题").setType(String.class, 30);
+        ds3.fields().add("it").setName("序").setRemark("自动增加").setType(Integer.class);
+        ds3.fields().add("code").setName("编号").setType(String.class, 30);
+        ds3.fields().add("name").setName("名称").setType(String.class, 30);
         ds3.setMetaInfo(true);
 
-        System.out.println(ds3.toJson());
+        System.out.println(ds3.json());
+        System.out.println(ds3.setMetaInfo(false).json());
 
-        System.out.println(new DataSet().fromJson("{}"));
+        ds3.fields().remove("it");
+        ds3.append().setValue("code", "a01");
+        ds3.append().setValue("code", "a02");
+        ds3.mergeChangeLog();
+        System.out.println(ds3.json());
+        ds3.first();
+        ds3.delete();
+        ds3.edit().setValue("code", "a02-new");
+        ds3.append().setValue("code", "a03");
+        System.out.println(ds3.setCurd(true));
+        System.out.println(ds3.setCurd(false));
+        System.out.println(ds3.setCurd(true).setMetaInfo(true));
+        System.out.println(ds3.setCurd(false).setMetaInfo(true));
+
+        DataSet ds4 = new DataSet();
+        ds4.setJson(
+                "{\"meta\":{\"head\":[{\"title\":[\"标题\",\"s30\"]}],\"body\":[{\"code\":[\"编号\",\"s30\"]},{\"name\":[\"名称\",\"s30\"]},{\"_state_\":[]}]},\"head\":[null],\"body\":[[\"a02\",null,4],[\"a02-new\",null,2],[\"a03\",null,1],[\"a01\",null,3]]}\r\n"
+                        + "");
+        System.out.println(ds4);
+        System.out.println(ds4.setCurd(false));
+        System.out.println(ds4.setMetaInfo(false));
     }
 
 }

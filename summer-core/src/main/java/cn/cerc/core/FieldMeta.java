@@ -8,16 +8,16 @@ import cn.cerc.db.editor.SetTextEvent;
 
 public final class FieldMeta implements Serializable {
     private static final long serialVersionUID = -6898050783447062943L;
-    private String code;
-    private String name;
-    private FieldType type;
-    private FieldKind kind;
-    private String remark;
-    private boolean updateKey;
-    private boolean autoincrement;
-    private GetTextEvent getTextEvent;
-    private SetTextEvent setTextEvent;
-    
+    private String _code;
+    private String _name;
+    private FieldType _type;
+    private FieldKind _kind;
+    private String _remark;
+    private boolean _updateKey;
+    private boolean _autoincrement;
+    private GetTextEvent _onGetTextEvent;
+    private SetTextEvent _onSetTextEvent;
+
     public enum FieldKind {
         Memory, Storage, Calculated;
     }
@@ -26,8 +26,8 @@ public final class FieldMeta implements Serializable {
         super();
         if (code == null || "".equals(code))
             throw new RuntimeException("fieldCode is null!");
-        this.code = code;
-        this.kind = FieldKind.Memory;
+        this._code = code;
+        this._kind = FieldKind.Memory;
     }
 
     public FieldMeta(String code, FieldKind kind) {
@@ -36,49 +36,49 @@ public final class FieldMeta implements Serializable {
             throw new RuntimeException("fieldCode is null!");
         if (kind == null)
             throw new RuntimeException("fieldKind is null!");
-        this.code = code;
-        this.kind = kind;
+        this._code = code;
+        this._kind = kind;
     }
 
     @Override
     public FieldMeta clone() {
-        FieldMeta result = new FieldMeta(this.code);
-        result.name = this.name;
-        if(this.type != null)
-            result.type = this.type.clone();
-        result.kind = this.kind;
-        result.remark = this.remark;
-        result.updateKey = this.updateKey;
-        result.autoincrement = this.autoincrement;
-        result.getTextEvent = this.getTextEvent;
-        result.setTextEvent = this.setTextEvent;
+        FieldMeta result = new FieldMeta(this._code);
+        result._name = this._name;
+        if (this._type != null)
+            result._type = this._type.clone();
+        result._kind = this._kind;
+        result._remark = this._remark;
+        result._updateKey = this._updateKey;
+        result._autoincrement = this._autoincrement;
+        result._onGetTextEvent = this._onGetTextEvent;
+        result._onSetTextEvent = this._onSetTextEvent;
         return result;
     }
 
     public final String getCode() {
-        return code;
+        return _code;
     }
 
     public final String getName() {
-        return name;
+        return _name;
     }
 
     public final FieldMeta setName(String name) {
-        this.name = name;
+        this._name = name;
         return this;
     }
 
     public final String getType() {
-        return type == null ? null : type.toString();
+        return _type == null ? null : _type.toString();
     }
 
     public final FieldMeta setType(String type) {
         if (type == null) {
-            this.type = null;
+            this._type = null;
         } else {
-            if (this.type == null)
-                this.type = new FieldType();
-            this.type.setType(type);
+            if (this._type == null)
+                this._type = new FieldType();
+            this._type.setType(type);
         }
         return this;
     }
@@ -92,13 +92,13 @@ public final class FieldMeta implements Serializable {
     }
 
     public final FieldType getFieldType() {
-        if (this.type == null)
-            this.type = new FieldType();
-        return type;
+        if (this._type == null)
+            this._type = new FieldType();
+        return _type;
     }
 
     public final FieldKind getKind() {
-        return kind;
+        return _kind;
     }
 
     public final FieldMeta setKind(FieldKind type) {
@@ -106,40 +106,40 @@ public final class FieldMeta implements Serializable {
             throw new RuntimeException("fieldKind is null!");
         if (type == FieldKind.Storage)
             throw new RuntimeException("Wrong direction of modification");
-        this.kind = type;
+        this._kind = type;
         return this;
     }
 
     public final boolean isUpdateKey() {
-        return updateKey;
+        return _updateKey;
     }
 
     public final String getRemark() {
-        return remark;
+        return _remark;
     }
 
     public final FieldMeta setRemark(String remark) {
-        this.remark = remark;
+        this._remark = remark;
         return this;
     }
 
     public final FieldMeta setUpdateKey(boolean updateKey) {
-        this.updateKey = updateKey;
+        this._updateKey = updateKey;
         return this;
     }
 
     public final boolean isAutoincrement() {
-        return autoincrement;
+        return _autoincrement;
     }
 
     public final FieldMeta setAutoincrement(boolean autoincrement) {
-        this.autoincrement = autoincrement;
+        this._autoincrement = autoincrement;
         return this;
     }
 
     @Override
     public final int hashCode() {
-        return code.hashCode();
+        return _code.hashCode();
     }
 
     @Override
@@ -149,31 +149,31 @@ public final class FieldMeta implements Serializable {
         }
         if (anObject instanceof FieldMeta) {
             FieldMeta meta = (FieldMeta) anObject;
-            return code.equals(meta.getCode());
+            return _code.equals(meta.getCode());
         }
         return false;
     }
 
     public FieldMeta onGetText(GetTextEvent getTextEvent) {
-        this.getTextEvent = getTextEvent;
+        this._onGetTextEvent = getTextEvent;
         return this;
     }
 
     public FieldMeta onSetText(SetTextEvent setTextEvent) {
-        this.setTextEvent = setTextEvent;
+        this._onSetTextEvent = setTextEvent;
         return this;
     }
 
     public String getText(DataRow record) {
-        if (getTextEvent == null)
-            return record.getString(code);
-        return getTextEvent.getText(record, this);
+        if (_onGetTextEvent == null)
+            return record.getString(_code);
+        return _onGetTextEvent.getText(record, this);
     }
 
     public Object setText(String value) {
-        if (setTextEvent == null)
+        if (_onSetTextEvent == null)
             return value;
-        return setTextEvent.setText(value);
+        return _onSetTextEvent.setText(value);
     }
 
     public void onGetSetText(GetSetTextEvent getsetTextEvent) {

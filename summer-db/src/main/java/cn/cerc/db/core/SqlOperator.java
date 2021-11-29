@@ -12,9 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.cerc.core.ClassResource;
+import cn.cerc.core.DataRow;
 import cn.cerc.core.FieldMeta;
 import cn.cerc.core.FieldMeta.FieldKind;
-import cn.cerc.core.DataRow;
 import cn.cerc.core.Utils;
 import cn.cerc.db.SummerDB;
 import cn.cerc.db.mysql.BuildStatement;
@@ -250,7 +250,7 @@ public abstract class SqlOperator {
             int count = 0;
             Map<String, Object> delta = record.getDelta();
             for (String field : searchKeys) {
-                FieldMeta meta = record.getFieldDefs().get(field);
+                FieldMeta meta = record.fields().get(field);
                 if (meta.getKind() == FieldKind.Storage) {
                     Object value = delta.containsKey(field) ? delta.get(field) : record.getValue(field);
                     if (value == null)

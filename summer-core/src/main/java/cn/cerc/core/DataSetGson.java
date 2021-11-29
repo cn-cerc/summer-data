@@ -15,6 +15,7 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
+    private static final String CURD_STATE = "_state_";
     private final T dataSet;
 
     public DataSetGson(T dataSet) {
@@ -25,52 +26,74 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
     @Override
     public JsonElement serialize(T src, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject root = new JsonObject();
-        if (src.getState() != 0)
-            root.addProperty("state", src.getState());
-        if (src.getMessage() != null)
-            root.addProperty("message", src.getMessage());
+        if (src.state() != 0)
+            root.addProperty("state", src.state());
+        if (src.message() != null)
+            root.addProperty("message", src.message());
 
         // 输出metaInfo
-        if (src.isMetaInfo()) {
+        if (src.metaInfo()) {
             JsonObject meta = new JsonObject();
-            if (src.getHead().getFieldDefs().size() > 0) {
+            if (src.head().fields().size() > 0) {
                 JsonArray head = new JsonArray();
-                src.getHead().getFieldDefs().forEach(def -> head.add(context.serialize(def)));
+                src.head().fields().forEach(def -> head.add(context.serialize(def)));
                 meta.add("head", head);
             }
             JsonArray body = new JsonArray();
-            src.getFieldDefs().forEach(def -> body.add(context.serialize(def)));
+            src.fields().forEach(def -> body.add(context.serialize(def)));
+            if (src.curd())
+                body.add(context.serialize(new FieldMeta(CURD_STATE)));
             meta.add("body", body);
             root.add("meta", meta);
         }
-        if (src.getHead().getFieldDefs().size() > 0) {
-            if (src.isMetaInfo()) {
+        if (src.head().fields().size() > 0) {
+            if (src.metaInfo()) {
                 JsonArray item = new JsonArray();
-                src.getHead().getFieldDefs().forEach(def -> {
+                src.head().fields().forEach(def -> {
                     String field = def.getCode();
-                    Object obj = src.getHead().getValue(field);
+                    Object obj = src.head().getValue(field);
                     item.add(context.serialize(obj));
                 });
                 root.add("head", item);
             } else {
                 JsonObject item = new JsonObject();
-                src.getHead().getFieldDefs().forEach(def -> {
+                src.head().fields().forEach(def -> {
                     String field = def.getCode();
-                    Object obj = src.getHead().getValue(field);
+                    Object obj = src.head().getValue(field);
                     item.add(field, context.serialize(obj));
                 });
                 root.add("head", item);
             }
         }
 
-        if (src.size() > 0) {
-            JsonArray body = new JsonArray();
-            // 添加字段定义
-            if (!src.isMetaInfo())
-                body.add(context.serialize(src.getFieldDefs()));
-            src.getRecords().forEach(dataRow -> body.add(context.serialize(dataRow)));
-            root.add("body", body);
+        JsonArray body = new JsonArray();
+        // 添加字段定义
+        if (!src.metaInfo()) {
+            body.add(context.serialize(src.fields()));
+            if (src.curd()) {
+                JsonElement item = body.get(body.size() - 1);
+                item.getAsJsonArray().add(CURD_STATE);
+            }
         }
+        if (src.size() > 0) {
+            if (src.curd()) {
+                // insert && update
+                src.records().forEach(dataRow -> {
+                    if (dataRow.state() == DataRowState.Insert) {
+                        body.add(context.serialize(dataRow));
+                    } else if (dataRow.state() == DataRowState.Update) {
+                        body.add(context.serialize(dataRow.history()));
+                        body.add(context.serialize(dataRow));
+                    }
+                });
+                // delete
+                src.garbage().forEach(dataRow -> body.add(context.serialize(dataRow)));
+            } else {
+                src.records().forEach(dataRow -> body.add(context.serialize(dataRow)));
+            }
+        }
+        if (body.size() > 0)
+            root.add("body", body);
 
         return root;
     }
@@ -91,26 +114,29 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
                 JsonArray head = meta.get("head").getAsJsonArray();
                 head.forEach(item -> {
                     FieldMeta def = context.deserialize(item, FieldMeta.class);
-                    dataSet.getHead().getFieldDefs().add(def);
+                    dataSet.head().fields().add(def);
                 });
             }
             if (meta.has("body")) {
                 JsonArray body = meta.get("body").getAsJsonArray();
                 body.forEach(item -> {
                     FieldMeta def = context.deserialize(item, FieldMeta.class);
-                    dataSet.getFieldDefs().add(def);
+                    if (CURD_STATE.equals(def.getCode()))
+                        dataSet.setCurd(true);
+                    else
+                        dataSet.fields().add(def);
                 });
             }
             dataSet.setMetaInfo(true);
         }
 
         if (root.has("head")) {
-            if (dataSet.isMetaInfo()) {
+            if (dataSet.metaInfo()) {
                 JsonArray head = root.get("head").getAsJsonArray();
                 int i = 0;
-                for (String key : dataSet.getHead().getFieldDefs().getFields()) {
+                for (String key : dataSet.head().fields().getFields()) {
                     Object obj = context.deserialize(head.get(i++), Object.class);
-                    dataSet.getHead().setValue(key, obj);
+                    dataSet.head().setValue(key, obj);
                 }
             } else {
                 JsonObject head = root.get("head").getAsJsonObject();
@@ -121,7 +147,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
                         if (tmp.toString().endsWith(".0") && tmp >= Integer.MIN_VALUE && tmp <= Integer.MAX_VALUE)
                             value = tmp.intValue();
                     }
-                    dataSet.getHead().setValue(key, value);
+                    dataSet.head().setValue(key, value);
                 });
             }
         }
@@ -131,30 +157,82 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
             body = root.get("body").getAsJsonArray();
         else if (root.has("dataset"))
             body = root.get("dataset").getAsJsonArray();
+
         if (body != null) {
             JsonArray defs = null;
-            if (dataSet.isMetaInfo()) {
+            if (dataSet.metaInfo()) {
                 defs = new JsonArray();
-                for (FieldMeta meta : dataSet.getFieldDefs())
+                for (FieldMeta meta : dataSet.fields())
                     defs.add(meta.getCode());
+                if (dataSet.curd())
+                    defs.add(CURD_STATE);
             }
+
+            DataRow history = null;
             for (int i = 0; i < body.size(); i++) {
                 JsonArray item = body.get(i).getAsJsonArray();
                 if (defs == null) {
-                    item.forEach(field -> dataSet.getFieldDefs().add(field.getAsString()));
+                    item.forEach(field -> {
+                        if (CURD_STATE.equals(field.getAsString()))
+                            dataSet.setCurd(true);
+                        else
+                            dataSet.fields().add(field.getAsString());
+                    });
                     defs = item;
-                } else {
-                    DataRow current = dataSet.append().getCurrent();
-                    for (int j = 0; j < defs.size(); j++) {
-                        Object value = context.deserialize(item.get(j), Object.class);
-                        if (value instanceof Double) {
-                            Double tmp = (Double) value;
-                            if (tmp.toString().endsWith(".0") && tmp >= Integer.MIN_VALUE && tmp <= Integer.MAX_VALUE)
-                                value = tmp.intValue();
-                        }
-                        current.setValue(defs.get(j).getAsString(), value);
-                    }
+                    continue;
                 }
+                //
+                DataRow current = new DataRow(dataSet);
+                for (int j = 0; j < defs.size(); j++) {
+                    Object value = context.deserialize(item.get(j), Object.class);
+                    if (value instanceof Double) {
+                        Double tmp = (Double) value;
+                        if (tmp.toString().endsWith(".0") && tmp >= Integer.MIN_VALUE && tmp <= Integer.MAX_VALUE)
+                            value = tmp.intValue();
+                    }
+                    String field = defs.get(j).getAsString();
+                    if (CURD_STATE.equals(field)) {
+                        if (!(value instanceof Integer))
+                            throw new RuntimeException(value.getClass().getName());
+                        DataRowState state = null;
+                        switch ((Integer) value) {
+                        case 0:
+                            state = DataRowState.None;
+                            break;
+                        case 1:
+                            state = DataRowState.Insert;
+                            break;
+                        case 2:
+                            state = DataRowState.Update;
+                            break;
+                        case 3:
+                            state = DataRowState.Delete;
+                            break;
+                        case 4:
+                            state = DataRowState.History;
+                            break;
+                        default:
+                            throw new RuntimeException("error state value: " + value);
+                        }
+                        current.setState(state);
+                    } else
+                        current.setValue(field, value);
+                }
+                // 加入到数据集
+                if (current.state() == DataRowState.History) {
+                    if (history != null)
+                        throw new RuntimeException("history is not null");
+                    history = current;
+                } else if (current.state() == DataRowState.Update) {
+                    if (history == null)
+                        throw new RuntimeException("history is null");
+                    current.setHistory(history);
+                    dataSet.records().add(current);
+                    history = null;
+                } else if (current.state() == DataRowState.Delete)
+                    dataSet.garbage().add(current);
+                else
+                    dataSet.records().add(current);
             }
         }
         return dataSet;
@@ -215,15 +293,17 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
 
         JsonSerializer<DataRow> gsonRecord = (src, typeOfSrc, context) -> {
             JsonArray item = new JsonArray();
-            src.getFieldDefs().forEach(def -> {
+            src.fields().forEach(def -> {
                 Object obj = src.getValue(def.getCode());
                 item.add(context.serialize(obj));
             });
+            if (src.dataSet() != null && src.dataSet().curd())
+                item.add(context.serialize(src.state().ordinal()));
             return item;
         };
 
-        JsonSerializer<Date> gsonDate =
-                (src, typeOfSrc, context) -> new JsonPrimitive((new Datetime(src.getTime())).toString());
+        JsonSerializer<Date> gsonDate = (src, typeOfSrc,
+                context) -> new JsonPrimitive((new Datetime(src.getTime())).toString());
 
         JsonSerializer<Double> gsonDouble = (src, typeOfSrc, context) -> {
             if (src == src.longValue())
