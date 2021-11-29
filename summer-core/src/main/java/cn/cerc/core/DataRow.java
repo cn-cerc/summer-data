@@ -89,7 +89,7 @@ public class DataRow implements Serializable, IRecord {
         if (field == null || "".equals(field))
             throw new RuntimeException("field is null!");
 
-        this.addFieldDef(field);
+        this.addField(field);
 
         SearchDataSet search = null;
         if (this._dataSet != null && this._dataSet.search() != null)
@@ -287,7 +287,7 @@ public class DataRow implements Serializable, IRecord {
         _items = gson.fromJson(jsonStr, new TypeToken<Map<String, Object>>() {
         }.getType());
         for (String key : _items.keySet()) {
-            this.addFieldDef(key);
+            this.addField(key);
             if ("{}".equals(_items.get(key))) {
                 _items.put(key, null);
             }
@@ -399,7 +399,7 @@ public class DataRow implements Serializable, IRecord {
             _fields.remove(field);
     }
 
-    private void addFieldDef(String field) {
+    private void addField(String field) {
         if (field == null)
             throw new RuntimeException("field is null");
         if (!_fields.exists(field)) {
