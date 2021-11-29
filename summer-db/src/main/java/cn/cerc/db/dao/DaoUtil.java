@@ -56,7 +56,7 @@ public class DaoUtil {
         ds.getSqlText().setMaximum(1);
         ds.open();
         DataRow record = ds.eof() ? null : ds.current();
-        for (String field : ds.fields().getFields()) {
+        for (String field : ds.fields().names()) {
             if ("UID_".equals(field)) {
                 sb.append("@Id").append("\r\n");
                 sb.append("@GeneratedValue(strategy = GenerationType.IDENTITY)").append("\r\n");

@@ -134,7 +134,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
             if (dataSet.metaInfo()) {
                 JsonArray head = root.get("head").getAsJsonArray();
                 int i = 0;
-                for (String key : dataSet.head().fields().getFields()) {
+                for (String key : dataSet.head().fields().names()) {
                     Object obj = context.deserialize(head.get(i++), Object.class);
                     dataSet.head().setValue(key, obj);
                 }

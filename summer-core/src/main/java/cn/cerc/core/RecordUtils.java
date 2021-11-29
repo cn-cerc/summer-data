@@ -71,7 +71,7 @@ public class RecordUtils {
             }
 
             // 查找并赋值
-            for (String fieldName : record.fields().getFields()) {
+            for (String fieldName : record.fields().names()) {
                 boolean exists = false;
                 for (Field field : items.keySet()) {
                     // 默认等于对象的属性

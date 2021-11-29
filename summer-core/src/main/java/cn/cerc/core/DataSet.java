@@ -590,7 +590,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         }
         // 先复制字段定义
         FieldDefs tarDefs = this.fields();
-        for (String field : source.fields().getFields()) {
+        for (String field : source.fields().names()) {
             if (!tarDefs.exists(field)) {
                 tarDefs.add(field);
             }
@@ -600,7 +600,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         for (int i = 0; i < source._records.size(); i++) {
             DataRow src_row = source._records.get(i);
             DataRow tar_row = this.append().current();
-            for (String field : src_row.fields().getFields()) {
+            for (String field : src_row.fields().names()) {
                 tar_row.setValue(field, src_row.getValue(field));
             }
             this.post();

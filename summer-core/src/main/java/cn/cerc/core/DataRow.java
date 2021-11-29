@@ -205,7 +205,7 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public void copyValues(DataRow source, FieldDefs defs) {
-        List<String> tmp = defs.getFields();
+        List<String> tmp = defs.names();
         String[] items = new String[defs.size()];
         for (int i = 0; i < defs.size(); i++) {
             items[i] = tmp.get(i);
@@ -220,7 +220,7 @@ public class DataRow implements Serializable, IRecord {
                 this.setValue(field, source.getValue(field));
             }
         } else {
-            for (String field : source.fields().getFields()) {
+            for (String field : source.fields().names()) {
                 this.setValue(field, source.getValue(field));
             }
         }
@@ -438,7 +438,7 @@ public class DataRow implements Serializable, IRecord {
     @Override
     public DataRow clone() {
         DataRow row = new DataRow(this._fields);
-        for (String key : this.fields().getFields())
+        for (String key : this.fields().names())
             row.setValue(key, this.getValue(key));
         row._dataSet = this._dataSet;
         row._createFieldDefs = this._createFieldDefs;
