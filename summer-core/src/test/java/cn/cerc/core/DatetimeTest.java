@@ -208,7 +208,7 @@ public class DatetimeTest {
         item.setValue("Null", null);
         assertEquals(jsonStr, item.toString());
 
-        item.setJSON(jsonStr);
+        item.setJson(jsonStr);
         assertEquals("AAA", item.getString("String"));
         assertEquals(jsonStr, item.toString());
     }

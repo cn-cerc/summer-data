@@ -233,6 +233,10 @@ public class DataRow implements Serializable, IRecord {
 
     @Override
     public String toString() {
+        return json();
+    }
+
+    public String json() {
         Map<String, Object> items = new LinkedHashMap<>();
         for (int i = 0; i < _fields.size(); i++) {
             String field = _fields.getItems(i).getCode();
@@ -277,7 +281,7 @@ public class DataRow implements Serializable, IRecord {
         }
     }
 
-    public void setJSON(String jsonStr) {
+    public void setJson(String jsonStr) {
         this.clear();
         Gson gson = new GsonBuilder().serializeNulls().create();
         _items = gson.fromJson(jsonStr, new TypeToken<Map<String, Object>>() {

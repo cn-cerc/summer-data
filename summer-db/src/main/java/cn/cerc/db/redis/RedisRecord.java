@@ -82,7 +82,7 @@ public class RedisRecord implements IRecord {
         log.debug("cache get: {} - {}" , key  , recordStr);
         if (recordStr != null && !"".equals(recordStr)) {
             try {
-                record.setJSON(recordStr);
+                record.setJson(recordStr);
                 existsData = true;
             } catch (Exception e) {
                 log.error("cache data error：" + recordStr, e);
