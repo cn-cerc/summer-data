@@ -99,7 +99,7 @@ public class RedisRecord implements IRecord {
             this.existsData = false;
         }
         record.clear();
-        record.getFieldDefs().clear();
+        record.fields().clear();
         this.modified = false;
     }
 

@@ -157,7 +157,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     private void append(ResultSet rs) throws SQLException {
         // 取得字段清单
         ResultSetMetaData meta = rs.getMetaData();
-        FieldDefs defs = this.getFieldDefs();
+        FieldDefs defs = this.fields();
         for (int i = 1; i <= meta.getColumnCount(); i++) {
             String field = meta.getColumnLabel(i);
             if (!defs.exists(field))

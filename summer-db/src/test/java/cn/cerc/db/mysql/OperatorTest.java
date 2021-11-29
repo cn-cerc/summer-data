@@ -48,12 +48,12 @@ public class OperatorTest implements IHandle {
         obj.setTableName("temp");
         for (int i = 0; i < maxTest; i++) {
             DataRow record = new DataRow();
-            record.getFieldDefs().add("UID_", FieldKind.Storage);
-            record.getFieldDefs().add("Code_", FieldKind.Storage);
+            record.fields().add("UID_", FieldKind.Storage);
+            record.fields().add("Code_", FieldKind.Storage);
             record.setValue("Code_", "code1");
-            record.getFieldDefs().add("Name_", FieldKind.Storage);
+            record.fields().add("Name_", FieldKind.Storage);
             record.setValue("Name_", "new");
-            record.getFieldDefs().add("Value_", FieldKind.Storage);
+            record.fields().add("Value_", FieldKind.Storage);
             record.setValue("Value_", i + 1);
             obj.insert(this.getMysql().getClient().getConnection(), record);
         }

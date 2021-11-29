@@ -30,11 +30,11 @@ public class RecordFilter {
         // 删减字段
         if (processor.getFieldDefs() != null) {
             List<FieldMeta> items = new ArrayList<>();
-            for (FieldMeta meta : dataOut.getFieldDefs()) 
+            for (FieldMeta meta : dataOut.fields()) 
                 items.add(meta);
             for (FieldMeta meta : items) {
                 if (!processor.getFieldDefs().exists(meta.getCode()))
-                    dataOut.getFieldDefs().remove(meta.getCode());
+                    dataOut.fields().remove(meta.getCode());
             }
         }
         // 删减记录
@@ -55,7 +55,7 @@ public class RecordFilter {
         DataSet ds1 = new DataSet();
         ds1.append().setValue("code", "a01").setValue("name", "jason");
         ds1.append().setValue("code", "a02").setValue("name", "jason");
-        ds1.getFieldDefs().get("code").setName("代码");
+        ds1.fields().get("code").setName("代码");
         ds1.setMetaInfo(true);
 
         System.out.println(RecordFilter.execute(ds1, "select code from xxx where code=a01"));
