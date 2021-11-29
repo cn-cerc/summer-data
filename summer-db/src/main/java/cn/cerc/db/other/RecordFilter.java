@@ -34,7 +34,7 @@ public class RecordFilter {
                 items.add(meta);
             for (FieldMeta meta : items) {
                 if (!processor.getFieldDefs().exists(meta.getCode()))
-                    dataOut.getFieldDefs().delete(meta.getCode());
+                    dataOut.getFieldDefs().remove(meta.getCode());
             }
         }
         // 删减记录

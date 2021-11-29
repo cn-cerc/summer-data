@@ -51,11 +51,10 @@ public abstract class SqlQuery extends DataSet implements IHandle {
         this.session = session;
     }
 
-    @Override
     public final void close() {
         this.setActive(false);
         this.operator = null;
-        super.close();
+        super.clear();
     }
 
     public final SqlQuery open() {

@@ -154,7 +154,7 @@ public class QueueQuery extends DataSet implements IHandle {
 
     @Override
     public QueueQuery fromJson(String json) {
-        this.close();
+        super.clear();
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);
         return this;

@@ -319,7 +319,7 @@ public class MongoQuery extends DataSet implements IHandle {
 
     @Override
     public MongoQuery fromJson(String json) {
-        this.close();
+        super.clear();
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);
         return this;

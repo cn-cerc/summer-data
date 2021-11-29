@@ -8,10 +8,10 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.cerc.core.DataRow;
 import cn.cerc.core.DataSet;
 import cn.cerc.core.DataSetGson;
 import cn.cerc.core.ISession;
-import cn.cerc.core.DataRow;
 import cn.cerc.core.SqlText;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
@@ -134,7 +134,7 @@ public class NasQuery extends DataSet implements IHandle {
 
     @Override
     public NasQuery fromJson(String json) {
-        this.close();
+        super.clear();
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);
         return this;

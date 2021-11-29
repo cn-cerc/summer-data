@@ -534,11 +534,6 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         }
     }
 
-    @Deprecated
-    public void close() {
-        clear();
-    }
-
     public final DataRow head() {
         return _head;
     }
