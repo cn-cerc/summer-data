@@ -52,7 +52,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     public DataSet append() {
-        DataRow record = new DataRow(this).setState(RecordState.dsInsert);
+        DataRow record = new DataRow(this).setState(DataRowState.Insert);
         this.records.add(record);
         recNo = records.size();
         doAppend(record);
@@ -61,7 +61,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
 
     @Deprecated
     public DataSet append(int index) {
-        DataRow record = new DataRow(this).setState(RecordState.dsInsert);
+        DataRow record = new DataRow(this).setState(DataRowState.Insert);
         if (index == -1 || index == records.size()) {
             this.records.add(record);
             recNo = records.size();
@@ -76,7 +76,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     public void edit() {
         if (bof() || eof())
             throw new RuntimeException(res.getString(1, "当前记录为空，无法修改"));
-        this.getCurrent().setState(RecordState.dsEdit);
+        this.getCurrent().setState(DataRowState.Update);
     }
 
     public void delete() {
@@ -89,7 +89,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         if (this.fetchNo > -1) {
             this.fetchNo--;
         }
-        if (record.getState() == RecordState.dsInsert) {
+        if (record.getState() == DataRowState.Insert) {
             return;
         }
         if (this.isBatchSave()) {
@@ -112,7 +112,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         if (this.isBatchSave())
             return;
         DataRow dataRow = this.getCurrent();
-        if (dataRow.getState() == RecordState.dsInsert) {
+        if (dataRow.getState() == DataRowState.Insert) {
             doBeforePost(dataRow);
             if (this.isStorage()) {
                 try {
@@ -124,7 +124,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
                 }
             }
             doAfterPost(dataRow);
-        } else if (dataRow.getState() == RecordState.dsEdit) {
+        } else if (dataRow.getState() == DataRowState.Update) {
             doBeforePost(dataRow);
             if (this.isStorage()) {
                 try {
@@ -456,7 +456,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     protected final void doAfterPost(DataRow record) {
         if (afterPostListener != null)
             afterPostListener.forEach(event -> event.updateRecordAfter(record));
-        record.setState(RecordState.dsNone);
+        record.setState(DataRowState.None);
     }
 
     public interface DataSetBeforeDeleteEvent {

@@ -14,7 +14,7 @@ import cn.cerc.core.DataSetGson;
 import cn.cerc.core.FieldDefs;
 import cn.cerc.core.FieldMeta.FieldKind;
 import cn.cerc.core.ISession;
-import cn.cerc.core.RecordState;
+import cn.cerc.core.DataRowState;
 import cn.cerc.core.SqlText;
 import cn.cerc.core.Utils;
 
@@ -130,12 +130,12 @@ public abstract class SqlQuery extends DataSet implements IHandle {
             this.first();
             while (this.fetch()) {
                 DataRow record = this.getCurrent();
-                if (record.getState().equals(RecordState.dsInsert)) {
+                if (record.getState().equals(DataRowState.Insert)) {
                     doBeforePost(record);
                     if (this.isStorage())
                         getOperator().insert(client.getConnection(), record);
                     doAfterPost(record);
-                } else if (record.getState().equals(RecordState.dsEdit)) {
+                } else if (record.getState().equals(DataRowState.Update)) {
                     doBeforePost(record);
                     if (this.isStorage())
                         getOperator().update(client.getConnection(), record);
@@ -172,12 +172,12 @@ public abstract class SqlQuery extends DataSet implements IHandle {
                 setFetchFinish(false);
                 break;
             }
-            DataRow record = new DataRow(this).setState(RecordState.dsInsert);
+            DataRow record = new DataRow(this).setState(DataRowState.Insert);
             for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
                 String fn = rs.getMetaData().getColumnLabel(i);
                 record.setValue(fn, rs.getObject(fn));
             }
-            record.setState(RecordState.dsNone);
+            record.setState(DataRowState.None);
             this.getRecords().add(record);
             this.last();
         }

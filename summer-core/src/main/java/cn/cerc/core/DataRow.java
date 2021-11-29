@@ -21,7 +21,7 @@ import com.google.gson.reflect.TypeToken;
 
 public class DataRow implements Serializable, IRecord {
     private static final long serialVersionUID = 4454304132898734723L;
-    private RecordState state = RecordState.dsNone;
+    private DataRowState state = DataRowState.None;
     private Map<String, Object> items = new LinkedHashMap<>();
     private Map<String, Object> delta = new HashMap<>();
     private DataSet dataSet;
@@ -39,18 +39,18 @@ public class DataRow implements Serializable, IRecord {
         this.fieldDefs = dataSet.getFieldDefs();
     }
 
-    public RecordState getState() {
+    public DataRowState getState() {
         return this.state;
     }
 
-    public DataRow setState(RecordState recordState) {
-        if (recordState == RecordState.dsEdit) {
-            if (this.state == RecordState.dsInsert) {
+    public DataRow setState(DataRowState recordState) {
+        if (recordState == DataRowState.Update) {
+            if (this.state == DataRowState.Insert) {
                 // throw new RuntimeException("当前记录为插入状态 不允许被修改");
                 return this;
             }
         }
-        if (recordState.equals(RecordState.dsNone)) {
+        if (recordState.equals(DataRowState.None)) {
             delta.clear();
         }
         this.state = recordState;
@@ -77,7 +77,7 @@ public class DataRow implements Serializable, IRecord {
         if (value instanceof Datetime) // 将Datetime转化为Date存储
             data = ((Datetime) value).asBaseDate();
 
-        if ((search == null) && (this.state != RecordState.dsEdit)) {
+        if ((search == null) && (this.state != DataRowState.Update)) {
             setMapValue(items, field, data);
             return this;
         }
@@ -91,7 +91,7 @@ public class DataRow implements Serializable, IRecord {
         if (search != null)
             search.remove(this);
 
-        if (this.state == RecordState.dsEdit) {
+        if (this.state == DataRowState.Update) {
             if (!delta.containsKey(field)) {
                 setMapValue(delta, field, oldValue);
             }
@@ -319,9 +319,9 @@ public class DataRow implements Serializable, IRecord {
 
     public boolean isModify() {
         switch (this.state) {
-        case dsInsert:
+        case Insert:
             return true;
-        case dsEdit: {
+        case Update: {
             if (delta.size() == 0) {
                 return false;
             }

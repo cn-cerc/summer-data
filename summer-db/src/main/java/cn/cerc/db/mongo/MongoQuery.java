@@ -18,7 +18,7 @@ import cn.cerc.core.DataSet;
 import cn.cerc.core.DataSetGson;
 import cn.cerc.core.ISession;
 import cn.cerc.core.DataRow;
-import cn.cerc.core.RecordState;
+import cn.cerc.core.DataRowState;
 import cn.cerc.core.SqlText;
 import cn.cerc.core.Utils;
 import cn.cerc.db.SummerDB;
@@ -67,7 +67,7 @@ public class MongoQuery extends DataSet implements IHandle {
                     record.setValue(field, doc.get(field));
                 }
             }
-            record.setState(RecordState.dsNone);
+            record.setState(DataRowState.None);
         }
         this.first();
         this.active = true;
@@ -237,7 +237,7 @@ public class MongoQuery extends DataSet implements IHandle {
             for (String key : item.keySet()) {
                 record.setValue(key, item.get(key));
             }
-            record.setState(RecordState.dsNone);
+            record.setState(DataRowState.None);
         }
         return dataSet;
     }

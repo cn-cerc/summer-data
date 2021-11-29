@@ -10,14 +10,14 @@ public class DataRowTest {
     @Test
     public void test_create() {
         DataRow item = new DataRow();
-        assertEquals(item.getState(), RecordState.dsNone);
+        assertEquals(item.getState(), DataRowState.None);
     }
 
     @Test
     public void test_setState() {
         DataRow item = new DataRow();
-        item.setState(RecordState.dsInsert);
-        assertEquals(item.getState(), RecordState.dsInsert);
+        item.setState(DataRowState.Insert);
+        assertEquals(item.getState(), DataRowState.Insert);
     }
 
     @Test
@@ -108,7 +108,7 @@ public class DataRowTest {
         rs.setValue("Code_", val);
         assertEquals(rs.getDelta().size(), 0);
 
-        rs.setState(RecordState.dsEdit);
+        rs.setState(DataRowState.Update);
         rs.setValue("Code_", val);
         assertEquals(rs.getDelta().size(), 0);
 
