@@ -23,6 +23,11 @@ public class KeyValue {
         return this._key;
     }
 
+    @Deprecated
+    public String getKey() {
+        return key();
+    }
+
     public final Object value() {
         return this._value;
     }
