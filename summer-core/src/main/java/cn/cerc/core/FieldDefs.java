@@ -13,19 +13,19 @@ import cn.cerc.core.FieldMeta.FieldKind;
 
 public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     private static final long serialVersionUID = 7478897050846245325L;
-    private HashSet<FieldMeta> _items = new LinkedHashSet<>();
+    private HashSet<FieldMeta> items = new LinkedHashSet<>();
 
     public boolean exists(String fieldCode) {
-        return _items.contains(new FieldMeta(fieldCode));
+        return items.contains(new FieldMeta(fieldCode));
     }
 
     public boolean exists(FieldMeta field) {
-        return _items.contains(field);
+        return items.contains(field);
     }
 
     public List<String> names() {
         List<String> result = new ArrayList<>();
-        _items.forEach(meta -> result.add(meta.getCode()));
+        items.forEach(meta -> result.add(meta.getCode()));
         return result;
     }
 
@@ -36,16 +36,16 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
 
     public FieldMeta add(String fieldCode) {
         FieldMeta item = new FieldMeta(fieldCode);
-        return _items.add(item) ? item : this.getItem(fieldCode);
+        return items.add(item) ? item : this.getItem(fieldCode);
     }
 
     public FieldMeta add(String fieldCode, FieldKind fieldType) {
         FieldMeta item = new FieldMeta(fieldCode, fieldType);
-        return _items.add(item) ? item : this.getItem(fieldCode);
+        return items.add(item) ? item : this.getItem(fieldCode);
     }
 
     public FieldMeta add(FieldMeta item) {
-        return _items.add(item) ? item : this.getItem(item.getCode());
+        return items.add(item) ? item : this.getItem(item.getCode());
     }
 
     public void add(String... fields) {
@@ -54,21 +54,21 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     }
 
     public void clear() {
-        _items.clear();
+        items.clear();
     }
 
     public int size() {
-        return _items.size();
+        return items.size();
     }
 
     @Override
     public Iterator<FieldMeta> iterator() {
-        return this._items.iterator();
+        return this.items.iterator();
     }
 
     public void remove(String fieldCode) {
         FieldMeta field = new FieldMeta(fieldCode);
-        _items.remove(field);
+        items.remove(field);
     }
 
     @Deprecated
@@ -77,7 +77,7 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     }
 
     public FieldMeta get(String fieldCode) {
-        for (FieldMeta meta : _items) {
+        for (FieldMeta meta : items) {
             if (fieldCode.equals(meta.getCode()))
                 return meta;
         }
@@ -86,7 +86,7 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
 
     public FieldMeta getItems(int index) {
         int i = 0;
-        for (FieldMeta meta : _items) {
+        for (FieldMeta meta : items) {
             if (i == index) {
                 return meta;
             }
@@ -106,7 +106,7 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     }
 
     public HashSet<FieldMeta> getItems() {
-        return _items;
+        return items;
     }
 
     public void copy(FieldDefs source) {

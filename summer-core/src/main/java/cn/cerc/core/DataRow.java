@@ -20,33 +20,33 @@ import com.google.gson.reflect.TypeToken;
 
 public class DataRow implements Serializable, IRecord {
     private static final long serialVersionUID = 4454304132898734723L;
-    private DataRowState _state = DataRowState.None;
-    private Map<String, Object> _items = new LinkedHashMap<>();
-    private Map<String, Object> _delta = new HashMap<>();
-    private DataSet _dataSet;
-    private FieldDefs _fields;
-    private boolean _createFieldDefs;
-    private DataRow _history;
+    private DataRowState state = DataRowState.None;
+    private Map<String, Object> items = new LinkedHashMap<>();
+    private Map<String, Object> delta = new HashMap<>();
+    private DataSet dataSet;
+    private FieldDefs fields;
+    private boolean createFieldDefs;
+    private DataRow history;
 
     public DataRow() {
         super();
-        this._fields = new FieldDefs();
-        this._createFieldDefs = true;
+        this.fields = new FieldDefs();
+        this.createFieldDefs = true;
     }
 
     public DataRow(DataSet dataSet) {
         super();
-        this._dataSet = dataSet;
-        this._fields = dataSet.fields();
+        this.dataSet = dataSet;
+        this.fields = dataSet.fields();
     }
 
     public DataRow(FieldDefs fieldDefs) {
         super();
-        this._fields = fieldDefs;
+        this.fields = fieldDefs;
     }
 
     public DataRowState state() {
-        return this._state;
+        return this.state;
     }
 
     @Deprecated
@@ -55,30 +55,30 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public DataRow setState(DataRowState value) {
-        if (_state == value)
+        if (state == value)
             return this;
 
         if (value.equals(DataRowState.None))
-            _delta.clear();
+            delta.clear();
 
-        if ((_state == DataRowState.Insert) && (value == DataRowState.Update))
+        if ((state == DataRowState.Insert) && (value == DataRowState.Update))
             return this;
-        if ((_state == DataRowState.None) && (value == DataRowState.Update)) {
-            this._history = this.clone();
-            this._history._state = DataRowState.History;
-            _state = value;
+        if ((state == DataRowState.None) && (value == DataRowState.Update)) {
+            this.history = this.clone();
+            this.history.state = DataRowState.History;
+            state = value;
             return this;
         }
-        if ((_state == DataRowState.None) && (value == DataRowState.Update)) {
-            this._history = null;
-            _state = value;
+        if ((state == DataRowState.None) && (value == DataRowState.Update)) {
+            this.history = null;
+            state = value;
             return this;
         }
 
-        if ((_state == DataRowState.None) || (value == DataRowState.None))
-            this._state = value;
-        else if ((_state == DataRowState.Insert) || (value == DataRowState.History))
-            this._state = value;
+        if ((state == DataRowState.None) || (value == DataRowState.None))
+            this.state = value;
+        else if ((state == DataRowState.Insert) || (value == DataRowState.History))
+            this.state = value;
         else
             throw new RuntimeException("setState change error");
         return this;
@@ -92,19 +92,19 @@ public class DataRow implements Serializable, IRecord {
         this.addField(field);
 
         SearchDataSet search = null;
-        if (this._dataSet != null && this._dataSet.search() != null)
-            search = this._dataSet.search();
+        if (this.dataSet != null && this.dataSet.search() != null)
+            search = this.dataSet.search();
 
         Object data = value;
         if (value instanceof Datetime) // 将Datetime转化为Date存储
             data = ((Datetime) value).asBaseDate();
 
-        if ((search == null) && (this._state != DataRowState.Update)) {
-            setMapValue(_items, field, data);
+        if ((search == null) && (this.state != DataRowState.Update)) {
+            setMapValue(items, field, data);
             return this;
         }
 
-        Object oldValue = _items.get(field);
+        Object oldValue = items.get(field);
         if (compareValue(data, oldValue)) {
             return this;
         }
@@ -113,12 +113,12 @@ public class DataRow implements Serializable, IRecord {
         if (search != null)
             search.remove(this);
 
-        if (this._state == DataRowState.Update) {
-            if (!_delta.containsKey(field)) {
-                setMapValue(_delta, field, oldValue);
+        if (this.state == DataRowState.Update) {
+            if (!delta.containsKey(field)) {
+                setMapValue(delta, field, oldValue);
             }
         }
-        setMapValue(_items, field, data);
+        setMapValue(items, field, data);
 
         if (search != null)
             search.append(this);
@@ -169,26 +169,26 @@ public class DataRow implements Serializable, IRecord {
         if (field == null || "".equals(field)) {
             throw new RuntimeException("field is null!");
         }
-        return this._items.get(field);
+        return this.items.get(field);
     }
 
     public Map<String, Object> getDelta() {
-        return this._delta;
+        return this.delta;
     }
 
     public Object getOldField(String field) {
         if (field == null || "".equals(field)) {
             throw new RuntimeException("field is null!");
         }
-        return this._delta.get(field);
+        return this.delta.get(field);
     }
 
     public int size() {
-        return _items.size();
+        return items.size();
     }
 
     public Map<String, Object> items() {
-        return this._items;
+        return this.items;
     }
 
     @Deprecated
@@ -197,7 +197,7 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public FieldDefs fields() {
-        return _fields;
+        return fields;
     }
 
     @Deprecated
@@ -238,8 +238,8 @@ public class DataRow implements Serializable, IRecord {
 
     public String json() {
         Map<String, Object> items = new LinkedHashMap<>();
-        for (int i = 0; i < _fields.size(); i++) {
-            String field = _fields.getItems(i).getCode();
+        for (int i = 0; i < fields.size(); i++) {
+            String field = fields.getItems(i).getCode();
             Object obj = this.getValue(field);
             if (obj instanceof Datetime) {
                 items.put(field, obj.toString());
@@ -284,12 +284,12 @@ public class DataRow implements Serializable, IRecord {
     public void setJson(String jsonStr) {
         this.clear();
         Gson gson = new GsonBuilder().serializeNulls().create();
-        _items = gson.fromJson(jsonStr, new TypeToken<Map<String, Object>>() {
+        items = gson.fromJson(jsonStr, new TypeToken<Map<String, Object>>() {
         }.getType());
-        for (String key : _items.keySet()) {
+        for (String key : items.keySet()) {
             this.addField(key);
-            if ("{}".equals(_items.get(key))) {
-                _items.put(key, null);
+            if ("{}".equals(items.get(key))) {
+                items.put(key, null);
             }
         }
     }
@@ -322,23 +322,23 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public void clear() {
-        _items.clear();
-        _delta.clear();
-        if (this._dataSet == null)
-            _fields.clear();
+        items.clear();
+        delta.clear();
+        if (this.dataSet == null)
+            fields.clear();
     }
 
     @Override
     public boolean exists(String field) {
-        return this._fields.exists(field);
+        return this.fields.exists(field);
     }
 
     public boolean hasValue(String field) {
-        return _fields.exists(field) && !"".equals(getString(field));
+        return fields.exists(field) && !"".equals(getString(field));
     }
 
     public DataSet dataSet() {
-        return _dataSet;
+        return dataSet;
     }
 
     @Deprecated
@@ -348,31 +348,31 @@ public class DataRow implements Serializable, IRecord {
 
     @Deprecated
     public DataSet locate() {
-        int recNo = _dataSet.getRecords().indexOf(this) + 1;
-        _dataSet.setRecNo(recNo);
-        return _dataSet;
+        int recNo = dataSet.getRecords().indexOf(this) + 1;
+        dataSet.setRecNo(recNo);
+        return dataSet;
     }
 
     public boolean isModify() {
-        switch (this._state) {
+        switch (this.state) {
         case Insert:
             return true;
         case Update: {
-            if (_delta.size() == 0) {
+            if (delta.size() == 0) {
                 return false;
             }
             List<String> delList = new ArrayList<>();
-            for (String field : _delta.keySet()) {
-                Object value = _items.get(field);
-                Object oldValue = _delta.get(field);
+            for (String field : delta.keySet()) {
+                Object value = items.get(field);
+                Object oldValue = delta.get(field);
                 if (compareValue(value, oldValue)) {
                     delList.add(field);
                 }
             }
             for (String field : delList) {
-                _delta.remove(field);
+                delta.remove(field);
             }
-            return _delta.size() > 0;
+            return delta.size() > 0;
         }
         default:
             return false;
@@ -393,10 +393,10 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public void remove(String field) {
-        _delta.remove(field);
-        _items.remove(field);
-        if (this._dataSet == null)
-            _fields.remove(field);
+        delta.remove(field);
+        items.remove(field);
+        if (this.dataSet == null)
+            fields.remove(field);
     }
 
     @Deprecated
@@ -407,8 +407,8 @@ public class DataRow implements Serializable, IRecord {
     private void addField(String field) {
         if (field == null)
             throw new RuntimeException("field is null");
-        if (!_fields.exists(field)) {
-            _fields.add(field);
+        if (!fields.exists(field)) {
+            fields.add(field);
         }
     }
 
@@ -441,21 +441,21 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public final DataRow history() {
-        return _history;
+        return history;
     }
 
     public final DataRow setHistory(DataRow history) {
-        this._history = history;
+        this.history = history;
         return this;
     }
 
     @Override
     public DataRow clone() {
-        DataRow row = new DataRow(this._fields);
+        DataRow row = new DataRow(this.fields);
         for (String key : this.fields().names())
             row.setValue(key, this.getValue(key));
-        row._dataSet = this._dataSet;
-        row._createFieldDefs = this._createFieldDefs;
+        row.dataSet = this.dataSet;
+        row.createFieldDefs = this.createFieldDefs;
         return row;
     }
 
