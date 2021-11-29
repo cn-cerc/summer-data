@@ -840,4 +840,9 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         System.out.println(ds4.setMetaInfo(false));
     }
 
+    @Deprecated
+    public void close() {
+        clear();
+    }
+
 }
