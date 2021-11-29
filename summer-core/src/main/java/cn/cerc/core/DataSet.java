@@ -195,6 +195,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this._records.size() == 0 || this._recNo > this._records.size();
     }
 
+    @Override
     @Deprecated
     public DataRow getCurrent() {
         if (this.eof()) {
@@ -762,7 +763,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         ds1.setMessage("hello");
         System.out.println(ds1.toJson());
 
-        ds1.getHead().setValue("token", "xxx");
+        ds1.head().setValue("token", "xxx");
         System.out.println(ds1.toJson());
 
         ds1.append();

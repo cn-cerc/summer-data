@@ -17,7 +17,7 @@ import cn.cerc.core.Utils;
 public class RecordFilter {
 
     public static DataSet execute(DataSet dataIn, DataSet dataOut) {
-        String sql = dataIn.getHead().getString("_RecordFilter_");
+        String sql = dataIn.head().getString("_RecordFilter_");
         if (Utils.isEmpty(sql) || dataOut.state() < 1)
             return dataOut;
         return execute(dataOut, sql);
