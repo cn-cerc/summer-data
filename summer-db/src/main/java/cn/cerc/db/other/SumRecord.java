@@ -31,7 +31,7 @@ public class SumRecord extends DataRow {
     }
 
     public SumRecord run() {
-        for (DataRow rs : getDataSet()) {
+        for (DataRow rs : dataSet()) {
             for (String field : this.fields.keySet()) {
                 Double value = fields.get(field);
                 value += rs.getDouble(field);
