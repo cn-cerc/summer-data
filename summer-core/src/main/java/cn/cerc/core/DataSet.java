@@ -535,6 +535,11 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         }
     }
 
+    @Deprecated
+    public void close() {
+        clear();
+    }
+
     public final DataRow head() {
         return _head;
     }
@@ -838,11 +843,6 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         System.out.println(ds4);
         System.out.println(ds4.setCurd(false));
         System.out.println(ds4.setMetaInfo(false));
-    }
-
-    @Deprecated
-    public void close() {
-        clear();
     }
 
 }
