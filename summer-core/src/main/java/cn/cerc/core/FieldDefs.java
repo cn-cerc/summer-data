@@ -23,10 +23,15 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return _items.contains(field);
     }
 
-    public List<String> getFields() {
+    public List<String> items() {
         List<String> result = new ArrayList<>();
         _items.forEach(meta -> result.add(meta.getCode()));
         return result;
+    }
+
+    @Deprecated
+    public List<String> getFields() {
+        return items();
     }
 
     public FieldMeta add(String fieldCode) {
