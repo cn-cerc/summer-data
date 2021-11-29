@@ -392,7 +392,7 @@ public class DataRow implements Serializable, IRecord {
         return true;
     }
 
-    public void delete(String field) {
+    public void remove(String field) {
         _delta.remove(field);
         _items.remove(field);
         if (this._dataSet == null)
