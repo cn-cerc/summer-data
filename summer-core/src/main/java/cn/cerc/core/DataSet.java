@@ -196,7 +196,6 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     @Deprecated
-    @Override
     public DataRow getCurrent() {
         if (this.eof()) {
             throw new RuntimeException(String.format("[%s]eof == true", this.getClass().getName()));
@@ -207,6 +206,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         }
     }
 
+    @Override
     public DataRow current() {
         if ((_recNo > 0) && (_recNo <= _records.size()))
             return _records.get(_recNo - 1);

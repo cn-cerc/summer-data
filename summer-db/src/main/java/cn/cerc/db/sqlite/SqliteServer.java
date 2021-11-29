@@ -149,7 +149,7 @@ public class SqliteServer implements SqlServer {
         query.add("select * from " + table);
         query.open();
         while (query.fetch())
-            System.out.println(query.getCurrent());
+            System.out.println(query.current());
     }
 
     public String getPath() {

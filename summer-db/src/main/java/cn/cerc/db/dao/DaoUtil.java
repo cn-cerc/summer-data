@@ -55,7 +55,7 @@ public class DaoUtil {
         ds.add("select * from " + tableName);
         ds.getSqlText().setMaximum(1);
         ds.open();
-        DataRow record = ds.eof() ? null : ds.getCurrent();
+        DataRow record = ds.eof() ? null : ds.current();
         for (String field : ds.getFieldDefs().getFields()) {
             if ("UID_".equals(field)) {
                 sb.append("@Id").append("\r\n");

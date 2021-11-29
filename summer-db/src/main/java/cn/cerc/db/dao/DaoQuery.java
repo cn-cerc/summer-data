@@ -33,7 +33,7 @@ public class DaoQuery<T> extends MysqlQuery {
             ((DaoEvent) item).beforePost();
         }
         this.append();
-        RecordUtils.copyToRecord(item, this.getCurrent());
+        RecordUtils.copyToRecord(item, this.current());
         this.post();
     }
 
@@ -43,12 +43,12 @@ public class DaoQuery<T> extends MysqlQuery {
             ((DaoEvent) item).beforePost();
         }
         this.edit();
-        RecordUtils.copyToRecord(item, this.getCurrent());
+        RecordUtils.copyToRecord(item, this.current());
         this.post();
     }
 
     public T read() {
-        return this.getCurrent().asObject(clazz);
+        return this.current().asObject(clazz);
     }
 
     @Override
