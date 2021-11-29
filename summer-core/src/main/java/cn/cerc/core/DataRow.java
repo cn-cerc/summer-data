@@ -399,6 +399,11 @@ public class DataRow implements Serializable, IRecord {
             _fields.remove(field);
     }
 
+    @Deprecated
+    public void delete(String field) {
+        remove(field);
+    }
+
     private void addField(String field) {
         if (field == null)
             throw new RuntimeException("field is null");
