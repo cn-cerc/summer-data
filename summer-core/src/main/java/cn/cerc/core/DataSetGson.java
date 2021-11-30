@@ -75,22 +75,20 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
                 item.getAsJsonArray().add(CURD_STATE);
             }
         }
-        if (src.size() > 0) {
-            if (src.curd()) {
-                // insert && update
-                src.records().forEach(dataRow -> {
-                    if (dataRow.state() == DataRowState.Insert) {
-                        body.add(context.serialize(dataRow));
-                    } else if (dataRow.state() == DataRowState.Update) {
-                        body.add(context.serialize(dataRow.history()));
-                        body.add(context.serialize(dataRow));
-                    }
-                });
-                // delete
-                src.garbage().forEach(dataRow -> body.add(context.serialize(dataRow)));
-            } else {
-                src.records().forEach(dataRow -> body.add(context.serialize(dataRow)));
-            }
+        if (src.curd()) {
+            // insert && update
+            src.records().forEach(dataRow -> {
+                if (dataRow.state() == DataRowState.Insert) {
+                    body.add(context.serialize(dataRow));
+                } else if (dataRow.state() == DataRowState.Update) {
+                    body.add(context.serialize(dataRow.history()));
+                    body.add(context.serialize(dataRow));
+                }
+            });
+            // delete
+            src.garbage().forEach(dataRow -> body.add(context.serialize(dataRow)));
+        } else if (src.size() > 0) {
+            src.records().forEach(dataRow -> body.add(context.serialize(dataRow)));
         }
         if (body.size() > 0)
             root.add("body", body);
