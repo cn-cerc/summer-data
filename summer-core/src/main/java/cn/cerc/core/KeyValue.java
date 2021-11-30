@@ -7,8 +7,8 @@ import java.util.Date;
 import com.google.gson.Gson;
 
 public class KeyValue {
-    private String _key;
-    private Object _value;
+    private String key;
+    private Object value;
 
     public KeyValue() {
         super();
@@ -20,7 +20,7 @@ public class KeyValue {
     }
 
     public final String key() {
-        return this._key;
+        return this.key;
     }
 
     @Deprecated
@@ -29,16 +29,16 @@ public class KeyValue {
     }
 
     public final Object value() {
-        return this._value;
+        return this.value;
     }
 
     public KeyValue setValue(Object data) {
-        this._value = data;
+        this.value = data;
         return this;
     }
 
     public final KeyValue setKey(String value) {
-        this._key = value;
+        this.key = value;
         return this;
     }
 
