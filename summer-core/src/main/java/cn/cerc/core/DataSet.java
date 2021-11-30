@@ -744,6 +744,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
             row.setState(DataRowState.None);
         }
         garbage.clear();
+        this.recNo = 0;
         return this;
     }
 
