@@ -301,7 +301,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
         this.fetchFinish = fetchFinish;
     }
 
-    protected abstract SqlServer getServer();
+    protected abstract ISqlServer getServer();
 
     @Override
     public String toJson() {

@@ -17,11 +17,11 @@ import com.mchange.v2.resourcepool.TimeoutException;
 import cn.cerc.db.core.ConnectionClient;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.SqlOperator;
-import cn.cerc.db.core.SqlServer;
+import cn.cerc.db.core.ISqlServer;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public abstract class MysqlServer implements SqlServer, AutoCloseable {
+public abstract class MysqlServer implements ISqlServer, AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(MysqlServer.class);
     private Connection connection;
     private MysqlClient client;
