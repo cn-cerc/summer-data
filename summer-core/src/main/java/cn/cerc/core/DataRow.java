@@ -25,13 +25,13 @@ public class DataRow implements Serializable, IRecord {
     private Map<String, Object> delta = new HashMap<>();
     private DataSet dataSet;
     private FieldDefs fields;
-    private boolean createFieldDefs;
+    private boolean createFields;
     private DataRow history;
 
     public DataRow() {
         super();
         this.fields = new FieldDefs();
-        this.createFieldDefs = true;
+        this.createFields = true;
     }
 
     public DataRow(DataSet dataSet) {
@@ -455,7 +455,7 @@ public class DataRow implements Serializable, IRecord {
         for (String key : this.fields().names())
             row.setValue(key, this.getValue(key));
         row.dataSet = this.dataSet;
-        row.createFieldDefs = this.createFieldDefs;
+        row.createFields = this.createFields;
         return row;
     }
 
