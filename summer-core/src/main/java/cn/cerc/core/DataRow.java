@@ -55,32 +55,13 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public DataRow setState(DataRowState value) {
-        if (state == value)
-            return this;
-
-        if (value.equals(DataRowState.None))
-            delta.clear();
-
-        if ((state == DataRowState.Insert) && (value == DataRowState.Update))
-            return this;
-        if ((state == DataRowState.None) && (value == DataRowState.Update)) {
-            this.history = this.clone();
-            this.history.state = DataRowState.History;
-            state = value;
-            return this;
-        }
-        if ((state == DataRowState.None) && (value == DataRowState.Update)) {
-            this.history = null;
-            state = value;
-            return this;
-        }
-
-        if ((state == DataRowState.None) || (value == DataRowState.None))
+        if (state != value) {
             this.state = value;
-        else if ((state == DataRowState.Insert) || (value == DataRowState.History))
-            this.state = value;
-        else
-            throw new RuntimeException("setState change error");
+            if (this.state == DataRowState.None) {
+                this.delta.clear();
+                this.setHistory(null);
+            }
+        }
         return this;
     }
 
@@ -444,8 +425,10 @@ public class DataRow implements Serializable, IRecord {
         return history;
     }
 
-    public final DataRow setHistory(DataRow history) {
+    public DataRow setHistory(DataRow history) {
         this.history = history;
+        if (this.history != null)
+            this.history.setState(DataRowState.History);
         return this;
     }
 

@@ -78,7 +78,11 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     public DataSet edit() {
         if (bof() || eof())
             throw new RuntimeException(res.getString(1, "当前记录为空，无法修改"));
-        this.current().setState(DataRowState.Update);
+        DataRow row = this.current();
+        if (row.state() == DataRowState.None) {
+            row.setHistory(row.clone());
+            row.setState(DataRowState.Update);
+        }
         return this;
     }
 
