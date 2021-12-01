@@ -560,7 +560,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     @Deprecated
-    public String toJson() {
+    public final String toJson() {
         return json();
     }
 
@@ -573,7 +573,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     @Deprecated
-    public DataSet fromJson(String json) {
+    public final DataSet fromJson(String json) {
         return setJson(json);
     }
 

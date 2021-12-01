@@ -26,12 +26,12 @@ public class SqliteQuery extends SqlQuery {
     }
 
     @Override
-    public String toJson() {
+    public String json() {
         return new DataSetGson<>(this).encode();
     }
 
     @Override
-    public SqliteQuery fromJson(String json) {
+    public SqliteQuery setJson(String json) {
         this.close();
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);

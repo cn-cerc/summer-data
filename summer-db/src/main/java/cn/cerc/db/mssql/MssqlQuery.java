@@ -31,12 +31,12 @@ public class MssqlQuery extends SqlQuery implements IHandle {
     }
 
     @Override
-    public String toJson() {
+    public String json() {
         return new DataSetGson<>(this).encode();
     }
 
     @Override
-    public MssqlQuery fromJson(String json) {
+    public MssqlQuery setJson(String json) {
         this.close();
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);

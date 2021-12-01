@@ -51,6 +51,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
         this.session = session;
     }
 
+    @Override
     public final void close() {
         this.setActive(false);
         this.operator = null;
@@ -304,12 +305,12 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     protected abstract ISqlServer getServer();
 
     @Override
-    public String toJson() {
+    public String json() {
         return new DataSetGson<>(this).encode();
     }
 
     @Override
-    public SqlQuery fromJson(String json) {
+    public SqlQuery setJson(String json) {
         this.close();
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);

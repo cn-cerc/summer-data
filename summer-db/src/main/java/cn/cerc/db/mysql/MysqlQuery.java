@@ -47,12 +47,12 @@ public class MysqlQuery extends SqlQuery implements IHandle {
     }
 
     @Override
-    public String toJson() {
+    public String json() {
         return new DataSetGson<>(this).encode();
     }
 
     @Override
-    public MysqlQuery fromJson(String json) {
+    public MysqlQuery setJson(String json) {
         this.close();
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);

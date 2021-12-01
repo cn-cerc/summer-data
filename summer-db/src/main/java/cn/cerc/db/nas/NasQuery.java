@@ -128,12 +128,12 @@ public class NasQuery extends DataSet implements IHandle {
     }
 
     @Override
-    public String toJson() {
+    public String json() {
         return new DataSetGson<>(this).encode();
     }
 
     @Override
-    public NasQuery fromJson(String json) {
+    public NasQuery setJson(String json) {
         super.clear();
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);

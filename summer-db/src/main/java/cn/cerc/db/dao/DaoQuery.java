@@ -52,12 +52,12 @@ public class DaoQuery<T> extends MysqlQuery {
     }
 
     @Override
-    public String toJson() {
+    public String json() {
         return new DataSetGson<DaoQuery<T>>(this).encode();
     }
 
     @Override
-    public DaoQuery<T> fromJson(String json) {
+    public DaoQuery<T> setJson(String json) {
         this.close();
         if (!Utils.isEmpty(json))
             new DataSetGson<DaoQuery<T>>(this).decode(json);
