@@ -51,7 +51,7 @@ public class NasQuery extends DataSet implements IHandle {
             File file = FileUtils.getFile(this.filePath, this.fileName);
             try {
                 String json = FileUtils.readFileToString(file, StandardCharsets.UTF_8.name());
-                this.fromJson(json);
+                this.setJson(json);
                 this.setActive(true);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -71,7 +71,7 @@ public class NasQuery extends DataSet implements IHandle {
     public void save() {
         File file = FileUtils.getFile(this.filePath, this.fileName);
         try {
-            String content = this.toJson();
+            String content = this.json();
             FileUtils.writeStringToFile(file, content, StandardCharsets.UTF_8.name(), false);// 不存在则创建,存在则不追加到文件末尾
         } catch (IOException e) {
             log.info("文件:" + file.getPath() + "保存失败");

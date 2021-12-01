@@ -364,7 +364,7 @@ public class BuildQuery implements IHandle {
         sqlWhere.clear();
         orderText = null;
         if (this.dataSet != null) {
-            this.dataSet.close();
+            this.dataSet.clear();
         }
     }
 
