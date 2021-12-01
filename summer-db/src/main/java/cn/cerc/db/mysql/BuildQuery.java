@@ -5,7 +5,7 @@ import cn.cerc.core.ISession;
 import cn.cerc.db.core.IHandle;
 
 /**
- * 用于组合生成select指令，便于多条件查询编写
+ * 用于组合生成select指令，便于多条件查询编写；请改使用MysqlHelper
  *
  * @author 张弓
  */
@@ -17,6 +17,10 @@ public class BuildQuery extends QueryHelper<MysqlQuery> {
 
     public BuildQuery(ISession session) {
         super(session);
+    }
+
+    public BuildQuery(MysqlQuery query) {
+        super(query);
     }
 
     @Override
@@ -31,13 +35,12 @@ public class BuildQuery extends QueryHelper<MysqlQuery> {
         return dataSet();
     }
 
-    @Deprecated
     public final String getCommandText() {
         return sqlText();
     }
 
     @Deprecated
-    public MysqlQuery open(DataRow head, DataRow foot) {
+    public final MysqlQuery open(DataRow head, DataRow foot) {
         MysqlQuery ds = dataSet();
         if (!head.exists("__offset__")) {
         } else {
@@ -54,7 +57,7 @@ public class BuildQuery extends QueryHelper<MysqlQuery> {
     }
 
     @Deprecated
-    public MysqlQuery openReadonly(DataRow head, DataRow foot) {
+    public final MysqlQuery openReadonly(DataRow head, DataRow foot) {
         MysqlQuery ds = dataSet();
         if (head.exists("__offset__")) {
             this.setOffset(head.getInt("__offset__"));
@@ -68,12 +71,10 @@ public class BuildQuery extends QueryHelper<MysqlQuery> {
         return ds;
     }
 
-    @Deprecated
     public final void close() {
         super.clear();
     }
 
-    @Deprecated
     public final String getOrderText() {
         return this.order();
     }

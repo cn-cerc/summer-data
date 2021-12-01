@@ -32,10 +32,10 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         this.session = session;
     }
 
-    public QueryHelper(T dataSet) {
+    public QueryHelper(T query) {
         super();
-        this.session = dataSet.getSession();
-        this.dataSet = dataSet;
+        this.session = query.getSession();
+        this.dataSet = query;
     }
 
     /**
