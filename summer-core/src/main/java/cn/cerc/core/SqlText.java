@@ -91,12 +91,17 @@ public class SqlText implements Serializable {
         this.offset = offset;
     }
 
-    public String getText() {
+    public String text() {
         return text;
     }
 
+    @Deprecated
+    public final String getText() {
+        return text();
+    }
+
     public String getCommand() {
-        String sql = this.getText();
+        String sql = this.text();
         if (sql == null || "".equals(sql)) {
             throw new RuntimeException("SqlText.text is null ！");
         }
@@ -121,8 +126,13 @@ public class SqlText implements Serializable {
         return sql;
     }
 
-    public int getMaximum() {
+    public int maximum() {
         return maximum;
+    }
+
+    @Deprecated
+    public final int getMaximum() {
+        return maximum();
     }
 
     public void setMaximum(int maximum) {
