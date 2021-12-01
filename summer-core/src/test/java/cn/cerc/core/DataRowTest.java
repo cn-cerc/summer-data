@@ -99,23 +99,23 @@ public class DataRowTest {
 
     @Test
     public void test_setField_delta() {
-        DataRow rs = new DataRow();
-        rs.setValue("Code_", "a");
-        assertEquals(rs.delta().size(), 0);
+        DataRow row = new DataRow();
+        row.setValue("Code_", "a");
+        assertEquals(row.delta().size(), 0);
 
         Object val = null;
 
-        rs.setValue("Code_", val);
-        assertEquals(rs.delta().size(), 0);
+        row.setValue("Code_", val);
+        assertEquals(row.delta().size(), 0);
 
-        rs.setState(DataRowState.Update);
-        rs.setValue("Code_", val);
-        assertEquals(rs.delta().size(), 0);
+        row.setState(DataRowState.Update);
+        row.setValue("Code_", val);
+        assertEquals(row.delta().size(), 0);
 
-        rs.setValue("Code_", "c");
-        rs.setValue("Code_", "d");
-        assertEquals(rs.delta().size(), 1);
-        assertTrue(rs.getOldField("Code_") == val);
+        row.setValue("Code_", "c");
+        row.setValue("Code_", "d");
+        assertEquals(row.delta().size(), 1);
+        assertTrue(row.getOldField("Code_") == val);
     }
 
     @Test

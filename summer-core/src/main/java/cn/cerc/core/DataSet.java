@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -79,10 +78,8 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         if (bof() || eof())
             throw new RuntimeException(res.getString(1, "当前记录为空，无法修改"));
         DataRow row = this.current();
-        if (row.state() == DataRowState.None) {
-            row.setHistory(row.clone());
+        if (row.state() == DataRowState.None)
             row.setState(DataRowState.Update);
-        }
         return this;
     }
 
@@ -100,18 +97,19 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
             return this;
 
         if (record.state() == DataRowState.Update)
-            garbage.add(record.history().setState(DataRowState.Delete));
-        else
-            garbage.add(record.setState(DataRowState.Delete));
+            record = record.history();
+        garbage.add(record.setState(DataRowState.Delete));
 
         if (!this.isBatchSave()) {
             doBeforeDelete(record);
-            if (this.isStorage()) {
+            if (this.storage()) {
                 try {
                     deleteStorage(record);
                 } catch (Exception e) {
                     throw new RuntimeException(e.getMessage());
                 }
+            } else {
+                garbage.remove(record);
             }
             doAfterDelete(record);
         }
@@ -121,43 +119,47 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     public final void post() {
         if (this.isBatchSave())
             return;
-        DataRow dataRow = this.current();
-        if (dataRow.state() == DataRowState.Insert) {
-            doBeforePost(dataRow);
-            if (this.isStorage()) {
+        DataRow row = this.current();
+        if (row.state() == DataRowState.Insert) {
+            doBeforePost(row);
+            if (this.storage()) {
                 try {
-                    insertStorage(dataRow);
+                    insertStorage(row);
                 } catch (Exception e) {
                     if (e.getMessage().contains("Data too long"))
-                        log.error(dataRow.toString());
+                        log.error(row.toString());
                     throw new RuntimeException(e);
                 }
+            } else {
+                row.setState(DataRowState.None);
             }
-            doAfterPost(dataRow);
-        } else if (dataRow.state() == DataRowState.Update) {
-            doBeforePost(dataRow);
-            if (this.isStorage()) {
+            doAfterPost(row);
+        } else if (row.state() == DataRowState.Update) {
+            doBeforePost(row);
+            if (this.storage()) {
                 try {
-                    updateStorage(dataRow);
+                    updateStorage(row);
                 } catch (Exception e) {
                     log.error(e.getMessage());
                     throw new RuntimeException(e.getMessage());
                 }
+            } else {
+                row.setState(DataRowState.None);
             }
-            doAfterPost(dataRow);
+            doAfterPost(row);
         }
     }
 
-    protected void insertStorage(DataRow record) throws Exception {
-
+    protected void insertStorage(DataRow row) throws Exception {
+        row.setState(DataRowState.None);
     }
 
-    protected void updateStorage(DataRow record) throws Exception {
-
+    protected void updateStorage(DataRow row) throws Exception {
+        row.setState(DataRowState.None);
     }
 
-    protected void deleteStorage(DataRow record) throws Exception {
-
+    protected void deleteStorage(DataRow row) throws Exception {
+        garbage.remove(row);
     }
 
     public boolean first() {
@@ -472,7 +474,6 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     protected final void doAfterPost(DataRow record) {
         if (afterPostListener != null)
             afterPostListener.forEach(event -> event.updateRecordAfter(record));
-        record.setState(DataRowState.None);
     }
 
     public interface DataSetBeforeDeleteEvent {
@@ -747,104 +748,20 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
 
     public static void main(String[] args) {
         DataSet ds1 = new DataSet();
-        ds1.onAppend((ds) -> {
-            ds.setValue("it", ds.size());
-        });
-        ds1.onBeforePost((rs) -> {
-            System.out.println("onBeforePost: " + rs.toString());
-        });
-        ds1.onAfterPost((rs) -> {
-            System.out.println("onAfterPost: " + rs.toString());
-        });
-        ds1.onBeforeDelete((rs) -> {
-            System.out.println("onBeforeDelete: " + rs.toString());
-        });
-        ds1.onAfterDelete((rs) -> {
-            System.out.println("onAfterDelete: " + rs.toString());
-        });
-        System.out.println(ds1.toJson());
-
-        ds1.setState(1);
-        System.out.println(ds1.toJson());
-
-        ds1.setMessage("hello");
-        System.out.println(ds1.toJson());
-
-        ds1.head().setValue("token", "xxx");
-        System.out.println(ds1.toJson());
-
         ds1.append();
         ds1.setValue("code", "1");
-        ds1.setValue("name", "a");
+        ds1.setValue("name", "a0");
         ds1.setValue("value", 10);
-
-        List<String> list = new ArrayList<>();
-        list.add("a");
-        list.add("b");
-        ds1.setValue("code", list);
-//
-//        DataSet ds0 = new DataSet();
-//        ds0.append();
-//        ds0.setField("partCode_", "p001");
-//        ds1.setField("name", ds0);
-
         ds1.post();
-        ds1.append();
-        ds1.setValue("code", "2");
-        ds1.setValue("name", "b");
-        ds1.post();
-//        ds1.delete();
+        
+        ds1.setBatchSave(true);
+        ds1.edit().setValue("name", "a1");
+        System.out.println(ds1.setCurd(true).json());
+        System.out.println(ds1.setCurd(false).json());
 
-        ds1.setState(1);
-        ds1.setMessage("test");
-
-        ds1.head().setValue("title", "test");
-        ds1.head().setValue("tbDate", new FastDate());
-        ds1.head().setValue("appDate", new Date());
-        ds1.head().setValue("user", null);
-
-        ds1.fields().add("it").setName("序").setRemark("自动赋值").setType(Integer.class);
-        ds1.fields().add("code").setName("编号").setType(String.class, 30);
-        ds1.fields().add("name").setName("名称").setType(String.class, 30);
-        ds1.head().fields().add("title").setName("标题").setType(String.class, 30);
-
-        ds1.buildMeta().setMetaInfo(true);
-        System.out.println(ds1.json());
-
-        DataSet ds2 = new DataSet().setJson(ds1.json());
-        System.out.println(ds2.json());
-
-        DataSet ds3 = new DataSet();
-        ds3.head().fields().add("title").setName("标题").setType(String.class, 30);
-        ds3.fields().add("it").setName("序").setRemark("自动增加").setType(Integer.class);
-        ds3.fields().add("code").setName("编号").setType(String.class, 30);
-        ds3.fields().add("name").setName("名称").setType(String.class, 30);
-        ds3.setMetaInfo(true);
-
-        System.out.println(ds3.json());
-        System.out.println(ds3.setMetaInfo(false).json());
-
-        ds3.fields().remove("it");
-        ds3.append().setValue("code", "a01");
-        ds3.append().setValue("code", "a02");
-        ds3.mergeChangeLog();
-        System.out.println(ds3.json());
-        ds3.first();
-        ds3.delete();
-        ds3.edit().setValue("code", "a02-new");
-        ds3.append().setValue("code", "a03");
-        System.out.println(ds3.setCurd(true));
-        System.out.println(ds3.setCurd(false));
-        System.out.println(ds3.setCurd(true).setMetaInfo(true));
-        System.out.println(ds3.setCurd(false).setMetaInfo(true));
-
-        DataSet ds4 = new DataSet();
-        ds4.setJson(
-                "{\"meta\":{\"head\":[{\"title\":[\"标题\",\"s30\"]}],\"body\":[{\"code\":[\"编号\",\"s30\"]},{\"name\":[\"名称\",\"s30\"]},{\"_state_\":[]}]},\"head\":[null],\"body\":[[\"a02\",null,4],[\"a02-new\",null,2],[\"a03\",null,1],[\"a01\",null,3]]}\r\n"
-                        + "");
-        System.out.println(ds4);
-        System.out.println(ds4.setCurd(false));
-        System.out.println(ds4.setMetaInfo(false));
+        ds1.delete();
+        System.out.println(ds1.setCurd(true).json());
+        System.out.println(ds1.setCurd(false).json());
     }
 
 }

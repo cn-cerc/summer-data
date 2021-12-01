@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.cerc.core.ClassResource;
 import cn.cerc.core.DataRow;
+import cn.cerc.core.DataRowState;
 import cn.cerc.core.FieldMeta;
 import cn.cerc.core.FieldMeta.FieldKind;
 import cn.cerc.core.Utils;
@@ -141,7 +142,11 @@ public abstract class SqlOperator {
                 }
             }
 
-            return result > 0;
+            if (result > 0) {
+                record.setState(DataRowState.None);
+                return true;
+            } else
+                return false;
         } catch (SQLException e) {
             log.error(lastCommand);
             e.printStackTrace();
@@ -150,11 +155,9 @@ public abstract class SqlOperator {
     }
 
     public final boolean update(Connection connection, DataRow record) {
-        if (!record.isModify()) {
-            return false;
-        }
         Map<String, Object> delta = record.delta();
         if (delta.size() == 0) {
+            record.setState(DataRowState.None);
             return false;
         }
 

@@ -3,7 +3,6 @@ package cn.cerc.core;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,7 +21,6 @@ public class DataRow implements Serializable, IRecord {
     private static final long serialVersionUID = 4454304132898734723L;
     private DataRowState state = DataRowState.None;
     private Map<String, Object> items = new LinkedHashMap<>();
-    private Map<String, Object> delta = new HashMap<>();
     private DataSet dataSet;
     private FieldDefs fields;
     private boolean createFields;
@@ -56,11 +54,13 @@ public class DataRow implements Serializable, IRecord {
 
     public DataRow setState(DataRowState value) {
         if (state != value) {
+            if ((this.state == DataRowState.Insert) && (value == DataRowState.Update))
+                throw new RuntimeException("change state error: insert => update");
             this.state = value;
-            if (this.state == DataRowState.None) {
-                this.delta.clear();
+            if (this.state == DataRowState.None)
                 this.setHistory(null);
-            }
+            else if (this.state == DataRowState.Update)
+                this.setHistory(this.clone());
         }
         return this;
     }
@@ -69,60 +69,52 @@ public class DataRow implements Serializable, IRecord {
     public DataRow setValue(String field, Object value) {
         if (field == null || "".equals(field))
             throw new RuntimeException("field is null!");
-
         this.addField(field);
 
         SearchDataSet search = null;
         if (this.dataSet != null && this.dataSet.search() != null)
             search = this.dataSet.search();
 
-        Object data = value;
+        Object newValue = value;
         if (value instanceof Datetime) // 将Datetime转化为Date存储
-            data = ((Datetime) value).asBaseDate();
+            newValue = ((Datetime) value).asBaseDate();
 
         if ((search == null) && (this.state != DataRowState.Update)) {
-            setMapValue(items, field, data);
+            putValue(field, newValue);
             return this;
         }
 
-        Object oldValue = items.get(field);
-        if (compareValue(data, oldValue)) {
+        Object curValue = items.get(field);
+        if (compareValue(newValue, curValue))
             return this;
-        }
 
         // 只有值发生变更的时候 才做处理
-        if (search != null)
+        if (search != null) {
             search.remove(this);
-
-        if (this.state == DataRowState.Update) {
-            if (!delta.containsKey(field)) {
-                setMapValue(delta, field, oldValue);
-            }
-        }
-        setMapValue(items, field, data);
-
-        if (search != null)
+            putValue(field, newValue);
             search.append(this);
-
+        } else {
+            putValue(field, newValue);
+        }
         return this;
     }
 
-    private void setMapValue(Map<String, Object> map, String field, Object value) {
+    private void putValue(String field, Object value) {
         if (value == null || value instanceof Integer || value instanceof Double || value instanceof Boolean
                 || value instanceof Long) {
-            map.put(field, value);
+            items.put(field, value);
         } else if (value instanceof String) {
             if ("{}".equals(value)) {
-                map.put(field, null);
+                items.put(field, null);
             } else {
-                map.put(field, value);
+                items.put(field, value);
             }
         } else if (value instanceof BigDecimal) {
-            map.put(field, ((BigDecimal) value).doubleValue());
+            items.put(field, ((BigDecimal) value).doubleValue());
         } else if (value instanceof LinkedTreeMap) {
-            map.put(field, null);
+            items.put(field, null);
         } else {
-            map.put(field, value);
+            items.put(field, value);
         }
     }
 
@@ -153,20 +145,31 @@ public class DataRow implements Serializable, IRecord {
         return this.items.get(field);
     }
 
-    public Map<String, Object> delta(){
-        return this.delta;    
+    public Map<String, Object> delta() {
+        Map<String, Object> delta = new HashMap<>();
+        if (this.state() == DataRowState.Update) {
+            for (String field : fields.names()) {
+                Object oldValue = this.history.getValue(field);
+                Object curValue = this.getValue(field);
+                if (!this.compareValue(oldValue, curValue))
+                    delta.put(field, oldValue);
+            }
+        }
+        return delta;
     }
-    
+
     @Deprecated
     public final Map<String, Object> getDelta() {
         return delta();
     }
 
     public Object getOldField(String field) {
-        if (field == null || "".equals(field)) {
+        if (field == null || "".equals(field))
             throw new RuntimeException("field is null!");
-        }
-        return this.delta.get(field);
+        if (this.history != null)
+            return this.history.getValue(field);
+        else
+            return null;
     }
 
     public int size() {
@@ -309,7 +312,7 @@ public class DataRow implements Serializable, IRecord {
 
     public void clear() {
         items.clear();
-        delta.clear();
+        this.setState(DataRowState.None);
         if (this.dataSet == null)
             fields.clear();
     }
@@ -339,32 +342,6 @@ public class DataRow implements Serializable, IRecord {
         return dataSet;
     }
 
-    public boolean isModify() {
-        switch (this.state) {
-        case Insert:
-            return true;
-        case Update: {
-            if (delta.size() == 0) {
-                return false;
-            }
-            List<String> delList = new ArrayList<>();
-            for (String field : delta.keySet()) {
-                Object value = items.get(field);
-                Object oldValue = delta.get(field);
-                if (compareValue(value, oldValue)) {
-                    delList.add(field);
-                }
-            }
-            for (String field : delList) {
-                delta.remove(field);
-            }
-            return delta.size() > 0;
-        }
-        default:
-            return false;
-        }
-    }
-
     public boolean equalsValues(Map<String, Object> values) {
         for (String field : values.keySet()) {
             Object obj1 = getValue(field);
@@ -379,8 +356,9 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public void remove(String field) {
-        delta.remove(field);
         items.remove(field);
+        if (history != null)
+            history.remove(field);
         if (this.dataSet == null)
             fields.remove(field);
     }
