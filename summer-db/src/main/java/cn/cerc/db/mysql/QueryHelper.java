@@ -21,7 +21,7 @@ import cn.cerc.db.core.SqlQuery;
 public class QueryHelper<T extends SqlQuery> implements IHandle {
     public static final String vbCrLf = "\r\n";
     protected T dataSet;
-    private List<String> sqlWhere = new ArrayList<>();
+    private List<String> where = new ArrayList<>();
     private List<String> sqlText = new ArrayList<>();
     private String order;
     private String sql;
@@ -46,7 +46,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
      */
     public QueryHelper<T> byParam(String param) {
         if (!"".equals(param)) {
-            sqlWhere.add("(" + param + ")");
+            where.add("(" + param + ")");
         }
         return this;
     }
@@ -80,7 +80,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         }
         String str = builder.toString();
         str = str.substring(0, str.length() - 3);
-        sqlWhere.add("(" + str + ")");
+        where.add("(" + str + ")");
         return this;
     }
 
@@ -95,13 +95,13 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
             str = str + " or ";
         }
         str = str.substring(0, str.length() - 3);
-        sqlWhere.add("(" + str + ")");
+        where.add("(" + str + ")");
         return this;
     }
 
     public QueryHelper<T> byNull(String field, boolean value) {
         String s = value ? "not null" : "null";
-        sqlWhere.add(String.format("%s is %s", field, s));
+        where.add(String.format("%s is %s", field, s));
         return this;
     }
 
@@ -114,71 +114,71 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
             return this;
         }
         if (value.contains("*")) {
-            sqlWhere.add(String.format("%s like '%s'", field, value.replace("*", "%")));
+            where.add(String.format("%s like '%s'", field, value.replace("*", "%")));
             return this;
         }
         if ("``".equals(value)) {
-            sqlWhere.add(String.format("%s='%s'", field, "`"));
+            where.add(String.format("%s='%s'", field, "`"));
             return this;
         }
         if ("`is null".equals(value)) {
-            sqlWhere.add(String.format("(%s is null or %s='')", field, field));
+            where.add(String.format("(%s is null or %s='')", field, field));
             return this;
         }
         if (!value.startsWith("`")) {
-            sqlWhere.add(String.format("%s='%s'", field, value));
+            where.add(String.format("%s='%s'", field, value));
             return this;
         }
         if ("`=".equals(value.substring(0, 2))) {
-            sqlWhere.add(String.format("%s=%s", field, value.substring(2)));
+            where.add(String.format("%s=%s", field, value.substring(2)));
             return this;
         }
         if ("`!=".equals(value.substring(0, 3)) || "`<>".equals(value.substring(0, 3))) {
-            sqlWhere.add(String.format("%s<>%s", field, value.substring(3)));
+            where.add(String.format("%s<>%s", field, value.substring(3)));
             return this;
         }
         return this;
     }
 
     public QueryHelper<T> byField(String field, int value) {
-        sqlWhere.add(String.format("%s=%s", field, value));
+        where.add(String.format("%s=%s", field, value));
         return this;
     }
 
     public QueryHelper<T> byField(String field, double value) {
-        sqlWhere.add(String.format("%s=%s", field, value));
+        where.add(String.format("%s=%s", field, value));
         return this;
     }
 
     public QueryHelper<T> byField(String field, Datetime value) {
-        sqlWhere.add(String.format("%s='%s'", field, value.format("yyyy-MM-dd HH:mm:ss")));
+        where.add(String.format("%s='%s'", field, value.format("yyyy-MM-dd HH:mm:ss")));
         return this;
     }
 
     public QueryHelper<T> byField(String field, boolean value) {
         int s = value ? 1 : 0;
-        sqlWhere.add(String.format("%s=%s", field, s));
+        where.add(String.format("%s=%s", field, s));
         return this;
     }
 
     public QueryHelper<T> byBetween(String field, String value1, String value2) {
-        sqlWhere.add(String.format("%s between '%s' and '%s'", field, safeString(value1), safeString(value2)));
+        where.add(String.format("%s between '%s' and '%s'", field, safeString(value1), safeString(value2)));
         return this;
     }
 
     public QueryHelper<T> byBetween(String field, int value1, int value2) {
-        sqlWhere.add(String.format("%s between %s and %s", field, value1, value2));
+        where.add(String.format("%s between %s and %s", field, value1, value2));
         return this;
     }
 
     public QueryHelper<T> byBetween(String field, double value1, double value2) {
-        sqlWhere.add(String.format("%s between %s and %s", field, value1, value2));
+        where.add(String.format("%s between %s and %s", field, value1, value2));
         return this;
     }
 
     public QueryHelper<T> byBetween(String field, Datetime value1, Datetime value2) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        sqlWhere.add(String.format(" %s between '%s' and '%s' ", field, sdf.format(value1.asBaseDate()),
+        where.add(String.format(" %s between '%s' and '%s' ", field, sdf.format(value1.asBaseDate()),
                 sdf.format(value2.asBaseDate())));
         return this;
     }
@@ -191,7 +191,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
                 s = s + "'" + safeString(val) + "',";
             }
             s = s.substring(0, s.length() - 1) + ")";
-            sqlWhere.add(s);
+            where.add(s);
         }
         return this;
     }
@@ -203,7 +203,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
                 s = s + sql + ",";
             }
             s = s.substring(0, s.length() - 1) + ")";
-            sqlWhere.add(s);
+            where.add(s);
         }
         return this;
     }
@@ -215,7 +215,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
                 s = s + sql + ",";
             }
             s = s.substring(0, s.length() - 1) + ")";
-            sqlWhere.add(s);
+            where.add(s);
         }
         return this;
     }
@@ -265,18 +265,18 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
             return this.sql;
         }
         StringBuffer str = new StringBuffer();
-        for (String sql : sqlText) {
+        for (String line : sqlText) {
             if (str.length() > 0) {
                 str.append(vbCrLf);
             }
-            str.append(sql);
+            str.append(line);
         }
-        if (sqlWhere.size() > 0) {
+        if (where.size() > 0) {
             if (str.length() > 0) {
                 str.append(vbCrLf);
             }
             str.append("where ");
-            for (String sql : sqlWhere) {
+            for (String sql : where) {
                 str.append(sql).append(" and ");
             }
             str.setLength(str.length() - 5);
@@ -291,14 +291,14 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
     }
 
     public String sqlText() {
-        String sql = select();
-        if ("".equals(sql)) {
-            return sql;
+        String text = select();
+        if ("".equals(text)) {
+            return text;
         }
         if (dataSet().sql().maximum() > -1) {
-            return sql + " limit " + dataSet().sql().maximum();
+            return text + " limit " + dataSet().sql().maximum();
         } else {
-            return sql;
+            return text;
         }
     }
 
@@ -324,7 +324,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
     public void clear() {
         sql = null;
         sqlText.clear();
-        sqlWhere.clear();
+        where.clear();
         order = null;
         if (this.dataSet != null) {
             this.dataSet.clear();
@@ -332,7 +332,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
     }
 
     public int offset() {
-        return dataSet().sql().getOffset();
+        return dataSet().sql().offset();
     }
 
     public QueryHelper<T> setOffset(int offset) {

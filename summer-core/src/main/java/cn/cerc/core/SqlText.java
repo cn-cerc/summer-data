@@ -63,12 +63,11 @@ public class SqlText implements Serializable {
         return this.add(String.format(format, items.toArray()));
     }
 
-    @Deprecated // 请改使用getTextByLimit
-    public String getSelect() {
-        return getTextByLimit();
+    public String text() {
+        return text;
     }
 
-    public String getTextByLimit() {
+    public String getSelect() {
         String sql = this.text;
         if (sql == null || "".equals(sql)) {
             throw new RuntimeException("SqlText.Text is null ！");
@@ -83,16 +82,17 @@ public class SqlText implements Serializable {
         return this;
     }
 
-    public int getOffset() {
+    public int offset() {
         return offset;
+    }
+
+    @Deprecated
+    public final int getOffset() {
+        return offset();
     }
 
     public void setOffset(int offset) {
         this.offset = offset;
-    }
-
-    public String text() {
-        return text;
     }
 
     @Deprecated

@@ -94,7 +94,7 @@ public abstract class BigTable<T extends BigRecord> implements IHandle {
         int offset = 0;
         while (true) {
             sqlText.setOffset(offset);
-            int num = loadRecords(sqlText.getTextByLimit());
+            int num = loadRecords(sqlText.getSelect());
             total += num;
             if (num < sqlText.maximum()) {
                 break;
@@ -140,7 +140,7 @@ public abstract class BigTable<T extends BigRecord> implements IHandle {
         int offset = 0;
         while (true) {
             sql.setOffset(offset);
-            int num = loadRecords(sql.getTextByLimit());
+            int num = loadRecords(sql.getSelect());
             total += num;
             if (num < sql.maximum()) {
                 break;
