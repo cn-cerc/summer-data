@@ -58,7 +58,7 @@ public class DaoQuery<T> extends MysqlQuery {
 
     @Override
     public DaoQuery<T> setJson(String json) {
-        this.close();
+        this.clear();
         if (!Utils.isEmpty(json))
             new DataSetGson<DaoQuery<T>>(this).decode(json);
         return this;

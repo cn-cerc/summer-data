@@ -50,7 +50,7 @@ public class DataRow implements Serializable, IRecord {
     }
 
     @Deprecated
-    public DataRowState getState() {
+    public final DataRowState getState() {
         return this.state();
     }
 
@@ -173,7 +173,7 @@ public class DataRow implements Serializable, IRecord {
     }
 
     @Deprecated
-    public Map<String, Object> getItems() {
+    public final Map<String, Object> getItems() {
         return items();
     }
 
@@ -182,7 +182,7 @@ public class DataRow implements Serializable, IRecord {
     }
 
     @Deprecated
-    public FieldDefs getFieldDefs() {
+    public final FieldDefs getFieldDefs() {
         return fields();
     }
 
@@ -287,18 +287,18 @@ public class DataRow implements Serializable, IRecord {
      * @return 返回安全的字符串
      */
     @Deprecated
-    public String getSafeString(String field) {
+    public final String getSafeString(String field) {
         String value = getString(field);
         return value == null ? "" : value.replaceAll("'", "''");
     }
 
     @Deprecated
-    public TDate getDate(String field) {
+    public final TDate getDate(String field) {
         return new TDate(this.getDateTime(field).getTimestamp());
     }
 
     @Deprecated
-    public TDateTime getDateTime(String field) {
+    public final TDateTime getDateTime(String field) {
         return new TDateTime(getDatetime(field).getTimestamp());
     }
 
@@ -323,12 +323,12 @@ public class DataRow implements Serializable, IRecord {
     }
 
     @Deprecated
-    public DataSet getDataSet() {
+    public final DataSet getDataSet() {
         return dataSet();
     }
 
     @Deprecated
-    public DataSet locate() {
+    public final DataSet locate() {
         int recNo = dataSet.getRecords().indexOf(this) + 1;
         dataSet.setRecNo(recNo);
         return dataSet;
@@ -381,7 +381,7 @@ public class DataRow implements Serializable, IRecord {
     }
 
     @Deprecated
-    public void delete(String field) {
+    public final void delete(String field) {
         remove(field);
     }
 
