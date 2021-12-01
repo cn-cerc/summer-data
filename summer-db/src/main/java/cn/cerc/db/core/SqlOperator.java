@@ -153,7 +153,7 @@ public abstract class SqlOperator {
         if (!record.isModify()) {
             return false;
         }
-        Map<String, Object> delta = record.getDelta();
+        Map<String, Object> delta = record.delta();
         if (delta.size() == 0) {
             return false;
         }
@@ -248,7 +248,7 @@ public abstract class SqlOperator {
         try (BuildStatement bs = new BuildStatement(connection)) {
             bs.append("delete from ").append(getTableName());
             int count = 0;
-            Map<String, Object> delta = record.getDelta();
+            Map<String, Object> delta = record.delta();
             for (String field : searchKeys) {
                 FieldMeta meta = record.fields().get(field);
                 if (meta.getKind() == FieldKind.Storage) {

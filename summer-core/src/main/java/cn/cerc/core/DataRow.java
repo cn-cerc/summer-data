@@ -153,8 +153,13 @@ public class DataRow implements Serializable, IRecord {
         return this.items.get(field);
     }
 
-    public Map<String, Object> getDelta() {
-        return this.delta;
+    public Map<String, Object> delta(){
+        return this.delta;    
+    }
+    
+    @Deprecated
+    public final Map<String, Object> getDelta() {
+        return delta();
     }
 
     public Object getOldField(String field) {

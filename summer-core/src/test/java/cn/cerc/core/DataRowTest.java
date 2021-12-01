@@ -101,20 +101,20 @@ public class DataRowTest {
     public void test_setField_delta() {
         DataRow rs = new DataRow();
         rs.setValue("Code_", "a");
-        assertEquals(rs.getDelta().size(), 0);
+        assertEquals(rs.delta().size(), 0);
 
         Object val = null;
 
         rs.setValue("Code_", val);
-        assertEquals(rs.getDelta().size(), 0);
+        assertEquals(rs.delta().size(), 0);
 
         rs.setState(DataRowState.Update);
         rs.setValue("Code_", val);
-        assertEquals(rs.getDelta().size(), 0);
+        assertEquals(rs.delta().size(), 0);
 
         rs.setValue("Code_", "c");
         rs.setValue("Code_", "d");
-        assertEquals(rs.getDelta().size(), 1);
+        assertEquals(rs.delta().size(), 1);
         assertTrue(rs.getOldField("Code_") == val);
     }
 
