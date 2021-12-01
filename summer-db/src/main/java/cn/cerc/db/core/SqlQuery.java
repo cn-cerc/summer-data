@@ -38,7 +38,8 @@ public abstract class SqlQuery extends DataSet implements IHandle {
 
     public SqlQuery(IHandle handle) {
         super();
-        this.session = handle.getSession();
+        if (handle != null)
+            this.session = handle.getSession();
     }
 
     @Override
@@ -50,7 +51,6 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     public final void setSession(ISession session) {
         this.session = session;
     }
-
 
     @Override
     public final void clear() {
