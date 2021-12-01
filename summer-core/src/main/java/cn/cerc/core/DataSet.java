@@ -62,7 +62,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     @Deprecated
-    public DataSet append(int index) {
+    public final DataSet append(int index) {
         DataRow record = new DataRow(this).setState(DataRowState.Insert);
         if (index == -1 || index == records.size()) {
             this.records.add(record);
