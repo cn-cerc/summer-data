@@ -11,7 +11,7 @@ public class MssqlQuery extends SqlQuery implements IHandle {
     private MssqlServer server = null;
 
     public MssqlQuery() {
-        super();
+        this(null);
     }
 
     public MssqlQuery(IHandle handle) {
@@ -37,9 +37,10 @@ public class MssqlQuery extends SqlQuery implements IHandle {
 
     @Override
     public MssqlQuery setJson(String json) {
-        this.close();
+        this.clear();
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);
         return this;
     }
+
 }
