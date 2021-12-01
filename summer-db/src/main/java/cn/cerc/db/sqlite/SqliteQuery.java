@@ -32,7 +32,7 @@ public class SqliteQuery extends SqlQuery {
 
     @Override
     public SqliteQuery setJson(String json) {
-        this.close();
+        this.clear();
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);
         return this;
