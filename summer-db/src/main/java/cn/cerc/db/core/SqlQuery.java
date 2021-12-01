@@ -51,10 +51,12 @@ public abstract class SqlQuery extends DataSet implements IHandle {
         this.session = session;
     }
 
+
     @Override
-    public final void close() {
+    public final void clear() {
         this.setActive(false);
         this.operator = null;
+        this.getSqlText().clear();
         super.clear();
     }
 
@@ -279,12 +281,6 @@ public abstract class SqlQuery extends DataSet implements IHandle {
         this.active = value;
     }
 
-    @Override
-    public final void clear() {
-        close();
-        this.getSqlText().clear();
-    }
-
     public final int getMaximum() {
         return getSqlText().getMaximum();
     }
@@ -311,7 +307,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
 
     @Override
     public SqlQuery setJson(String json) {
-        this.close();
+        this.clear();
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);
         return this;
