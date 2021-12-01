@@ -202,6 +202,11 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     @Override
     @Deprecated
     public DataRow getCurrent() {
+        return current();
+    }
+
+    @Override
+    public DataRow current() {
         if (this.eof()) {
             throw new RuntimeException(String.format("[%s]eof == true", this.getClass().getName()));
         } else if (this.bof()) {
@@ -209,14 +214,6 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         } else {
             return records.get(recNo - 1);
         }
-    }
-
-    @Override
-    public DataRow current() {
-        if ((recNo > 0) && (recNo <= records.size()))
-            return records.get(recNo - 1);
-        else
-            return null;
     }
 
     /**
