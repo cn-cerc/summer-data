@@ -11,11 +11,11 @@ public class SqliteQuery extends SqlQuery {
 
     public SqliteQuery() {
         super();
-        this.getSqlText().setServerType(SqlText.SERVERTYPE_SQLITE);
+        this.sql().setServerType(SqlText.SERVERTYPE_SQLITE);
     }
 
     @Override
-    public SqliteServer getServer() {
+    public SqliteServer server() {
         if (server == null)
             server = new SqliteServer();
         return server;

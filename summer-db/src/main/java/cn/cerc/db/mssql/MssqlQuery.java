@@ -16,11 +16,11 @@ public class MssqlQuery extends SqlQuery implements IHandle {
 
     public MssqlQuery(IHandle handle) {
         super(handle);
-        this.getSqlText().setServerType(SqlText.SERVERTYPE_MSSQL);
+        this.sql().setServerType(SqlText.SERVERTYPE_MSSQL);
     }
 
     @Override
-    public MssqlServer getServer() {
+    public MssqlServer server() {
         if (server == null)
             server = (MssqlServer) getSession().getProperty(MssqlServer.SessionId);
         return server;

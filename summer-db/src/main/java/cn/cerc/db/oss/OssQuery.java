@@ -18,7 +18,7 @@ public class OssQuery extends DataSet implements IHandle {
     private String fileName;
     private OssMode ossMode = OssMode.create;
     private ISession session;
-    private SqlText sqlText = new SqlText();
+    private SqlText sql = new SqlText();
     private boolean active;
 
     public OssQuery(IHandle handle) {
@@ -29,7 +29,7 @@ public class OssQuery extends DataSet implements IHandle {
 
     public OssQuery open() {
         try {
-            this.fileName = SqlText.findTableName(this.getSqlText().getText());
+            this.fileName = SqlText.findTableName(this.sql().text());
             if (ossMode == OssMode.readWrite) {
                 String value = connection.getContent(this.fileName);
                 if (value != null) {
@@ -70,13 +70,13 @@ public class OssQuery extends DataSet implements IHandle {
         this.ossMode = ossMode;
     }
 
-    public OssQuery add(String sql) {
-        sqlText.add(sql);
+    public OssQuery add(String sqlText) {
+        this.sql.add(sqlText);
         return this;
     }
 
     public OssQuery add(String format, Object... args) {
-        sqlText.add(format, args);
+        sql.add(format, args);
         return this;
     }
 
@@ -98,8 +98,13 @@ public class OssQuery extends DataSet implements IHandle {
         this.active = active;
     }
 
-    public SqlText getSqlText() {
-        return sqlText;
+    public SqlText sql() {
+        return sql;
+    }
+
+    @Deprecated
+    public final SqlText getSqlText() {
+        return sql;
     }
 
     @Override

@@ -26,7 +26,7 @@ public class NasQuery extends DataSet implements IHandle {
     private String fileName;
     private QueueOperator operator;
     private NasModel nasMode = NasModel.create;
-    private SqlText sqlText = new SqlText();
+    private SqlText sql = new SqlText();
     private boolean active;
     private ISession session;
 
@@ -37,9 +37,9 @@ public class NasQuery extends DataSet implements IHandle {
 
     public NasQuery open() {
         try {
-            this.fileName = this.getSqlText().getText().substring(this.getSqlText().getText().indexOf("select") + 6,
-                    this.getSqlText().getText().indexOf("from")).trim();
-            this.filePath = SqlText.findTableName(this.getSqlText().getText());
+            this.fileName = this.sql().text()
+                    .substring(this.sql().text().indexOf("select") + 6, this.sql().text().indexOf("from")).trim();
+            this.filePath = SqlText.findTableName(this.sql().text());
         } catch (Exception e) {
             throw new RuntimeException("command suggest: select fileName from filePath");
         }
@@ -95,13 +95,13 @@ public class NasQuery extends DataSet implements IHandle {
         this.nasMode = nasMode;
     }
 
-    public NasQuery add(String sql) {
-        sqlText.add(sql);
+    public NasQuery add(String sqlText) {
+        this.sql.add(sqlText);
         return this;
     }
 
     public NasQuery add(String format, Object... args) {
-        sqlText.add(format, args);
+        sql.add(format, args);
         return this;
     }
 
@@ -123,8 +123,13 @@ public class NasQuery extends DataSet implements IHandle {
         this.active = active;
     }
 
-    public SqlText getSqlText() {
-        return sqlText;
+    public SqlText sql() {
+        return sql;
+    }
+
+    @Deprecated
+    public final SqlText getSqlText() {
+        return sql();
     }
 
     @Override

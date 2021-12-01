@@ -18,13 +18,13 @@ public class DaoQuery<T> extends MysqlQuery {
         super(handle);
         ParameterizedType ptype = (ParameterizedType) getClass().getGenericSuperclass();
         this.clazz = (Class<T>) ptype.getActualTypeArguments()[0];
-        this.setSqlText(new SqlText(this.clazz));
+        this.setSql(new SqlText(this.clazz));
     }
 
     public DaoQuery(IHandle handle, Class<T> clazz) {
         super(handle);
         this.clazz = clazz;
-        this.setSqlText(new SqlText(this.clazz));
+        this.setSql(new SqlText(this.clazz));
     }
 
     // 将对象追加到数据表中

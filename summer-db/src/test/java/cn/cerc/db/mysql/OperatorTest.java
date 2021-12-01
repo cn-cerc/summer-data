@@ -6,9 +6,9 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import cn.cerc.core.DataRow;
 import cn.cerc.core.FieldMeta.FieldKind;
 import cn.cerc.core.ISession;
-import cn.cerc.core.DataRow;
 import cn.cerc.core.SqlText;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.StubSession;
@@ -29,7 +29,7 @@ public class OperatorTest implements IHandle {
         MysqlServerMaster conn = this.getMysql();
         conn.execute("delete from temp where name_='new'");
         MysqlQuery ds = new MysqlQuery(this);
-        ds.getSqlText().setMaximum(0);
+        ds.sql().setMaximum(0);
         ds.add("select * from temp");
         ds.open();
         for (int i = 0; i < maxTest; i++) {

@@ -20,7 +20,7 @@ public class MysqlQuery extends SqlQuery implements IHandle {
     }
 
     @Override
-    public final MysqlServer getServer() {
+    public final MysqlServer server() {
         if (server != null)
             return server;
 
@@ -41,7 +41,7 @@ public class MysqlQuery extends SqlQuery implements IHandle {
     }
 
     public void setServer(MysqlServer server) {
-        if (this.isActive())
+        if (this.active())
             throw new RuntimeException("server change fail on active");
         this.server = server;
     }

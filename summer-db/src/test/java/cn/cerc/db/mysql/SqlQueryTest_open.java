@@ -14,7 +14,7 @@ public class SqlQueryTest_open implements IHandle {
     public void setUp() {
         session = new StubSession();
         ds = new MysqlQuery(this);
-        ds.getSqlText().setMaximum(1);
+        ds.sql().setMaximum(1);
         ds.add("select CorpNo_,CWCode_,PartCode_ from TranB1B where CorpNo_='%s'", "911001");
     }
 
