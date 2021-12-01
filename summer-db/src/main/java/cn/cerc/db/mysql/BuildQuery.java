@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import cn.cerc.core.DataRow;
 import cn.cerc.core.Datetime;
 import cn.cerc.core.ISession;
-import cn.cerc.core.DataRow;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
 
@@ -240,11 +240,16 @@ public class BuildQuery implements IHandle {
         return this;
     }
 
-    public MysqlQuery getDataSet() {
+    public MysqlQuery dataSet() {
         if (this.dataSet == null) {
             this.dataSet = new MysqlQuery(this);
         }
         return this.dataSet;
+    }
+
+    @Deprecated
+    public MysqlQuery getDataSet() {
+        return dataSet();
     }
 
     public void setDataSet(MysqlQuery dataSet) {
