@@ -201,7 +201,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
 
     @Override
     @Deprecated
-    public DataRow getCurrent() {
+    public final DataRow getCurrent() {
         return current();
     }
 
@@ -226,7 +226,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     @Deprecated
-    public List<DataRow> getRecords() {
+    public final List<DataRow> getRecords() {
         return records();
     }
 
@@ -235,7 +235,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     @Deprecated
-    public int getRecNo() {
+    public final int getRecNo() {
         return recNo();
     }
 
@@ -259,7 +259,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     @Deprecated
-    public FieldDefs getFieldDefs() {
+    public final FieldDefs getFieldDefs() {
         return fields();
     }
 
@@ -325,12 +325,12 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     @Deprecated
-    public TDate getDate(String field) {
+    public final TDate getDate(String field) {
         return this.current().getDate(field);
     }
 
     @Deprecated
-    public TDateTime getDateTime(String field) {
+    public final TDateTime getDateTime(String field) {
         return this.current().getDateTime(field);
     }
 
@@ -537,7 +537,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     @Deprecated
-    public void close() {
+    public final void close() {
         clear();
     }
 
@@ -628,7 +628,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     @Deprecated
-    public int getState() {
+    public final int getState() {
         return state();
     }
 
@@ -642,7 +642,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     @Deprecated
-    public String getMessage() {
+    public final String getMessage() {
         return message();
     }
 
@@ -689,7 +689,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     @Deprecated
-    public SearchDataSet getSearch() {
+    public final SearchDataSet getSearch() {
         return search;
     }
 
