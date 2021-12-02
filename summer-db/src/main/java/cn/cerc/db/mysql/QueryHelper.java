@@ -219,8 +219,8 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         }
         return this;
     }
-
-    public QueryHelper<T> add(String text) {
+    
+    public QueryHelper<T> addSelect(String text) {
         String regex = "((\\bselect)|(\\bSelect)|(\\s*select)|(\\s*Select))\\s*(distinct)*\\s+%s";
         if (text.matches(regex)) {
             text = text.replaceFirst("%s", "");
@@ -229,7 +229,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         return this;
     }
 
-    public QueryHelper<T> add(String fmtText, Object... args) {
+    public QueryHelper<T> addSelect(String fmtText, Object... args) {
         ArrayList<Object> items = new ArrayList<>();
         for (Object arg : args) {
             if (arg instanceof String) {
@@ -367,4 +367,5 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
     public void setSession(ISession session) {
         this.session = session;
     }
+    
 }

@@ -23,6 +23,16 @@ public class BuildQuery extends QueryHelper<MysqlQuery> {
         super(query);
     }
 
+    public BuildQuery add(String fmtText, Object... args) {
+        super.addSelect(fmtText, args);
+        return this;
+    }
+
+    public BuildQuery add(String text) {
+        super.addSelect(text);
+        return this;
+    }
+
     @Override
     public MysqlQuery dataSet() {
         if (this.dataSet == null)
