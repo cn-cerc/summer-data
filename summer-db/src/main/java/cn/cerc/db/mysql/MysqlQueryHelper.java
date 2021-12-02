@@ -2,7 +2,7 @@ package cn.cerc.db.mysql;
 
 import cn.cerc.core.ISession;
 
-public class MysqlQueryHelper extends QueryHelper<MysqlQuery> {
+public class MysqlQueryHelper extends SqlQueryHelper<MysqlQuery> {
 
     public MysqlQueryHelper(ISession session) {
         super(session);

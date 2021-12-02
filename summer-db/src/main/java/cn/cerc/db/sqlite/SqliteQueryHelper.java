@@ -1,9 +1,9 @@
 package cn.cerc.db.sqlite;
 
 import cn.cerc.core.ISession;
-import cn.cerc.db.mysql.QueryHelper;
+import cn.cerc.db.mysql.SqlQueryHelper;
 
-public class SqliteQueryHelper extends QueryHelper<SqliteQuery> {
+public class SqliteQueryHelper extends SqlQueryHelper<SqliteQuery> {
 
     public SqliteQueryHelper(ISession session) {
         super(session);

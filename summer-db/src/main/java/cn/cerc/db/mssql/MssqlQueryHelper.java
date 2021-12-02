@@ -1,9 +1,9 @@
 package cn.cerc.db.mssql;
 
 import cn.cerc.core.ISession;
-import cn.cerc.db.mysql.QueryHelper;
+import cn.cerc.db.mysql.SqlQueryHelper;
 
-public class MssqlQueryHelper extends QueryHelper<MssqlQuery> {
+public class MssqlQueryHelper extends SqlQueryHelper<MssqlQuery> {
 
     public MssqlQueryHelper(ISession session) {
         super(session);

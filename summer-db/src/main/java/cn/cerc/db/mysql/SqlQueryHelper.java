@@ -18,7 +18,7 @@ import cn.cerc.db.core.SqlQuery;
  *
  * @author 张弓
  */
-public class QueryHelper<T extends SqlQuery> implements IHandle {
+public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
     public static final String vbCrLf = "\r\n";
     protected T dataSet;
     protected List<String> where = new ArrayList<>();
@@ -26,12 +26,12 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
     private String order;
     private ISession session;
 
-    public QueryHelper(ISession session) {
+    public SqlQueryHelper(ISession session) {
         super();
         this.session = session;
     }
 
-    public QueryHelper(T query) {
+    public SqlQueryHelper(T query) {
         super();
         this.session = query.getSession();
         this.dataSet = query;
@@ -51,7 +51,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
      * @param items 数据库语句拼接
      * @return BuildQuery
      */
-    public QueryHelper<T> byLink(Map<String, List<String>> items) {
+    public SqlQueryHelper<T> byLink(Map<String, List<String>> items) {
         if (items == null) {
             return this;
         }
@@ -70,7 +70,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         return this;
     }
 
-    public QueryHelper<T> byLink(String[] fields, String value) {
+    public SqlQueryHelper<T> byLink(String[] fields, String value) {
         if (value == null || "".equals(value)) {
             return this;
         }
@@ -85,13 +85,13 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         return this;
     }
 
-    public QueryHelper<T> byNull(String field, boolean value) {
+    public SqlQueryHelper<T> byNull(String field, boolean value) {
         String s = value ? "not null" : "null";
         where.add(String.format("%s is %s", field, s));
         return this;
     }
 
-    public QueryHelper<T> addWhere(String field, String text) {
+    public SqlQueryHelper<T> addWhere(String field, String text) {
         String value = safeString(text);
         if ("".equals(value)) {
             return this;
@@ -126,50 +126,50 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         return this;
     }
 
-    public QueryHelper<T> addWhere(String field, int value) {
+    public SqlQueryHelper<T> addWhere(String field, int value) {
         where.add(String.format("%s=%s", field, value));
         return this;
     }
 
-    public QueryHelper<T> addWhere(String field, double value) {
+    public SqlQueryHelper<T> addWhere(String field, double value) {
         where.add(String.format("%s=%s", field, value));
         return this;
     }
 
-    public QueryHelper<T> addWhere(String field, Datetime value) {
+    public SqlQueryHelper<T> addWhere(String field, Datetime value) {
         where.add(String.format("%s='%s'", field, value.format("yyyy-MM-dd HH:mm:ss")));
         return this;
     }
 
-    public QueryHelper<T> addWhere(String field, boolean value) {
+    public SqlQueryHelper<T> addWhere(String field, boolean value) {
         int s = value ? 1 : 0;
         where.add(String.format("%s=%s", field, s));
         return this;
     }
 
-    public QueryHelper<T> byBetween(String field, String value1, String value2) {
+    public SqlQueryHelper<T> byBetween(String field, String value1, String value2) {
         where.add(String.format("%s between '%s' and '%s'", field, safeString(value1), safeString(value2)));
         return this;
     }
 
-    public QueryHelper<T> byBetween(String field, int value1, int value2) {
+    public SqlQueryHelper<T> byBetween(String field, int value1, int value2) {
         where.add(String.format("%s between %s and %s", field, value1, value2));
         return this;
     }
 
-    public QueryHelper<T> byBetween(String field, double value1, double value2) {
+    public SqlQueryHelper<T> byBetween(String field, double value1, double value2) {
         where.add(String.format("%s between %s and %s", field, value1, value2));
         return this;
     }
 
-    public QueryHelper<T> byBetween(String field, Datetime value1, Datetime value2) {
+    public SqlQueryHelper<T> byBetween(String field, Datetime value1, Datetime value2) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         where.add(String.format(" %s between '%s' and '%s' ", field, sdf.format(value1.asBaseDate()),
                 sdf.format(value2.asBaseDate())));
         return this;
     }
 
-    public QueryHelper<T> byRange(String field, String... values) {
+    public SqlQueryHelper<T> byRange(String field, String... values) {
         // where code_ in ("aa","Bb")
         if (values.length > 0) {
             String s = field + " in (";
@@ -182,7 +182,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         return this;
     }
 
-    public QueryHelper<T> byRange(String field, int[] values) {
+    public SqlQueryHelper<T> byRange(String field, int[] values) {
         if (values.length > 0) {
             String s = field + " in (";
             for (int sql : values) {
@@ -194,7 +194,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         return this;
     }
 
-    public QueryHelper<T> byRange(String field, double[] values) {
+    public SqlQueryHelper<T> byRange(String field, double[] values) {
         if (values.length > 0) {
             String s = field + " in (";
             for (double sql : values) {
@@ -206,14 +206,14 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         return this;
     }
 
-    public QueryHelper<T> setSelect(String text) {
+    public SqlQueryHelper<T> setSelect(String text) {
         content.clear();
         if (text.toUpperCase().startsWith("select "))
             throw new RuntimeException("text not startsWith select");
         return addSelect(text);
     }
 
-    public QueryHelper<T> addSelect(String text) {
+    public SqlQueryHelper<T> addSelect(String text) {
         String regex = "((\\bselect)|(\\bSelect)|(\\s*select)|(\\s*Select))\\s*(distinct)*\\s+%s";
         if (text.matches(regex)) {
             text = text.replaceFirst("%s", "");
@@ -222,7 +222,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         return this;
     }
 
-    public QueryHelper<T> addSelect(String fmtText, Object... args) {
+    public SqlQueryHelper<T> addSelect(String fmtText, Object... args) {
         ArrayList<Object> items = new ArrayList<>();
         for (Object arg : args) {
             if (arg instanceof String) {
@@ -239,7 +239,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         return this.dataSet;
     }
 
-    public QueryHelper<T> setDataSet(T dataSet) {
+    public SqlQueryHelper<T> setDataSet(T dataSet) {
         this.dataSet = dataSet;
         return this;
     }
@@ -311,7 +311,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         return dataSet().sql().offset();
     }
 
-    public QueryHelper<T> setOffset(int offset) {
+    public SqlQueryHelper<T> setOffset(int offset) {
         dataSet().sql().setOffset(offset);
         return this;
     }
@@ -320,7 +320,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         return dataSet().sql().maximum();
     }
 
-    public QueryHelper<T> setMaximum(int maximum) {
+    public SqlQueryHelper<T> setMaximum(int maximum) {
         dataSet().sql().setMaximum(maximum);
         return this;
     }
@@ -329,7 +329,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         return this.order;
     }
 
-    public QueryHelper<T> setOrder(String orderText) {
+    public SqlQueryHelper<T> setOrder(String orderText) {
         this.order = "order by " + orderText;
         return this;
     }
@@ -350,7 +350,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
      * @param param 要加入的查询条件
      * @return 返回自身
      */
-    public QueryHelper<T> setWhere(String param) {
+    public SqlQueryHelper<T> setWhere(String param) {
         where.clear();
         if (!"".equals(param)) {
             where.add("(" + param + ")");
