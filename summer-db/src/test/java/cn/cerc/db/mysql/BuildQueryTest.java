@@ -44,37 +44,37 @@ public class BuildQueryTest {
     public void test_byField() {
         String obj = null;
         bs.byField("code", obj);
-        assertEquals("", bs.select());
+        assertEquals("", bs.sqlText());
         bs.clear();
 
         bs.byField("code", "x");
-        assertEquals("where code='x'", bs.select());
+        assertEquals("where code='x'", bs.sqlText());
         bs.clear();
 
         bs.byField("code", "x*");
-        assertEquals("where code like 'x%'", bs.select());
+        assertEquals("where code like 'x%'", bs.sqlText());
         bs.byField("name", "y");
-        assertEquals("where code like 'x%' and name='y'", bs.select());
+        assertEquals("where code like 'x%' and name='y'", bs.sqlText());
         bs.clear();
 
         bs.byField("code", "``");
-        assertEquals("where code='`'", bs.select());
+        assertEquals("where code='`'", bs.sqlText());
         bs.clear();
 
         bs.byField("code", "`is null");
-        assertEquals("where (code is null or code='')", bs.select());
+        assertEquals("where (code is null or code='')", bs.sqlText());
         bs.clear();
 
         bs.byField("code", "`=100");
-        assertEquals("where code=100", bs.select());
+        assertEquals("where code=100", bs.sqlText());
         bs.clear();
 
         bs.byField("code", "`!=100");
-        assertEquals("where code<>100", bs.select());
+        assertEquals("where code<>100", bs.sqlText());
         bs.clear();
 
         bs.byField("code", "`<>100");
-        assertEquals("where code<>100", bs.select());
+        assertEquals("where code<>100", bs.sqlText());
         bs.clear();
     }
 }

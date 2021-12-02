@@ -1,6 +1,7 @@
 package cn.cerc.db.mysql;
 
 import cn.cerc.core.DataRow;
+import cn.cerc.core.Datetime;
 import cn.cerc.core.ISession;
 import cn.cerc.db.core.IHandle;
 
@@ -9,7 +10,7 @@ import cn.cerc.db.core.IHandle;
  *
  * @author 张弓
  */
-public class BuildQuery extends QueryHelper<MysqlQuery> {
+public class BuildQuery extends MysqlQueryHelper {
 
     public BuildQuery(IHandle owner) {
         super(owner.getSession());
@@ -90,7 +91,12 @@ public class BuildQuery extends QueryHelper<MysqlQuery> {
     }
 
     public final BuildQuery setOrderText(String orderText) {
-        this.setOrder(orderText);
+        String value = orderText.toLowerCase();
+        int site = value.indexOf(" by ");
+        if (site > -1)
+            this.setOrder(value.substring(site + 4, value.length()));
+        else
+            this.setOrder(value);
         return this;
     }
 
@@ -106,6 +112,54 @@ public class BuildQuery extends QueryHelper<MysqlQuery> {
 
     @Deprecated
     protected final String getSelectCommand() {
-        return select();
+        return sqlText();
     }
+
+    /**
+     * 增加自定义查询条件，须自行解决注入攻击！
+     *
+     * @param param 要加入的查询条件
+     * @return 返回自身
+     */
+    public BuildQuery byParam(String param) {
+        if (!"".equals(param)) {
+            where.add("(" + param + ")");
+        }
+        return this;
+    }
+
+    public static void main(String[] args) {
+        BuildQuery query = new BuildQuery(new MysqlQuery());
+        query.setSelect("select * from abc");
+        query.byParam("code_='a'");
+        query.byParam("name_='b'");
+        query.setOrderText("code_,name_");
+        System.out.println(query.sqlText());
+    }
+
+    public BuildQuery byField(String field, String value) {
+        addWhere(field, value);
+        return this;
+    }
+    
+    public BuildQuery byField(String field, int value) {
+        addWhere(field, value);
+        return this;
+    }
+
+    public BuildQuery byField(String field, double value) {
+        addWhere(field, value);
+        return this;
+    }
+
+    public BuildQuery byField(String field, Datetime value) {
+        addWhere(field, value);
+        return this;
+    }
+
+    public BuildQuery byField(String field, boolean value) {
+        addWhere(field, value);
+        return this;
+    }
+
 }

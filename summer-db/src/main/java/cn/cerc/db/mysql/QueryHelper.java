@@ -21,10 +21,9 @@ import cn.cerc.db.core.SqlQuery;
 public class QueryHelper<T extends SqlQuery> implements IHandle {
     public static final String vbCrLf = "\r\n";
     protected T dataSet;
-    private List<String> where = new ArrayList<>();
-    private List<String> sqlText = new ArrayList<>();
+    protected List<String> where = new ArrayList<>();
+    private List<String> content = new ArrayList<>();
     private String order;
-    private String sql;
     private ISession session;
 
     public QueryHelper(ISession session) {
@@ -36,19 +35,6 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         super();
         this.session = query.getSession();
         this.dataSet = query;
-    }
-
-    /**
-     * 增加自定义查询条件，须自行解决注入攻击！
-     *
-     * @param param 要加入的查询条件
-     * @return 返回自身
-     */
-    public QueryHelper<T> byParam(String param) {
-        if (!"".equals(param)) {
-            where.add("(" + param + ")");
-        }
-        return this;
     }
 
     /**
@@ -105,7 +91,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         return this;
     }
 
-    public QueryHelper<T> byField(String field, String text) {
+    public QueryHelper<T> addWhere(String field, String text) {
         String value = safeString(text);
         if ("".equals(value)) {
             return this;
@@ -140,22 +126,22 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         return this;
     }
 
-    public QueryHelper<T> byField(String field, int value) {
+    public QueryHelper<T> addWhere(String field, int value) {
         where.add(String.format("%s=%s", field, value));
         return this;
     }
 
-    public QueryHelper<T> byField(String field, double value) {
+    public QueryHelper<T> addWhere(String field, double value) {
         where.add(String.format("%s=%s", field, value));
         return this;
     }
 
-    public QueryHelper<T> byField(String field, Datetime value) {
+    public QueryHelper<T> addWhere(String field, Datetime value) {
         where.add(String.format("%s='%s'", field, value.format("yyyy-MM-dd HH:mm:ss")));
         return this;
     }
 
-    public QueryHelper<T> byField(String field, boolean value) {
+    public QueryHelper<T> addWhere(String field, boolean value) {
         int s = value ? 1 : 0;
         where.add(String.format("%s=%s", field, s));
         return this;
@@ -219,13 +205,20 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         }
         return this;
     }
-    
+
+    public QueryHelper<T> setSelect(String text) {
+        content.clear();
+        if (text.toUpperCase().startsWith("select "))
+            throw new RuntimeException("text not startsWith select");
+        return addSelect(text);
+    }
+
     public QueryHelper<T> addSelect(String text) {
         String regex = "((\\bselect)|(\\bSelect)|(\\s*select)|(\\s*Select))\\s*(distinct)*\\s+%s";
         if (text.matches(regex)) {
             text = text.replaceFirst("%s", "");
         }
-        sqlText.add(text);
+        content.add(text);
         return this;
     }
 
@@ -238,7 +231,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
                 items.add(arg);
             }
         }
-        sqlText.add(String.format(fmtText, items.toArray()));
+        content.add(String.format(fmtText, items.toArray()));
         return this;
     }
 
@@ -259,13 +252,9 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         return builder.toString();
     }
 
-    protected String select() {
-        if (this.sql != null) {
-            sql = sql.replaceFirst("%s", "");
-            return this.sql;
-        }
+    public String sqlText() {
         StringBuffer str = new StringBuffer();
-        for (String line : sqlText) {
+        for (String line : content) {
             if (str.length() > 0) {
                 str.append(vbCrLf);
             }
@@ -290,18 +279,6 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
         return sqls;
     }
 
-    public String sqlText() {
-        String text = select();
-        if ("".equals(text)) {
-            return text;
-        }
-        if (dataSet().sql().maximum() > -1) {
-            return text + " limit " + dataSet().sql().maximum();
-        } else {
-            return text;
-        }
-    }
-
     public T open() {
         return open(false);
     }
@@ -313,7 +290,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
     private T open(boolean slaveServer) {
         T ds = dataSet();
         ds.sql().clear();
-        ds.add(this.select());
+        ds.add(this.sqlText());
         if (!slaveServer)
             ds.open();
         else
@@ -322,8 +299,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
     }
 
     public void clear() {
-        sql = null;
-        sqlText.clear();
+        content.clear();
         where.clear();
         order = null;
         if (this.dataSet != null) {
@@ -354,7 +330,7 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
     }
 
     public QueryHelper<T> setOrder(String orderText) {
-        this.order = orderText;
+        this.order = "order by " + orderText;
         return this;
     }
 
@@ -367,5 +343,18 @@ public class QueryHelper<T extends SqlQuery> implements IHandle {
     public void setSession(ISession session) {
         this.session = session;
     }
-    
+
+    /**
+     * 增加自定义查询条件，须自行解决注入攻击！
+     *
+     * @param param 要加入的查询条件
+     * @return 返回自身
+     */
+    public QueryHelper<T> setWhere(String param) {
+        where.clear();
+        if (!"".equals(param)) {
+            where.add("(" + param + ")");
+        }
+        return this;
+    }
 }
