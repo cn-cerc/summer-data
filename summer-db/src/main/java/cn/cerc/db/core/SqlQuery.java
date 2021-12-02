@@ -205,7 +205,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     }
 
     @Override
-    protected final void deleteStorage(DataRow record) throws Exception {
+    public final void deleteStorage(DataRow record) throws Exception {
         try (ConnectionClient client = getConnectionClient()) {
             if (operator().delete(client.getConnection(), record))
                 garbage().remove(record);

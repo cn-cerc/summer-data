@@ -104,8 +104,8 @@ public final class FieldMeta implements Serializable {
     public final FieldMeta setKind(FieldKind type) {
         if (type == null)
             throw new RuntimeException("fieldKind is null!");
-        if (type == FieldKind.Storage)
-            throw new RuntimeException("Wrong direction of modification");
+//        if (type == FieldKind.Storage)
+//            throw new RuntimeException("Wrong direction of modification");
         this.kind = type;
         return this;
     }

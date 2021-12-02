@@ -656,7 +656,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return storage;
     }
 
-    protected final void setStorage(boolean storage) {
+    public void setStorage(boolean storage) {
         this.storage = storage;
     }
 
