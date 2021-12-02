@@ -322,8 +322,18 @@ public class DataRow implements Serializable, IRecord {
         return this.fields.exists(field);
     }
 
-    public boolean hasValue(String field) {
+    /**
+     * 
+     * @param field
+     * @return 判断是否有此栏位，以及此栏位是否有值
+     */
+    public boolean has(String field) {
         return fields.exists(field) && !"".equals(getString(field));
+    }
+
+    @Deprecated
+    public final boolean hasValue(String field) {
+        return has(field);
     }
 
     public DataSet dataSet() {
