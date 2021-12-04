@@ -338,6 +338,10 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         return this;
     }
 
+    public String group() {
+        return this.group;
+    }
+
     public SqlQueryHelper<T> setGroup(String groupText) {
         this.group = "group by " + groupText;
         return this;
