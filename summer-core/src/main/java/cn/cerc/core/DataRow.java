@@ -249,7 +249,8 @@ public class DataRow implements Serializable, IRecord {
         return gson.toJson(items);
     }
 
-    public void setJSON(Object jsonObj) {
+    @Deprecated
+    public final void setJSON(Object jsonObj) {
         if (!(jsonObj instanceof Map<?, ?>)) {
             throw new RuntimeException("not support type：" + jsonObj.getClass().getName());
         }
