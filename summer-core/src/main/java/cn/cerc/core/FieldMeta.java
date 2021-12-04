@@ -87,8 +87,16 @@ public final class FieldMeta implements Serializable {
         return getFieldType().setType(clazz);
     }
 
+    @Deprecated
     public final FieldType setType(Class<?> clazz, int length) {
-        return getFieldType().setType(clazz).setLength(length);
+        FieldType result = getFieldType().setType(clazz);
+        if ("s".equals(result.dataType()) || "o".equals(result.dataType()))
+            result.setLength(length);
+        else if ("n".equals(result.dataType()) || "f".equals(result.dataType())) {
+            if (length == 1 || length == 2)
+                result.setLength(length);
+        }
+        return result;
     }
 
     public final FieldType getFieldType() {
