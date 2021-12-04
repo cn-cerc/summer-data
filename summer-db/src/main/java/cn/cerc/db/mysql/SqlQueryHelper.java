@@ -209,8 +209,8 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
 
     public SqlQueryHelper<T> setSelect(String text) {
         content.clear();
-        if (text.toUpperCase().startsWith("select "))
-            throw new RuntimeException("text not startsWith select");
+        if (!text.toUpperCase().startsWith("select "))
+            throw new RuntimeException("startsWith is not select");
         return addSelect(text);
     }
 
