@@ -93,18 +93,10 @@ public class BuildQuery extends MysqlQueryHelper {
     @Deprecated
     public final BuildQuery setOrderText(String orderText) {
         String value = orderText.toLowerCase();
-        int site = value.indexOf(" by ");
-        if (value.startsWith("group ")) {
-            if (site > -1)
-                this.setGroup(value.substring(site + 4, value.length()));
-            else
-                this.setGroup(value);
-        } else {
-            if (site > -1)
-                this.setOrder(value.substring(site + 4, value.length()));
-            else
-                this.setOrder(value);
-        }
+        if (value.startsWith("group "))
+            this.setGroup(value);
+        else
+            this.setOrder(value);
         return this;
     }
 

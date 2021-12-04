@@ -333,8 +333,12 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         return this.order;
     }
 
-    public SqlQueryHelper<T> setOrder(String orderText) {
-        this.order = "order by " + orderText;
+    public SqlQueryHelper<T> setOrder(String order) {
+        if (!Utils.isEmpty(order)) {
+            if (order.toLowerCase().startsWith("order by "))
+                throw new RuntimeException("startsWidth is not order by");
+        }
+        this.order = order;
         return this;
     }
 
@@ -342,8 +346,12 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         return this.group;
     }
 
-    public SqlQueryHelper<T> setGroup(String groupText) {
-        this.group = "group by " + groupText;
+    public SqlQueryHelper<T> setGroup(String group) {
+        if (!Utils.isEmpty(order)) {
+            if (order.toLowerCase().startsWith("group by "))
+                throw new RuntimeException("startsWidth is not group by");
+        }
+        this.group = group;
         return this;
     }
 
