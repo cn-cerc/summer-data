@@ -122,7 +122,7 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         }
     }
 
-    public FieldDefs bindDefine(Class<?> clazz, String... names) {
+    public FieldDefs readDefine(Class<?> clazz, String... names) {
         List<String> items = null;
         if (names.length > 0)
             items = Arrays.asList(names);
