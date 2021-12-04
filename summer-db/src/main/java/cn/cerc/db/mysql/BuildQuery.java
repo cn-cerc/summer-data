@@ -90,13 +90,21 @@ public class BuildQuery extends MysqlQueryHelper {
         return this.order();
     }
 
+    @Deprecated
     public final BuildQuery setOrderText(String orderText) {
         String value = orderText.toLowerCase();
         int site = value.indexOf(" by ");
-        if (site > -1)
-            this.setOrder(value.substring(site + 4, value.length()));
-        else
-            this.setOrder(value);
+        if (value.startsWith("group ")) {
+            if (site > -1)
+                this.setGroup(value.substring(site + 4, value.length()));
+            else
+                this.setGroup(value);
+        } else {
+            if (site > -1)
+                this.setOrder(value.substring(site + 4, value.length()));
+            else
+                this.setOrder(value);
+        }
         return this;
     }
 
@@ -141,7 +149,7 @@ public class BuildQuery extends MysqlQueryHelper {
         addWhere(field, value);
         return this;
     }
-    
+
     public BuildQuery byField(String field, int value) {
         addWhere(field, value);
         return this;

@@ -24,6 +24,7 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
     protected List<String> where = new ArrayList<>();
     private List<String> content = new ArrayList<>();
     private String order;
+    private String group;
     private ISession session;
 
     public SqlQueryHelper(ISession session) {
@@ -270,6 +271,9 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
             }
             str.setLength(str.length() - 5);
         }
+        if (group != null) {
+            str.append(vbCrLf).append(group);
+        }
         if (order != null) {
             str.append(vbCrLf).append(order);
         }
@@ -331,6 +335,11 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
 
     public SqlQueryHelper<T> setOrder(String orderText) {
         this.order = "order by " + orderText;
+        return this;
+    }
+
+    public SqlQueryHelper<T> setGroup(String groupText) {
+        this.group = "group by " + groupText;
         return this;
     }
 
