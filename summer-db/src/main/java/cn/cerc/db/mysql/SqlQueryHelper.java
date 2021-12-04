@@ -348,8 +348,8 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
     }
 
     public SqlQueryHelper<T> setGroup(String group) {
-        if (!Utils.isEmpty(order)) {
-            if (order.toLowerCase().startsWith("group by "))
+        if (!Utils.isEmpty(group)) {
+            if (group.toLowerCase().startsWith("group by "))
                 throw new RuntimeException("startsWidth is not group by");
         }
         this.group = group;
