@@ -26,7 +26,7 @@ public class MysqlServerSlave extends MysqlServer {
     static {
         config = new MysqlConfig();
 
-        final String salve = ".salve";
+        final String salve = ".slave";
         final ClassConfig appConfig = MysqlConfig.appConfig;
 
         // mysql 连接相关，在未设置时，将与master库相同
