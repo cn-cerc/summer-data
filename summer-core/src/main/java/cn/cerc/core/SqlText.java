@@ -152,11 +152,12 @@ public class SqlText implements Serializable {
     }
 
     @Deprecated // 请改使用 addWhereKeys(values).getText()
-    public String getWhereKeys(Object... values) {
+    public final String getWhereKeys(Object... values) {
         return addWhereKeys(values).getText();
     }
 
-    public SqlText addWhereKeys(Object... values) {
+    @Deprecated
+    public final SqlText addWhereKeys(Object... values) {
         if (values.length == 0) {
             throw new RuntimeException("values is null");
         }
