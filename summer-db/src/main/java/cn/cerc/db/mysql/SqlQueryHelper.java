@@ -306,6 +306,7 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         content.clear();
         where.clear();
         order = null;
+        group = null;
         if (this.dataSet != null) {
             this.dataSet.clear();
         }
