@@ -209,8 +209,10 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
 
     public SqlQueryHelper<T> setSelect(String text) {
         content.clear();
-        if (!text.toUpperCase().startsWith("select "))
-            throw new RuntimeException("startsWith is not select");
+        if (!Utils.isEmpty(text)) {
+            if (!text.toLowerCase().startsWith("select "))
+                throw new RuntimeException("startsWith is not select");
+        }
         return addSelect(text);
     }
 
@@ -333,12 +335,12 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         return this.order;
     }
 
-    public SqlQueryHelper<T> setOrder(String order) {
-        if (!Utils.isEmpty(order)) {
-            if (order.toLowerCase().startsWith("order by "))
+    public SqlQueryHelper<T> setOrder(String text) {
+        if (!Utils.isEmpty(text)) {
+            if (!text.toLowerCase().startsWith("order by "))
                 throw new RuntimeException("startsWidth is not order by");
         }
-        this.order = order;
+        this.order = text;
         return this;
     }
 
@@ -346,12 +348,12 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         return this.group;
     }
 
-    public SqlQueryHelper<T> setGroup(String group) {
-        if (!Utils.isEmpty(order)) {
-            if (order.toLowerCase().startsWith("group by "))
+    public SqlQueryHelper<T> setGroup(String text) {
+        if (!Utils.isEmpty(text)) {
+            if (!text.toLowerCase().startsWith("group by "))
                 throw new RuntimeException("startsWidth is not group by");
         }
-        this.group = group;
+        this.group = text;
         return this;
     }
 
@@ -368,13 +370,20 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
     /**
      * 增加自定义查询条件，须自行解决注入攻击！
      *
-     * @param param 要加入的查询条件
+     * @param text 要加入的查询条件
      * @return 返回自身
      */
-    public SqlQueryHelper<T> setWhere(String param) {
+    public SqlQueryHelper<T> setWhere(String text) {
+        if (!Utils.isEmpty(text)) {
+            if (!text.toLowerCase().startsWith("where "))
+                throw new RuntimeException("startsWidth is not where");
+        }
+        String value = text;
+        if (value.toLowerCase().startsWith("where "))
+            value = text.substring(6, text.length());
         where.clear();
-        if (!"".equals(param)) {
-            where.add("(" + param + ")");
+        if (!"".equals(value)) {
+            where.add("(" + value + ")");
         }
         return this;
     }

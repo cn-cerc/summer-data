@@ -39,9 +39,10 @@ public class MssqlQueryHelper extends SqlQueryHelper<MssqlQuery> {
         MssqlQueryHelper query = new MssqlQueryHelper(new MssqlQuery());
         query.setSelect("select * from dept");
         query.addSelect("inner join abc on a=b");
-        query.setWhere("Code_='abc'");
+        query.setWhere("where Code_='abc'");
         query.addWhere("Name_", "abc");
         query.setOrder("order by code_,name_ desc");
+        query.setGroup("group by code_");
         System.out.println(query.sqlText());
     }
 }
