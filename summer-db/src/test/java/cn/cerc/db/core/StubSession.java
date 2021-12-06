@@ -12,14 +12,14 @@ import cn.cerc.db.queue.QueueServer;
 
 public class StubSession implements ISession {
     private MysqlServerMaster mysql;
-    private MssqlServer mssqlConnection;
+    private MssqlServer mssql;
     private MongoDB mgConn;
     private QueueServer queConn;
     private OssConnection ossConn;
 
     public StubSession() {
         mysql = new MysqlServerMaster();
-        mssqlConnection = new MssqlServer();
+        mssql = new MssqlServer();
         mgConn = new MongoDB();
         queConn = new QueueServer();
         ossConn = new OssConnection();
@@ -40,7 +40,7 @@ public class StubSession implements ISession {
         if (MysqlServerMaster.SessionId.equals(key))
             return mysql;
         if (MssqlServer.SessionId.equals(key)) {
-            return mssqlConnection;
+            return mssql;
         }
         if (MongoDB.SessionId.equals(key))
             return mgConn;

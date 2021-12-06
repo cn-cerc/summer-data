@@ -12,9 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.cerc.core.ClassResource;
+import cn.cerc.core.DataRow;
 import cn.cerc.core.FieldMeta;
 import cn.cerc.core.FieldMeta.FieldKind;
-import cn.cerc.core.DataRow;
 import cn.cerc.core.Utils;
 import cn.cerc.db.SummerDB;
 import cn.cerc.db.mysql.BuildStatement;
@@ -83,8 +83,8 @@ public abstract class SqlOperator {
         try (BuildStatement bs = new BuildStatement(connection)) {
             bs.append("insert into ").append(getTableName()).append(" (");
             int i = 0;
-            for (String field : record.getItems().keySet()) {
-                FieldMeta meta = record.getFieldDefs().get(field);
+            for (String field : record.items().keySet()) {
+                FieldMeta meta = record.fields().get(field);
                 if (meta.getKind() == FieldKind.Storage) {
                     if (!meta.isAutoincrement()) {
                         i++;
@@ -97,8 +97,8 @@ public abstract class SqlOperator {
             }
             bs.append(") values (");
             i = 0;
-            for (String field : record.getItems().keySet()) {
-                FieldMeta meta = record.getFieldDefs().get(field);
+            for (String field : record.items().keySet()) {
+                FieldMeta meta = record.fields().get(field);
                 if (meta.getKind() == FieldKind.Storage) {
                     if (!meta.isAutoincrement()) {
                         i++;
@@ -126,7 +126,7 @@ public abstract class SqlOperator {
             int result = ps.executeUpdate();
 
             boolean find = false;
-            for (FieldMeta meta : record.getFieldDefs()) {
+            for (FieldMeta meta : record.fields()) {
                 if ((meta.getKind() == FieldKind.Storage) && meta.isAutoincrement()) {
                     if (find)
                         throw new RuntimeException("only support one Autoincrement field");
@@ -150,13 +150,9 @@ public abstract class SqlOperator {
     }
 
     public final boolean update(Connection connection, DataRow record) {
-        if (!record.isModify()) {
-            return false;
-        }
-        Map<String, Object> delta = record.getDelta();
-        if (delta.size() == 0) {
-            return false;
-        }
+        Map<String, Object> delta = record.delta();
+        if (delta.size() == 0)
+            return true;
 
         resetUpdateKey(connection, record);
 
@@ -166,7 +162,7 @@ public abstract class SqlOperator {
             // 加入set条件
             int i = 0;
             for (String field : delta.keySet()) {
-                FieldMeta meta = record.getFieldDefs().get(field);
+                FieldMeta meta = record.fields().get(field);
                 if (meta.getKind() == FieldKind.Storage) {
                     if (!meta.isAutoincrement()) {
                         i++;
@@ -187,7 +183,7 @@ public abstract class SqlOperator {
             i = 0;
             int pkCount = 0;
             for (String field : searchKeys) {
-                FieldMeta meta = record.getFieldDefs().get(field);
+                FieldMeta meta = record.fields().get(field);
                 if (meta.getKind() == FieldKind.Storage) {
                     i++;
                     bs.append(i == 1 ? " where " : " and ").append(field);
@@ -206,7 +202,7 @@ public abstract class SqlOperator {
             if (getUpdateMode() == UpdateMode.strict) {
                 for (String field : delta.keySet()) {
                     if (!searchKeys.contains(field)) {
-                        FieldMeta meta = record.getFieldDefs().get(field);
+                        FieldMeta meta = record.fields().get(field);
                         if (meta.getKind() == FieldKind.Storage) {
                             i++;
                             bs.append(i == 1 ? " where " : " and ").append(field);
@@ -248,9 +244,9 @@ public abstract class SqlOperator {
         try (BuildStatement bs = new BuildStatement(connection)) {
             bs.append("delete from ").append(getTableName());
             int count = 0;
-            Map<String, Object> delta = record.getDelta();
+            Map<String, Object> delta = record.delta();
             for (String field : searchKeys) {
-                FieldMeta meta = record.getFieldDefs().get(field);
+                FieldMeta meta = record.fields().get(field);
                 if (meta.getKind() == FieldKind.Storage) {
                     Object value = delta.containsKey(field) ? delta.get(field) : record.getValue(field);
                     if (value == null)
@@ -282,7 +278,7 @@ public abstract class SqlOperator {
     private void resetUpdateKey(Connection connection, DataRow record) {
         FieldMeta def = null;
         if (!Utils.isEmpty(this.updateKey)) {
-            def = record.getFieldDefs().get(this.updateKey);
+            def = record.fields().get(this.updateKey);
             if (def == null) {
                 log.debug(String.format("not find primary key %s in %s", this.updateKey, getTableName()));
                 this.updateKey = null;
@@ -300,7 +296,7 @@ public abstract class SqlOperator {
         }
 
         boolean find = false;
-        for (FieldMeta meta : record.getFieldDefs()) {
+        for (FieldMeta meta : record.fields()) {
             if (meta.isUpdateKey()) {
                 if (find)
                     throw new RuntimeException("only support one UpdateKey field");

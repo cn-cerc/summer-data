@@ -131,27 +131,26 @@ public final class FieldType {
     }
 
     public FieldType setType(Class<?> clazz) {
-        if (Boolean.class == clazz)
+        if (boolean.class == clazz || Boolean.class == clazz)
             this.updateType("b", 0);
+        else if (int.class == clazz || Integer.class == clazz)
+            this.updateType("n", 1);
+        else if (long.class == clazz || Long.class == clazz)
+            this.updateType("n", 2);
+        else if (float.class == clazz || Float.class == clazz)
+            this.updateType("f", 1);
+        else if (double.class == clazz || Double.class == clazz)
+            this.updateType("f", 2);
         else if (FastDate.class.isAssignableFrom(clazz))
             this.updateType("d", 0);
         else if (FastTime.class.isAssignableFrom(clazz))
             this.updateType("t", 0);
         else if ((Datetime.class.isAssignableFrom(clazz)) || java.util.Date.class == clazz)
             this.updateType("dt", 0);
-        else if (String.class == clazz) {
+        else if (String.class == clazz)
             this.updateType("s", 0);
-        } else if (Integer.class == clazz) {
-            this.updateType("n", 1);
-        } else if (Long.class == clazz) {
-            this.updateType("n", 2);
-        } else if (Float.class == clazz) {
-            this.updateType("f", 1);
-        } else if (Double.class == clazz) {
-            this.updateType("f", 2);
-        } else {
+        else
             this.updateType("o", 0);
-        }
         return this;
     }
 
@@ -217,6 +216,10 @@ public final class FieldType {
             this.length = length;
     }
 
+    public final String dataType() {
+        return this.dataType;
+    }
+
     public final int getLength() {
         return length;
     }
@@ -231,7 +234,12 @@ public final class FieldType {
     }
 
     public final FieldType setLength(int length) {
-        this.length = length;
+        if ("s".equals(dataType) || "o".equals(dataType))
+            this.length = length;
+        else if (("n".equals(dataType) || "f".equals(dataType)) && (length == 1 || length == 2))
+            this.length = length;
+        else
+            throw new RuntimeException(String.format("the dateType is %s, error length: %s", this.dataType, length));
         return this;
     }
 

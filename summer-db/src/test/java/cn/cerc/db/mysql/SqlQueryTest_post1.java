@@ -24,7 +24,7 @@ public class SqlQueryTest_post1 implements IHandle {
     @Test(expected = PostFieldException.class)
     @Ignore(value = "仅允许在测试数据库运行")
     public void post_error() {
-        ds.getFieldDefs().add("Test");
+        ds.fields().add("Test");
         ds.add("select * from Dept where CorpNo_='%s'", "144001");
         ds.open();
         ds.edit();

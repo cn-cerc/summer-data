@@ -6,8 +6,8 @@ import java.sql.Timestamp;
 
 import javax.persistence.Entity;
 
-import cn.cerc.core.ISession;
 import cn.cerc.core.DataRow;
+import cn.cerc.core.ISession;
 import cn.cerc.core.RecordUtils;
 import cn.cerc.db.core.Handle;
 import cn.cerc.db.mysql.MysqlQuery;
@@ -53,10 +53,10 @@ public class DaoUtil {
 
         MysqlQuery ds = new MysqlQuery(new Handle(session));
         ds.add("select * from " + tableName);
-        ds.getSqlText().setMaximum(1);
+        ds.sql().setMaximum(1);
         ds.open();
-        DataRow record = ds.eof() ? null : ds.getCurrent();
-        for (String field : ds.getFieldDefs().getFields()) {
+        DataRow record = ds.eof() ? null : ds.current();
+        for (String field : ds.fields().names()) {
             if ("UID_".equals(field)) {
                 sb.append("@Id").append("\r\n");
                 sb.append("@GeneratedValue(strategy = GenerationType.IDENTITY)").append("\r\n");

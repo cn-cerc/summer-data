@@ -9,12 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.cerc.core.DataRow;
+import cn.cerc.core.DataRowState;
 import cn.cerc.core.DataSet;
 import cn.cerc.core.DataSetGson;
 import cn.cerc.core.FieldDefs;
 import cn.cerc.core.FieldMeta.FieldKind;
 import cn.cerc.core.ISession;
-import cn.cerc.core.DataRowState;
 import cn.cerc.core.SqlText;
 import cn.cerc.core.Utils;
 
@@ -28,7 +28,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     // 数据库保存操作执行对象
     private SqlOperator operator;
     // SqlCommand 指令
-    private SqlText sqlText = new SqlText();
+    private SqlText sql = new SqlText();
     // 运行环境
     private ISession session;
 
@@ -38,7 +38,8 @@ public abstract class SqlQuery extends DataSet implements IHandle {
 
     public SqlQuery(IHandle handle) {
         super();
-        this.session = handle.getSession();
+        if (handle != null)
+            this.session = handle.getSession();
     }
 
     @Override
@@ -52,10 +53,11 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     }
 
     @Override
-    public final void close() {
+    public final void clear() {
         this.setActive(false);
         this.operator = null;
-        super.close();
+        this.sql().clear();
+        super.clear();
     }
 
     public final SqlQuery open() {
@@ -71,7 +73,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     private final void open(boolean masterServer) {
         this.setStorage(masterServer);
         this.setFetchFinish(true);
-        String sql = getSqlText().getCommand();
+        String sql = sql().getCommand();
         log.debug(sql.replaceAll("\r\n", " "));
         try (ConnectionClient client = getConnectionClient()) {
             try (Statement st = client.getConnection().createStatement()) {
@@ -89,18 +91,18 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     }
 
     // 追加相同数据表的其它记录，与已有记录合并
-    public final int attach(String sql) {
-        if (!this.isActive()) {
+    public final int attach(String sqlText) {
+        if (!this.active()) {
             this.clear();
-            this.add(sql);
+            this.add(sqlText);
             this.open();
             return this.size();
         }
 
-        log.debug(sql.replaceAll("\r\n", " "));
+        log.debug(sqlText.replaceAll("\r\n", " "));
         try (ConnectionClient client = getConnectionClient()) {
             try (Statement st = client.getConnection().createStatement()) {
-                try (ResultSet rs = st.executeQuery(sql.replace("\\", "\\\\"))) {
+                try (ResultSet rs = st.executeQuery(sqlText.replace("\\", "\\\\"))) {
                     int oldSize = this.size();
                     append(rs);
                     return this.size() - oldSize;
@@ -116,33 +118,33 @@ public abstract class SqlQuery extends DataSet implements IHandle {
             throw new RuntimeException("batchSave is false");
         ConnectionClient client = null;
         try {
-            if (this.isStorage())
+            if (this.storage())
                 client = getConnectionClient();
 
             // 先执行删除
-            for (DataRow record : getDelList()) {
+            for (DataRow record : garbage()) {
                 doBeforeDelete(record);
-                if (this.isStorage())
-                    getOperator().delete(client.getConnection(), record);
+                if (this.storage())
+                    operator().delete(client.getConnection(), record);
                 doAfterDelete(record);
             }
             // 再执行增加、修改
             this.first();
             while (this.fetch()) {
-                DataRow record = this.getCurrent();
-                if (record.getState().equals(DataRowState.Insert)) {
+                DataRow record = this.current();
+                if (record.state().equals(DataRowState.Insert)) {
                     doBeforePost(record);
-                    if (this.isStorage())
-                        getOperator().insert(client.getConnection(), record);
+                    if (this.storage())
+                        operator().insert(client.getConnection(), record);
                     doAfterPost(record);
-                } else if (record.getState().equals(DataRowState.Update)) {
+                } else if (record.state().equals(DataRowState.Update)) {
                     doBeforePost(record);
-                    if (this.isStorage())
-                        getOperator().update(client.getConnection(), record);
+                    if (this.storage())
+                        operator().update(client.getConnection(), record);
                     doAfterPost(record);
                 }
             }
-            getDelList().clear();
+            garbage().clear();
         } finally {
             if (client != null) {
                 try {
@@ -158,7 +160,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     private void append(ResultSet rs) throws SQLException {
         // 取得字段清单
         ResultSetMetaData meta = rs.getMetaData();
-        FieldDefs defs = this.getFieldDefs();
+        FieldDefs defs = this.fields();
         for (int i = 1; i <= meta.getColumnCount(); i++) {
             String field = meta.getColumnLabel(i);
             if (!defs.exists(field))
@@ -168,7 +170,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
         int total = this.size();
         while (rs.next()) {
             total++;
-            if (this.getMaximum() > -1 && this.getMaximum() < total) {
+            if (this.maximum() > -1 && this.maximum() < total) {
                 setFetchFinish(false);
                 break;
             }
@@ -178,10 +180,10 @@ public abstract class SqlQuery extends DataSet implements IHandle {
                 record.setValue(fn, rs.getObject(fn));
             }
             record.setState(DataRowState.None);
-            this.getRecords().add(record);
+            this.records().add(record);
             this.last();
         }
-        if (this.getMaximum() > -1) {
+        if (this.maximum() > -1) {
             BigdataException.check(this, this.size());
         }
     }
@@ -189,21 +191,24 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     @Override
     protected final void insertStorage(DataRow record) throws Exception {
         try (ConnectionClient client = getConnectionClient()) {
-            getOperator().insert(client.getConnection(), record);
+            if (operator().insert(client.getConnection(), record))
+                record.setState(DataRowState.None);
         }
     }
 
     @Override
     protected final void updateStorage(DataRow record) throws Exception {
         try (ConnectionClient client = getConnectionClient()) {
-            getOperator().update(client.getConnection(), record);
+            if (operator().update(client.getConnection(), record))
+                record.setState(DataRowState.None);
         }
     }
 
     @Override
-    protected final void deleteStorage(DataRow record) throws Exception {
+    public final void deleteStorage(DataRow record) throws Exception {
         try (ConnectionClient client = getConnectionClient()) {
-            getOperator().delete(client.getConnection(), record);
+            if (operator().delete(client.getConnection(), record))
+                garbage().remove(record);
         }
     }
 
@@ -213,18 +218,23 @@ public abstract class SqlQuery extends DataSet implements IHandle {
      * @return 返回 ConnectionClient 接口对象
      */
     private final ConnectionClient getConnectionClient() {
-        return (ConnectionClient) getServer().getClient();
+        return (ConnectionClient) server().getClient();
     }
 
-    public final SqlOperator getOperator() {
+    public final SqlOperator operator() {
         if (operator == null)
-            operator = getServer().getDefaultOperator(this);
+            operator = server().getDefaultOperator(this);
         if (operator.getTableName() == null) {
-            String sql = this.getSqlText().getText();
-            if (sql != null)
-                operator.setTableName(SqlText.findTableName(sql));
+            String sqlText = this.sqlText();
+            if (sqlText != null)
+                operator.setTableName(SqlText.findTableName(sqlText));
         }
         return operator;
+    }
+
+    @Deprecated
+    public final SqlOperator getOperator() {
+        return operator();
     }
 
     public final void setOperator(SqlOperator operator) {
@@ -249,46 +259,66 @@ public abstract class SqlQuery extends DataSet implements IHandle {
      * @return 返回对象本身
      */
     public final SqlQuery add(String sql) {
-        sqlText.add(sql);
+        this.sql.add(sql);
         return this;
     }
 
     public final SqlQuery add(String format, Object... args) {
-        sqlText.add(format, args);
+        this.sql.add(format, args);
         return this;
     }
 
+    public final String sqlText() {
+        return this.sql.text();
+    }
+
+    @Deprecated
     public final String getCommandText() {
-        return this.sqlText.getText();
+        return sqlText();
     }
 
+    public final SqlText sql() {
+        return this.sql;
+    }
+
+    @Deprecated
     public final SqlText getSqlText() {
-        return this.sqlText;
+        return sql();
     }
 
+    protected final void setSql(SqlText sqlText) {
+        this.sql = sqlText;
+    }
+
+    @Deprecated
     protected final void setSqlText(SqlText sqlText) {
-        this.sqlText = sqlText;
+        this.setSql(sqlText);
     }
 
-    public final boolean isActive() {
+    public final boolean active() {
         return active;
+    }
+
+    @Deprecated
+    public final boolean isActive() {
+        return active();
     }
 
     private final void setActive(boolean value) {
         this.active = value;
     }
 
-    public final void clear() {
-        close();
-        this.getSqlText().clear();
+    public final int maximum() {
+        return sql().maximum();
     }
 
+    @Deprecated
     public final int getMaximum() {
-        return getSqlText().getMaximum();
+        return maximum();
     }
 
     public final SqlQuery setMaximum(int maximum) {
-        getSqlText().setMaximum(maximum);
+        sql().setMaximum(maximum);
         return this;
     }
 
@@ -300,16 +330,21 @@ public abstract class SqlQuery extends DataSet implements IHandle {
         this.fetchFinish = fetchFinish;
     }
 
-    protected abstract SqlServer getServer();
+    protected abstract ISqlServer server();
+
+    @Deprecated
+    protected final ISqlServer getServer() {
+        return server();
+    }
 
     @Override
-    public String toJson() {
+    public String json() {
         return new DataSetGson<>(this).encode();
     }
 
     @Override
-    public SqlQuery fromJson(String json) {
-        this.close();
+    public SqlQuery setJson(String json) {
+        this.clear();
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);
         return this;

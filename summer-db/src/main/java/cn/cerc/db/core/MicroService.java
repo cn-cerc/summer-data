@@ -31,17 +31,6 @@ public class MicroService extends Curl {
      */
     private JsonObject response;
 
-    public static void main(String[] args) {
-        MicroService service = new MicroService();
-        service.put("appKey", "asdfsdf");
-
-        System.out.println(service.post("server.getIP"));
-        System.out.println(service.isResult());
-        System.out.println(service.getMessage());
-        System.out.println(service.getResponseContent());
-        System.out.println(service.getResponse());
-    }
-
     /**
      * 执行指定的服务
      *

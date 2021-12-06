@@ -10,14 +10,14 @@ public class DataRowTest {
     @Test
     public void test_create() {
         DataRow item = new DataRow();
-        assertEquals(item.getState(), DataRowState.None);
+        assertEquals(item.state(), DataRowState.None);
     }
 
     @Test
     public void test_setState() {
         DataRow item = new DataRow();
         item.setState(DataRowState.Insert);
-        assertEquals(item.getState(), DataRowState.Insert);
+        assertEquals(item.state(), DataRowState.Insert);
     }
 
     @Test
@@ -99,23 +99,23 @@ public class DataRowTest {
 
     @Test
     public void test_setField_delta() {
-        DataRow rs = new DataRow();
-        rs.setValue("Code_", "a");
-        assertEquals(rs.getDelta().size(), 0);
+        DataRow row = new DataRow();
+        row.setValue("Code_", "a");
+        assertEquals(row.delta().size(), 0);
 
         Object val = null;
 
-        rs.setValue("Code_", val);
-        assertEquals(rs.getDelta().size(), 0);
+        row.setValue("Code_", val);
+        assertEquals(row.delta().size(), 0);
 
-        rs.setState(DataRowState.Update);
-        rs.setValue("Code_", val);
-        assertEquals(rs.getDelta().size(), 0);
+        row.setState(DataRowState.Update);
+        row.setValue("Code_", val);
+        assertEquals(row.delta().size(), 0);
 
-        rs.setValue("Code_", "c");
-        rs.setValue("Code_", "d");
-        assertEquals(rs.getDelta().size(), 1);
-        assertTrue(rs.getOldField("Code_") == val);
+        row.setValue("Code_", "c");
+        row.setValue("Code_", "d");
+        assertEquals(row.delta().size(), 1);
+        assertTrue(row.getOldField("Code_") == val);
     }
 
     @Test
@@ -126,7 +126,7 @@ public class DataRowTest {
         rs.setValue("C", "C001");
         int i = 0;
         for (@SuppressWarnings("unused")
-                String key : rs.getItems().keySet()) {
+                String key : rs.items().keySet()) {
             i++;
         }
         assertEquals(i, rs.size());

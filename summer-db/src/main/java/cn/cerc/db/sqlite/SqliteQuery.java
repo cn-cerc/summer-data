@@ -11,11 +11,11 @@ public class SqliteQuery extends SqlQuery {
 
     public SqliteQuery() {
         super();
-        this.getSqlText().setServerType(SqlText.SERVERTYPE_SQLITE);
+        this.sql().setServerType(SqlText.SERVERTYPE_SQLITE);
     }
 
     @Override
-    public SqliteServer getServer() {
+    public SqliteServer server() {
         if (server == null)
             server = new SqliteServer();
         return server;
@@ -26,13 +26,13 @@ public class SqliteQuery extends SqlQuery {
     }
 
     @Override
-    public String toJson() {
+    public String json() {
         return new DataSetGson<>(this).encode();
     }
 
     @Override
-    public SqliteQuery fromJson(String json) {
-        this.close();
+    public SqliteQuery setJson(String json) {
+        this.clear();
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);
         return this;

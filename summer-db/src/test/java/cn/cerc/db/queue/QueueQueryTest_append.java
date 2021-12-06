@@ -26,10 +26,10 @@ public class QueueQueryTest_append implements IHandle {
         System.out.println(dataSet.getActive());
 
         // append head
-        dataSet.getHead().setValue("queueHeadData1", "queueHeadData1");
-        dataSet.getHead().setValue("queueHeadData2", "queueHeadData2");
-        dataSet.getHead().setValue("queueHeadData3", "queueHeadData3");
-        dataSet.getHead().setValue("queueHeadData4", "queueHeadData4");
+        dataSet.head().setValue("queueHeadData1", "queueHeadData1");
+        dataSet.head().setValue("queueHeadData2", "queueHeadData2");
+        dataSet.head().setValue("queueHeadData3", "queueHeadData3");
+        dataSet.head().setValue("queueHeadData4", "queueHeadData4");
 
         // append body
         dataSet.append();

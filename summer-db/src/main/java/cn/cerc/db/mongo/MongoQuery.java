@@ -14,11 +14,11 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 
 import cn.cerc.core.ClassResource;
+import cn.cerc.core.DataRow;
+import cn.cerc.core.DataRowState;
 import cn.cerc.core.DataSet;
 import cn.cerc.core.DataSetGson;
 import cn.cerc.core.ISession;
-import cn.cerc.core.DataRow;
-import cn.cerc.core.DataRowState;
 import cn.cerc.core.SqlText;
 import cn.cerc.core.Utils;
 import cn.cerc.db.SummerDB;
@@ -33,7 +33,7 @@ public class MongoQuery extends DataSet implements IHandle {
     private NosqlOperator operator;
     private ISession session;
     private boolean active;
-    private final SqlText sqlText = new SqlText();
+    private final SqlText sql = new SqlText();
 
     public MongoQuery(IHandle handle) {
         super();
@@ -43,13 +43,13 @@ public class MongoQuery extends DataSet implements IHandle {
 
     public MongoQuery open() {
         this.setStorage(true);
-        String table = SqlText.findTableName(this.getSqlText().getText());
+        String table = SqlText.findTableName(this.sql().text());
         // 查找业务ID对应的数据
         MongoCollection<Document> coll = connection.getClient().getCollection(table);
         // 增加查询条件
-        BasicDBObject filter = decodeWhere(this.getSqlText().getText());
+        BasicDBObject filter = decodeWhere(this.sql().text());
         // 增加排序条件
-        BasicDBObject sort = decodeOrder(this.getSqlText().getText());
+        BasicDBObject sort = decodeOrder(this.sql().text());
         // 执行查询
         ArrayList<Document> list = coll.find(filter).sort(sort).into(new ArrayList<>());
         // 数据不存在,则状态不为更新,并返回一个空数据
@@ -58,7 +58,7 @@ public class MongoQuery extends DataSet implements IHandle {
         }
 
         for (Document doc : list) {
-            DataRow record = append().getCurrent();
+            DataRow record = append().current();
             for (String field : doc.keySet()) {
                 if ("_id".equals(field)) {
                     Object uid = doc.get(field);
@@ -204,13 +204,14 @@ public class MongoQuery extends DataSet implements IHandle {
 
     @Override
     protected final void deleteStorage(DataRow record) {
-        getOperator().delete(record);
+        if (getOperator().delete(record))
+            garbage().remove(record);
     }
 
     private NosqlOperator getOperator() {
         if (operator == null) {
             MongoOperator obj = new MongoOperator(this);
-            obj.setTableName(SqlText.findTableName(this.getSqlText().getText()));
+            obj.setTableName(SqlText.findTableName(this.getSqlText().text()));
             operator = obj;
         }
         return operator;
@@ -233,7 +234,7 @@ public class MongoQuery extends DataSet implements IHandle {
         List<Map<String, Object>> items = (List<Map<String, Object>>) value;
         DataSet dataSet = new DataSet();
         for (Map<String, Object> item : items) {
-            DataRow record = dataSet.append().getCurrent();
+            DataRow record = dataSet.append().current();
             for (String key : item.keySet()) {
                 record.setValue(key, item.get(key));
             }
@@ -245,8 +246,8 @@ public class MongoQuery extends DataSet implements IHandle {
     // 将DataSet转成通用类型，方便存入MongoDB
     public void setChildDataSet(String field, DataSet dataSet) {
         List<Map<String, Object>> items = new ArrayList<>();
-        for (DataRow child : dataSet.getRecords()) {
-            items.add(child.getItems());
+        for (DataRow child : dataSet.records()) {
+            items.add(child.items());
         }
         this.setValue(field, items);
     }
@@ -279,13 +280,13 @@ public class MongoQuery extends DataSet implements IHandle {
         return (Map<String, Object>) value;
     }
 
-    public MongoQuery add(String sql) {
-        sqlText.add(sql);
+    public MongoQuery add(String sqlText) {
+        this.sql.add(sqlText);
         return this;
     }
 
     public MongoQuery add(String format, Object... args) {
-        sqlText.add(format, args);
+        this.sql.add(format, args);
         return this;
     }
 
@@ -307,19 +308,23 @@ public class MongoQuery extends DataSet implements IHandle {
         this.active = active;
     }
 
-    public SqlText getSqlText() {
-        return sqlText;
+    public SqlText sql() {
+        return this.sql;
     }
-    
+
+    @Deprecated
+    public final SqlText getSqlText() {
+        return this.sql();
+    }
 
     @Override
-    public String toJson() {
+    public String json() {
         return new DataSetGson<>(this).encode();
     }
 
     @Override
-    public MongoQuery fromJson(String json) {
-        this.close();
+    public MongoQuery setJson(String json) {
+        super.clear();
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);
         return this;

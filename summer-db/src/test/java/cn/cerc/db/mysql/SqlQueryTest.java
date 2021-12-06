@@ -28,7 +28,7 @@ public class SqlQueryTest implements IHandle {
 
     @Test
     public void test_open() {
-        ds.getSqlText().setMaximum(1);
+        ds.sql().setMaximum(1);
         ds.add("select Code_,Name_ from %s", userInfo);
         ds.open();
         assertEquals(ds.size(), 1);
@@ -40,35 +40,35 @@ public class SqlQueryTest implements IHandle {
         sql = String.format("select Code_,Name_ from %s", userInfo);
         ds.add(sql);
         assertEquals(String.format("%s limit %s", sql, (BigdataException.MAX_RECORDS + 2)),
-                ds.getSqlText().getCommand());
+                ds.sql().getCommand());
 
         ds.clear();
         sql = String.format("select Code_,Name_ from %s limit 1", userInfo);
-        ds.getSqlText().setMaximum(-1);
+        ds.sql().setMaximum(-1);
         ds.add(sql);
-        assertEquals(sql, ds.getSqlText().getCommand());
+        assertEquals(sql, ds.sql().getCommand());
 
         ds.clear();
-        ds.getSqlText().setMaximum(BigdataException.MAX_RECORDS);
+        ds.sql().setMaximum(BigdataException.MAX_RECORDS);
         sql = String.format("select Code_,Name_ from %s", userInfo);
         ds.add(sql);
 
         assertEquals(String.format("%s limit %s", sql, (BigdataException.MAX_RECORDS + 2)),
-                ds.getSqlText().getCommand());
+                ds.sql().getCommand());
     }
 
     @Test
     public void test_open_2() {
-        ds.getSqlText().setMaximum(1);
+        ds.sql().setMaximum(1);
         String str = "\\小王233\\";
         ds.add("select * from %s where Name_='%s'", userInfo, str);
-        log.info(ds.getSqlText().getText());
+        log.info(ds.sql().text());
         ds.open();
 
         ds.clear();
         str = "\\\\小王233\\\\";
         ds.add("select * from %s where Name_='%s'", userInfo, str);
-        log.info(ds.getSqlText().getText());
+        log.info(ds.sql().text());
         ds.open();
 
     }

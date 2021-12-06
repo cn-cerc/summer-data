@@ -15,9 +15,9 @@ import cn.cerc.core.Utils;
 import cn.cerc.db.SummerDB;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.SqlOperator;
-import cn.cerc.db.core.SqlServer;
+import cn.cerc.db.core.ISqlServer;
 
-public class SqliteServer implements SqlServer {
+public class SqliteServer implements ISqlServer {
     public static final ClassConfig config = new ClassConfig(SqliteServer.class, SummerDB.ID);
     private static final Logger log = LoggerFactory.getLogger(SqliteServer.class);
     private List<String> tables;
@@ -149,7 +149,7 @@ public class SqliteServer implements SqlServer {
         query.add("select * from " + table);
         query.open();
         while (query.fetch())
-            System.out.println(query.getCurrent());
+            System.out.println(query.current());
     }
 
     public String getPath() {

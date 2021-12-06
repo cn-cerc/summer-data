@@ -8,10 +8,10 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.cerc.core.DataRow;
 import cn.cerc.core.DataSet;
 import cn.cerc.core.DataSetGson;
 import cn.cerc.core.ISession;
-import cn.cerc.core.DataRow;
 import cn.cerc.core.SqlText;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
@@ -26,7 +26,7 @@ public class NasQuery extends DataSet implements IHandle {
     private String fileName;
     private QueueOperator operator;
     private NasModel nasMode = NasModel.create;
-    private SqlText sqlText = new SqlText();
+    private SqlText sql = new SqlText();
     private boolean active;
     private ISession session;
 
@@ -37,9 +37,9 @@ public class NasQuery extends DataSet implements IHandle {
 
     public NasQuery open() {
         try {
-            this.fileName = this.getSqlText().getText().substring(this.getSqlText().getText().indexOf("select") + 6,
-                    this.getSqlText().getText().indexOf("from")).trim();
-            this.filePath = SqlText.findTableName(this.getSqlText().getText());
+            this.fileName = this.sql().text()
+                    .substring(this.sql().text().indexOf("select") + 6, this.sql().text().indexOf("from")).trim();
+            this.filePath = SqlText.findTableName(this.sql().text());
         } catch (Exception e) {
             throw new RuntimeException("command suggest: select fileName from filePath");
         }
@@ -51,7 +51,7 @@ public class NasQuery extends DataSet implements IHandle {
             File file = FileUtils.getFile(this.filePath, this.fileName);
             try {
                 String json = FileUtils.readFileToString(file, StandardCharsets.UTF_8.name());
-                this.fromJson(json);
+                this.setJson(json);
                 this.setActive(true);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -71,7 +71,7 @@ public class NasQuery extends DataSet implements IHandle {
     public void save() {
         File file = FileUtils.getFile(this.filePath, this.fileName);
         try {
-            String content = this.toJson();
+            String content = this.json();
             FileUtils.writeStringToFile(file, content, StandardCharsets.UTF_8.name(), false);// 不存在则创建,存在则不追加到文件末尾
         } catch (IOException e) {
             log.info("文件:" + file.getPath() + "保存失败");
@@ -95,13 +95,13 @@ public class NasQuery extends DataSet implements IHandle {
         this.nasMode = nasMode;
     }
 
-    public NasQuery add(String sql) {
-        sqlText.add(sql);
+    public NasQuery add(String sqlText) {
+        this.sql.add(sqlText);
         return this;
     }
 
     public NasQuery add(String format, Object... args) {
-        sqlText.add(format, args);
+        sql.add(format, args);
         return this;
     }
 
@@ -123,18 +123,23 @@ public class NasQuery extends DataSet implements IHandle {
         this.active = active;
     }
 
-    public SqlText getSqlText() {
-        return sqlText;
+    public SqlText sql() {
+        return sql;
+    }
+
+    @Deprecated
+    public final SqlText getSqlText() {
+        return sql();
     }
 
     @Override
-    public String toJson() {
+    public String json() {
         return new DataSetGson<>(this).encode();
     }
 
     @Override
-    public NasQuery fromJson(String json) {
-        this.close();
+    public NasQuery setJson(String json) {
+        super.clear();
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);
         return this;

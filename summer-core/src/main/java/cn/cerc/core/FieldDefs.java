@@ -1,11 +1,17 @@
 package cn.cerc.core;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+
+import javax.persistence.Column;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 
 import com.google.gson.Gson;
 
@@ -23,10 +29,15 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return items.contains(field);
     }
 
-    public List<String> getFields() {
+    public List<String> names() {
         List<String> result = new ArrayList<>();
         items.forEach(meta -> result.add(meta.getCode()));
         return result;
+    }
+
+    @Deprecated
+    public List<String> getFields() {
+        return names();
     }
 
     public FieldMeta add(String fieldCode) {
@@ -43,6 +54,7 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return items.add(item) ? item : this.getItem(item.getCode());
     }
 
+    @Deprecated
     public void add(String... fields) {
         for (String fieldCode : fields)
             this.add(fieldCode);
@@ -61,9 +73,14 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return this.items.iterator();
     }
 
-    public void delete(String fieldCode) {
+    public void remove(String fieldCode) {
         FieldMeta field = new FieldMeta(fieldCode);
         items.remove(field);
+    }
+
+    @Deprecated
+    public void delete(String fieldCode) {
+        remove(fieldCode);
     }
 
     public FieldMeta get(String fieldCode) {
@@ -74,10 +91,10 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return null;
     }
 
-    public FieldMeta get(int fieldNo) {
+    public FieldMeta getItems(int index) {
         int i = 0;
         for (FieldMeta meta : items) {
-            if (i == fieldNo) {
+            if (i == index) {
                 return meta;
             }
             i++;
@@ -100,8 +117,38 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     }
 
     public void copy(FieldDefs source) {
-        for(FieldMeta meta : source.getItems()) {
+        for (FieldMeta meta : source.getItems()) {
             this.add(meta.clone());
         }
     }
+
+    public FieldDefs readDefine(Class<?> clazz, String... names) {
+        List<String> items = null;
+        if (names.length > 0)
+            items = Arrays.asList(names);
+        for (Field field : clazz.getDeclaredFields()) {
+            if (items != null && items.indexOf(field.getName()) == -1)
+                continue;
+            FieldMeta meta = this.get(field.getName());
+            if (meta != null) {
+                Column column = field.getDeclaredAnnotation(Column.class);
+                if (column != null) {
+                    meta.setName(column.name());
+                    if (field.getType().isEnum()) {
+                        Enumerated enumerated = field.getDeclaredAnnotation(Enumerated.class);
+                        if ((enumerated != null) && (enumerated.value() == EnumType.STRING))
+                            meta.setType("s" + column.length());
+                        else
+                            meta.setType("n1");
+                    } else {
+                        meta.getFieldType().setType(field.getType());
+                        if ("s".equals(meta.getType()) || "o".equals(meta.getType()))
+                            meta.getFieldType().setLength(column.length());
+                    }
+                }
+            }
+        }
+        return this;
+    }
+
 }

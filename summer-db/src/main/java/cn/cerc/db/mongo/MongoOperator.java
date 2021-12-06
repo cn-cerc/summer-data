@@ -65,7 +65,7 @@ public class MongoOperator implements NosqlOperator {
 
     private Document getValue(DataRow record) {
         Document doc = new Document();
-        for(String field : record.getFieldDefs().getFields()) {
+        for(String field : record.fields().names()) {
             if ("_id".equals(field)) {
                 continue;
             }

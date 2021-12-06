@@ -15,11 +15,11 @@ import cn.cerc.core.IConfig;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.SqlOperator;
-import cn.cerc.db.core.SqlServer;
+import cn.cerc.db.core.ISqlServer;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class MssqlServer implements SqlServer, AutoCloseable {
+public class MssqlServer implements ISqlServer, AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(MssqlServer.class);
 
     // 数据库连接

@@ -24,7 +24,7 @@ public class SearchDataSet {
             this.clear();
             this.fields = fields;
             for (String key : fields.split(";")) {
-                if (dataSet.size() > 0 && dataSet.getFieldDefs().size() > 0 && !dataSet.exists(key)) {
+                if (dataSet.size() > 0 && dataSet.fields().size() > 0 && !dataSet.exists(key)) {
                     throw new RuntimeException(String.format("field %s not find !", key));
                 }
                 keys.add(key);
@@ -32,7 +32,7 @@ public class SearchDataSet {
             // 重置索引
             if (keys.size() > 0) {
                 for (int i = dataSet.size(); i > 0; i--)
-                    append(dataSet.getRecords().get(i - 1));
+                    append(dataSet.records().get(i - 1));
             }
         }
         if (keys.size() != values.length)

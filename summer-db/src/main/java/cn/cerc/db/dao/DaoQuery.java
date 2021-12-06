@@ -18,13 +18,13 @@ public class DaoQuery<T> extends MysqlQuery {
         super(handle);
         ParameterizedType ptype = (ParameterizedType) getClass().getGenericSuperclass();
         this.clazz = (Class<T>) ptype.getActualTypeArguments()[0];
-        this.setSqlText(new SqlText(this.clazz));
+        this.setSql(new SqlText(this.clazz));
     }
 
     public DaoQuery(IHandle handle, Class<T> clazz) {
         super(handle);
         this.clazz = clazz;
-        this.setSqlText(new SqlText(this.clazz));
+        this.setSql(new SqlText(this.clazz));
     }
 
     // 将对象追加到数据表中
@@ -33,7 +33,7 @@ public class DaoQuery<T> extends MysqlQuery {
             ((DaoEvent) item).beforePost();
         }
         this.append();
-        RecordUtils.copyToRecord(item, this.getCurrent());
+        RecordUtils.copyToRecord(item, this.current());
         this.post();
     }
 
@@ -43,22 +43,22 @@ public class DaoQuery<T> extends MysqlQuery {
             ((DaoEvent) item).beforePost();
         }
         this.edit();
-        RecordUtils.copyToRecord(item, this.getCurrent());
+        RecordUtils.copyToRecord(item, this.current());
         this.post();
     }
 
     public T read() {
-        return this.getCurrent().asObject(clazz);
+        return this.current().asObject(clazz);
     }
 
     @Override
-    public String toJson() {
+    public String json() {
         return new DataSetGson<DaoQuery<T>>(this).encode();
     }
 
     @Override
-    public DaoQuery<T> fromJson(String json) {
-        this.close();
+    public DaoQuery<T> setJson(String json) {
+        this.clear();
         if (!Utils.isEmpty(json))
             new DataSetGson<DaoQuery<T>>(this).decode(json);
         return this;

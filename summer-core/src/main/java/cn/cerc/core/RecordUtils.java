@@ -61,17 +61,17 @@ public class RecordUtils {
                 }
             }
 
-            if (record.getFieldDefs().size() != items.size()) {
-                if (record.getFieldDefs().size() > items.size()) {
+            if (record.fields().size() != items.size()) {
+                if (record.fields().size() > items.size()) {
                     log.warn("field[].size > property[].size");
                 } else {
                     throw new RuntimeException(String.format("field[].size %d < property[].size %d",
-                            record.getFieldDefs().size(), items.size()));
+                            record.fields().size(), items.size()));
                 }
             }
 
             // 查找并赋值
-            for (String fieldName : record.getFieldDefs().getFields()) {
+            for (String fieldName : record.fields().names()) {
                 boolean exists = false;
                 for (Field field : items.keySet()) {
                     // 默认等于对象的属性

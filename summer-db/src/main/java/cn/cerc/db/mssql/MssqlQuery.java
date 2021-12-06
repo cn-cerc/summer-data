@@ -11,16 +11,16 @@ public class MssqlQuery extends SqlQuery implements IHandle {
     private MssqlServer server = null;
 
     public MssqlQuery() {
-        super();
+        this(null);
     }
 
     public MssqlQuery(IHandle handle) {
         super(handle);
-        this.getSqlText().setServerType(SqlText.SERVERTYPE_MSSQL);
+        this.sql().setServerType(SqlText.SERVERTYPE_MSSQL);
     }
 
     @Override
-    public MssqlServer getServer() {
+    public MssqlServer server() {
         if (server == null)
             server = (MssqlServer) getSession().getProperty(MssqlServer.SessionId);
         return server;
@@ -31,15 +31,16 @@ public class MssqlQuery extends SqlQuery implements IHandle {
     }
 
     @Override
-    public String toJson() {
+    public String json() {
         return new DataSetGson<>(this).encode();
     }
 
     @Override
-    public MssqlQuery fromJson(String json) {
-        this.close();
+    public MssqlQuery setJson(String json) {
+        this.clear();
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);
         return this;
     }
+
 }

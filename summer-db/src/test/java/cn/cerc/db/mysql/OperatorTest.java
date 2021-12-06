@@ -6,9 +6,9 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import cn.cerc.core.DataRow;
 import cn.cerc.core.FieldMeta.FieldKind;
 import cn.cerc.core.ISession;
-import cn.cerc.core.DataRow;
 import cn.cerc.core.SqlText;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.StubSession;
@@ -29,7 +29,7 @@ public class OperatorTest implements IHandle {
         MysqlServerMaster conn = this.getMysql();
         conn.execute("delete from temp where name_='new'");
         MysqlQuery ds = new MysqlQuery(this);
-        ds.getSqlText().setMaximum(0);
+        ds.sql().setMaximum(0);
         ds.add("select * from temp");
         ds.open();
         for (int i = 0; i < maxTest; i++) {
@@ -48,12 +48,12 @@ public class OperatorTest implements IHandle {
         obj.setTableName("temp");
         for (int i = 0; i < maxTest; i++) {
             DataRow record = new DataRow();
-            record.getFieldDefs().add("UID_", FieldKind.Storage);
-            record.getFieldDefs().add("Code_", FieldKind.Storage);
+            record.fields().add("UID_", FieldKind.Storage);
+            record.fields().add("Code_", FieldKind.Storage);
             record.setValue("Code_", "code1");
-            record.getFieldDefs().add("Name_", FieldKind.Storage);
+            record.fields().add("Name_", FieldKind.Storage);
             record.setValue("Name_", "new");
-            record.getFieldDefs().add("Value_", FieldKind.Storage);
+            record.fields().add("Value_", FieldKind.Storage);
             record.setValue("Value_", i + 1);
             obj.insert(this.getMysql().getClient().getConnection(), record);
         }

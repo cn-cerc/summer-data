@@ -20,13 +20,13 @@ public class MysqlQuery extends SqlQuery implements IHandle {
     }
 
     @Override
-    public final MysqlServer getServer() {
+    public final MysqlServer server() {
         if (server != null)
             return server;
 
         if (master == null)
             master = (MysqlServer) getSession().getProperty(MysqlServerMaster.SessionId);
-        if (this.isStorage()) {
+        if (this.storage()) {
             return master;
         } else {
             if (salve == null) {
@@ -41,19 +41,19 @@ public class MysqlQuery extends SqlQuery implements IHandle {
     }
 
     public void setServer(MysqlServer server) {
-        if (this.isActive())
+        if (this.active())
             throw new RuntimeException("server change fail on active");
         this.server = server;
     }
 
     @Override
-    public String toJson() {
+    public String json() {
         return new DataSetGson<>(this).encode();
     }
 
     @Override
-    public MysqlQuery fromJson(String json) {
-        this.close();
+    public MysqlQuery setJson(String json) {
+        this.clear();
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);
         return this;

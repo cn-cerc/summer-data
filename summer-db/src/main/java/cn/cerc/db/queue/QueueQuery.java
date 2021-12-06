@@ -27,7 +27,7 @@ public class QueueQuery extends DataSet implements IHandle {
     private CloudQueue queue;
     private String receiptHandle;
     private QueueMode queueMode = QueueMode.append;
-    private SqlText sqlText = new SqlText();
+    private SqlText sql = new SqlText();
     private boolean active;
     private ISession session;
 
@@ -39,7 +39,7 @@ public class QueueQuery extends DataSet implements IHandle {
 
     public QueueQuery open() {
         if (queueCode == null) {
-            queueCode = SqlText.findTableName(this.getSqlText().getText());
+            queueCode = SqlText.findTableName(this.sql().text());
             queue = connection.openQueue(queueCode);
         }
         if (null == queueCode || "".equals(queueCode)) {
@@ -54,7 +54,7 @@ public class QueueQuery extends DataSet implements IHandle {
             Message message = connection.receive(queue);
             if (message != null) {
                 try {
-                    this.fromJson(message.getMessageBody());
+                    this.setJson(message.getMessageBody());
                     receiptHandle = message.getReceiptHandle();
                     this.setActive(true);
                 } catch (JsonSyntaxException e) {
@@ -69,7 +69,7 @@ public class QueueQuery extends DataSet implements IHandle {
         if (this.queueMode != QueueMode.append) {
             throw new RuntimeException(res.getString(1, "当前作业模式下，不允许保存"));
         }
-        connection.append(queue, toJson());
+        connection.append(queue, json());
         log.debug("message save success");
     }
 
@@ -115,13 +115,13 @@ public class QueueQuery extends DataSet implements IHandle {
         this.queueMode = queueMode;
     }
 
-    public QueueQuery add(String sql) {
-        sqlText.add(sql);
+    public QueueQuery add(String sqlText) {
+        this.sql.add(sqlText);
         return this;
     }
 
     public QueueQuery add(String format, Object... args) {
-        sqlText.add(format, args);
+        sql.add(format, args);
         return this;
     }
 
@@ -143,18 +143,23 @@ public class QueueQuery extends DataSet implements IHandle {
         this.active = active;
     }
 
-    public SqlText getSqlText() {
-        return sqlText;
+    public SqlText sql() {
+        return sql;
+    }
+
+    @Deprecated
+    public final SqlText getSqlText() {
+        return sql;
     }
 
     @Override
-    public String toJson() {
+    public String json() {
         return new DataSetGson<>(this).encode();
     }
 
     @Override
-    public QueueQuery fromJson(String json) {
-        this.close();
+    public QueueQuery setJson(String json) {
+        super.clear();
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);
         return this;

@@ -63,12 +63,11 @@ public class SqlText implements Serializable {
         return this.add(String.format(format, items.toArray()));
     }
 
-    @Deprecated // 请改使用getTextByLimit
-    public String getSelect() {
-        return getTextByLimit();
+    public String text() {
+        return text;
     }
 
-    public String getTextByLimit() {
+    public String getSelect() {
         String sql = this.text;
         if (sql == null || "".equals(sql)) {
             throw new RuntimeException("SqlText.Text is null ！");
@@ -83,20 +82,26 @@ public class SqlText implements Serializable {
         return this;
     }
 
-    public int getOffset() {
+    public int offset() {
         return offset;
+    }
+
+    @Deprecated
+    public final int getOffset() {
+        return offset();
     }
 
     public void setOffset(int offset) {
         this.offset = offset;
     }
 
-    public String getText() {
-        return text;
+    @Deprecated
+    public final String getText() {
+        return text();
     }
 
     public String getCommand() {
-        String sql = this.getText();
+        String sql = this.text();
         if (sql == null || "".equals(sql)) {
             throw new RuntimeException("SqlText.text is null ！");
         }
@@ -121,8 +126,13 @@ public class SqlText implements Serializable {
         return sql;
     }
 
-    public int getMaximum() {
+    public int maximum() {
         return maximum;
+    }
+
+    @Deprecated
+    public final int getMaximum() {
+        return maximum();
     }
 
     public void setMaximum(int maximum) {
@@ -142,11 +152,12 @@ public class SqlText implements Serializable {
     }
 
     @Deprecated // 请改使用 addWhereKeys(values).getText()
-    public String getWhereKeys(Object... values) {
+    public final String getWhereKeys(Object... values) {
         return addWhereKeys(values).getText();
     }
 
-    public SqlText addWhereKeys(Object... values) {
+    @Deprecated
+    public final SqlText addWhereKeys(Object... values) {
         if (values.length == 0) {
             throw new RuntimeException("values is null");
         }
