@@ -133,7 +133,6 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
             if (meta != null) {
                 Column column = field.getDeclaredAnnotation(Column.class);
                 if (column != null) {
-                    meta.setName(column.name());
                     if (field.getType().isEnum()) {
                         Enumerated enumerated = field.getDeclaredAnnotation(Enumerated.class);
                         if ((enumerated != null) && (enumerated.value() == EnumType.STRING))
@@ -145,6 +144,13 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
                         if ("s".equals(meta.getType()) || "o".equals(meta.getType()))
                             meta.getFieldType().setLength(column.length());
                     }
+                }
+                Describe describe = field.getDeclaredAnnotation(Describe.class);
+                if (describe != null) {
+                    if (!"".equals(describe.name()))
+                        meta.setName(describe.name());
+                    if (!"".equals(describe.remark()))
+                        meta.setRemark(describe.remark());
                 }
             }
         }
