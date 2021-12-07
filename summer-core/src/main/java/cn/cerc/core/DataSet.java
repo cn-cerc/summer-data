@@ -93,8 +93,6 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         if (fetchNo > -1) {
             fetchNo--;
         }
-        if(recNo > records.size())
-            setRecNo(records.size());
         if (record.state() == DataRowState.Insert)
             return this;
 
