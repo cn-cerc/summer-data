@@ -12,6 +12,8 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
 import com.google.gson.Gson;
 
@@ -131,6 +133,12 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
                 continue;
             FieldMeta meta = this.get(field.getName());
             if (meta != null) {
+                Id id = field.getDeclaredAnnotation(Id.class);
+                if (id != null)
+                    meta.setUpdateKey(true);
+                GeneratedValue gen = field.getDeclaredAnnotation(GeneratedValue.class);
+                if (gen != null)
+                    meta.setAutoincrement(true);
                 Column column = field.getDeclaredAnnotation(Column.class);
                 if (column != null) {
                     if (field.getType().isEnum()) {

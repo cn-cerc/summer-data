@@ -18,6 +18,7 @@ public class MssqlEntity<T> extends MssqlQuery implements IHandle {
         }
         MssqlEntity<U> result = new MssqlEntity<U>(handle, clazz);
         result.operator().setTableName(database.table());
+        result.operator().setUpdateKey(database.uid());
         result.add("select * from %s", database.table());
         return result;
     }
@@ -25,6 +26,13 @@ public class MssqlEntity<T> extends MssqlQuery implements IHandle {
     public MssqlEntity(IHandle handle, Class<T> clazz) {
         super(handle);
         this.clazz = clazz;
+    }
+
+    @Override
+    public MssqlEntity<T> open() {
+        super.open();
+        this.fields().readDefine(clazz);
+        return this;
     }
 
     public T newEntity() {

@@ -6,7 +6,6 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Table;
 
 import cn.cerc.core.Datetime;
 import cn.cerc.core.ISession;
@@ -14,6 +13,7 @@ import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
 
 public class MysqlDatabase implements IHandle {
+    public static final String DefaultUID = "UID_";
     private Class<?> clazz;
     private ISession session;
 
@@ -25,14 +25,11 @@ public class MysqlDatabase implements IHandle {
     }
 
     public final String table() {
-        String table = null;
-        // 取得表名
-        Table object = this.clazz.getDeclaredAnnotation(Table.class);
-        if (object != null)
-            table = object.name();
-        if (Utils.isEmpty(table))
-            table = this.clazz.getSimpleName();
-        return table;
+        return Utils.findTable(clazz);
+    }
+
+    public String uid() {
+        return Utils.findUid(clazz, DefaultUID);
     }
 
     public boolean createTable(boolean overwrite) {

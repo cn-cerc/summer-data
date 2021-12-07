@@ -6,7 +6,6 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Table;
 
 import cn.cerc.core.Datetime;
 import cn.cerc.core.ISession;
@@ -14,6 +13,7 @@ import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
 
 public class MssqlDatabase implements IHandle {
+    public static final String DefaultUID = "UpdateKey_";
     private Class<?> clazz;
     private ISession session;
 
@@ -25,16 +25,13 @@ public class MssqlDatabase implements IHandle {
     }
 
     public final String table() {
-        String table = null;
-        // 取得表名
-        Table object = this.clazz.getDeclaredAnnotation(Table.class);
-        if (object != null)
-            table = object.name();
-        if (Utils.isEmpty(table))
-            table = this.clazz.getSimpleName();
-        return table;
+        return Utils.findTable(this.clazz);
     }
 
+    public final String uid() {
+        return Utils.findUid(clazz, DefaultUID);
+    }
+    
     public boolean createTable(boolean overwrite) {
         MssqlServer server = (MssqlServer) this.getSession().getProperty(MssqlServer.SessionId);
         List<String> list = server.tables(this);

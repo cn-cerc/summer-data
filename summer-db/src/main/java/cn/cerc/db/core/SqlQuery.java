@@ -60,7 +60,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
         super.clear();
     }
 
-    public final SqlQuery open() {
+    public SqlQuery open() {
         open(true);
         return this;
     }

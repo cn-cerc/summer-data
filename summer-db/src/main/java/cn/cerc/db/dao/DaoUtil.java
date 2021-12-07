@@ -10,6 +10,7 @@ import cn.cerc.core.DataRow;
 import cn.cerc.core.ISession;
 import cn.cerc.core.RecordUtils;
 import cn.cerc.db.core.Handle;
+import cn.cerc.db.mysql.MysqlDatabase;
 import cn.cerc.db.mysql.MysqlQuery;
 
 public class DaoUtil {
@@ -57,7 +58,7 @@ public class DaoUtil {
         ds.open();
         DataRow record = ds.eof() ? null : ds.current();
         for (String field : ds.fields().names()) {
-            if ("UID_".equals(field)) {
+            if (MysqlDatabase.DefaultUID.equals(field)) {
                 sb.append("@Id").append("\r\n");
                 sb.append("@GeneratedValue(strategy = GenerationType.IDENTITY)").append("\r\n");
             }
@@ -93,7 +94,7 @@ public class DaoUtil {
                 sb.append("String");
             }
             sb.append(" ");
-            if ("UID_".equals(field)) {
+            if (MysqlDatabase.DefaultUID.equals(field)) {
                 sb.append("uid");
             } else if ("ID_".equals(field)) {
                 sb.append("id");

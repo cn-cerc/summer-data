@@ -5,12 +5,12 @@ import java.lang.reflect.Field;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Table;
 
 import cn.cerc.core.Datetime;
 import cn.cerc.core.Utils;
 
 public class SqliteDatabase {
+    public static final String DefaultUID = "id_";
     private Class<?> clazz;
 
     public SqliteDatabase(Class<?> clazz) {
@@ -19,14 +19,11 @@ public class SqliteDatabase {
     }
 
     public final String table() {
-        String table = null;
-        // 取得表名
-        Table object = this.clazz.getDeclaredAnnotation(Table.class);
-        if (object != null)
-            table = object.name();
-        if (Utils.isEmpty(table))
-            table = this.clazz.getSimpleName();
-        return table;
+        return Utils.findTable(this.clazz);
+    }
+
+    public final String uid() {
+        return Utils.findUid(clazz, DefaultUID);
     }
 
     public boolean createTable(boolean overwrite) {

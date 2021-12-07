@@ -18,6 +18,7 @@ public class SqliteEntity<T> extends SqliteQuery implements IHandle {
         }
         SqliteEntity<U> result = new SqliteEntity<U>(clazz);
         result.operator().setTableName(database.table());
+        result.operator().setUpdateKey(database.uid());
         result.add("select * from %s", database.table());
         return result;
     }
@@ -25,6 +26,13 @@ public class SqliteEntity<T> extends SqliteQuery implements IHandle {
     public SqliteEntity(Class<T> clazz) {
         super();
         this.clazz = clazz;
+    }
+
+    @Override
+    public SqliteEntity<T> open() {
+        super.open();
+        this.fields().readDefine(clazz);
+        return this;
     }
 
     public T newEntity() {

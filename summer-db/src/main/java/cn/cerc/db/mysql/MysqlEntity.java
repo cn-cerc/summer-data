@@ -18,6 +18,7 @@ public class MysqlEntity<T> extends MysqlQuery implements IHandle {
         }
         MysqlEntity<U> result = new MysqlEntity<U>(handle, clazz);
         result.operator().setTableName(database.table());
+        result.operator().setUpdateKey(database.uid());
         result.add("select * from %s", database.table());
         return result;
     }
@@ -25,6 +26,13 @@ public class MysqlEntity<T> extends MysqlQuery implements IHandle {
     public MysqlEntity(IHandle handle, Class<T> clazz) {
         super(handle);
         this.clazz = clazz;
+    }
+
+    @Override
+    public MysqlEntity<T> open() {
+        super.open();
+        this.fields().readDefine(clazz);
+        return this;
     }
 
     public T newEntity() {

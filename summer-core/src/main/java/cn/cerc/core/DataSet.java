@@ -126,7 +126,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
                 try {
                     insertStorage(row);
                 } catch (Exception e) {
-                    if (e.getMessage().contains("Data too long"))
+                    if (e.getMessage() != null && e.getMessage().contains("Data too long"))
                         log.error(row.toString());
                     throw new RuntimeException(e);
                 }
@@ -753,7 +753,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         ds1.setValue("name", "a0");
         ds1.setValue("value", 10);
         ds1.post();
-        
+
         ds1.setBatchSave(true);
         ds1.edit().setValue("name", "a1");
         System.out.println(ds1.setCurd(true).json());

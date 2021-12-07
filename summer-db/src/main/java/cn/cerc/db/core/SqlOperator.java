@@ -17,8 +17,11 @@ import cn.cerc.core.FieldMeta;
 import cn.cerc.core.FieldMeta.FieldKind;
 import cn.cerc.core.Utils;
 import cn.cerc.db.SummerDB;
+import cn.cerc.db.mssql.MssqlDatabase;
 import cn.cerc.db.mysql.BuildStatement;
+import cn.cerc.db.mysql.MysqlDatabase;
 import cn.cerc.db.mysql.UpdateMode;
+import cn.cerc.db.sqlite.SqliteDatabase;
 
 public abstract class SqlOperator {
     private static final ClassResource res = new ClassResource(SqlOperator.class, SummerDB.ID);
@@ -74,7 +77,7 @@ public abstract class SqlOperator {
     public final boolean insert(Connection connection, DataRow record) {
         resetUpdateKey(connection, record);
 
-        if ("UpdateKey_".equalsIgnoreCase(this.updateKey)) {
+        if (MssqlDatabase.DefaultUID.equalsIgnoreCase(this.updateKey)) {
             if ("".equals(record.getString(this.updateKey)))
                 record.setValue(this.updateKey, Utils.newGuid());
         }
@@ -132,6 +135,8 @@ public abstract class SqlOperator {
                         throw new RuntimeException("only support one Autoincrement field");
                     find = true;
                     BigInteger uidvalue = findAutoUid(connection);
+                    if (uidvalue == null)
+                        throw new RuntimeException("uid value is null");
                     log.debug("自增列uid value：" + uidvalue);
                     if (uidvalue.intValue() <= Integer.MAX_VALUE) {
                         record.setValue(meta.getCode(), uidvalue.intValue());
@@ -286,11 +291,11 @@ public abstract class SqlOperator {
         }
 
         if (def != null && def.getKind() == FieldKind.Storage) {
-            if ("UID_".equals(this.updateKey))
+            if (MysqlDatabase.DefaultUID.equals(this.updateKey))
+                def.setAutoincrement(true);
+            if (SqliteDatabase.DefaultUID.equals(this.updateKey))
                 def.setAutoincrement(true);
             if ("id".equals(this.updateKey))
-                def.setAutoincrement(true);
-            if ("id_".equals(this.updateKey))
                 def.setAutoincrement(true);
             def.setUpdateKey(true);
         }
