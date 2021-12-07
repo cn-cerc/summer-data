@@ -216,6 +216,10 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         return addSelect(text);
     }
 
+    public SqlQueryHelper<T> setSelect(String fmtText, Object... args) {
+        return setSelect(String.format(fmtText, args));
+    }
+
     public SqlQueryHelper<T> addSelect(String text) {
         String regex = "((\\bselect)|(\\bSelect)|(\\s*select)|(\\s*Select))\\s*(distinct)*\\s+%s";
         if (text.matches(regex)) {
