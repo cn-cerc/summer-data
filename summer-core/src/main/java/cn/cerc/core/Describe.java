@@ -14,5 +14,5 @@ public @interface Describe {
 
     String remark() default "";
 
-    int version() default 0;
+    int version() default 1;
 }
