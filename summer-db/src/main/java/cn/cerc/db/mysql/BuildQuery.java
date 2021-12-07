@@ -3,6 +3,7 @@ package cn.cerc.db.mysql;
 import cn.cerc.core.DataRow;
 import cn.cerc.core.Datetime;
 import cn.cerc.core.ISession;
+import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
 
 /**
@@ -87,6 +88,8 @@ public class BuildQuery extends MysqlQueryHelper {
     }
 
     public final String getOrderText() {
+        if (!Utils.isEmpty(this.group()))
+            return this.group() + " " + this.order();
         return this.order();
     }
 
