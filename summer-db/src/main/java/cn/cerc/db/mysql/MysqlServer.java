@@ -4,6 +4,8 @@ import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +18,8 @@ import com.mchange.v2.resourcepool.TimeoutException;
 
 import cn.cerc.db.core.ConnectionClient;
 import cn.cerc.db.core.IHandle;
-import cn.cerc.db.core.SqlOperator;
 import cn.cerc.db.core.ISqlServer;
+import cn.cerc.db.core.SqlOperator;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -25,6 +27,8 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(MysqlServer.class);
     private Connection connection;
     private MysqlClient client;
+    // 取得所有的表名
+    private List<String> tables;
     // 标记栏位，为兼容历史delphi写法
     private int tag;
 
@@ -53,7 +57,7 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
             }
         } catch (Exception e) {
             log.error("error sql: " + sql);
-            return false;
+            throw new RuntimeException(e);
         }
     }
 
@@ -133,6 +137,24 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * 取得数据库中所有的表名
+     * 
+     * @return 返回列表
+     */
+    public final List<String> tables(IHandle handle) {
+        if (tables != null)
+            return tables;
+        tables = new ArrayList<>();
+        MysqlQuery query = new MysqlQuery(handle);
+        query.add("select TABLE_NAME from information_schema.tables");
+        query.add("where table_schema='%s'", this.getDatabase());
+        query.open();
+        while (query.fetch())
+            tables.add(query.getString("TABLE_NAME"));
+        return tables;
     }
 
 }

@@ -8,10 +8,18 @@ import cn.cerc.db.core.IHandle;
 
 public class MysqlEntity<T> extends MysqlQuery implements IHandle {
     private static final long serialVersionUID = 8276125658457479833L;
+    private static MysqlDatabase database;
     private Class<T> clazz;
 
     public static <U> MysqlEntity<U> Create(IHandle handle, Class<U> clazz) {
-        return new MysqlEntity<U>(handle, clazz);
+        if (database == null) {
+            database = new MysqlDatabase(handle, clazz);
+            database.createTable(false);
+        }
+        MysqlEntity<U> result = new MysqlEntity<U>(handle, clazz);
+        result.operator().setTableName(database.table());
+        result.add("select * from %s", database.table());
+        return result;
     }
 
     public MysqlEntity(IHandle handle, Class<T> clazz) {
