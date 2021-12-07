@@ -90,7 +90,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
         } else if (src.size() > 0) {
             src.records().forEach(dataRow -> body.add(context.serialize(dataRow)));
         }
-        if (body.size() > 0)
+        if (src.size() > 0)
             root.add("body", body);
 
         return root;
