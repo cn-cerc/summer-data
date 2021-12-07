@@ -23,8 +23,8 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
     protected T dataSet;
     protected List<String> where = new ArrayList<>();
     private List<String> content = new ArrayList<>();
-    private String order;
-    private String group;
+    private String order = "";
+    private String group = "";
     private ISession session;
 
     public SqlQueryHelper(ISession session) {
