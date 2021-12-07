@@ -1,4 +1,4 @@
-package cn.cerc.db.mysql;
+package cn.cerc.db.mssql;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -13,11 +13,11 @@ import cn.cerc.core.ISession;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
 
-public class MysqlDatabase implements IHandle {
+public class MssqlDatabase implements IHandle {
     private Class<?> clazz;
     private ISession session;
 
-    public MysqlDatabase(IHandle handle, Class<?> clazz) {
+    public MssqlDatabase(IHandle handle, Class<?> clazz) {
         super();
         this.clazz = clazz;
         if (handle != null)
@@ -36,7 +36,7 @@ public class MysqlDatabase implements IHandle {
     }
 
     public boolean createTable(boolean overwrite) {
-        MysqlServerMaster server = this.getMysql();
+        MssqlServer server = (MssqlServer) this.getSession().getProperty(MssqlServer.SessionId);
         List<String> list = server.tables(this);
         String table = table();
         if (!list.contains(table))
@@ -71,26 +71,20 @@ public class MysqlDatabase implements IHandle {
         } else if (Datetime.class.isAssignableFrom(field.getType())) {
             sb.append("datetime");
         } else if (field.getType() == int.class) {
-            sb.append("INTEGER");
+            sb.append("int");
         } else if (field.getType() == double.class) {
             sb.append("float");
         } else {
             throw new RuntimeException("不支持的类型：" + field.getType().getName());
         }
         Id id = field.getDeclaredAnnotation(Id.class);
-        if (id != null) {
+        if (id != null)
             sb.append(" primary key");
-        }
         GeneratedValue gen = field.getDeclaredAnnotation(GeneratedValue.class);
-        if (gen != null) {
-            sb.append(" AUTOINCREMENT");
-        }
-        if ((column != null) && (!column.nullable()))
+        if (gen != null)
+            sb.append(" identity");
+        if ((id == null) && (column != null) && (!column.nullable()))
             sb.append(" not null");
-        else if (id != null)
-            sb.append(" not null");
-        else
-            sb.append(" default null");
     }
 
     @Override

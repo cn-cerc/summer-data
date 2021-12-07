@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,9 +15,9 @@ import org.springframework.stereotype.Component;
 
 import cn.cerc.core.IConfig;
 import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.ISqlServer;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.SqlOperator;
-import cn.cerc.db.core.ISqlServer;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -43,6 +45,8 @@ public class MssqlServer implements ISqlServer, AutoCloseable {
     private String database;
 
     private IConfig config;
+
+    private List<String> tables;
 
     public MssqlServer() {
         config = ServerConfig.getInstance();
@@ -107,7 +111,7 @@ public class MssqlServer implements ISqlServer, AutoCloseable {
             return true;
         } catch (SQLException e) {
             log.error("error mssql: {}", sql);
-            return false;
+            throw new RuntimeException(e);
         }
     }
 
@@ -123,6 +127,23 @@ public class MssqlServer implements ISqlServer, AutoCloseable {
 
     public String getDatabase() {
         return database;
+    }
+
+    /**
+     * 取得数据库中所有的表名
+     * 
+     * @return 返回列表
+     */
+    public final List<String> tables(IHandle handle) {
+        if (tables != null)
+            return tables;
+        tables = new ArrayList<>();
+        MssqlQuery query = new MssqlQuery(handle);
+        query.add("select name from sys.tables where type='U'");
+        query.open();
+        while (query.fetch())
+            tables.add(query.getString("name"));
+        return tables;
     }
 
 }

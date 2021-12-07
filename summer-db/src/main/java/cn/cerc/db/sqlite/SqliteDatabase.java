@@ -77,6 +77,8 @@ public class SqliteDatabase {
         }
         if ((column != null) && (!column.nullable()))
             sb.append(" not null");
+        else if (id != null)
+            sb.append(" not null");
         else
             sb.append(" default null");
     }

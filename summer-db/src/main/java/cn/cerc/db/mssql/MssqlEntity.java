@@ -8,10 +8,18 @@ import cn.cerc.db.core.IHandle;
 
 public class MssqlEntity<T> extends MssqlQuery implements IHandle {
     private static final long serialVersionUID = 8276125658457479833L;
+    private static MssqlDatabase database;
     private Class<T> clazz;
 
     public static <U> MssqlEntity<U> Create(IHandle handle, Class<U> clazz) {
-        return new MssqlEntity<U>(handle, clazz);
+        if (database == null) {
+            database = new MssqlDatabase(handle, clazz);
+            database.createTable(false);
+        }
+        MssqlEntity<U> result = new MssqlEntity<U>(handle, clazz);
+        result.operator().setTableName(database.table());
+        result.add("select * from %s", database.table());
+        return result;
     }
 
     public MssqlEntity(IHandle handle, Class<T> clazz) {
