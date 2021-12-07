@@ -1,7 +1,5 @@
 package cn.cerc.db.dao;
 
-import java.lang.reflect.ParameterizedType;
-
 import cn.cerc.core.DataSetGson;
 import cn.cerc.core.RecordUtils;
 import cn.cerc.core.SqlText;
@@ -13,13 +11,13 @@ public class DaoQuery<T> extends MysqlQuery {
     private static final long serialVersionUID = -4833075222571787291L;
     private Class<T> clazz;
 
-    @SuppressWarnings("unchecked")
-    public DaoQuery(IHandle handle) {
-        super(handle);
-        ParameterizedType ptype = (ParameterizedType) getClass().getGenericSuperclass();
-        this.clazz = (Class<T>) ptype.getActualTypeArguments()[0];
-        this.setSql(new SqlText(this.clazz));
-    }
+//    @SuppressWarnings("unchecked")
+//    public DaoQuery(IHandle handle) {
+//        super(handle);
+//        ParameterizedType ptype = (ParameterizedType) getClass().getGenericSuperclass();
+//        this.clazz = (Class<T>) ptype.getActualTypeArguments()[0];
+//        this.setSql(new SqlText(this.clazz));
+//    }
 
     public DaoQuery(IHandle handle, Class<T> clazz) {
         super(handle);
@@ -28,7 +26,7 @@ public class DaoQuery<T> extends MysqlQuery {
     }
 
     // 将对象追加到数据表中
-    public void append(T item) {
+    public void insert(T item) {
         if (item instanceof DaoEvent) {
             ((DaoEvent) item).beforePost();
         }
@@ -37,8 +35,12 @@ public class DaoQuery<T> extends MysqlQuery {
         this.post();
     }
 
-    // 与read函数配套，将对象内容保存到数据库中
-    public void save(T item) {
+    @Deprecated
+    public final void append(T item) {
+        insert(item);
+    }
+    
+    public void update(T item) {
         if (item instanceof DaoEvent) {
             ((DaoEvent) item).beforePost();
         }
@@ -46,9 +48,19 @@ public class DaoQuery<T> extends MysqlQuery {
         RecordUtils.copyToRecord(item, this.current());
         this.post();
     }
+    
+    @Deprecated
+    public final void save(T item) {
+        update(item);
+    }
 
-    public T read() {
+    public T currentEntity() {
         return this.current().asObject(clazz);
+    }
+
+    @Deprecated
+    public final T read() {
+        return currentEntity();
     }
 
     @Override
