@@ -14,11 +14,11 @@ public class SqliteEntity<T> extends SqliteQuery implements IHandle {
     public static <U> SqliteEntity<U> Create(Class<U> clazz) {
         if (database == null) {
             database = new SqliteDatabase(clazz);
-            System.out.println(database.getCreateSql());
             database.createTable(false);
         }
         SqliteEntity<U> result = new SqliteEntity<U>(clazz);
         result.operator().setTableName(database.table());
+        result.add("select * from %s", database.table());
         return result;
     }
 
