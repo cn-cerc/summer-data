@@ -137,11 +137,13 @@ public abstract class SqlQuery extends DataSet implements IHandle {
                     if (this.storage())
                         operator().insert(client.getConnection(), record);
                     doAfterPost(record);
+                    record.setState(DataRowState.None);
                 } else if (record.state().equals(DataRowState.Update)) {
                     doBeforePost(record);
                     if (this.storage())
                         operator().update(client.getConnection(), record);
                     doAfterPost(record);
+                    record.setState(DataRowState.None);
                 }
             }
             garbage().clear();
