@@ -38,7 +38,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     // 搜索加速器
     private SearchDataSet search;
     // gson时，是否输出meta讯息
-    private boolean metaInfo;
+    private boolean meta;
     // 头部记录
     private DataRow head = new DataRow();
     // 明细记录
@@ -46,7 +46,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     // 明细字段定义
     private FieldDefs fields = new FieldDefs();
     // 是否进入CURD模式
-    private boolean curd;
+    private boolean crud;
 
     public DataSet() {
         super();
@@ -694,8 +694,13 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return search;
     }
 
-    public boolean metaInfo() {
-        return metaInfo;
+    public boolean meta() {
+        return meta;
+    }
+
+    @Deprecated
+    public final boolean metaInfo() {
+        return meta();
     }
 
     @Deprecated
@@ -703,8 +708,13 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return metaInfo();
     }
 
-    public final DataSet setMetaInfo(boolean metaInfo) {
-        this.metaInfo = metaInfo;
+    @Deprecated
+    public final DataSet setMetaInfo(boolean value) {
+        return this.setMeta(value);
+    }
+
+    public final DataSet setMeta(boolean value) {
+        this.meta = value;
         return this;
     }
 
@@ -727,12 +737,23 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return garbage();
     }
 
-    public boolean curd() {
-        return curd;
+    @Deprecated
+    public final boolean curd() {
+        return crud();
     }
 
-    public DataSet setCurd(boolean value) {
-        curd = value;
+    public boolean crud() {
+        return crud;
+    }
+
+    @Deprecated
+    public final DataSet setCurd(boolean value) {
+        crud = value;
+        return this;
+    }
+
+    public DataSet setCrud(boolean value) {
+        crud = value;
         return this;
     }
 

@@ -56,7 +56,7 @@ public class RecordFilter {
         ds1.append().setValue("code", "a01").setValue("name", "jason");
         ds1.append().setValue("code", "a02").setValue("name", "jason");
         ds1.fields().get("code").setName("代码");
-        ds1.setMetaInfo(true);
+        ds1.setMeta(true);
 
         System.out.println(RecordFilter.execute(ds1, "select code from xxx where code=a01"));
         System.out.println(RecordFilter.execute(ds1, "select code,name from xxx"));

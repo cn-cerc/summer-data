@@ -32,7 +32,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
             root.addProperty("message", src.message());
 
         // 输出metaInfo
-        if (src.metaInfo()) {
+        if (src.meta()) {
             JsonObject meta = new JsonObject();
             if (src.head().fields().size() > 0) {
                 JsonArray head = new JsonArray();
@@ -41,13 +41,13 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
             }
             JsonArray body = new JsonArray();
             src.fields().forEach(def -> body.add(context.serialize(def)));
-            if (src.curd())
+            if (src.crud())
                 body.add(context.serialize(new FieldMeta(CURD_STATE)));
             meta.add("body", body);
             root.add("meta", meta);
         }
         if (src.head().fields().size() > 0) {
-            if (src.metaInfo()) {
+            if (src.meta()) {
                 JsonArray item = new JsonArray();
                 src.head().fields().forEach(def -> {
                     String field = def.getCode();
@@ -68,14 +68,14 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
 
         JsonArray body = new JsonArray();
         // 添加字段定义
-        if (!src.metaInfo()) {
+        if (!src.meta()) {
             body.add(context.serialize(src.fields()));
-            if (src.curd()) {
+            if (src.crud()) {
                 JsonElement item = body.get(body.size() - 1);
                 item.getAsJsonArray().add(CURD_STATE);
             }
         }
-        if (src.curd()) {
+        if (src.crud()) {
             // insert && update
             src.records().forEach(dataRow -> {
                 if (dataRow.state() == DataRowState.Insert) {
@@ -120,16 +120,16 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
                 body.forEach(item -> {
                     FieldMeta def = context.deserialize(item, FieldMeta.class);
                     if (CURD_STATE.equals(def.getCode()))
-                        dataSet.setCurd(true);
+                        dataSet.setCrud(true);
                     else
                         dataSet.fields().add(def);
                 });
             }
-            dataSet.setMetaInfo(true);
+            dataSet.setMeta(true);
         }
 
         if (root.has("head")) {
-            if (dataSet.metaInfo()) {
+            if (dataSet.meta()) {
                 JsonArray head = root.get("head").getAsJsonArray();
                 int i = 0;
                 for (String key : dataSet.head().fields().names()) {
@@ -158,11 +158,11 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
 
         if (body != null) {
             JsonArray defs = null;
-            if (dataSet.metaInfo()) {
+            if (dataSet.meta()) {
                 defs = new JsonArray();
                 for (FieldMeta meta : dataSet.fields())
                     defs.add(meta.getCode());
-                if (dataSet.curd())
+                if (dataSet.crud())
                     defs.add(CURD_STATE);
             }
 
@@ -172,7 +172,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
                 if (defs == null) {
                     item.forEach(field -> {
                         if (CURD_STATE.equals(field.getAsString()))
-                            dataSet.setCurd(true);
+                            dataSet.setCrud(true);
                         else
                             dataSet.fields().add(field.getAsString());
                     });
@@ -295,7 +295,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
                 Object obj = src.getValue(def.getCode());
                 item.add(context.serialize(obj));
             });
-            if (src.dataSet() != null && src.dataSet().curd())
+            if (src.dataSet() != null && src.dataSet().crud())
                 item.add(context.serialize(src.state().ordinal()));
             return item;
         };
