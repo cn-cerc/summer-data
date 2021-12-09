@@ -191,7 +191,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     }
 
     @Override
-    protected final void insertStorage(DataRow record) throws Exception {
+    public final void insertStorage(DataRow record) throws Exception {
         try (ConnectionClient client = getConnectionClient()) {
             if (operator().insert(client.getConnection(), record))
                 record.setState(DataRowState.None);
@@ -199,7 +199,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     }
 
     @Override
-    protected final void updateStorage(DataRow record) throws Exception {
+    public final void updateStorage(DataRow record) throws Exception {
         try (ConnectionClient client = getConnectionClient()) {
             if (operator().update(client.getConnection(), record))
                 record.setState(DataRowState.None);
