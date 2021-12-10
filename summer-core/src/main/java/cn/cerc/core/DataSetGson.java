@@ -50,7 +50,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
             if (src.meta()) {
                 JsonArray item = new JsonArray();
                 src.head().fields().forEach(def -> {
-                    String field = def.getCode();
+                    String field = def.code();
                     Object obj = src.head().getValue(field);
                     item.add(context.serialize(obj));
                 });
@@ -58,7 +58,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
             } else {
                 JsonObject item = new JsonObject();
                 src.head().fields().forEach(def -> {
-                    String field = def.getCode();
+                    String field = def.code();
                     Object obj = src.head().getValue(field);
                     item.add(field, context.serialize(obj));
                 });
@@ -119,7 +119,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
                 JsonArray body = meta.get("body").getAsJsonArray();
                 body.forEach(item -> {
                     FieldMeta def = context.deserialize(item, FieldMeta.class);
-                    if (CURD_STATE.equals(def.getCode()))
+                    if (CURD_STATE.equals(def.code()))
                         dataSet.setCrud(true);
                     else
                         dataSet.fields().add(def);
@@ -161,7 +161,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
             if (dataSet.meta()) {
                 defs = new JsonArray();
                 for (FieldMeta meta : dataSet.fields())
-                    defs.add(meta.getCode());
+                    defs.add(meta.code());
                 if (dataSet.crud())
                     defs.add(CURD_STATE);
             }
@@ -239,7 +239,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
     private Gson build() {
         JsonSerializer<FieldDefs> gsonFieldDefs = (src, typeOfSrc, context) -> {
             JsonArray root = new JsonArray();
-            src.forEach(item -> root.add(item.getCode()));
+            src.forEach(item -> root.add(item.code()));
             return root;
         };
 
@@ -248,17 +248,17 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
             public JsonElement serialize(FieldMeta src, Type typeOfSrc, JsonSerializationContext context) {
                 JsonObject json = new JsonObject();
                 JsonArray define = new JsonArray();
-                if (src.getRemark() != null) {
-                    define.add(src.getName());
-                    define.add(src.getType());
-                    define.add(src.getRemark());
-                } else if (src.getType() != null) {
-                    define.add(src.getName());
-                    define.add(src.getType());
-                } else if (src.getName() != null) {
-                    define.add(src.getName());
+                if (src.remark() != null) {
+                    define.add(src.name());
+                    define.add(src.typeValue());
+                    define.add(src.remark());
+                } else if (src.typeValue() != null) {
+                    define.add(src.name());
+                    define.add(src.typeValue());
+                } else if (src.name() != null) {
+                    define.add(src.name());
                 }
-                json.add(src.getCode(), define);
+                json.add(src.code(), define);
                 return json;
             }
 
@@ -278,7 +278,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
                 }
                 if (def.size() > 1) {
                     if (!def.get(1).isJsonNull())
-                        meta.setType(def.get(1).getAsString());
+                        meta.dataType().setValue(def.get(1).getAsString());
                 }
                 if (def.size() > 2) {
                     if (!def.get(2).isJsonNull())
@@ -292,7 +292,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
         JsonSerializer<DataRow> gsonRecord = (src, typeOfSrc, context) -> {
             JsonArray item = new JsonArray();
             src.fields().forEach(def -> {
-                Object obj = src.getValue(def.getCode());
+                Object obj = src.getValue(def.code());
                 item.add(context.serialize(obj));
             });
             if (src.dataSet() != null && src.dataSet().crud())

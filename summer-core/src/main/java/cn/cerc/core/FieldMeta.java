@@ -10,11 +10,17 @@ public final class FieldMeta implements Serializable {
     private static final long serialVersionUID = -6898050783447062943L;
     private String code;
     private String name;
-    private FieldType dataType;
-    private FieldKind kind;
+    private DataType dataType;
     private String remark;
-    private boolean updateKey;
+    private FieldKind kind = FieldKind.Memory;
+    // 唯一标识
+    private boolean identification;
+    // 是否为自增字段
     private boolean autoincrement;
+    // 是否参与持久化插入
+    private boolean insertable;
+    // 是否参与持久化更新
+    private boolean updatable;
     private GetTextEvent onGetTextEvent;
     private SetTextEvent onSetTextEvent;
 
@@ -27,7 +33,6 @@ public final class FieldMeta implements Serializable {
         if (code == null || "".equals(code))
             throw new RuntimeException("fieldCode is null!");
         this.code = code;
-        this.kind = FieldKind.Memory;
     }
 
     public FieldMeta(String code, FieldKind kind) {
@@ -37,7 +42,7 @@ public final class FieldMeta implements Serializable {
         if (kind == null)
             throw new RuntimeException("fieldKind is null!");
         this.code = code;
-        this.kind = kind;
+        this.setKind(kind);
     }
 
     @Override
@@ -48,19 +53,31 @@ public final class FieldMeta implements Serializable {
             result.dataType = this.dataType.clone();
         result.kind = this.kind;
         result.remark = this.remark;
-        result.updateKey = this.updateKey;
+        result.identification = this.identification;
         result.autoincrement = this.autoincrement;
+        result.insertable = this.insertable;
+        result.updatable = this.updatable;
         result.onGetTextEvent = this.onGetTextEvent;
         result.onSetTextEvent = this.onSetTextEvent;
         return result;
     }
 
-    public final String getCode() {
+    public final String code() {
         return code;
     }
 
-    public final String getName() {
+    @Deprecated
+    public final String getCode() {
+        return code();
+    }
+
+    public final String name() {
         return name;
+    }
+
+    @Deprecated
+    public final String getName() {
+        return name();
     }
 
     public final FieldMeta setName(String name) {
@@ -68,61 +85,47 @@ public final class FieldMeta implements Serializable {
         return this;
     }
 
-    public final String getType() {
-        return dataType == null ? null : dataType.toString();
-    }
-
-    public final FieldMeta setType(String type) {
-        if (type == null) {
-            this.dataType = null;
-        } else {
-            if (this.dataType == null)
-                this.dataType = new FieldType();
-            this.dataType.setType(type);
-        }
-        return this;
-    }
-
-    public final FieldType setType(Class<?> clazz) {
-        return getFieldType().setType(clazz);
+    public final String typeValue() {
+        return dataType().value();
     }
 
     @Deprecated
-    public final FieldType setType(Class<?> clazz, int length) {
-        FieldType result = getFieldType().setType(clazz);
-        if ("s".equals(result.dataType()) || "o".equals(result.dataType()))
-            result.setLength(length);
-        else if ("n".equals(result.dataType()) || "f".equals(result.dataType())) {
-            if (length == 1 || length == 2)
-                result.setLength(length);
-        }
-        return result;
+    public final void setType(Class<?> clazz) {
+        dataType().readClass(clazz);
     }
 
-    public final FieldType getFieldType() {
+    public final DataType dataType() {
         if (this.dataType == null)
-            this.dataType = new FieldType();
+            this.dataType = new DataType();
         return dataType;
     }
 
-    public final FieldKind getKind() {
+    public final FieldKind kind() {
         return kind;
     }
 
-    public final FieldMeta setKind(FieldKind type) {
-        if (type == null)
+    public final FieldMeta setKind(FieldKind value) {
+        if (value == null)
             throw new RuntimeException("fieldKind is null!");
-//        if (type == FieldKind.Storage)
-//            throw new RuntimeException("Wrong direction of modification");
-        this.kind = type;
+        if (kind != value) {
+            this.kind = value;
+            if (value == FieldKind.Storage) {
+                this.setUpdatable(true);
+                this.setInsertable(true);
+            } else {
+                this.setUpdatable(false);
+                this.setInsertable(false);
+            }
+        }
         return this;
     }
 
+    @Deprecated
     public final boolean isUpdateKey() {
-        return updateKey;
+        return identification();
     }
 
-    public final String getRemark() {
+    public final String remark() {
         return remark;
     }
 
@@ -131,18 +134,70 @@ public final class FieldMeta implements Serializable {
         return this;
     }
 
-    public final FieldMeta setUpdateKey(boolean updateKey) {
-        this.updateKey = updateKey;
+    @Deprecated
+    public final FieldMeta setUpdateKey(boolean uid) {
+        return this.setIdentification(uid);
+    }
+
+    public final boolean identification() {
+        return identification;
+    }
+
+    public final FieldMeta setIdentification(boolean value) {
+        if (this.identification != value)
+            this.identification = value;
         return this;
     }
 
-    public final boolean isAutoincrement() {
+    public final boolean autoincrement() {
         return autoincrement;
     }
 
-    public final FieldMeta setAutoincrement(boolean autoincrement) {
-        this.autoincrement = autoincrement;
+    public final FieldMeta setAutoincrement(boolean value) {
+        if (this.autoincrement != value)
+            this.autoincrement = value;
         return this;
+    }
+
+    public boolean insertable() {
+        if ((kind == FieldKind.Storage))
+            return this.insertable;
+        else if (this.insertable)
+            throw new RuntimeException("kind not is storage");
+        return false;
+    }
+
+    public void setInsertable(boolean value) {
+        if (this.updatable != value) {
+            if (value && kind != FieldKind.Storage)
+                throw new RuntimeException("kind not is storage");
+            this.insertable = value;
+        }
+    }
+
+    public boolean updatable() {
+        if (kind == FieldKind.Storage)
+            return this.updatable;
+        else if (this.updatable)
+            throw new RuntimeException("updatable is true");
+        return false;
+    }
+
+    public FieldMeta setUpdatable(boolean value) {
+        if (this.updatable != value) {
+            if (value && kind != FieldKind.Storage)
+                throw new RuntimeException("kind not is storage");
+            this.updatable = value;
+        }
+        return this;
+    }
+
+    public boolean storage() {
+        return kind == FieldKind.Storage;
+    }
+
+    public boolean calculated() {
+        return kind == FieldKind.Calculated;
     }
 
     @Override
@@ -157,7 +212,7 @@ public final class FieldMeta implements Serializable {
         }
         if (anObject instanceof FieldMeta) {
             FieldMeta meta = (FieldMeta) anObject;
-            return code.equals(meta.getCode());
+            return code.equals(meta.code());
         }
         return false;
     }
@@ -188,4 +243,5 @@ public final class FieldMeta implements Serializable {
         this.onGetText(getsetTextEvent);
         this.onSetText(getsetTextEvent);
     }
+
 }

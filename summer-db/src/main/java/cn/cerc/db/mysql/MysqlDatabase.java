@@ -13,7 +13,7 @@ import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
 
 public class MysqlDatabase implements IHandle {
-    public static final String DefaultUID = "UID_";
+    public static final String DefaultOID = "UID_";
     private Class<?> clazz;
     private ISession session;
 
@@ -28,8 +28,8 @@ public class MysqlDatabase implements IHandle {
         return Utils.findTable(clazz);
     }
 
-    public String uid() {
-        return Utils.findUid(clazz, DefaultUID);
+    public String oid() {
+        return Utils.findOid(clazz, DefaultOID);
     }
 
     public boolean createTable(boolean overwrite) {

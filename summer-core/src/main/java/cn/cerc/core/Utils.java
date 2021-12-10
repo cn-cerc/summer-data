@@ -673,7 +673,7 @@ public class Utils {
         return table;
     }
 
-    public final static String findUid(Class<?> clazz, String defaultUid) {
+    public final static String findOid(Class<?> clazz, String defaultUid) {
         String uid = defaultUid;
         boolean has = false;
         for (Field field : clazz.getDeclaredFields()) {

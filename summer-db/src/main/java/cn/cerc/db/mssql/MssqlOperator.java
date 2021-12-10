@@ -16,7 +16,7 @@ public class MssqlOperator extends SqlOperator {
 
     public MssqlOperator(IHandle handle) {
         super();
-        this.setUpdateKey(MssqlDatabase.DefaultUID);
+        this.setOid(MssqlDatabase.DefaultOID);
         this.handle = handle;
     }
 

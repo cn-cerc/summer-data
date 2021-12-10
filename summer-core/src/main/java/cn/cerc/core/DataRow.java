@@ -228,7 +228,7 @@ public class DataRow implements Serializable, IRecord {
     public String json() {
         Map<String, Object> items = new LinkedHashMap<>();
         for (int i = 0; i < fields.size(); i++) {
-            String field = fields.getItems(i).getCode();
+            String field = fields.get(i).code();
             Object obj = this.getValue(field);
             if (obj instanceof Datetime) {
                 items.put(field, obj.toString());
@@ -387,7 +387,7 @@ public class DataRow implements Serializable, IRecord {
         }
     }
 
-    public <T> T asObject(Class<T> clazz) {
+    public <T> T asEntity(Class<T> clazz) {
         T result = null;
         try {
             result = clazz.getDeclaredConstructor().newInstance();
@@ -398,6 +398,11 @@ public class DataRow implements Serializable, IRecord {
             e1.printStackTrace();
             return null;
         }
+    }
+
+    @Deprecated
+    public final <T> T asObject(Class<T> clazz) {
+        return asEntity(clazz);
     }
 
     public String getText(String field) {

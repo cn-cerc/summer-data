@@ -33,8 +33,8 @@ public class RecordFilter {
             for (FieldMeta meta : dataOut.fields()) 
                 items.add(meta);
             for (FieldMeta meta : items) {
-                if (!processor.getFieldDefs().exists(meta.getCode()))
-                    dataOut.fields().remove(meta.getCode());
+                if (!processor.getFieldDefs().exists(meta.code()))
+                    dataOut.fields().remove(meta.code());
             }
         }
         // 删减记录

@@ -21,7 +21,7 @@ public class MysqlOperator extends SqlOperator {
 
     public MysqlOperator(IHandle handle) {
         super();
-        this.setUpdateKey(MysqlDatabase.DefaultUID);
+        this.setOid(MysqlDatabase.DefaultOID);
         this.handle = handle;
     }
 

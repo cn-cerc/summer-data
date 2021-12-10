@@ -9,32 +9,25 @@ import java.sql.Statement;
 import cn.cerc.core.DataRow;
 import cn.cerc.core.FieldDefs;
 import cn.cerc.core.FieldMeta;
-import cn.cerc.core.FieldMeta.FieldKind;
 
-public class SqlInsertStatement implements AutoCloseable {
-    private Connection connection;
+public class SqlInsertOperator implements AutoCloseable {
     private PreparedStatement statement;
+    private Connection connection;
     private StringBuffer sql;
     private int size;
 
-    public SqlInsertStatement(Connection connection) {
+    public SqlInsertOperator(Connection connection, FieldDefs fields, String table) {
         super();
         this.connection = connection;
-    }
-
-    public void init(FieldDefs fields, String table) {
-        if (sql != null)
-            return;
-
         sql = new StringBuffer();
         sql.append("insert into ").append(table).append(" ");
         sql.append("(");
         size = 0;
         for (FieldMeta meta : fields) {
-            if ((meta.getKind() == FieldKind.Storage) && (!meta.isAutoincrement())) {
+            if (meta.insertable()) {
                 if (size++ > 0)
                     sql.append(",");
-                sql.append(meta.getCode());
+                sql.append(meta.code());
             }
         }
         if (size == 0)
@@ -43,7 +36,7 @@ public class SqlInsertStatement implements AutoCloseable {
         sql.append(") values (");
         size = 0;
         for (FieldMeta meta : fields) {
-            if ((meta.getKind() == FieldKind.Storage) && (!meta.isAutoincrement())) {
+            if (meta.insertable()) {
                 if (size++ > 0)
                     sql.append(",");
                 sql.append("?");
@@ -57,28 +50,23 @@ public class SqlInsertStatement implements AutoCloseable {
         }
     }
 
-    public int saveInsert(DataRow row) throws SQLException {
+    public int save(DataRow row) throws SQLException {
         int i = 0;
         for (FieldMeta meta : row.fields()) {
-            if ((meta.getKind() == FieldKind.Storage) && (!meta.isAutoincrement()))
-                statement.setObject(++i, row.getValue(meta.getCode()));
+            if (meta.insertable())
+                statement.setObject(++i, row.getValue(meta.code()));
         }
         int result = statement.executeUpdate();
         if (result > 0) {
-            ResultSet ids = statement.getGeneratedKeys();
-            if (ids.next()) {
-                boolean find = false;
-                for (FieldMeta meta : row.fields()) {
-                    if ((meta.getKind() == FieldKind.Storage) && meta.isAutoincrement()) {
-                        if (find)
-                            throw new RuntimeException("only support one Autoincrement field");
-                        find = true;
-                        long uidvalue = ids.getLong(1);
-                        if (uidvalue <= Integer.MAX_VALUE) {
-                            row.setValue(meta.getCode(), uidvalue);
-                        } else {
-                            row.setValue(meta.getCode(), uidvalue);
-                        }
+            FieldMeta meta = row.fields().getByAutoincrement();
+            if (meta != null) {
+                ResultSet ids = statement.getGeneratedKeys();
+                if (ids.next()) {
+                    long uidvalue = ids.getLong(1);
+                    if (uidvalue <= Integer.MAX_VALUE) {
+                        row.setValue(meta.code(), uidvalue);
+                    } else {
+                        row.setValue(meta.code(), uidvalue);
                     }
                 }
             }

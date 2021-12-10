@@ -3,8 +3,8 @@ package cn.cerc.db.editor;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.cerc.core.FieldMeta;
 import cn.cerc.core.DataRow;
+import cn.cerc.core.FieldMeta;
 
 public class OptionEditor implements GetSetTextEvent {
     private List<String> items = new ArrayList<>();
@@ -17,7 +17,7 @@ public class OptionEditor implements GetSetTextEvent {
 
     @Override
     public String getText(DataRow record, FieldMeta meta) {
-        int index = record.getInt(meta.getCode());
+        int index = record.getInt(meta.code());
         return items.get(index);
     }
 

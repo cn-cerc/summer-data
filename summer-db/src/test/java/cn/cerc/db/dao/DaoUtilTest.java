@@ -25,7 +25,7 @@ public class DaoUtilTest {
         record.setValue("Code_", "18100101");
         record.setValue("Name_", "王五");
         record.setValue("Mobile_", "1350019101");
-        UserTest user = record.asObject(UserTest.class);
+        UserTest user = record.asEntity(UserTest.class);
         System.out.println(new Gson().toJson(user));
 
         record = new DataRow();
@@ -34,7 +34,7 @@ public class DaoUtilTest {
         record.setValue("Name_", "王五");
         record.setValue("Mobile_", "1350019101");
         record.setValue("Web_", true);
-        user = record.asObject(UserTest.class);
+        user = record.asEntity(UserTest.class);
         System.out.println(new Gson().toJson(user));
     }
 

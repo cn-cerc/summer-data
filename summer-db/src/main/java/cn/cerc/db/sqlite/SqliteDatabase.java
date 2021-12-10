@@ -10,7 +10,7 @@ import cn.cerc.core.Datetime;
 import cn.cerc.core.Utils;
 
 public class SqliteDatabase {
-    public static final String DefaultUID = "id_";
+    public static final String DefaultOID = "id_";
     private Class<?> clazz;
 
     public SqliteDatabase(Class<?> clazz) {
@@ -22,8 +22,8 @@ public class SqliteDatabase {
         return Utils.findTable(this.clazz);
     }
 
-    public final String uid() {
-        return Utils.findUid(clazz, DefaultUID);
+    public final String oid() {
+        return Utils.findOid(clazz, DefaultOID);
     }
 
     public boolean createTable(boolean overwrite) {

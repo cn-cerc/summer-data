@@ -3,8 +3,8 @@ package cn.cerc.db.editor;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
-import cn.cerc.core.FieldMeta;
 import cn.cerc.core.DataRow;
+import cn.cerc.core.FieldMeta;
 
 public class FloatEditor implements GetSetTextEvent {
     private String pattern;
@@ -25,7 +25,7 @@ public class FloatEditor implements GetSetTextEvent {
         for (int i = 0; i < this.decimal; i++)
             fmt.append(this.pattern);
         DecimalFormat df = new DecimalFormat(fmt.toString());
-        double value = record.getDouble(meta.getCode());
+        double value = record.getDouble(meta.code());
         return df.format(new BigDecimal(Double.toString(value)));
     }
 

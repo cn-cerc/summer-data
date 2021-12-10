@@ -58,7 +58,7 @@ public class DaoUtil {
         ds.open();
         DataRow record = ds.eof() ? null : ds.current();
         for (String field : ds.fields().names()) {
-            if (MysqlDatabase.DefaultUID.equals(field)) {
+            if (MysqlDatabase.DefaultOID.equals(field)) {
                 sb.append("@Id").append("\r\n");
                 sb.append("@GeneratedValue(strategy = GenerationType.IDENTITY)").append("\r\n");
             }
@@ -94,7 +94,7 @@ public class DaoUtil {
                 sb.append("String");
             }
             sb.append(" ");
-            if (MysqlDatabase.DefaultUID.equals(field)) {
+            if (MysqlDatabase.DefaultOID.equals(field)) {
                 sb.append("uid");
             } else if ("ID_".equals(field)) {
                 sb.append("id");

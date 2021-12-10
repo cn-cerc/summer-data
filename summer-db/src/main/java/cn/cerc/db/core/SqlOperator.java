@@ -26,84 +26,115 @@ import cn.cerc.db.sqlite.SqliteDatabase;
 public abstract class SqlOperator {
     private static final ClassResource res = new ClassResource(SqlOperator.class, SummerDB.ID);
     private static final Logger log = LoggerFactory.getLogger(SqlOperator.class);
-    private String tableName;
-    private String updateKey;
+    private String table;
+    private String oid;
     private UpdateMode updateMode = UpdateMode.strict;
     private boolean debug = false;
     private List<String> searchKeys = new ArrayList<>();
 
+    public final String table() {
+        return table;
+    }
+
+    @Deprecated
     public final String getTableName() {
-        return tableName;
+        return table();
     }
 
+    public final SqlOperator setTable(String table) {
+        this.table = table;
+        return this;
+    }
+
+    @Deprecated
     public final void setTableName(String tableName) {
-        this.tableName = tableName;
+        this.setTable(tableName);
     }
 
+    public final String oid() {
+        return this.oid;
+    }
+
+    @Deprecated
     public final String getUpdateKey() {
-        return updateKey;
+        return oid();
     }
 
+    public final SqlOperator setOid(String oid) {
+        this.oid = oid;
+        return this;
+    }
+
+    @Deprecated
     public final void setUpdateKey(String updateKey) {
-        this.updateKey = updateKey;
+        this.setOid(updateKey);
     }
 
-    public final UpdateMode getUpdateMode() {
+    public final UpdateMode updateMode() {
         return updateMode;
     }
 
-    public final void setUpdateMode(UpdateMode updateMode) {
-        this.updateMode = updateMode;
+    @Deprecated
+    public final UpdateMode getUpdateMode() {
+        return updateMode();
     }
 
-    public final boolean isDebug() {
+    public final SqlOperator setUpdateMode(UpdateMode updateMode) {
+        this.updateMode = updateMode;
+        return this;
+    }
+
+    public final boolean debug() {
         return debug;
+    }
+
+    @Deprecated
+    public final boolean isDebug() {
+        return debug();
     }
 
     public final void setDeubg(boolean debug) {
         this.debug = debug;
     }
 
-    @Deprecated // 请改使用 getUpdateKey
+    @Deprecated // 请改使用 oid
     public final String getPrimaryKey() {
-        return getUpdateKey();
+        return oid();
     }
 
     @Deprecated // 请改使用 setUpdateKey
     public final void setPrimaryKey(String primaryKey) {
-        this.setUpdateKey(primaryKey);
+        this.setOid(primaryKey);
     }
 
     public final boolean insert(Connection connection, DataRow record) {
         resetUpdateKey(connection, record);
 
-        if (MssqlDatabase.DefaultUID.equalsIgnoreCase(this.updateKey)) {
-            if ("".equals(record.getString(this.updateKey)))
-                record.setValue(this.updateKey, Utils.newGuid());
+        if (MssqlDatabase.DefaultOID.equalsIgnoreCase(this.oid)) {
+            if ("".equals(record.getString(this.oid)))
+                record.setValue(this.oid, Utils.newGuid());
         }
 
         String lastCommand = null;
         try (BuildStatement bs = new BuildStatement(connection)) {
-            bs.append("insert into ").append(getTableName()).append(" (");
+            bs.append("insert into ").append(this.table()).append(" (");
             int i = 0;
             for (String field : record.items().keySet()) {
                 FieldMeta meta = record.fields().get(field);
-                if (meta.getKind() == FieldKind.Storage) {
-                    if (!meta.isAutoincrement()) {
-                        i++;
-                        if (i > 1) {
-                            bs.append(",");
-                        }
-                        bs.append(field);
+                if (meta.storage() && !meta.autoincrement()) {
+                    i++;
+                    if (i > 1) {
+                        bs.append(",");
                     }
+                    bs.append(field);
                 }
             }
             bs.append(") values (");
             i = 0;
             for (String field : record.items().keySet()) {
                 FieldMeta meta = record.fields().get(field);
-                if (meta.getKind() == FieldKind.Storage) {
-                    if (!meta.isAutoincrement()) {
+                if (meta.kind() == FieldKind.Storage) {
+                    if (!meta.autoincrement()) {
                         i++;
                         if (i == 1) {
                             bs.append("?", record.getValue(field));
@@ -121,7 +152,7 @@ public abstract class SqlOperator {
             lastCommand = bs.getPrepareCommand();
             log.debug(bs.getPrepareCommand());
             PreparedStatement ps = bs.build();
-            if (isDebug()) {
+            if (this.debug()) {
                 log.info(bs.getPrepareCommand());
                 return false;
             }
@@ -130,7 +161,7 @@ public abstract class SqlOperator {
 
             boolean find = false;
             for (FieldMeta meta : record.fields()) {
-                if ((meta.getKind() == FieldKind.Storage) && meta.isAutoincrement()) {
+                if (meta.storage() && meta.autoincrement()) {
                     if (find)
                         throw new RuntimeException("only support one Autoincrement field");
                     find = true;
@@ -139,9 +170,9 @@ public abstract class SqlOperator {
                         throw new RuntimeException("uid value is null");
                     log.debug("自增列uid value：" + uidvalue);
                     if (uidvalue.intValue() <= Integer.MAX_VALUE) {
-                        record.setValue(meta.getCode(), uidvalue.intValue());
+                        record.setValue(meta.code(), uidvalue.intValue());
                     } else {
-                        record.setValue(meta.getCode(), uidvalue);
+                        record.setValue(meta.code(), uidvalue);
                     }
                 }
             }
@@ -163,13 +194,13 @@ public abstract class SqlOperator {
 
         String lastCommand = null;
         try (BuildStatement bs = new BuildStatement(connection)) {
-            bs.append("update ").append(getTableName());
+            bs.append("update ").append(this.table());
             // 加入set条件
             int i = 0;
             for (String field : delta.keySet()) {
                 FieldMeta meta = record.fields().get(field);
-                if (meta.getKind() == FieldKind.Storage) {
-                    if (!meta.isAutoincrement()) {
+                if (meta.storage()) {
+                    if (!meta.autoincrement()) {
                         i++;
                         bs.append(i == 1 ? " set " : ",");
                         bs.append(field);
@@ -189,7 +220,7 @@ public abstract class SqlOperator {
             int pkCount = 0;
             for (String field : searchKeys) {
                 FieldMeta meta = record.fields().get(field);
-                if (meta.getKind() == FieldKind.Storage) {
+                if (meta.kind() == FieldKind.Storage) {
                     i++;
                     bs.append(i == 1 ? " where " : " and ").append(field);
                     Object value = delta.containsKey(field) ? delta.get(field) : record.getValue(field);
@@ -204,11 +235,11 @@ public abstract class SqlOperator {
             if (pkCount == 0)
                 throw new RuntimeException("serach keys value not exists");
 
-            if (getUpdateMode() == UpdateMode.strict) {
+            if (this.updateMode() == UpdateMode.strict) {
                 for (String field : delta.keySet()) {
                     if (!searchKeys.contains(field)) {
                         FieldMeta meta = record.fields().get(field);
-                        if (meta.getKind() == FieldKind.Storage) {
+                        if (meta.kind() == FieldKind.Storage) {
                             i++;
                             bs.append(i == 1 ? " where " : " and ").append(field);
                             Object value = delta.get(field);
@@ -225,7 +256,7 @@ public abstract class SqlOperator {
             lastCommand = bs.getPrepareCommand();
             log.debug(bs.getPrepareCommand());
             PreparedStatement ps = bs.build();
-            if (isDebug()) {
+            if (this.debug()) {
                 log.info(bs.getPrepareCommand());
                 return false;
             }
@@ -247,12 +278,12 @@ public abstract class SqlOperator {
 
         String lastCommand = null;
         try (BuildStatement bs = new BuildStatement(connection)) {
-            bs.append("delete from ").append(getTableName());
+            bs.append("delete from ").append(this.table());
             int count = 0;
             Map<String, Object> delta = record.delta();
             for (String field : searchKeys) {
                 FieldMeta meta = record.fields().get(field);
-                if (meta.getKind() == FieldKind.Storage) {
+                if (meta.storage()) {
                     Object value = delta.containsKey(field) ? delta.get(field) : record.getValue(field);
                     if (value == null)
                         throw new RuntimeException("primary key is null");
@@ -268,7 +299,7 @@ public abstract class SqlOperator {
             lastCommand = bs.getPrepareCommand();
             log.debug(bs.getPrepareCommand());
             PreparedStatement ps = bs.build();
-            if (isDebug()) {
+            if (this.debug()) {
                 log.info(bs.getPrepareCommand());
                 return false;
             }
@@ -282,39 +313,38 @@ public abstract class SqlOperator {
 
     private void resetUpdateKey(Connection connection, DataRow record) {
         FieldMeta def = null;
-        if (!Utils.isEmpty(this.updateKey)) {
-            def = record.fields().get(this.updateKey);
+        if (!Utils.isEmpty(this.oid)) {
+            def = record.fields().get(this.oid);
             if (def == null) {
-                log.debug(String.format("not find primary key %s in %s", this.updateKey, getTableName()));
-                this.updateKey = null;
+                log.debug(String.format("not find primary key %s in %s", this.oid(), this.table()));
+                this.oid = null;
             }
         }
 
-        if (def != null && def.getKind() == FieldKind.Storage) {
-            if (MysqlDatabase.DefaultUID.equals(this.updateKey))
+        if (def != null && def.kind() == FieldKind.Storage) {
+            def.setIdentification(true);
+            if (MysqlDatabase.DefaultOID.equals(this.oid) || SqliteDatabase.DefaultOID.equals(this.oid)
+                    || "id".equals(this.oid)) {
                 def.setAutoincrement(true);
-            if (SqliteDatabase.DefaultUID.equals(this.updateKey))
-                def.setAutoincrement(true);
-            if ("id".equals(this.updateKey))
-                def.setAutoincrement(true);
-            def.setUpdateKey(true);
+                def.setInsertable(false);
+            }
         }
 
         boolean find = false;
         for (FieldMeta meta : record.fields()) {
-            if (meta.isUpdateKey()) {
+            if (meta.identification()) {
                 if (find)
                     throw new RuntimeException("only support one UpdateKey field");
                 find = true;
-                this.updateKey = meta.getCode();
-                if (!searchKeys.contains(updateKey))
-                    searchKeys.add(updateKey);
+                this.oid = meta.code();
+                if (!searchKeys.contains(oid))
+                    searchKeys.add(oid);
             }
         }
 
         if (this.searchKeys.size() == 0) {
             try {
-                String result = getKeyByDB(connection, getTableName());
+                String result = getKeyByDB(connection, this.table());
                 if (!Utils.isEmpty(result)) {
                     String[] pks = result.split(";");
                     if (pks.length == 0)

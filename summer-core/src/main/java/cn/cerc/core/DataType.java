@@ -3,8 +3,8 @@ package cn.cerc.core;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class FieldType {
-    private String dataType = null;
+public final class DataType {
+    private String context = null;
     private int length = 0; // 包含decimal的长度
     private int decimal = 0; // 小数点位数
 
@@ -24,9 +24,9 @@ public final class FieldType {
     }
 
     @Override
-    public FieldType clone() {
-        FieldType result = new FieldType();
-        result.dataType = this.dataType;
+    public DataType clone() {
+        DataType result = new DataType();
+        result.context = this.context;
         result.length = this.length;
         result.decimal = this.decimal;
         return result;
@@ -38,11 +38,16 @@ public final class FieldType {
 
     @Override
     public String toString() {
-        if (decimal <= 0) {
-            return length > 0 ? dataType + length : dataType;
-        } else {
-            return dataType + length + "," + decimal;
-        }
+        return value();
+    }
+
+    public String value() {
+        if (context == null)
+            return null;
+        if (decimal <= 0)
+            return length > 0 ? context + length : context;
+        else
+            return context + length + "," + decimal;
     }
 
     public boolean validate(String dataType) {
@@ -87,7 +92,7 @@ public final class FieldType {
         }
     }
 
-    public FieldType setType(String dataType) {
+    public DataType setValue(String dataType) {
         if (Utils.isEmpty(dataType))
             return this;
 
@@ -130,7 +135,7 @@ public final class FieldType {
         return this;
     }
 
-    public FieldType setType(Class<?> clazz) {
+    public DataType readClass(Class<?> clazz) {
         if (boolean.class == clazz || Boolean.class == clazz)
             this.updateType("b", 0);
         else if (int.class == clazz || Integer.class == clazz)
@@ -154,7 +159,7 @@ public final class FieldType {
         return this;
     }
 
-    public FieldType put(Object data) {
+    public DataType readData(Object data) {
         if (data == null)
             return this;
 
@@ -179,45 +184,45 @@ public final class FieldType {
                     this.decimal = dec;
             }
         } else
-            this.setType(data.getClass());
+            this.readClass(data.getClass());
 
         return this;
     }
 
     private void updateType(String dataType, int length) {
-        if (this.dataType == null) {
-            this.dataType = dataType;
+        if (this.context == null) {
+            this.context = dataType;
             this.length = length;
             return;
         }
 
-        if ("o".equals(this.dataType))
+        if ("o".equals(this.context))
             return;
 
         if ("o".equals(dataType)) {
-            this.dataType = dataType;
+            this.context = dataType;
             this.length = 0;
             return;
         }
 
-        if ("f".equals(dataType) && "n".equals(this.dataType)) {
-            this.dataType = dataType;
+        if ("f".equals(dataType) && "n".equals(this.context)) {
+            this.context = dataType;
             this.length = length;
             return;
         }
-        if ("n".equals(dataType) && "f".equals(this.dataType)) {
+        if ("n".equals(dataType) && "f".equals(this.context)) {
             return;
         }
 
-        if (!dataType.equals(this.dataType))
-            throw new RuntimeException(String.format("dataType not update from %s to: %s", this.dataType, dataType));
+        if (!dataType.equals(this.context))
+            throw new RuntimeException(String.format("dataType not update from %s to: %s", this.context, dataType));
 
         if (length > this.length)
             this.length = length;
     }
 
     public final String dataType() {
-        return this.dataType;
+        return this.context;
     }
 
     public final int getLength() {
@@ -228,18 +233,18 @@ public final class FieldType {
         return decimal;
     }
 
-    public final FieldType setDecimal(int decimal) {
+    public final DataType setDecimal(int decimal) {
         this.decimal = decimal;
         return this;
     }
 
-    public final FieldType setLength(int length) {
-        if ("s".equals(dataType) || "o".equals(dataType))
+    public final DataType setLength(int length) {
+        if ("s".equals(context) || "o".equals(context))
             this.length = length;
-        else if (("n".equals(dataType) || "f".equals(dataType)) && (length == 1 || length == 2))
+        else if (("n".equals(context) || "f".equals(context)) && (length == 1 || length == 2))
             this.length = length;
         else
-            throw new RuntimeException(String.format("the dateType is %s, error length: %s", this.dataType, length));
+            throw new RuntimeException(String.format("the dateType is %s, error length: %s", this.context, length));
         return this;
     }
 

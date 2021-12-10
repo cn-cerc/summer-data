@@ -33,7 +33,7 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
 
     public List<String> names() {
         List<String> result = new ArrayList<>();
-        items.forEach(meta -> result.add(meta.getCode()));
+        items.forEach(meta -> result.add(meta.code()));
         return result;
     }
 
@@ -44,16 +44,16 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
 
     public FieldMeta add(String fieldCode) {
         FieldMeta item = new FieldMeta(fieldCode);
-        return items.add(item) ? item : this.getItem(fieldCode);
+        return items.add(item) ? item : this.get(fieldCode);
     }
 
     public FieldMeta add(String fieldCode, FieldKind fieldType) {
         FieldMeta item = new FieldMeta(fieldCode, fieldType);
-        return items.add(item) ? item : this.getItem(fieldCode);
+        return items.add(item) ? item : this.get(fieldCode);
     }
 
     public FieldMeta add(FieldMeta item) {
-        return items.add(item) ? item : this.getItem(item.getCode());
+        return items.add(item) ? item : this.get(item.code());
     }
 
     @Deprecated
@@ -87,13 +87,13 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
 
     public FieldMeta get(String fieldCode) {
         for (FieldMeta meta : items) {
-            if (fieldCode.equals(meta.getCode()))
+            if (fieldCode.equals(meta.code()))
                 return meta;
         }
         return null;
     }
 
-    public FieldMeta getItems(int index) {
+    public FieldMeta get(int index) {
         int i = 0;
         for (FieldMeta meta : items) {
             if (i == index) {
@@ -105,6 +105,11 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     }
 
     @Deprecated
+    public final FieldMeta getItems(int index) {
+        return get(index);
+    }
+
+    @Deprecated
     public FieldMeta getItem(String fieldCode) {
         return get(fieldCode);
     }
@@ -112,10 +117,6 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     @Override
     public String toString() {
         return new Gson().toJson(this);
-    }
-
-    public HashSet<FieldMeta> getItems() {
-        return items;
     }
 
     public void copy(FieldDefs source) {
@@ -133,24 +134,32 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
                 continue;
             FieldMeta meta = this.get(field.getName());
             if (meta != null) {
-                Id id = field.getDeclaredAnnotation(Id.class);
-                if (id != null)
-                    meta.setUpdateKey(true);
-                GeneratedValue gen = field.getDeclaredAnnotation(GeneratedValue.class);
-                if (gen != null)
-                    meta.setAutoincrement(true);
+                if (field.getDeclaredAnnotation(Id.class) != null) {
+                    if (meta.storage())
+                        meta.setIdentification(true);
+                }
+                if (field.getDeclaredAnnotation(GeneratedValue.class) != null) {
+                    if (meta.storage()) {
+                        meta.setAutoincrement(true);
+                        meta.setInsertable(false);
+                    }
+                }
                 Column column = field.getDeclaredAnnotation(Column.class);
                 if (column != null) {
+                    if (meta.storage()) {
+                        meta.setInsertable(column.insertable());
+                        meta.setUpdatable(column.updatable());
+                    }
                     if (field.getType().isEnum()) {
                         Enumerated enumerated = field.getDeclaredAnnotation(Enumerated.class);
                         if ((enumerated != null) && (enumerated.value() == EnumType.STRING))
-                            meta.setType("s" + column.length());
+                            meta.dataType().setValue("s" + column.length());
                         else
-                            meta.setType("n1");
+                            meta.dataType().setValue("n1");
                     } else {
-                        meta.getFieldType().setType(field.getType());
-                        if ("s".equals(meta.getType()) || "o".equals(meta.getType()))
-                            meta.getFieldType().setLength(column.length());
+                        meta.dataType().readClass(field.getType());
+                        if ("s".equals(meta.dataType().value()) || "o".equals(meta.dataType().value()))
+                            meta.dataType().setLength(column.length());
                     }
                 }
                 Describe describe = field.getDeclaredAnnotation(Describe.class);
@@ -165,4 +174,32 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return this;
     }
 
+    public final FieldMeta getByAutoincrement() {
+        FieldMeta result = null;
+        boolean find = false;
+        for (FieldMeta meta : this.items) {
+            if (meta.storage() && meta.autoincrement()) {
+                if (find)
+                    throw new RuntimeException("only support one Autoincrement field");
+                find = true;
+                result = meta;
+            }
+        }
+        return result;
+    }
+
+    public HashSet<FieldMeta> getItems() {
+        return items;
+    }
+
+    public static void main(String[] args) {
+        FieldDefs fields = new FieldDefs();
+        fields.add("a1", FieldKind.Storage);
+        fields.add("a2", FieldKind.Storage);
+        fields.add("a3");
+        for (FieldMeta meta : fields.items) {
+            if (meta.insertable())
+                System.out.println(meta.code());
+        }
+    }
 }

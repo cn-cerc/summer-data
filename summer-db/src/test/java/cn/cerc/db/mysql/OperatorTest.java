@@ -45,7 +45,7 @@ public class OperatorTest implements IHandle {
     @Ignore
     public void test_3_insert_new() {
         MysqlOperator obj = new MysqlOperator(this);
-        obj.setTableName("temp");
+        obj.setTable("temp");
         for (int i = 0; i < maxTest; i++) {
             DataRow record = new DataRow();
             record.fields().add("UID_", FieldKind.Storage);

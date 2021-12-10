@@ -12,7 +12,7 @@ public class SqliteOperator extends SqlOperator {
 
     public SqliteOperator() {
         super();
-        this.setUpdateKey(SqliteDatabase.DefaultUID);
+        this.setOid(SqliteDatabase.DefaultOID);
     }
 
     @Override

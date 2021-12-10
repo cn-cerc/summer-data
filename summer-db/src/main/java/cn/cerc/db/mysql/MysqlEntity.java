@@ -2,6 +2,7 @@ package cn.cerc.db.mysql;
 
 import java.lang.reflect.InvocationTargetException;
 
+import cn.cerc.core.DataRow;
 import cn.cerc.core.DataSetGson;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
@@ -17,8 +18,8 @@ public class MysqlEntity<T> extends MysqlQuery implements IHandle {
             database.createTable(false);
         }
         MysqlEntity<U> result = new MysqlEntity<U>(handle, clazz);
-        result.operator().setTableName(database.table());
-        result.operator().setUpdateKey(database.uid());
+        result.operator().setTable(database.table());
+        result.operator().setOid(database.oid());
         result.add("select * from %s", database.table());
         return result;
     }
@@ -33,6 +34,18 @@ public class MysqlEntity<T> extends MysqlQuery implements IHandle {
         super.open();
         this.fields().readDefine(clazz);
         return this;
+    }
+
+    public T findOne(Object key) {
+        this.add("where %s='%s'", database.oid(), key);
+        return this.currentEntity();
+    }
+
+    public T currentEntity() {
+        DataRow row = current();
+        if (row == null)
+            return null;
+        return row.asEntity(clazz);
     }
 
     public T newEntity() {
@@ -52,15 +65,10 @@ public class MysqlEntity<T> extends MysqlQuery implements IHandle {
 
     public T editEntity() {
         edit();
-        return current().asObject(clazz);
-    }
-
-    public T currentEntity() {
-        return current().asObject(clazz);
+        return current().asEntity(clazz);
     }
 
     public MysqlEntity<T> update(T entity) {
-        this.edit();
         Utils.objectAsRecord(current(), entity);
         return this;
     }

@@ -209,13 +209,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
 
     @Override
     public DataRow current() {
-        if (this.eof()) {
-            throw new RuntimeException(String.format("[%s]eof == true", this.getClass().getName()));
-        } else if (this.bof()) {
-            throw new RuntimeException(String.format("[%s]bof == true", this.getClass().getName()));
-        } else {
-            return records.get(recNo - 1);
-        }
+        return (eof() || bof()) ? null : records.get(recNo - 1);
     }
 
     /**
@@ -678,7 +672,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
      */
     public DataSet disableStorage() {
         this.fields().forEach(meta -> {
-            if (meta.getKind() == FieldKind.Storage)
+            if (meta.storage())
                 meta.setKind(FieldKind.Memory);
         });
         this.setStorage(false);
@@ -720,10 +714,10 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
 
     public final DataSet buildMeta() {
         if (head.fields().size() > 0) {
-            head.fields().forEach(def -> def.getFieldType().put(head.getValue(def.getCode())));
+            head.fields().forEach(def -> def.dataType().readData(head.getValue(def.code())));
         }
         records.forEach(row -> {
-            this.fields().forEach(def -> def.getFieldType().put(row.getValue(def.getCode())));
+            this.fields().forEach(def -> def.dataType().readData(row.getValue(def.code())));
         });
         return this;
     }

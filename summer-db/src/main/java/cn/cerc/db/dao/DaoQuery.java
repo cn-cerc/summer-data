@@ -55,7 +55,7 @@ public class DaoQuery<T> extends MysqlQuery {
     }
 
     public T currentEntity() {
-        return this.current().asObject(clazz);
+        return this.current().asEntity(clazz);
     }
 
     @Deprecated

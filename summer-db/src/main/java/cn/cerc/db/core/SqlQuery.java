@@ -226,10 +226,10 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     public final SqlOperator operator() {
         if (operator == null)
             operator = server().getDefaultOperator(this);
-        if (operator.getTableName() == null) {
+        if (operator.table() == null) {
             String sqlText = this.sqlText();
             if (sqlText != null)
-                operator.setTableName(SqlText.findTableName(sqlText));
+                operator.setTable(SqlText.findTableName(sqlText));
         }
         return operator;
     }

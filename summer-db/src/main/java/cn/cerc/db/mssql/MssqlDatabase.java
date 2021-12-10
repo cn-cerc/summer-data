@@ -13,7 +13,7 @@ import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
 
 public class MssqlDatabase implements IHandle {
-    public static final String DefaultUID = "UpdateKey_";
+    public static final String DefaultOID = "UpdateKey_";
     private Class<?> clazz;
     private ISession session;
 
@@ -28,8 +28,8 @@ public class MssqlDatabase implements IHandle {
         return Utils.findTable(this.clazz);
     }
 
-    public final String uid() {
-        return Utils.findUid(clazz, DefaultUID);
+    public final String oid() {
+        return Utils.findOid(clazz, DefaultOID);
     }
     
     public boolean createTable(boolean overwrite) {
