@@ -1,15 +1,16 @@
 package cn.cerc.db.oss;
 
-import com.aliyun.oss.OSS;
-import com.aliyun.oss.model.ListObjectsRequest;
-import com.aliyun.oss.model.OSSObjectSummary;
-import com.aliyun.oss.model.ObjectListing;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.aliyun.oss.OSS;
+import com.aliyun.oss.model.ListObjectsRequest;
+import com.aliyun.oss.model.OSSObjectSummary;
+import com.aliyun.oss.model.ObjectListing;
+
+@Deprecated
 public class OssFolder {
     private OssDisk disk;
     private String name;
@@ -45,7 +46,7 @@ public class OssFolder {
         String marker = "";
         while (true) {
             // 构造ListObjectsRequest请求
-            ListObjectsRequest params = new ListObjectsRequest(disk.getConnection().getBucket());
+            ListObjectsRequest params = new ListObjectsRequest(AliyunStorage.getBucket());
 
             // 设置参数
             params.setDelimiter("/");

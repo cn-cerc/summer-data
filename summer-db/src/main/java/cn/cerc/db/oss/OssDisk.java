@@ -15,27 +15,27 @@ import cn.cerc.core.ClassResource;
 import cn.cerc.db.SummerDB;
 import cn.cerc.db.core.IHandle;
 
+/**
+ * 统一到一个工具类
+ */
+@Deprecated
 public class OssDisk {
     private static final ClassResource res = new ClassResource(OssDisk.class, SummerDB.ID);
     private static final Logger log = LoggerFactory.getLogger(OssDisk.class);
 
-    private OssConnection connection;
-    private OSS client;
     private String localPath;
 
     public OssDisk(IHandle handle) {
-        connection = (OssConnection) handle.getSession().getProperty(OssConnection.sessionId);
-        client = connection.getClient();
     }
 
     // 默认Bucket上传文件流
     public void upload(String fileName, InputStream inputStream) {
-        connection.upload(fileName, inputStream);
+        AliyunStorage.upload(fileName, inputStream);
     }
 
     // 指定Bucket上传文件流
     public void upload(String bucket, String fileName, InputStream inputStream) {
-        connection.upload(bucket, fileName, inputStream);
+        AliyunStorage.upload(bucket, fileName, inputStream);
     }
 
     // 上传文件
@@ -47,7 +47,8 @@ public class OssDisk {
             throw new RuntimeException(String.format(res.getString(1, "文件不存在：%s"), localFile));
         }
         try {
-            ObjectMetadata summary = client.getObjectMetadata(connection.getBucket(), remoteFile);
+            ObjectMetadata summary = AliyunStorage.getClient().getObjectMetadata(AliyunStorage.getBucket(),
+                    remoteFile);
             if (summary != null && summary.getContentLength() == file.length()) {
                 log.info("ignore upload, because the local file has the same size as cloud file");
                 return true;
@@ -56,8 +57,9 @@ public class OssDisk {
             log.info("there is no such file on the server, start uploading ...");
         }
 
-        client.putObject(connection.getBucket(), remoteFile, file);
-        ObjectMetadata metadata = client.getObjectMetadata(connection.getBucket(), remoteFile);
+        AliyunStorage.getClient().putObject(AliyunStorage.getBucket(), remoteFile, file);
+        ObjectMetadata metadata = AliyunStorage.getClient().getObjectMetadata(AliyunStorage.getBucket(),
+                remoteFile);
         return file.exists() && metadata.getContentLength() == file.length();
     }
 
@@ -71,17 +73,17 @@ public class OssDisk {
         String localFile = localPath + fileName.replace('/', '\\');
         createFolder(localFile);
 
-        return connection.download(fileName, localFile);
+        return AliyunStorage.download(fileName, localFile);
     }
 
     // 默认Bucket删除文件
     public void delete(String fileName) {
-        connection.delete(fileName);
+        AliyunStorage.delete(fileName);
     }
 
     // 指定Bucket删除文件
     public void delete(String bucket, String fileName) {
-        connection.delete(bucket, fileName);
+        AliyunStorage.delete(bucket, fileName);
     }
 
     // 拷贝Object
@@ -90,14 +92,15 @@ public class OssDisk {
          * sample: srcBucketName = "scmfiles" srcKey = "Products\010001\钻石.jpg";
          * destBucketName = "vinefiles"; destKey = "131001\product\0100001\钻石.jpg";
          */
-        CopyObjectResult result = client.copyObject(srcBucketName, srcKey, destBucketName, destKey);
+        CopyObjectResult result = AliyunStorage.getClient().copyObject(srcBucketName, srcKey, destBucketName,
+                destKey);
 
         // 打印结果
         log.info("ETag: {}, LastModified: {}", result.getETag(), result.getLastModified());
     }
 
     public OSS getClient() {
-        return client;
+        return AliyunStorage.getClient();
     }
 
     public String getLocalPath() {
@@ -106,14 +109,6 @@ public class OssDisk {
 
     public void setLocalPath(String localPath) {
         this.localPath = localPath;
-    }
-
-    public OssConnection getConnection() {
-        return connection;
-    }
-
-    public void setConnection(OssConnection connection) {
-        this.connection = connection;
     }
 
     // 如果文件所在的文件目录不存在，则创建之

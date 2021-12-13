@@ -12,7 +12,6 @@ import cn.cerc.db.queue.OssOperator;
 
 public class OssQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = 3346060985794794816L;
-    private OssConnection connection;
     private OssOperator operator;
     // 文件名称
     private String fileName;
@@ -24,14 +23,13 @@ public class OssQuery extends DataSet implements IHandle {
     public OssQuery(IHandle handle) {
         super();
         this.session = handle.getSession();
-        connection = (OssConnection) getSession().getProperty(OssConnection.sessionId);
     }
 
     public OssQuery open() {
         try {
             this.fileName = SqlText.findTableName(this.sql().text());
             if (ossMode == OssMode.readWrite) {
-                String value = connection.getContent(this.fileName);
+                String value = AliyunStorage.getContent(this.fileName);
                 if (value != null) {
                     this.setJson(value);
                     this.setActive(true);
@@ -47,12 +45,12 @@ public class OssQuery extends DataSet implements IHandle {
      * 删除文件
      */
     public void remove() {
-        connection.delete(this.fileName);
+        AliyunStorage.delete(this.fileName);
     }
 
     public void save() {
         String content = this.json();
-        connection.upload(fileName, new ByteArrayInputStream(content.getBytes()));
+        AliyunStorage.upload(fileName, new ByteArrayInputStream(content.getBytes()));
     }
 
     public OssOperator getOperator() {

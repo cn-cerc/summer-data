@@ -7,7 +7,6 @@ import cn.cerc.core.ISession;
 import cn.cerc.db.mongo.MongoDB;
 import cn.cerc.db.mssql.MssqlServer;
 import cn.cerc.db.mysql.MysqlServerMaster;
-import cn.cerc.db.oss.OssConnection;
 import cn.cerc.db.queue.QueueServer;
 
 public class StubSession implements ISession {
@@ -15,14 +14,12 @@ public class StubSession implements ISession {
     private MssqlServer mssql;
     private MongoDB mgConn;
     private QueueServer queConn;
-    private OssConnection ossConn;
 
     public StubSession() {
         mysql = new MysqlServerMaster();
         mssql = new MssqlServer();
         mgConn = new MongoDB();
         queConn = new QueueServer();
-        ossConn = new OssConnection();
     }
 
     @Override
@@ -46,8 +43,6 @@ public class StubSession implements ISession {
             return mgConn;
         if (QueueServer.SessionId.equals(key))
             return queConn;
-        if (OssConnection.sessionId.equals(key))
-            return ossConn;
         return null;
     }
 
