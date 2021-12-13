@@ -10,6 +10,7 @@ import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.queue.OssOperator;
 
+@Deprecated
 public class OssQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = 3346060985794794816L;
     private OssOperator operator;

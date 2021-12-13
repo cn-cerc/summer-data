@@ -183,4 +183,13 @@ public class AliyunStorage {
         }
     }
 
+    /**
+     * 拷贝Object
+     * 
+     * sample: fromBucket = "scmfiles" fromKey = "Products\010001\钻石.jpg"; toBucket
+     * = "vinefiles"; toKey = "131001\product\0100001\钻石.jpg";
+     */
+    public static void copyObject(String fromBucket, String fromKey, String toBucket, String toKey) {
+        AliyunStorage.getClient().copyObject(fromBucket, fromKey, toBucket, toKey);
+    }
 }

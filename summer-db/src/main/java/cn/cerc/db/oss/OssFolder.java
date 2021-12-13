@@ -12,14 +12,9 @@ import com.aliyun.oss.model.ObjectListing;
 
 @Deprecated
 public class OssFolder {
-    private OssDisk disk;
     private String name;
     private List<String> subItems = new ArrayList<>();
     private Map<String, OSSObjectSummary> files = new HashMap<>();
-
-    public OssFolder(OssDisk disk) {
-        this.disk = disk;
-    }
 
     public String getName() {
         return name;
@@ -41,7 +36,7 @@ public class OssFolder {
         this.setName(folderName);
         this.files.clear();
         this.subItems.clear();
-        OSS client = disk.getClient();
+        OSS client = AliyunStorage.getClient();
 
         String marker = "";
         while (true) {
