@@ -19,7 +19,6 @@ import com.mchange.v2.resourcepool.TimeoutException;
 import cn.cerc.db.core.ConnectionClient;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISqlServer;
-import cn.cerc.db.core.SqlOperator;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -32,6 +31,7 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
     // 标记栏位，为兼容历史delphi写法
     private int tag;
 
+    @Override
     public abstract String getHost();
 
     public abstract String getDatabase();
@@ -112,11 +112,6 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
                 log.warn(e.getMessage(), e);
         }
         return result;
-    }
-
-    @Override
-    public SqlOperator getDefaultOperator(IHandle handle) {
-        return new MysqlOperator(handle);
     }
 
     protected final Connection getConnection() {

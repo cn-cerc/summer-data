@@ -8,24 +8,29 @@ import javax.persistence.Id;
 
 import cn.cerc.core.Datetime;
 import cn.cerc.core.Utils;
+import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.ISqlDatabase;
 
-public class SqliteDatabase {
+public class SqliteDatabase implements ISqlDatabase {
     public static final String DefaultOID = "id_";
     private Class<?> clazz;
 
-    public SqliteDatabase(Class<?> clazz) {
+    public SqliteDatabase(IHandle handle, Class<?> clazz) {
         super();
         this.clazz = clazz;
     }
 
+    @Override
     public final String table() {
         return Utils.findTable(this.clazz);
     }
 
+    @Override
     public final String oid() {
         return Utils.findOid(clazz, DefaultOID);
     }
 
+    @Override
     public boolean createTable(boolean overwrite) {
         SqliteServer server = new SqliteServer();
         return server.createTable(getCreateSql(), overwrite);

@@ -12,6 +12,7 @@ import cn.cerc.core.DataRow;
 import cn.cerc.core.DataSet;
 import cn.cerc.core.DataSetGson;
 import cn.cerc.core.ISession;
+import cn.cerc.core.SqlServerType;
 import cn.cerc.core.SqlText;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
@@ -26,7 +27,7 @@ public class NasQuery extends DataSet implements IHandle {
     private String fileName;
     private QueueOperator operator;
     private NasModel nasMode = NasModel.create;
-    private SqlText sql = new SqlText();
+    private SqlText sql = new SqlText(SqlServerType.Mysql);
     private boolean active;
     private ISession session;
 

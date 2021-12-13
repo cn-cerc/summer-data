@@ -17,7 +17,6 @@ import cn.cerc.core.IConfig;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISqlServer;
 import cn.cerc.db.core.ServerConfig;
-import cn.cerc.db.core.SqlOperator;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -47,6 +46,8 @@ public class MssqlServer implements ISqlServer, AutoCloseable {
     private IConfig config;
 
     private List<String> tables;
+
+    private String host;
 
     public MssqlServer() {
         config = ServerConfig.getInstance();
@@ -90,6 +91,7 @@ public class MssqlServer implements ISqlServer, AutoCloseable {
     public final String getConnectUrl() {
         String site = config.getProperty(MssqlServer.MSSQL_SITE, "127.0.0.1");
         String port = config.getProperty(MssqlServer.MSSQL_PORT, "1433");
+        this.host = site + ":" + port;
 
         user = config.getProperty(MssqlServer.MSSQL_USERNAME, "appdb_user");
         password = config.getProperty(MssqlServer.MSSQL_PASSWORD, "appdb_password");
@@ -120,11 +122,6 @@ public class MssqlServer implements ISqlServer, AutoCloseable {
         return new MssqlClient(this.getConnection());
     }
 
-    @Override
-    public SqlOperator getDefaultOperator(IHandle handle) {
-        return new MssqlOperator(handle);
-    }
-
     public String getDatabase() {
         return database;
     }
@@ -144,6 +141,11 @@ public class MssqlServer implements ISqlServer, AutoCloseable {
         while (query.fetch())
             tables.add(query.getString("name"));
         return tables;
+    }
+
+    @Override
+    public String getHost() {
+        return host;
     }
 
 }

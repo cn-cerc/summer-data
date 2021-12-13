@@ -19,6 +19,7 @@ import cn.cerc.core.DataRowState;
 import cn.cerc.core.DataSet;
 import cn.cerc.core.DataSetGson;
 import cn.cerc.core.ISession;
+import cn.cerc.core.SqlServerType;
 import cn.cerc.core.SqlText;
 import cn.cerc.core.Utils;
 import cn.cerc.db.SummerDB;
@@ -33,7 +34,7 @@ public class MongoQuery extends DataSet implements IHandle {
     private NosqlOperator operator;
     private ISession session;
     private boolean active;
-    private final SqlText sql = new SqlText();
+    private final SqlText sql = new SqlText(SqlServerType.Mysql);
 
     public MongoQuery(IHandle handle) {
         super();

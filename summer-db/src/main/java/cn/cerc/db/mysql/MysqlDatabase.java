@@ -11,8 +11,9 @@ import cn.cerc.core.Datetime;
 import cn.cerc.core.ISession;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.ISqlDatabase;
 
-public class MysqlDatabase implements IHandle {
+public class MysqlDatabase implements IHandle, ISqlDatabase {
     public static final String DefaultOID = "UID_";
     private Class<?> clazz;
     private ISession session;
@@ -24,14 +25,17 @@ public class MysqlDatabase implements IHandle {
             this.setSession(handle.getSession());
     }
 
+    @Override
     public final String table() {
         return Utils.findTable(clazz);
     }
 
+    @Override
     public String oid() {
         return Utils.findOid(clazz, DefaultOID);
     }
 
+    @Override
     public boolean createTable(boolean overwrite) {
         MysqlServerMaster server = this.getMysql();
         List<String> list = server.tables(this);

@@ -1,4 +1,4 @@
-package cn.cerc.db.mysql;
+package cn.cerc.db.core;
 
 public enum UpdateMode {
     /**

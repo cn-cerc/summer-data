@@ -13,8 +13,6 @@ import org.slf4j.LoggerFactory;
 import cn.cerc.core.ClassConfig;
 import cn.cerc.core.Utils;
 import cn.cerc.db.SummerDB;
-import cn.cerc.db.core.IHandle;
-import cn.cerc.db.core.SqlOperator;
 import cn.cerc.db.core.ISqlServer;
 
 public class SqliteServer implements ISqlServer {
@@ -198,8 +196,8 @@ public class SqliteServer implements ISqlServer {
     }
 
     @Override
-    public SqlOperator getDefaultOperator(IHandle handle) {
-        return new SqliteOperator();
+    public String getHost() {
+        return this.path + this.database;
     }
 
 }

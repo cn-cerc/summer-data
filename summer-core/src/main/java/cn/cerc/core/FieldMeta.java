@@ -14,13 +14,16 @@ public final class FieldMeta implements Serializable {
     private String remark;
     private FieldKind kind = FieldKind.Memory;
     // 唯一标识
-    private boolean identification;
+    private boolean identification = false;
     // 是否为自增字段
-    private boolean autoincrement;
+    private boolean autoincrement = false;
     // 是否参与持久化插入
-    private boolean insertable;
+    private boolean insertable = true;
     // 是否参与持久化更新
-    private boolean updatable;
+    private boolean updatable = true;
+    // 是否允许为空
+    private boolean nullable = true;
+    // UI取值事件
     private GetTextEvent onGetTextEvent;
     private SetTextEvent onSetTextEvent;
 
@@ -198,6 +201,14 @@ public final class FieldMeta implements Serializable {
 
     public boolean calculated() {
         return kind == FieldKind.Calculated;
+    }
+
+    public boolean nullable() {
+        return nullable;
+    }
+
+    public void setNullable(boolean nullable) {
+        this.nullable = nullable;
     }
 
     @Override

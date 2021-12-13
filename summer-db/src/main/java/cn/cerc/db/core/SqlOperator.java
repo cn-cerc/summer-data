@@ -3,7 +3,9 @@ package cn.cerc.db.core;
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -15,22 +17,51 @@ import cn.cerc.core.ClassResource;
 import cn.cerc.core.DataRow;
 import cn.cerc.core.FieldMeta;
 import cn.cerc.core.FieldMeta.FieldKind;
+import cn.cerc.core.ISession;
+import cn.cerc.core.SqlServerType;
+import cn.cerc.core.SqlServerTypeException;
+import cn.cerc.core.SqlText;
 import cn.cerc.core.Utils;
 import cn.cerc.db.SummerDB;
+import cn.cerc.db.mssql.MssqlClient;
 import cn.cerc.db.mssql.MssqlDatabase;
+import cn.cerc.db.mssql.MssqlServer;
 import cn.cerc.db.mysql.BuildStatement;
+import cn.cerc.db.mysql.MysqlClient;
 import cn.cerc.db.mysql.MysqlDatabase;
-import cn.cerc.db.mysql.UpdateMode;
+import cn.cerc.db.mysql.MysqlServerMaster;
 import cn.cerc.db.sqlite.SqliteDatabase;
 
-public abstract class SqlOperator {
+public class SqlOperator implements IHandle {
     private static final ClassResource res = new ClassResource(SqlOperator.class, SummerDB.ID);
     private static final Logger log = LoggerFactory.getLogger(SqlOperator.class);
+    private SqlServerType sqlServerType;
     private String table;
     private String oid;
     private UpdateMode updateMode = UpdateMode.strict;
     private boolean debug = false;
     private List<String> searchKeys = new ArrayList<>();
+    private ISession session;
+
+    public SqlOperator(IHandle handle, SqlServerType sqlServerType) {
+        super();
+        if (handle != null)
+            this.session = handle.getSession();
+        this.sqlServerType = sqlServerType;
+        switch (sqlServerType) {
+        case Mysql:
+            this.setOid(MysqlDatabase.DefaultOID);
+            break;
+        case Mssql:
+            this.setOid(MssqlDatabase.DefaultOID);
+            break;
+        case Sqlite:
+            this.setOid(SqliteDatabase.DefaultOID);
+            break;
+        default:
+            throw new SqlServerTypeException();
+        }
+    }
 
     public final String table() {
         return table;
@@ -84,13 +115,8 @@ public abstract class SqlOperator {
         return this;
     }
 
-    public final boolean debug() {
-        return debug;
-    }
-
-    @Deprecated
     public final boolean isDebug() {
-        return debug();
+        return debug;
     }
 
     public final void setDeubg(boolean debug) {
@@ -123,9 +149,8 @@ public abstract class SqlOperator {
                 FieldMeta meta = record.fields().get(field);
                 if (meta.storage() && !meta.autoincrement()) {
                     i++;
-                    if (i > 1) {
+                    if (i > 1)
                         bs.append(",");
-                    }
                     bs.append(field);
                 }
             }
@@ -136,11 +161,9 @@ public abstract class SqlOperator {
                 if (meta.kind() == FieldKind.Storage) {
                     if (!meta.autoincrement()) {
                         i++;
-                        if (i == 1) {
-                            bs.append("?", record.getValue(field));
-                        } else {
-                            bs.append(",?", record.getValue(field));
-                        }
+                        if (i > 1)
+                            bs.append(",");
+                        bs.append("?", record.getValue(field));
                     }
                 }
             }
@@ -152,7 +175,7 @@ public abstract class SqlOperator {
             lastCommand = bs.getPrepareCommand();
             log.debug(bs.getPrepareCommand());
             PreparedStatement ps = bs.build();
-            if (this.debug()) {
+            if (this.debug) {
                 log.info(bs.getPrepareCommand());
                 return false;
             }
@@ -256,7 +279,7 @@ public abstract class SqlOperator {
             lastCommand = bs.getPrepareCommand();
             log.debug(bs.getPrepareCommand());
             PreparedStatement ps = bs.build();
-            if (this.debug()) {
+            if (this.debug) {
                 log.info(bs.getPrepareCommand());
                 return false;
             }
@@ -299,7 +322,7 @@ public abstract class SqlOperator {
             lastCommand = bs.getPrepareCommand();
             log.debug(bs.getPrepareCommand());
             PreparedStatement ps = bs.build();
-            if (this.debug()) {
+            if (this.debug) {
                 log.info(bs.getPrepareCommand());
                 return false;
             }
@@ -363,13 +386,13 @@ public abstract class SqlOperator {
             throw new RuntimeException("search key is empty");
     }
 
-    public final List<String> getSearchKeys() {
-        return searchKeys;
-    }
-
-    public final void setSearchKeys(List<String> searchKeys) {
-        this.searchKeys = searchKeys;
-    }
+//    public final List<String> getSearchKeys() {
+//        return searchKeys;
+//    }
+//
+//    public final void setSearchKeys(List<String> searchKeys) {
+//        this.searchKeys = searchKeys;
+//    }
 
     @Deprecated // 请改使用 getSearchKeys
     public final List<String> getPrimaryKeys() {
@@ -377,9 +400,151 @@ public abstract class SqlOperator {
     }
 
     // 从数据库中获取主键
-    protected abstract String getKeyByDB(Connection connection, String tableName2) throws SQLException;
+    protected String getKeyByDB(Connection connection, String tableName) throws SQLException {
+        if (sqlServerType != SqlServerType.Mysql)
+            return null;
+
+        StringBuffer result = new StringBuffer();
+        try (BuildStatement bs = new BuildStatement(connection)) {
+            bs.append("select COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS ");
+            bs.append("where table_name= ? AND COLUMN_KEY= 'PRI' ", tableName);
+            PreparedStatement ps = bs.build();
+            log.debug(ps.toString().split(":")[1].trim());
+            ResultSet rs = ps.executeQuery();
+            int i = 0;
+            while (rs.next()) {
+                i++;
+                if (i > 1) {
+                    result.append(";");
+                }
+                result.append(rs.getString("COLUMN_NAME"));
+            }
+            return result.toString();
+        }
+    }
 
     // 取得自动增加栏位的最新值
-    protected abstract BigInteger findAutoUid(Connection connection);
+    protected BigInteger findAutoUid(Connection conn) {
+        BigInteger result = null;
+
+        String sql = null;
+        switch (sqlServerType) {
+        case Mysql:
+            sql = "SELECT LAST_INSERT_ID()";
+            break;
+        case Mssql:
+            sql = "SELECT @@identity";
+            break;
+        case Sqlite:
+            sql = "select last_insert_rowid() newid";
+            break;
+        default:
+            throw new SqlServerTypeException();
+        }
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                Object obj = rs.getObject(1);
+                if (obj instanceof BigInteger) {
+                    result = (BigInteger) obj;
+                } else {
+                    result = BigInteger.valueOf(rs.getInt(1));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException(e.getMessage());
+            }
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException(e.getMessage());
+            }
+        }
+        if (result == null) {
+            throw new RuntimeException("未获取UID");
+        }
+        return result;
+    }
+
+    @Override
+    public ISession getSession() {
+        return session;
+    }
+
+    @Override
+    public void setSession(ISession session) {
+        this.session = session;
+    }
+
+    @Deprecated
+    public static String findTableName(String sql) {
+        return SqlText.findTableName(sql);
+    }
+
+    @Deprecated
+    public boolean insert(DataRow record) {
+        if (sqlServerType == SqlServerType.Mssql) {
+            MssqlServer server = (MssqlServer) session.getProperty(MssqlServer.SessionId);
+            try (MssqlClient client = server.getClient()) {
+                return insert(client.getConnection(), record);
+            }
+        } else if (sqlServerType == SqlServerType.Mysql) {
+            MysqlServerMaster server = (MysqlServerMaster) session.getProperty(MysqlServerMaster.SessionId);
+            try (MysqlClient client = server.getClient()) {
+                return insert(client.getConnection(), record);
+            }
+        } else {
+            return false;
+        }
+    }
+
+    @Deprecated
+    public boolean update(DataRow record) {
+        if (sqlServerType == SqlServerType.Mssql) {
+            MssqlServer server = (MssqlServer) session.getProperty(MssqlServer.SessionId);
+            try (MssqlClient client = server.getClient()) {
+                return update(client.getConnection(), record);
+            }
+        } else if (sqlServerType == SqlServerType.Mysql) {
+            MysqlServerMaster server = (MysqlServerMaster) session.getProperty(MysqlServerMaster.SessionId);
+            try (MysqlClient client = server.getClient()) {
+                return update(client.getConnection(), record);
+            }
+        } else {
+            return false;
+        }
+    }
+
+    @Deprecated
+    public boolean delete(DataRow record) {
+        if (sqlServerType == SqlServerType.Mssql) {
+            MssqlServer server = (MssqlServer) session.getProperty(MssqlServer.SessionId);
+            try (MssqlClient client = server.getClient()) {
+                return delete(client.getConnection(), record);
+            }
+        } else if (sqlServerType == SqlServerType.Mysql) {
+            MysqlServerMaster server = (MysqlServerMaster) session.getProperty(MysqlServerMaster.SessionId);
+            try (MysqlClient client = server.getClient()) {
+                return delete(client.getConnection(), record);
+            }
+        } else {
+            return false;
+        }
+    }
 
 }

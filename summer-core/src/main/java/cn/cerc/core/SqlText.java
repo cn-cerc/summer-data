@@ -14,23 +14,22 @@ public class SqlText implements Serializable {
     public static final int PRIVATE = 2;
     public static final int PROTECTED = 4;
 
-    public static final String SERVERTYPE_MSSQL = "Microsoft SQL Server";
-    public static final String SERVERTYPE_MYSQL = "MySQL";
-    public static final String SERVERTYPE_SQLITE = "SQLite";
-    //
     private int maximum = MAX_RECORDS;
     private int offset = 0;
     // sql 指令
     private String text;
     private ClassData classData;
-    private String serverType = SERVERTYPE_MYSQL;
+    private SqlServerType sqlServerType;
 
-    public SqlText() {
+    public SqlText(SqlServerType sqlServerType) {
         super();
+        this.sqlServerType = sqlServerType;
     }
 
     public SqlText(Class<?> clazz) {
         super();
+        SqlServer server = clazz.getAnnotation(SqlServer.class);
+        this.sqlServerType = (server != null) ? server.type() : SqlServerType.Mysql;
         classData = ClassFactory.get(clazz);
         this.text = classData.getSelect();
     }
@@ -110,7 +109,7 @@ public class SqlText implements Serializable {
             return sql;
         }
 
-        if (SERVERTYPE_MYSQL.equals(this.serverType)) {
+        if (sqlServerType == SqlServerType.Mysql) {
             if (this.offset > 0) {
                 if (this.maximum < 0) {
                     sql = sql + String.format(" limit %d,%d", this.offset, MAX_RECORDS + 1);
@@ -204,15 +203,7 @@ public class SqlText implements Serializable {
 
     @Deprecated
     public boolean isSupportMssql() {
-        return SERVERTYPE_MSSQL.equals(this.serverType);
-    }
-
-    public String getServerType() {
-        return serverType;
-    }
-
-    public void setServerType(String serverType) {
-        this.serverType = serverType;
+        return sqlServerType == SqlServerType.Mysql;
     }
 
     // 根据 sql 获取数据库表名
@@ -236,6 +227,10 @@ public class SqlText implements Serializable {
         }
 
         return result;
+    }
+
+    public SqlServerType getSqlServerType() {
+        return sqlServerType;
     }
 
 }

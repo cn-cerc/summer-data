@@ -13,7 +13,9 @@ import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Version;
 
 import com.google.gson.Gson;
 
@@ -22,6 +24,26 @@ import cn.cerc.core.FieldMeta.FieldKind;
 public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     private static final long serialVersionUID = 7478897050846245325L;
     private HashSet<FieldMeta> items = new LinkedHashSet<>();
+
+    public FieldDefs() {
+        super();
+    }
+
+    /**
+     * 读入实体字段
+     * 
+     * @param clazz entity class
+     */
+    public FieldDefs(Class<?> clazz) {
+        super();
+        for (Field field : clazz.getDeclaredFields()) {
+            if (field.getDeclaredAnnotation(Id.class) != null || field.getDeclaredAnnotation(Column.class) != null) {
+                String fieldCode = field.getName();
+                FieldMeta meta = this.add(fieldCode, FieldKind.Storage);
+                readEntityField(field, meta);
+            }
+        }
+    }
 
     public boolean exists(String fieldCode) {
         return items.contains(new FieldMeta(fieldCode));
@@ -116,7 +138,7 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
 
     @Override
     public String toString() {
-        return new Gson().toJson(this);
+        return json();
     }
 
     public void copy(FieldDefs source) {
@@ -133,45 +155,53 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
             if (items != null && items.indexOf(field.getName()) == -1)
                 continue;
             FieldMeta meta = this.get(field.getName());
-            if (meta != null) {
-                if (field.getDeclaredAnnotation(Id.class) != null) {
-                    if (meta.storage())
-                        meta.setIdentification(true);
-                }
-                if (field.getDeclaredAnnotation(GeneratedValue.class) != null) {
-                    if (meta.storage()) {
-                        meta.setAutoincrement(true);
-                        meta.setInsertable(false);
-                    }
-                }
-                Column column = field.getDeclaredAnnotation(Column.class);
-                if (column != null) {
-                    if (meta.storage()) {
-                        meta.setInsertable(column.insertable());
-                        meta.setUpdatable(column.updatable());
-                    }
-                    if (field.getType().isEnum()) {
-                        Enumerated enumerated = field.getDeclaredAnnotation(Enumerated.class);
-                        if ((enumerated != null) && (enumerated.value() == EnumType.STRING))
-                            meta.dataType().setValue("s" + column.length());
-                        else
-                            meta.dataType().setValue("n1");
-                    } else {
-                        meta.dataType().readClass(field.getType());
-                        if ("s".equals(meta.dataType().value()) || "o".equals(meta.dataType().value()))
-                            meta.dataType().setLength(column.length());
-                    }
-                }
-                Describe describe = field.getDeclaredAnnotation(Describe.class);
-                if (describe != null) {
-                    if (!"".equals(describe.name()))
-                        meta.setName(describe.name());
-                    if (!"".equals(describe.remark()))
-                        meta.setRemark(describe.remark());
-                }
-            }
+            if (meta != null)
+                readEntityField(field, meta);
         }
         return this;
+    }
+
+    private void readEntityField(Field field, FieldMeta meta) {
+        Describe describe = field.getDeclaredAnnotation(Describe.class);
+        if (describe != null) {
+            if (!"".equals(describe.name()))
+                meta.setName(describe.name());
+            if (!"".equals(describe.remark()))
+                meta.setRemark(describe.remark());
+        }
+        Column column = field.getDeclaredAnnotation(Column.class);
+        if (column != null) {
+            meta.setInsertable(column.insertable());
+            meta.setUpdatable(column.updatable());
+            meta.setNullable(column.nullable());
+        }
+        Id id = field.getDeclaredAnnotation(Id.class);
+        if (id != null) {
+            meta.setIdentification(true);
+            meta.setNullable(false);
+        }
+        GeneratedValue gv = field.getDeclaredAnnotation(GeneratedValue.class);
+        if (gv != null) {
+            if (gv.strategy() != GenerationType.AUTO)
+                throw new RuntimeException("strategy only support auto");
+            meta.setAutoincrement(true);
+            meta.setInsertable(false);
+            meta.setUpdatable(false);
+        }
+        if (field.getType().isEnum()) {
+            Enumerated enumerated = field.getDeclaredAnnotation(Enumerated.class);
+            if ((enumerated != null) && (enumerated.value() == EnumType.STRING))
+                meta.dataType().setValue("s" + column.length());
+            else
+                meta.dataType().setValue("n1");
+        } else {
+            meta.dataType().readClass(field.getType());
+            if ("s".equals(meta.dataType().value()) || "o".equals(meta.dataType().value()))
+                meta.dataType().setLength(column.length());
+        }
+        Version version = field.getDeclaredAnnotation(Version.class);
+        if (version != null)
+            meta.setNullable(false);
     }
 
     public final FieldMeta getByAutoincrement() {
@@ -192,14 +222,8 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return items;
     }
 
-    public static void main(String[] args) {
-        FieldDefs fields = new FieldDefs();
-        fields.add("a1", FieldKind.Storage);
-        fields.add("a2", FieldKind.Storage);
-        fields.add("a3");
-        for (FieldMeta meta : fields.items) {
-            if (meta.insertable())
-                System.out.println(meta.code());
-        }
+    public String json() {
+        return new Gson().toJson(items);
     }
+
 }

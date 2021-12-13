@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class DataType {
-    private String context = null;
+    private String content = null;
     private int length = 0; // 包含decimal的长度
     private int decimal = 0; // 小数点位数
 
@@ -26,7 +26,7 @@ public final class DataType {
     @Override
     public DataType clone() {
         DataType result = new DataType();
-        result.context = this.context;
+        result.content = this.content;
         result.length = this.length;
         result.decimal = this.decimal;
         return result;
@@ -42,12 +42,12 @@ public final class DataType {
     }
 
     public String value() {
-        if (context == null)
+        if (content == null)
             return null;
         if (decimal <= 0)
-            return length > 0 ? context + length : context;
+            return length > 0 ? content + length : content;
         else
-            return context + length + "," + decimal;
+            return content + length + "," + decimal;
     }
 
     public boolean validate(String dataType) {
@@ -190,39 +190,39 @@ public final class DataType {
     }
 
     private void updateType(String dataType, int length) {
-        if (this.context == null) {
-            this.context = dataType;
+        if (this.content == null) {
+            this.content = dataType;
             this.length = length;
             return;
         }
 
-        if ("o".equals(this.context))
+        if ("o".equals(this.content))
             return;
 
         if ("o".equals(dataType)) {
-            this.context = dataType;
+            this.content = dataType;
             this.length = 0;
             return;
         }
 
-        if ("f".equals(dataType) && "n".equals(this.context)) {
-            this.context = dataType;
+        if ("f".equals(dataType) && "n".equals(this.content)) {
+            this.content = dataType;
             this.length = length;
             return;
         }
-        if ("n".equals(dataType) && "f".equals(this.context)) {
+        if ("n".equals(dataType) && "f".equals(this.content)) {
             return;
         }
 
-        if (!dataType.equals(this.context))
-            throw new RuntimeException(String.format("dataType not update from %s to: %s", this.context, dataType));
+        if (!dataType.equals(this.content))
+            throw new RuntimeException(String.format("dataType not update from %s to: %s", this.content, dataType));
 
         if (length > this.length)
             this.length = length;
     }
 
     public final String dataType() {
-        return this.context;
+        return this.content;
     }
 
     public final int getLength() {
@@ -239,12 +239,12 @@ public final class DataType {
     }
 
     public final DataType setLength(int length) {
-        if ("s".equals(context) || "o".equals(context))
+        if ("s".equals(content) || "o".equals(content))
             this.length = length;
-        else if (("n".equals(context) || "f".equals(context)) && (length == 1 || length == 2))
+        else if (("n".equals(content) || "f".equals(content)) && (length == 1 || length == 2))
             this.length = length;
         else
-            throw new RuntimeException(String.format("the dateType is %s, error length: %s", this.context, length));
+            throw new RuntimeException(String.format("the dateType is %s, error length: %s", this.content, length));
         return this;
     }
 

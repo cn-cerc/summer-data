@@ -11,8 +11,9 @@ import cn.cerc.core.Datetime;
 import cn.cerc.core.ISession;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.ISqlDatabase;
 
-public class MssqlDatabase implements IHandle {
+public class MssqlDatabase implements IHandle, ISqlDatabase {
     public static final String DefaultOID = "UpdateKey_";
     private Class<?> clazz;
     private ISession session;
@@ -24,14 +25,17 @@ public class MssqlDatabase implements IHandle {
             this.setSession(handle.getSession());
     }
 
+    @Override
     public final String table() {
         return Utils.findTable(this.clazz);
     }
 
+    @Override
     public final String oid() {
         return Utils.findOid(clazz, DefaultOID);
     }
     
+    @Override
     public boolean createTable(boolean overwrite) {
         MssqlServer server = (MssqlServer) this.getSession().getProperty(MssqlServer.SessionId);
         List<String> list = server.tables(this);

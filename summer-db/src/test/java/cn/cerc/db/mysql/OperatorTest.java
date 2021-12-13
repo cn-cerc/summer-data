@@ -9,8 +9,10 @@ import org.junit.Test;
 import cn.cerc.core.DataRow;
 import cn.cerc.core.FieldMeta.FieldKind;
 import cn.cerc.core.ISession;
+import cn.cerc.core.SqlServerType;
 import cn.cerc.core.SqlText;
 import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.SqlOperator;
 import cn.cerc.db.core.StubSession;
 
 public class OperatorTest implements IHandle {
@@ -44,7 +46,7 @@ public class OperatorTest implements IHandle {
     @Test
     @Ignore
     public void test_3_insert_new() {
-        MysqlOperator obj = new MysqlOperator(this);
+        SqlOperator obj = new SqlOperator(this, SqlServerType.Mysql);
         obj.setTable("temp");
         for (int i = 0; i < maxTest; i++) {
             DataRow record = new DataRow();

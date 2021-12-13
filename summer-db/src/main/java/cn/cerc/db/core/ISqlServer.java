@@ -6,6 +6,5 @@ public interface ISqlServer extends IConnection {
 
     boolean execute(String sql);
     
-    SqlOperator getDefaultOperator(IHandle handle);
-
+    String getHost();
 }

@@ -23,8 +23,8 @@ import cn.cerc.core.ISession;
 import cn.cerc.core.SqlText;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.UpdateMode;
 import cn.cerc.db.mysql.MysqlClient;
-import cn.cerc.db.mysql.UpdateMode;
 import cn.cerc.db.redis.JedisFactory;
 import redis.clients.jedis.Jedis;
 

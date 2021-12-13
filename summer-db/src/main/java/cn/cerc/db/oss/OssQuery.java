@@ -5,6 +5,7 @@ import java.io.ByteArrayInputStream;
 import cn.cerc.core.DataSet;
 import cn.cerc.core.DataSetGson;
 import cn.cerc.core.ISession;
+import cn.cerc.core.SqlServerType;
 import cn.cerc.core.SqlText;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
@@ -18,7 +19,7 @@ public class OssQuery extends DataSet implements IHandle {
     private String fileName;
     private OssMode ossMode = OssMode.create;
     private ISession session;
-    private SqlText sql = new SqlText();
+    private SqlText sql = new SqlText(SqlServerType.Mysql);
     private boolean active;
 
     public OssQuery(IHandle handle) {

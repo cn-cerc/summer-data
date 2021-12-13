@@ -15,8 +15,8 @@ import cn.cerc.core.ClassData;
 import cn.cerc.core.ClassFactory;
 import cn.cerc.core.ClassResource;
 import cn.cerc.db.SummerDB;
+import cn.cerc.db.core.UpdateMode;
 import cn.cerc.db.mysql.BuildStatement;
-import cn.cerc.db.mysql.UpdateMode;
 
 public class BigUpdateSql {
     private static final ClassResource res = new ClassResource(BigUpdateSql.class, SummerDB.ID);

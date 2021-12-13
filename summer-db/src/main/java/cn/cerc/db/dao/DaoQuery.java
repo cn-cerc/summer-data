@@ -11,14 +11,6 @@ public class DaoQuery<T> extends MysqlQuery {
     private static final long serialVersionUID = -4833075222571787291L;
     private Class<T> clazz;
 
-//    @SuppressWarnings("unchecked")
-//    public DaoQuery(IHandle handle) {
-//        super(handle);
-//        ParameterizedType ptype = (ParameterizedType) getClass().getGenericSuperclass();
-//        this.clazz = (Class<T>) ptype.getActualTypeArguments()[0];
-//        this.setSql(new SqlText(this.clazz));
-//    }
-
     public DaoQuery(IHandle handle, Class<T> clazz) {
         super(handle);
         this.clazz = clazz;

@@ -15,10 +15,17 @@ import cn.cerc.core.DataSetGson;
 import cn.cerc.core.FieldDefs;
 import cn.cerc.core.FieldMeta.FieldKind;
 import cn.cerc.core.ISession;
+import cn.cerc.core.SqlServerType;
+import cn.cerc.core.SqlServerTypeException;
 import cn.cerc.core.SqlText;
 import cn.cerc.core.Utils;
+import cn.cerc.db.mssql.MssqlServer;
+import cn.cerc.db.mysql.MysqlServer;
+import cn.cerc.db.mysql.MysqlServerMaster;
+import cn.cerc.db.mysql.MysqlServerSlave;
+import cn.cerc.db.sqlite.SqliteServer;
 
-public abstract class SqlQuery extends DataSet implements IHandle {
+public class SqlQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = -6671201813972797639L;
     private static final Logger log = LoggerFactory.getLogger(SqlQuery.class);
     // 数据集是否有打开
@@ -28,16 +35,19 @@ public abstract class SqlQuery extends DataSet implements IHandle {
     // 数据库保存操作执行对象
     private SqlOperator operator;
     // SqlCommand 指令
-    private SqlText sql = new SqlText();
+    private SqlText sql;
     // 运行环境
     private ISession session;
+    private SqlServerType sqlServerType;
+    //
+    private ISqlServer server;
+    private ISqlServer master;
+    private ISqlServer salve;
 
-    public SqlQuery() {
+    public SqlQuery(IHandle handle, SqlServerType sqlServerType) {
         super();
-    }
-
-    public SqlQuery(IHandle handle) {
-        super();
+        this.sqlServerType = sqlServerType;
+        this.sql = new SqlText(sqlServerType);
         if (handle != null)
             this.session = handle.getSession();
     }
@@ -225,7 +235,7 @@ public abstract class SqlQuery extends DataSet implements IHandle {
 
     public final SqlOperator operator() {
         if (operator == null)
-            operator = server().getDefaultOperator(this);
+            operator = new SqlOperator(this, sqlServerType);
         if (operator.table() == null) {
             String sqlText = this.sqlText();
             if (sqlText != null)
@@ -332,7 +342,41 @@ public abstract class SqlQuery extends DataSet implements IHandle {
         this.fetchFinish = fetchFinish;
     }
 
-    protected abstract ISqlServer server();
+    public final ISqlServer server() {
+        switch (sqlServerType) {
+        case Mysql: {
+            if (server != null)
+                return server;
+
+            if (master == null)
+                master = (MysqlServer) getSession().getProperty(MysqlServerMaster.SessionId);
+            if (this.storage()) {
+                return master;
+            } else {
+                if (salve == null) {
+                    salve = (MysqlServer) getSession().getProperty(MysqlServerSlave.SessionId);
+                    if (salve == null)
+                        salve = master;
+                    if (salve.getHost().equals(master.getHost()))
+                        salve = master;
+                }
+                return salve;
+            }
+        }
+        case Mssql: {
+            if (server == null)
+                server = (MssqlServer) getSession().getProperty(MssqlServer.SessionId);
+            return server;
+        }
+        case Sqlite: {
+            if (server == null)
+                server = new SqliteServer();
+            return server;
+        }
+        default:
+            throw new SqlServerTypeException();
+        }
+    }
 
     @Deprecated
     protected final ISqlServer getServer() {
