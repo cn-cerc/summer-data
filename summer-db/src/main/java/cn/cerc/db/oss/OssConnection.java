@@ -7,8 +7,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.aliyun.oss.ClientBuilderConfiguration;
@@ -22,10 +20,10 @@ import com.aliyun.oss.model.ObjectMetadata;
 
 import cn.cerc.core.IConfig;
 import cn.cerc.core.IConnection;
+import cn.cerc.core.Utils;
 import cn.cerc.db.core.ServerConfig;
 
 @Component
-@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class OssConnection implements IConnection {
 
     // 设置连接地址
@@ -55,13 +53,13 @@ public class OssConnection implements IConnection {
         if (client != null) {
             return client;
         }
-        bucket = config.getProperty(OssConnection.oss_bucket, null);
+        bucket = config.getProperty(OssConnection.oss_bucket);
         site = config.getProperty(OssConnection.oss_site);
 
         // 如果连接被意外断开了,那么重新建立连接
-        String endpoint = config.getProperty(OssConnection.oss_endpoint, null);
-        String accessKeyId = config.getProperty(OssConnection.oss_accessKeyId, null);
-        String accessKeySecret = config.getProperty(OssConnection.oss_accessKeySecret, null);
+        String endpoint = config.getProperty(OssConnection.oss_endpoint);
+        String accessKeyId = config.getProperty(OssConnection.oss_accessKeyId);
+        String accessKeySecret = config.getProperty(OssConnection.oss_accessKeySecret);
 
         ClientBuilderConfiguration conf = new ClientBuilderConfiguration();
         // 设置OSSClient使用的最大连接数，默认1024
@@ -177,6 +175,9 @@ public class OssConnection implements IConnection {
     }
 
     public String getSite() {
+        if (Utils.isEmpty(site)) {
+            this.getClient();
+        }
         return site;
     }
 
