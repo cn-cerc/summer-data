@@ -39,7 +39,7 @@ public class OssConnection implements IConnection {
 
     // IHandle 标识
     public static final String sessionId = "ossSession";
-    private static OSS client;
+    private static volatile OSS client;
     private static String bucket;
     private static String site;
     private IConfig config;
@@ -50,27 +50,38 @@ public class OssConnection implements IConnection {
 
     @Override
     public OSS getClient() {
-        if (client != null) {
-            return client;
+        if (client == null) {
+            synchronized (OssConnection.class) {
+                if (client == null) {
+                    // 如果连接被意外断开了,那么重新建立连接
+                    String endpoint = config.getProperty(OssConnection.oss_endpoint);
+                    if (Utils.isEmpty(endpoint))
+                        throw new RuntimeException(
+                                String.format("the property %s is empty", OssConnection.oss_endpoint));
+
+                    String accessKeyId = config.getProperty(OssConnection.oss_accessKeyId);
+                    if (Utils.isEmpty(accessKeyId))
+                        throw new RuntimeException(
+                                String.format("the property %s is empty", OssConnection.oss_accessKeyId));
+
+                    String accessKeySecret = config.getProperty(OssConnection.oss_accessKeySecret);
+                    if (Utils.isEmpty(accessKeySecret))
+                        throw new RuntimeException(
+                                String.format("the property %s is empty", OssConnection.oss_accessKeySecret));
+
+                    ClientBuilderConfiguration conf = new ClientBuilderConfiguration();
+                    // 设置OSSClient使用的最大连接数，默认1024
+                    conf.setMaxConnections(1024);
+                    // 设置请求超时时间，默认3秒
+                    conf.setSocketTimeout(3 * 1000);
+                    // 设置失败请求重试次数，默认3次
+                    conf.setMaxErrorRetry(3);
+
+                    // 创建OSSClient实例
+                    client = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret, conf);
+                }
+            }
         }
-        bucket = config.getProperty(OssConnection.oss_bucket);
-        site = config.getProperty(OssConnection.oss_site);
-
-        // 如果连接被意外断开了,那么重新建立连接
-        String endpoint = config.getProperty(OssConnection.oss_endpoint);
-        String accessKeyId = config.getProperty(OssConnection.oss_accessKeyId);
-        String accessKeySecret = config.getProperty(OssConnection.oss_accessKeySecret);
-
-        ClientBuilderConfiguration conf = new ClientBuilderConfiguration();
-        // 设置OSSClient使用的最大连接数，默认1024
-        conf.setMaxConnections(1024);
-        // 设置请求超时时间，默认3秒
-        conf.setSocketTimeout(3 * 1000);
-        // 设置失败请求重试次数，默认3次
-        conf.setMaxErrorRetry(3);
-
-        // 创建OSSClient实例
-        client = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret, conf);
         return client;
     }
 
