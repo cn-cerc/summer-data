@@ -37,16 +37,13 @@ public class OssConnection implements IConnection {
     // 连接密码
     public static final String oss_accessKeySecret = "oss.accessKeySecret";
 
-    // IHandle 标识
-    public static final String sessionId = "ossSession";
-    private static volatile OSS client;
     private static String bucket;
     private static String site;
-    private IConfig config;
 
-    public OssConnection() {
-        config = ServerConfig.getInstance();
-    }
+    // IHandle 标识
+    public static final String sessionId = "ossSession";
+    private static final IConfig config = ServerConfig.getInstance();
+    private static volatile OSS client;
 
     @Override
     public OSS getClient() {
@@ -93,14 +90,6 @@ public class OssConnection implements IConnection {
     // 获取所有的列表
     public List<Bucket> getBuckets() {
         return getClient().listBuckets();
-    }
-
-    public String getBucket() {
-        // 若bucket为空则初始化客户端
-        if (bucket == null) {
-            getClient();
-        }
-        return bucket;
     }
 
     // 上传文件
@@ -185,15 +174,16 @@ public class OssConnection implements IConnection {
         }
     }
 
-    public String getSite() {
-        if (Utils.isEmpty(site)) {
-            this.getClient();
-        }
-        return site;
+    public String getBucket() {
+        if (Utils.isEmpty(bucket))
+            bucket = config.getProperty(OssConnection.oss_bucket);
+        return bucket;
     }
 
-    public IConfig getConfig() {
-        return config;
+    public String getSite() {
+        if (Utils.isEmpty(site))
+            site = config.getProperty(OssConnection.oss_site);
+        return site;
     }
 
 }
