@@ -101,17 +101,16 @@ public class MssqlDatabase implements IHandle, ISqlDatabase {
             if (column != null)
                 size = column.length();
             if (!Utils.isEmpty(column.columnDefinition())) {
-                if ("text".equals(column.columnDefinition()))
-                    sb.append("text");
-                else if ("uniqueidentifier".equals(column.columnDefinition()))
-                    sb.append("uniqueidentifier");
-                else
-                    sb.append("nvarchar(").append(size).append(")");
+                sb.append(column.columnDefinition());
             } else {
                 sb.append("nvarchar(").append(size).append(")");
             }
         } else if (field.getType().isEnum() || field.getType() == Integer.class) {
-            sb.append("int");
+            if ("tinyint".equals(column.columnDefinition()) || "smallint".equals(column.columnDefinition())) {
+                sb.append(column.columnDefinition());
+            } else {
+                sb.append("int");
+            }
         } else if (Datetime.class.isAssignableFrom(field.getType())
                 || FastDate.class.isAssignableFrom(field.getType())) {
             sb.append("datetime");
