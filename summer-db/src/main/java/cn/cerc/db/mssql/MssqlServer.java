@@ -77,7 +77,7 @@ public class MssqlServer implements ISqlServer, AutoCloseable {
                 url = getConnectUrl();
             }
 
-            log.debug("mssql url {} " + url);
+            log.debug("mssql url {} ", url);
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             connection = DriverManager.getConnection(url, user, password);
             return connection;

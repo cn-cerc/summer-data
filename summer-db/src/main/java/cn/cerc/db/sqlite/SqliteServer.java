@@ -71,7 +71,7 @@ public class SqliteServer implements ISqlServer {
         String table = findTableName(createTableSql);
         if (table == null)
             throw new RuntimeException("sql error: table is null");
-        if (!overwrite && getTables().contains(table))
+        if (!overwrite && tables().contains(table))
             return false;
 
         try (Connection conn = this.getConnection()) {
@@ -102,7 +102,7 @@ public class SqliteServer implements ISqlServer {
      * 
      * @return 返回列表
      */
-    public final List<String> getTables() {
+    public final List<String> tables() {
         if (tables != null)
             return tables;
         tables = new ArrayList<>();

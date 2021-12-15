@@ -5,8 +5,11 @@ import java.lang.reflect.Field;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
 
 import cn.cerc.core.Datetime;
+import cn.cerc.core.Describe;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISqlDatabase;
@@ -47,7 +50,21 @@ public class SqliteDatabase implements ISqlDatabase {
             sb.append(field.getName()).append(" ");
             writeDataType(sb, field);
         }
-        sb.append("\n)");
+        sb.append("\n);");
+        Table table = clazz.getDeclaredAnnotation(Table.class);
+        if (table != null && table.indexes().length > 0) {
+            sb.append("\n");
+            Index[] indexs = table.indexes();
+            count = 0;
+            for (Index index : indexs) {
+                sb.append("create");
+                if (index.unique()) {
+                    sb.append(" unique");
+                }
+                sb.append(" index ").append(index.name()).append(" on ").append(table()).append("(")
+                        .append(index.columnList()).append(");\n");
+            }
+        }
         return sb.toString();
     }
 
@@ -57,15 +74,25 @@ public class SqliteDatabase implements ISqlDatabase {
             int size = 255;
             if (column != null)
                 size = column.length();
-            sb.append("varchar(").append(size).append(")");
-        } else if (field.getType().isEnum()) {
+            if (!Utils.isEmpty(column.columnDefinition()) && "text".equals(column.columnDefinition())) {
+                sb.append("text");
+            } else {
+                sb.append("varchar(").append(size).append(")");
+            }
+        } else if (field.getType().isEnum() || field.getType() == boolean.class) {
             sb.append("int");
         } else if (Datetime.class.isAssignableFrom(field.getType())) {
             sb.append("datetime");
         } else if (field.getType() == int.class) {
-            sb.append("INTEGER");
+            sb.append("integer");
         } else if (field.getType() == double.class) {
-            sb.append("float");
+            int precision = 18;
+            int scale = 4;
+            if (column != null) {
+                precision = column.precision();
+                scale = column.scale();
+            }
+            sb.append("decimal(").append(precision).append(",").append(scale).append(")");
         } else {
             throw new RuntimeException("不支持的类型：" + field.getType().getName());
         }
@@ -75,14 +102,16 @@ public class SqliteDatabase implements ISqlDatabase {
         }
         GeneratedValue gen = field.getDeclaredAnnotation(GeneratedValue.class);
         if (gen != null) {
-            sb.append(" AUTOINCREMENT");
+            sb.append(" autoincrement");
         }
         if ((column != null) && (!column.nullable()))
             sb.append(" not null");
         else if (id != null)
             sb.append(" not null");
-        else
-            sb.append(" default null");
+        Describe des = field.getDeclaredAnnotation(Describe.class);
+        if (des != null && !Utils.isEmpty(des.def())) {
+            sb.append(" default ").append(des.def());
+        }
     }
 
 }

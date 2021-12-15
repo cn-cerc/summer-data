@@ -6,8 +6,12 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
 
 import cn.cerc.core.Datetime;
+import cn.cerc.core.Describe;
+import cn.cerc.core.FastDate;
 import cn.cerc.core.ISession;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
@@ -47,7 +51,7 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
 
     public String getCreateSql() {
         StringBuffer sb = new StringBuffer();
-        sb.append("create table ").append(table()).append("(");
+        sb.append("create table ").append(table()).append(" (");
         int count = 0;
         for (Field field : clazz.getDeclaredFields()) {
             if (count++ > 0)
@@ -56,7 +60,39 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
             sb.append(field.getName()).append(" ");
             writeDataType(sb, field);
         }
-        sb.append("\n)");
+        Table table = clazz.getDeclaredAnnotation(Table.class);
+        if (table != null && table.indexes().length > 0) {
+            sb.append(",");
+            Index[] indexs = table.indexes();
+            count = 0;
+            for (Index index : indexs) {
+                if (count++ > 0) {
+                    sb.append(",");
+                }
+                sb.append("\n");
+                if ("PRIMARY".equals(index.name())) {
+                    sb.append("primary key (").append(index.columnList()).append(")");
+                    continue;
+                }
+                if (index.unique()) {
+                    sb.append("unique ");
+                }
+                sb.append("index ").append(index.name()).append(" (").append(index.columnList()).append(")");
+            }
+        } else {
+            String fields = "";
+            for (Field field : clazz.getDeclaredFields()) {
+                Id id = field.getDeclaredAnnotation(Id.class);
+                if (id != null) {
+                    fields = fields + field.getName() + ",";
+                }
+            }
+            if (Utils.isEmpty(fields))
+                throw new RuntimeException("lack primary key");
+            sb.append(",").append("\n").append("primary key (").append(fields.substring(0, fields.length() - 1))
+                    .append(")");
+        }
+        sb.append("\n) engine=innodb charset=utf8 collate=utf8_general_ci;");
         return sb.toString();
     }
 
@@ -66,32 +102,50 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
             int size = 255;
             if (column != null)
                 size = column.length();
-            sb.append("varchar(").append(size).append(")");
-        } else if (field.getType().isEnum()) {
-            sb.append("int");
-        } else if (Datetime.class.isAssignableFrom(field.getType())) {
+            if (!Utils.isEmpty(column.columnDefinition()) && "text".equals(column.columnDefinition())) {
+                sb.append("text");
+            } else {
+                sb.append("varchar(").append(size).append(")");
+            }
+        } else if (field.getType().isEnum() || field.getType() == int.class || field.getType() == long.class) {
+            int size = 11;
+            if (column != null)
+                size = column.length();
+            sb.append("int(").append(size).append(")");
+        } else if (Datetime.class.isAssignableFrom(field.getType())
+                || FastDate.class.isAssignableFrom(field.getType())) {
             sb.append("datetime");
-        } else if (field.getType() == int.class) {
-            sb.append("INTEGER");
         } else if (field.getType() == double.class) {
-            sb.append("float");
+            int precision = 18;
+            int scale = 4;
+            if (column != null) {
+                precision = column.precision();
+                scale = column.scale();
+            }
+            sb.append("decimal(").append(precision).append(",").append(scale).append(")");
+        } else if (field.getType() == boolean.class) {
+            sb.append("bit(").append(1).append(")");
         } else {
             throw new RuntimeException("不支持的类型：" + field.getType().getName());
         }
+        Describe des = field.getDeclaredAnnotation(Describe.class);
+        if (des != null && !Utils.isEmpty(des.def())) {
+            sb.append(" default ").append(des.def());
+        }
         Id id = field.getDeclaredAnnotation(Id.class);
-        if (id != null) {
-            sb.append(" primary key");
-        }
-        GeneratedValue gen = field.getDeclaredAnnotation(GeneratedValue.class);
-        if (gen != null) {
-            sb.append(" AUTOINCREMENT");
-        }
         if ((column != null) && (!column.nullable()))
             sb.append(" not null");
         else if (id != null)
             sb.append(" not null");
         else
-            sb.append(" default null");
+            sb.append(" null");
+        GeneratedValue gen = field.getDeclaredAnnotation(GeneratedValue.class);
+        if (gen != null) {
+            sb.append(" auto_increment");
+        }
+        if (des != null) {
+            sb.append(" comment '").append(Utils.isEmpty(des.name()) ? field.getName() : des.name()).append("'");
+        }
     }
 
     @Override
