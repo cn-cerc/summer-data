@@ -7,23 +7,28 @@ import java.sql.Timestamp;
 import javax.persistence.Entity;
 
 import cn.cerc.core.DataRow;
+import cn.cerc.core.EntityUtils;
 import cn.cerc.core.ISession;
-import cn.cerc.core.RecordUtils;
 import cn.cerc.db.core.Handle;
 import cn.cerc.db.mysql.MysqlDatabase;
 import cn.cerc.db.mysql.MysqlQuery;
 
 public class DaoUtil {
+    
     // 将obj的数据，复制到record中
     @Deprecated
     public static void copy(Object obj, DataRow record) {
-        RecordUtils.copyToRecord(obj, record);
+        record.loadFromEntity(obj);
     }
 
     // 将record的数据，复制到obj中
     @Deprecated
     public static void copy(DataRow record, Object obj) {
-        RecordUtils.copyToObject(record, obj);
+        try {
+            EntityUtils.copyToEntity(record, obj);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     // 根据实体对象，取出数据表名

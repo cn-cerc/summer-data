@@ -17,6 +17,10 @@ public class SqlEntity<T> extends SqlQuery implements IHandle {
     private static final long serialVersionUID = 8276125658457479833L;
     private static ConcurrentHashMap<Class<?>, ISqlDatabase> buff = new ConcurrentHashMap<>();
     private Class<T> clazz;
+
+    public interface InitializationTableImpl {
+        void initialization(IHandle handle);
+    }
     
     private static ISqlDatabase findDatabase(IHandle handle, Class<?> clazz) {
         ISqlDatabase database = buff.get(clazz);

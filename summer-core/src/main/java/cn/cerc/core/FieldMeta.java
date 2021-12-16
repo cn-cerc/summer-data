@@ -2,6 +2,8 @@ package cn.cerc.core;
 
 import java.io.Serializable;
 
+import com.google.gson.Gson;
+
 import cn.cerc.db.editor.GetSetTextEvent;
 import cn.cerc.db.editor.GetTextEvent;
 import cn.cerc.db.editor.SetTextEvent;
@@ -253,6 +255,10 @@ public final class FieldMeta implements Serializable {
     public void onGetSetText(GetSetTextEvent getsetTextEvent) {
         this.onGetText(getsetTextEvent);
         this.onSetText(getsetTextEvent);
+    }
+
+    public String json() {
+        return new Gson().toJson(this);
     }
 
 }

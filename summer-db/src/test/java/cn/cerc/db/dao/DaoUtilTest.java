@@ -5,7 +5,7 @@ import org.junit.Test;
 import com.google.gson.Gson;
 
 import cn.cerc.core.DataRow;
-import cn.cerc.core.RecordUtils;
+import cn.cerc.core.EntityUtils;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.StubSession;
 
@@ -45,7 +45,11 @@ public class DaoUtilTest {
         record.setValue("Code_", "18100101");
         record.setValue("Name_", "王五");
         UserTest user = new UserTest();
-        RecordUtils.copyToObject(record, user);
+        try {
+            EntityUtils.copyToEntity(record, user);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
 }

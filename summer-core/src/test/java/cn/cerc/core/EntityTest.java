@@ -17,9 +17,25 @@ public class EntityTest {
     private String code_;
     @Column(length = 50, nullable = false)
     private String name_;
+    @Column
+    private TypeEnum Type_;
     @Column(length = 100)
     private String remark_;
     @Column
     @Version
     private Integer version_;
+    
+    public enum TypeEnum {
+        V1, V2;
+    }
+    public static void main(String[] args) {
+        FieldDefs defs = new FieldDefs(EntityTest.class);
+        DataRow row = new DataRow(defs);
+        row.setValue("Type_", 1);
+        System.out.println(row.getValue("Type_"));
+        System.out.println(row);
+        EntityTest entity = row.asEntity(EntityTest.class);
+        System.out.println(entity.Type_);
+        System.out.println();
+    }
 }

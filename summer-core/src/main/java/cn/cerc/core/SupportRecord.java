@@ -1,15 +1,16 @@
 package cn.cerc.core;
 
+@Deprecated
 public interface SupportRecord {
 
+    @Deprecated
     default DataRow asRecord() {
-        DataRow result = new DataRow();
-        RecordUtils.copyToRecord(this, result);
-        return result;
+        return new DataRow().loadFromEntity(this);
     }
 
+    @Deprecated
     default void copyTo(DataRow record) {
-        RecordUtils.copyToRecord(this, record);
+        record.loadFromEntity(this);
     }
 
 }

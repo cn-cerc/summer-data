@@ -1,6 +1,7 @@
 package cn.cerc.core;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -78,6 +79,8 @@ public class DataRow implements Serializable, IRecord {
         Object newValue = value;
         if (value instanceof Datetime) // 将Datetime转化为Date存储
             newValue = ((Datetime) value).asBaseDate();
+        if (value != null && value.getClass().isEnum())
+            newValue = ((Enum<?>) value).ordinal();
 
         if ((search == null) && (this.state != DataRowState.Update)) {
             putValue(field, newValue);
@@ -391,13 +394,27 @@ public class DataRow implements Serializable, IRecord {
         T result = null;
         try {
             result = clazz.getDeclaredConstructor().newInstance();
-            RecordUtils.copyToObject(this, result);
+            EntityUtils.copyToEntity(this, result);
             return result;
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                | NoSuchMethodException | SecurityException e1) {
-            e1.printStackTrace();
-            return null;
+                | NoSuchMethodException | SecurityException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
         }
+    }
+
+    public DataRow loadFromEntity(Object entity) {
+        try {
+            Map<String, Field> fields = EntityUtils.getFields(entity.getClass());
+            for (String fieldCode : fields.keySet()) {
+                Field field = fields.get(fieldCode);
+                this.setValue(fieldCode, field.get(entity));
+            }
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+        return this;
     }
 
     @Deprecated

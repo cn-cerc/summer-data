@@ -1,11 +1,5 @@
 package cn.cerc.db.other;
 
-import cn.cerc.core.Utils;
-import org.junit.Test;
-
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-
 import static cn.cerc.core.Utils.assigned;
 import static cn.cerc.core.Utils.ceil;
 import static cn.cerc.core.Utils.copy;
@@ -14,9 +8,15 @@ import static cn.cerc.core.Utils.isNumeric;
 import static cn.cerc.core.Utils.roundTo;
 import static cn.cerc.core.Utils.strToDoubleDef;
 import static cn.cerc.core.Utils.trunc;
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+
+import org.junit.Test;
+
+import cn.cerc.core.Utils;
 
 public class UtilsTest {
 
@@ -73,8 +73,7 @@ public class UtilsTest {
     @Test
     public void test_safeString() {
         String str = "' and '='1";
-        String result = "'' and ''=''1";
-        assertEquals(Utils.safeString(str), is(result));
+        assertEquals(Utils.safeString(str), "'' and ''=''1");
     }
 
     @Test

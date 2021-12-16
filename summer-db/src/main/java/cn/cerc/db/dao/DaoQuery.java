@@ -1,7 +1,6 @@
 package cn.cerc.db.dao;
 
 import cn.cerc.core.DataSetGson;
-import cn.cerc.core.RecordUtils;
 import cn.cerc.core.SqlText;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
@@ -23,7 +22,7 @@ public class DaoQuery<T> extends MysqlQuery {
             ((DaoEvent) item).beforePost();
         }
         this.append();
-        RecordUtils.copyToRecord(item, this.current());
+        this.current().loadFromEntity(item);
         this.post();
     }
 
@@ -37,7 +36,7 @@ public class DaoQuery<T> extends MysqlQuery {
             ((DaoEvent) item).beforePost();
         }
         this.edit();
-        RecordUtils.copyToRecord(item, this.current());
+        this.current().loadFromEntity(item);
         this.post();
     }
     
