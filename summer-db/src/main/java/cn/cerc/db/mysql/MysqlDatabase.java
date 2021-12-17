@@ -162,17 +162,17 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
             type = "String";
             break;
         case "int":
-            type = "long";
+            type = "Integer";
             break;
         case "bigint":
-            type = "long";
+            type = "Long";
             break;
         case "decimal":
         case "float":
-            type = "double";
+            type = "Double";
             break;
         case "bit":
-            type = "boolean";
+            type = "Boolean";
             break;
         case "datetime":
             type = "Datetime";
