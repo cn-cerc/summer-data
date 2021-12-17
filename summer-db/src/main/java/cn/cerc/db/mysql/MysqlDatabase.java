@@ -98,18 +98,18 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
                 dsColumn.add("where table_schema='%s' and table_name='%s'", dataBase, tableName);
                 dsColumn.openReadonly();
                 while (dsColumn.fetch()) {
-                    String extra = dsColumn.getString("EXTRA");
+                    String extra = dsColumn.getString("extra");
                     if ("auto_increment".equals(extra)) {
                         writer.write("@Id\r\n");
                         writer.write("@GeneratedValue\r\n");
                     }
-                    String field = dsColumn.getString("COLUMN_NAME");
-                    String codeComment = dsColumn.getString("COLUMN_COMMENT");
-                    String nullable = dsColumn.getString("IS_NULLABLE");
-                    String dataType = dsColumn.getString("DATA_TYPE");
+                    String field = dsColumn.getString("column_name");
+                    String codeComment = dsColumn.getString("column_comment");
+                    String nullable = dsColumn.getString("is_nullable");
+                    String dataType = dsColumn.getString("data_type");
                     // 转换为Java的数据类型
                     String codeType = getType(dataType);
-                    String columnType = dsColumn.getString("COLUMN_TYPE");
+                    String columnType = dsColumn.getString("column_type");
                     if ("datetime".equals(dataType) || "text".equals(dataType) || "ntext".equals(dataType)) {
                         writer.write("@Column(");
                         if (!"YES".equals(nullable)) {
@@ -134,7 +134,7 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
                         writer.write(strColumn.toString());
                     }
                     writer.write(String.format("@Describe(name = \"%s\"", codeComment));
-                    String def = dsColumn.getString("COLUMN_DEFAULT");
+                    String def = dsColumn.getString("column_default");
                     if (!Utils.isEmpty(def)) {
                         writer.write(String.format(", def = \"%s\"", def));
                     }
