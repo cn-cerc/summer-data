@@ -4,24 +4,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.cerc.core.ISession;
+import cn.cerc.core.SqlServerType;
+import cn.cerc.core.SqlServerTypeException;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.ISqlServer;
+import cn.cerc.db.mssql.MssqlServer;
+import cn.cerc.db.sqlite.SqliteServer;
 
 public class BatchScript implements IHandle {
     private static final Logger log = LoggerFactory.getLogger(BatchScript.class);
 
     private StringBuffer items = new StringBuffer();
     private ISession session;
-    private MysqlServerMaster connection;
     private boolean newLine = false;
+    private SqlServerType sqlServerType;
 
-    public BatchScript(ISession session) {
-        this.session = session;
-        this.connection = this.getMysql();
+    public BatchScript(IHandle handle, SqlServerType sqlServerType) {
+        super();
+        if (handle != null)
+            this.session = handle.getSession();
+        this.sqlServerType = sqlServerType;
     }
 
     public BatchScript(IHandle owner) {
-        this(owner.getSession());
+        this(owner, SqlServerType.Mysql);
     }
 
     public BatchScript addSemicolon() {
@@ -65,13 +72,25 @@ public class BatchScript implements IHandle {
 
     public BatchScript exec() {
         String[] tmp = items.toString().split(";");
+        ISqlServer server = getSqlServer();
         for (String item : tmp) {
             if (!"".equals(item.trim())) {
                 log.debug(item.trim() + ";");
-                connection.execute(item.trim());
+                server.execute(item.trim());
             }
         }
         return this;
+    }
+
+    public ISqlServer getSqlServer() {
+        if (sqlServerType == SqlServerType.Mysql)
+            return (ISqlServer) this.getSession().getProperty(MysqlServerMaster.SessionId);
+        else if (sqlServerType == SqlServerType.Mssql)
+            return (ISqlServer) this.getSession().getProperty(MssqlServer.SessionId);
+        else if (sqlServerType == SqlServerType.Sqlite)
+            return new SqliteServer();
+        else
+            throw new SqlServerTypeException();
     }
 
     public boolean exists() {
