@@ -105,9 +105,6 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
                     }
                     String field = dsColumn.getString("COLUMN_NAME");
                     String codeComment = dsColumn.getString("COLUMN_COMMENT");
-                    if (Utils.isEmpty(codeComment)) {
-                        codeComment = field;
-                    }
                     String nullable = dsColumn.getString("IS_NULLABLE");
                     String dataType = dsColumn.getString("DATA_TYPE");
                     // 转换为Java的数据类型

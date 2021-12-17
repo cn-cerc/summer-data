@@ -119,9 +119,6 @@ public class MssqlDatabase implements IHandle, ISqlDatabase {
                     }
                     String field = cdsTmp.getString("Field_");
                     String comment = cdsTmp.getString("Comment_");
-                    if (Utils.isEmpty(comment)) {
-                        comment = field;
-                    }
                     boolean nullable = cdsTmp.getBoolean("NullAble_");
                     String dataType = cdsTmp.getString("FieldType_");
                     // 转换为Java的数据类型
