@@ -30,7 +30,9 @@ public @interface EntityKey {
      */
     CacheLevelEnum cache() default CacheLevelEnum.Disabled;
 
-    // 缓存过期时间，单位为秒
+    /**
+     * @return 缓存过期时间，单位为秒
+     */
     int expire() default 3600;
 
     /**
