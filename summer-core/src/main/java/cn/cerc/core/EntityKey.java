@@ -13,7 +13,7 @@ public @interface EntityKey {
     /**
      * @return 设置entity的业务keyField
      */
-    String[] values();
+    String[] fields();
 
     /**
      * @return 在get entity时，key值是否默认加入公司别
@@ -29,5 +29,10 @@ public @interface EntityKey {
      * @return 返回缓存的等级，默认为关闭
      */
     CacheLevelEnum cache() default CacheLevelEnum.Disabled;
+
+    /**
+     * @return 是否虚拟对象，若为虚拟对象则必须自行实现EntityCacheImpl接口
+     */
+    boolean virtual() default false;
 
 }
