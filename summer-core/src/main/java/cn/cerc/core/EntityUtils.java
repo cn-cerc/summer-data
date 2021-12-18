@@ -95,20 +95,35 @@ public class EntityUtils {
                 } else if (TDateTime.class.getName().equals(field.getType().getName())) {
                     field.set(entity, new TDateTime((Date) value));
                 } else if (Datetime.class.getName().equals(field.getType().getName())) {
-                    field.set(entity, new Datetime((Date) value));
+                    if (value instanceof String)
+                        field.set(entity, new Datetime((String) value));
+                    else if (value instanceof Date)
+                        field.set(entity, new Datetime((Date) value));
+                    else
+                        throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
+                                value.getClass().getName(), field.getType().getName()));
                 } else if (field.getType().isEnum()) {
-                    Integer tmp = (Integer) value;
+                    int tmp = 0;
+                    if (value instanceof Double)
+                        tmp = ((Double) value).intValue();
+                    else if (value instanceof Integer)
+                        tmp = ((Integer) value).intValue();
+                    else if (value != null)
+                        throw new RuntimeException("not support type:" + value.getClass());
                     @SuppressWarnings({ "unchecked", "rawtypes" })
                     Class<Enum> clazz = (Class<Enum>) field.getType();
                     @SuppressWarnings("rawtypes")
                     Enum[] list = clazz.getEnumConstants();
-                    if (tmp.intValue() >= 0 && tmp.intValue() < list.length)
-                        field.set(entity, list[tmp.intValue()]);
+                    if (tmp >= 0 && tmp < list.length)
+                        field.set(entity, list[tmp]);
                     else
                         throw new RuntimeException(String.format("error enum %d of %s", tmp, clazz.getName()));
+                } else if (value.getClass() == Double.class && field.getType() == Integer.class) {
+                    Double tmp = (Double) value;
+                    field.set(entity, tmp.intValue());
                 } else {
-                    throw new RuntimeException(
-                            "error: " + field.getType().getName() + " as " + value.getClass().getName());
+                    throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
+                            value.getClass().getName(), field.getType().getName()));
                 }
             }
         }

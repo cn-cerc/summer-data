@@ -297,7 +297,8 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
             } else {
                 sb.append("varchar(").append(size).append(")");
             }
-        } else if (field.getType().isEnum() || field.getType() == int.class || field.getType() == long.class) {
+        } else if (field.getType().isEnum() || field.getType() == int.class || field.getType() == Integer.class
+                || field.getType() == long.class || field.getType() == Long.class) {
             int size = 11;
             if (column != null)
                 size = column.length();
@@ -305,7 +306,7 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
         } else if (Datetime.class.isAssignableFrom(field.getType())
                 || FastDate.class.isAssignableFrom(field.getType())) {
             sb.append("datetime");
-        } else if (field.getType() == double.class) {
+        } else if (field.getType() == double.class || field.getType() == Double.class) {
             int precision = 18;
             int scale = 4;
             if (column != null) {
@@ -313,7 +314,7 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
                 scale = column.scale();
             }
             sb.append("decimal(").append(precision).append(",").append(scale).append(")");
-        } else if (field.getType() == boolean.class) {
+        } else if (field.getType() == boolean.class || field.getType() == Boolean.class) {
             sb.append("bit(").append(1).append(")");
         } else {
             throw new RuntimeException("不支持的类型：" + field.getType().getName());

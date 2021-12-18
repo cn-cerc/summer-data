@@ -2,7 +2,6 @@ package cn.cerc.core;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
@@ -274,7 +273,7 @@ public class DataRow implements Serializable, IRecord {
         }
     }
 
-    public void setJson(String jsonStr) {
+    public DataRow setJson(String jsonStr) {
         this.clear();
         Gson gson = new GsonBuilder().serializeNulls().create();
         items = gson.fromJson(jsonStr, new TypeToken<Map<String, Object>>() {
@@ -285,6 +284,7 @@ public class DataRow implements Serializable, IRecord {
                 items.put(key, null);
             }
         }
+        return this;
     }
 
     public double getDouble(String field, int scale) {
@@ -396,9 +396,7 @@ public class DataRow implements Serializable, IRecord {
             result = clazz.getDeclaredConstructor().newInstance();
             EntityUtils.copyToEntity(this, result);
             return result;
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                | NoSuchMethodException | SecurityException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
