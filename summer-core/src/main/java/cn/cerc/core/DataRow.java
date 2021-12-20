@@ -486,6 +486,9 @@ public class DataRow implements Serializable, IRecord {
                     } else if (value.getClass() == Double.class && field.getType() == Integer.class) {
                         Double tmp = (Double) value;
                         field.set(entity, tmp.intValue());
+                    } else if (value.getClass() == Long.class && field.getType() == Integer.class) {
+                        Long tmp = (Long) value;
+                        field.set(entity, tmp.intValue());
                     } else {
                         throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
                                 value.getClass().getName(), field.getType().getName()));
