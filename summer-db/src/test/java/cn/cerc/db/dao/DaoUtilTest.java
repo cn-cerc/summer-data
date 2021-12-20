@@ -5,21 +5,12 @@ import org.junit.Test;
 import com.google.gson.Gson;
 
 import cn.cerc.core.DataRow;
-import cn.cerc.core.EntityUtils;
 import cn.cerc.core.Utils;
-import cn.cerc.db.core.StubSession;
 
 public class DaoUtilTest {
 
     @Test
-    public void testBuildEntity() {
-        StubSession handle = new StubSession();
-        String text = DaoUtil.buildEntity(handle, "t_profitday", "ProfitDay");
-        System.out.println(text);
-    }
-
-    @Test
-    public void testCopy() {
+    public void testCopy1() {
         DataRow record = new DataRow();
         record.setValue("ID_", Utils.newGuid());
         record.setValue("Code_", "18100101");
@@ -45,11 +36,7 @@ public class DaoUtilTest {
         record.setValue("Code_", "18100101");
         record.setValue("Name_", "王五");
         UserTest user = new UserTest();
-        try {
-            EntityUtils.copyToEntity(record, user);
-        } catch (IllegalArgumentException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        record.saveToEntity(user);
     }
 
 }

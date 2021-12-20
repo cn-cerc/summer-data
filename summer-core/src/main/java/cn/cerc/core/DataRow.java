@@ -3,12 +3,19 @@ package cn.cerc.core;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.persistence.Column;
+import javax.persistence.Id;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -18,7 +25,11 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 
 public class DataRow implements Serializable, IRecord {
+    private static final Logger log = LoggerFactory.getLogger(DataRow.class);
     private static final long serialVersionUID = 4454304132898734723L;
+    private static final int PUBLIC = 1;
+    private static final int PRIVATE = 2;
+    private static final int PROTECTED = 4;
     private DataRowState state = DataRowState.None;
     private Map<String, Object> items = new LinkedHashMap<>();
     private DataSet dataSet;
@@ -394,16 +405,102 @@ public class DataRow implements Serializable, IRecord {
         T result = null;
         try {
             result = clazz.getDeclaredConstructor().newInstance();
-            EntityUtils.copyToEntity(this, result);
-            return result;
         } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        saveToEntity(result);
+        return result;
+    }
+
+    public void saveToEntity(Object entity) {
+        try {
+            Map<String, Field> items = DataRow.getEntityFields(entity.getClass());
+            if (this.fields().size() > items.size()) {
+                log.warn("fields.size > propertys.size");
+            } else if (this.fields().size() < items.size()) {
+                String fmt = "fields.size %d < propertys.size %d";
+                throw new RuntimeException(String.format(fmt, this.fields().size(), items.size()));
+            }
+
+            // 查找并赋值
+            for (FieldMeta meta : this.fields()) {
+                Object value = this.getValue(meta.code());
+
+                // 查找指定的对象属性
+                Field field = null;
+                for (String itemName : items.keySet()) {
+                    if (itemName.equals(meta.code())) {
+                        field = items.get(itemName);
+                        if (field.getModifiers() == PRIVATE || field.getModifiers() == PROTECTED)
+                            field.setAccessible(true);
+                        break;
+                    }
+                }
+                if (field == null) {
+                    log.warn("not find property: " + meta.code());
+                    continue;
+                }
+
+                // 给属性赋值
+                if (value == null) {
+                    field.set(entity, null);
+                } else if (field.getType().equals(value.getClass())) {
+                    field.set(entity, value);
+                } else {
+                    if ("int".equals(field.getType().getName())) {
+                        field.setInt(entity, (Integer) value);
+                    } else if ("double".equals(field.getType().getName())) {
+                        field.setDouble(entity, (Double) value);
+                    } else if ("long".equals(field.getType().getName())) {
+                        if (value instanceof BigInteger) {
+                            field.setLong(entity, ((BigInteger) value).longValue());
+                        } else {
+                            field.setLong(entity, (Long) value);
+                        }
+                    } else if ("boolean".equals(field.getType().getName())) {
+                        field.setBoolean(entity, (Boolean) value);
+                    } else if (Datetime.class.getName().equals(field.getType().getName())) {
+                        if (value instanceof String)
+                            field.set(entity, new Datetime((String) value));
+                        else if (value instanceof Date)
+                            field.set(entity, new Datetime((Date) value));
+                        else
+                            throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
+                                    value.getClass().getName(), field.getType().getName()));
+                    } else if (field.getType().isEnum()) {
+                        int tmp = 0;
+                        if (value instanceof Double)
+                            tmp = ((Double) value).intValue();
+                        else if (value instanceof Integer)
+                            tmp = ((Integer) value).intValue();
+                        else if (value != null)
+                            throw new RuntimeException("not support type:" + value.getClass());
+                        @SuppressWarnings({ "unchecked", "rawtypes" })
+                        Class<Enum> clazz = (Class<Enum>) field.getType();
+                        @SuppressWarnings("rawtypes")
+                        Enum[] list = clazz.getEnumConstants();
+                        if (tmp >= 0 && tmp < list.length)
+                            field.set(entity, list[tmp]);
+                        else
+                            throw new RuntimeException(String.format("error enum %d of %s", tmp, clazz.getName()));
+                    } else if (value.getClass() == Double.class && field.getType() == Integer.class) {
+                        Double tmp = (Double) value;
+                        field.set(entity, tmp.intValue());
+                    } else {
+                        throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
+                                value.getClass().getName(), field.getType().getName()));
+                    }
+                }
+            }
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
 
     public DataRow loadFromEntity(Object entity) {
         try {
-            Map<String, Field> fields = EntityUtils.getFields(entity.getClass());
+            Map<String, Field> fields = DataRow.getEntityFields(entity.getClass());
             for (String fieldCode : fields.keySet()) {
                 Field field = fields.get(fieldCode);
                 this.setValue(fieldCode, field.get(entity));
@@ -413,6 +510,31 @@ public class DataRow implements Serializable, IRecord {
             throw new RuntimeException(e);
         }
         return this;
+    }
+
+    public static Map<String, Field> getEntityFields(Class<?> entityClass) {
+        // 找出所有可用的的数据字段
+        Map<String, Field> items = new LinkedHashMap<>();
+        for (Field field : entityClass.getDeclaredFields()) {
+            Column column = field.getAnnotation(Column.class);
+            if (column != null) {
+                String name = !"".equals(column.name()) ? column.name() : field.getName();
+                if (field.getModifiers() == DataRow.PRIVATE || field.getModifiers() == DataRow.PROTECTED) {
+                    field.setAccessible(true);
+                    items.put(name, field);
+                } else if (field.getModifiers() == PUBLIC) {
+                    items.put(name, field);
+                }
+                continue;
+            }
+            Id id = field.getAnnotation(Id.class);
+            if (id != null) {
+                if (field.getModifiers() == PRIVATE || field.getModifiers() == PROTECTED
+                        || field.getModifiers() == PUBLIC)
+                    items.put(field.getName(), field);
+            }
+        }
+        return items;
     }
 
     @Deprecated

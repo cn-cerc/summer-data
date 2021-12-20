@@ -75,7 +75,7 @@ public abstract class BigTable<T extends BigRecord> implements IHandle {
     @SuppressWarnings("unchecked")
     private void initClazz() {
         this.clazz = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-        this.tableId = DaoUtil.getTableName(clazz);
+        this.tableId = Utils.findTable(clazz);
     }
 
     @Deprecated // 请改使用 open
@@ -282,7 +282,7 @@ public abstract class BigTable<T extends BigRecord> implements IHandle {
             return;
         }
 
-        String tableName = DaoUtil.getTableName(clazz);
+        String tableName = Utils.findTable(clazz);
         if (tableName == null) {
             throw new RuntimeException("tableName is null");
         }
