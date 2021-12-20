@@ -101,7 +101,7 @@ public class SqlQuery extends DataSet implements IHandle {
     }
 
     // 追加相同数据表的其它记录，与已有记录合并
-    public final int attach(String sqlText) {
+    public int attach(String sqlText) {
         if (!this.active()) {
             this.clear();
             this.add(sqlText);
@@ -270,12 +270,12 @@ public class SqlQuery extends DataSet implements IHandle {
      * @param sql 要增加的sql指令内容
      * @return 返回对象本身
      */
-    public final SqlQuery add(String sql) {
+    public SqlQuery add(String sql) {
         this.sql.add(sql);
         return this;
     }
 
-    public final SqlQuery add(String format, Object... args) {
+    public SqlQuery add(String format, Object... args) {
         this.sql.add(format, args);
         return this;
     }
