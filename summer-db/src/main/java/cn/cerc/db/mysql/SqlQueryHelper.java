@@ -6,7 +6,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.cerc.core.DataRow;
 import cn.cerc.core.Datetime;
 import cn.cerc.core.ISession;
 import cn.cerc.core.SqlServerType;
@@ -310,12 +309,6 @@ public class SqlQueryHelper implements IHandle {
 
     public SqlQueryHelper setMaximum(int maximum) {
         dataSet().sql().setMaximum(maximum);
-        return this;
-    }
-
-    public SqlQueryHelper setMaximum(DataRow headIn, String fieldCode) {
-        if (headIn.has(fieldCode))
-            this.setMaximum(headIn.getInt(fieldCode));
         return this;
     }
 
