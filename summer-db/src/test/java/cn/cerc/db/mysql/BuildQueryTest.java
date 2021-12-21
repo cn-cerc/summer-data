@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
+import cn.cerc.db.core.Handle;
 import cn.cerc.db.core.StubSession;
 
 public class BuildQueryTest {
@@ -15,7 +16,7 @@ public class BuildQueryTest {
     @Before
     public void setUp() {
         handle = new StubSession();
-        bs = new BuildQuery(handle);
+        bs = new BuildQuery(new Handle(handle));
     }
 
     @Test

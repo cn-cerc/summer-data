@@ -5,10 +5,11 @@ import static cn.cerc.core.Utils.safeString;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
+import cn.cerc.core.DataRow;
 import cn.cerc.core.Datetime;
 import cn.cerc.core.ISession;
+import cn.cerc.core.SqlServerType;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.SqlQuery;
@@ -18,60 +19,29 @@ import cn.cerc.db.core.SqlQuery;
  *
  * @author 张弓
  */
-public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
+public class SqlQueryHelper implements IHandle {
     public static final String vbCrLf = "\r\n";
-    protected T dataSet;
+    protected SqlQuery dataSet;
     protected List<String> where = new ArrayList<>();
     private List<String> content = new ArrayList<>();
     private String order = "";
     private String group = "";
     private ISession session;
+    private SqlServerType sqlServerType;
 
-    public SqlQueryHelper(ISession session) {
+    public SqlQueryHelper(IHandle handle, SqlServerType sqlServerType) {
         super();
-        this.session = session;
+        if (handle != null)
+            this.session = handle.getSession();
+        this.sqlServerType = sqlServerType;
     }
 
-    public SqlQueryHelper(T query) {
-        super();
-        this.session = query.getSession();
+    public SqlQueryHelper(SqlQuery query) {
+        this(query, query.getSqlServerType());
         this.dataSet = query;
     }
 
-    /**
-     * 支持多个组合模糊查询条件组合查询
-     * <p>
-     * 一个查询文本对应一个字段组合的 List
-     * <p>
-     * 生成 SQL 的指令如下：
-     * <p>
-     * and ( CusCode_ like '%05559255%' or SalesCode_ like '%05559255%' or AppUser_
-     * like '%05559255%' or UpdateUser_ like '%05559255%' or Address_ like
-     * '%05559255%' or Mobile_ like '%$i8OknluCnFsW$%' )
-     *
-     * @param items 数据库语句拼接
-     * @return BuildQuery
-     */
-    public SqlQueryHelper<T> byLink(Map<String, List<String>> items) {
-        if (items == null) {
-            return this;
-        }
-        StringBuilder builder = new StringBuilder();
-        for (String k : items.keySet()) {
-            List<String> fields = items.get(k);
-            String text = "%" + safeString(k).replaceAll("\\*", "") + "%";
-            for (String field : fields) {
-                builder.append(String.format("%s like '%s'", field, text));
-                builder.append(" or ");
-            }
-        }
-        String str = builder.toString();
-        str = str.substring(0, str.length() - 3);
-        where.add("(" + str + ")");
-        return this;
-    }
-
-    public SqlQueryHelper<T> byLink(String[] fields, String value) {
+    public SqlQueryHelper byLink(String[] fields, String value) {
         if (value == null || "".equals(value)) {
             return this;
         }
@@ -86,13 +56,13 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         return this;
     }
 
-    public SqlQueryHelper<T> byNull(String field, boolean value) {
+    public SqlQueryHelper byNull(String field, boolean value) {
         String s = value ? "not null" : "null";
         where.add(String.format("%s is %s", field, s));
         return this;
     }
 
-    public SqlQueryHelper<T> addWhere(String field, String text) {
+    public SqlQueryHelper addWhere(String field, String text) {
         String value = safeString(text);
         if ("".equals(value)) {
             return this;
@@ -127,50 +97,50 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         return this;
     }
 
-    public SqlQueryHelper<T> addWhere(String field, int value) {
+    public SqlQueryHelper addWhere(String field, int value) {
         where.add(String.format("%s=%s", field, value));
         return this;
     }
 
-    public SqlQueryHelper<T> addWhere(String field, double value) {
+    public SqlQueryHelper addWhere(String field, double value) {
         where.add(String.format("%s=%s", field, value));
         return this;
     }
 
-    public SqlQueryHelper<T> addWhere(String field, Datetime value) {
+    public SqlQueryHelper addWhere(String field, Datetime value) {
         where.add(String.format("%s='%s'", field, value.format("yyyy-MM-dd HH:mm:ss")));
         return this;
     }
 
-    public SqlQueryHelper<T> addWhere(String field, boolean value) {
+    public SqlQueryHelper addWhere(String field, boolean value) {
         int s = value ? 1 : 0;
         where.add(String.format("%s=%s", field, s));
         return this;
     }
 
-    public SqlQueryHelper<T> byBetween(String field, String value1, String value2) {
+    public SqlQueryHelper byBetween(String field, String value1, String value2) {
         where.add(String.format("%s between '%s' and '%s'", field, safeString(value1), safeString(value2)));
         return this;
     }
 
-    public SqlQueryHelper<T> byBetween(String field, int value1, int value2) {
+    public SqlQueryHelper byBetween(String field, int value1, int value2) {
         where.add(String.format("%s between %s and %s", field, value1, value2));
         return this;
     }
 
-    public SqlQueryHelper<T> byBetween(String field, double value1, double value2) {
+    public SqlQueryHelper byBetween(String field, double value1, double value2) {
         where.add(String.format("%s between %s and %s", field, value1, value2));
         return this;
     }
 
-    public SqlQueryHelper<T> byBetween(String field, Datetime value1, Datetime value2) {
+    public SqlQueryHelper byBetween(String field, Datetime value1, Datetime value2) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         where.add(String.format(" %s between '%s' and '%s' ", field, sdf.format(value1.asBaseDate()),
                 sdf.format(value2.asBaseDate())));
         return this;
     }
 
-    public SqlQueryHelper<T> byRange(String field, String... values) {
+    public SqlQueryHelper byRange(String field, String... values) {
         // where code_ in ("aa","Bb")
         if (values.length > 0) {
             String s = field + " in (";
@@ -183,7 +153,7 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         return this;
     }
 
-    public SqlQueryHelper<T> byRange(String field, int[] values) {
+    public SqlQueryHelper byRange(String field, int[] values) {
         if (values.length > 0) {
             String s = field + " in (";
             for (int sql : values) {
@@ -195,7 +165,7 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         return this;
     }
 
-    public SqlQueryHelper<T> byRange(String field, double[] values) {
+    public SqlQueryHelper byRange(String field, double[] values) {
         if (values.length > 0) {
             String s = field + " in (";
             for (double sql : values) {
@@ -207,7 +177,7 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         return this;
     }
 
-    public SqlQueryHelper<T> setSelect(String text) {
+    public SqlQueryHelper setSelect(String text) {
         content.clear();
         if (!Utils.isEmpty(text)) {
             if (!text.toLowerCase().startsWith("select "))
@@ -216,11 +186,11 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         return addSelect(text);
     }
 
-    public SqlQueryHelper<T> setSelect(String fmtText, Object... args) {
+    public SqlQueryHelper setSelect(String fmtText, Object... args) {
         return setSelect(String.format(fmtText, args));
     }
 
-    public SqlQueryHelper<T> addSelect(String text) {
+    public SqlQueryHelper addSelect(String text) {
         String regex = "((\\bselect)|(\\bSelect)|(\\s*select)|(\\s*Select))\\s*(distinct)*\\s+%s";
         if (text.matches(regex)) {
             text = text.replaceFirst("%s", "");
@@ -229,7 +199,7 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         return this;
     }
 
-    public SqlQueryHelper<T> addSelect(String fmtText, Object... args) {
+    public SqlQueryHelper addSelect(String fmtText, Object... args) {
         ArrayList<Object> items = new ArrayList<>();
         for (Object arg : args) {
             if (arg instanceof String) {
@@ -242,13 +212,10 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         return this;
     }
 
-    public T dataSet() {
+    public SqlQuery dataSet() {
+        if (this.dataSet == null)
+            this.dataSet = new SqlQuery(this, sqlServerType);
         return this.dataSet;
-    }
-
-    public SqlQueryHelper<T> setDataSet(T dataSet) {
-        this.dataSet = dataSet;
-        return this;
     }
 
     @Override
@@ -283,22 +250,32 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         if (order != null) {
             str.append(vbCrLf).append(order);
         }
-
         String sqls = str.toString().trim();
         sqls = sqls.replaceAll(" %s ", " ");
-        return sqls;
+
+        if ("".equals(sqls))
+            return sqls;
+
+        if (dataSet().sql().maximum() > -1 && SqlServerType.Mssql == sqlServerType) {
+            if (sqls.toLowerCase().startsWith("select ")) {
+                return "select top " + dataSet().sql().maximum() + " " + sqls.substring(7, sqls.length());
+            } else
+                return sqls + vbCrLf + "limit " + dataSet().sql().maximum();
+        } else {
+            return sqls;
+        }
     }
 
-    public T open() {
+    public SqlQuery open() {
         return open(false);
     }
 
-    public T openReadonly() {
+    public SqlQuery openReadonly() {
         return open(true);
     }
 
-    private T open(boolean slaveServer) {
-        T ds = dataSet();
+    private SqlQuery open(boolean slaveServer) {
+        SqlQuery ds = dataSet();
         ds.sql().clear();
         ds.add(this.sqlText());
         if (!slaveServer)
@@ -322,7 +299,7 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         return dataSet().sql().offset();
     }
 
-    public SqlQueryHelper<T> setOffset(int offset) {
+    public SqlQueryHelper setOffset(int offset) {
         dataSet().sql().setOffset(offset);
         return this;
     }
@@ -331,8 +308,14 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         return dataSet().sql().maximum();
     }
 
-    public SqlQueryHelper<T> setMaximum(int maximum) {
+    public SqlQueryHelper setMaximum(int maximum) {
         dataSet().sql().setMaximum(maximum);
+        return this;
+    }
+
+    public SqlQueryHelper setMaximum(DataRow headIn, String fieldCode) {
+        if (headIn.has(fieldCode))
+            this.setMaximum(headIn.getInt(fieldCode));
         return this;
     }
 
@@ -340,7 +323,7 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         return this.order;
     }
 
-    public SqlQueryHelper<T> setOrder(String text) {
+    public SqlQueryHelper setOrder(String text) {
         if (!Utils.isEmpty(text)) {
             if (!text.toLowerCase().startsWith("order by "))
                 throw new RuntimeException("startsWidth is not order by");
@@ -353,7 +336,7 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         return this.group;
     }
 
-    public SqlQueryHelper<T> setGroup(String text) {
+    public SqlQueryHelper setGroup(String text) {
         if (!Utils.isEmpty(text)) {
             if (!text.toLowerCase().startsWith("group by "))
                 throw new RuntimeException("startsWidth is not group by");
@@ -378,7 +361,7 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
      * @param text 要加入的查询条件
      * @return 返回自身
      */
-    public SqlQueryHelper<T> setWhere(String text) {
+    public SqlQueryHelper setWhere(String text) {
         if (!Utils.isEmpty(text)) {
             if (!text.toLowerCase().startsWith("where "))
                 throw new RuntimeException("startsWidth is not where");
@@ -392,4 +375,9 @@ public class SqlQueryHelper<T extends SqlQuery> implements IHandle {
         }
         return this;
     }
+
+    public SqlServerType getSqlServerType() {
+        return sqlServerType;
+    }
+
 }

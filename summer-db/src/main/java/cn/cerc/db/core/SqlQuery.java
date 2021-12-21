@@ -396,4 +396,7 @@ public class SqlQuery extends DataSet implements IHandle {
         return this;
     }
 
+    public SqlServerType getSqlServerType() {
+        return sqlServerType;
+    }
 }

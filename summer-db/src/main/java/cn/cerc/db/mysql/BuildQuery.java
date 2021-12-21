@@ -2,7 +2,7 @@ package cn.cerc.db.mysql;
 
 import cn.cerc.core.DataRow;
 import cn.cerc.core.Datetime;
-import cn.cerc.core.ISession;
+import cn.cerc.core.SqlServerType;
 import cn.cerc.core.Utils;
 import cn.cerc.db.core.IHandle;
 
@@ -11,14 +11,10 @@ import cn.cerc.db.core.IHandle;
  *
  * @author 张弓
  */
-public class BuildQuery extends MysqlQueryHelper {
+public class BuildQuery extends SqlQueryHelper {
 
     public BuildQuery(IHandle owner) {
-        super(owner.getSession());
-    }
-
-    public BuildQuery(ISession session) {
-        super(session);
+        super(owner, SqlServerType.Mysql);
     }
 
     public BuildQuery(MysqlQuery query) {
@@ -39,7 +35,7 @@ public class BuildQuery extends MysqlQueryHelper {
     public MysqlQuery dataSet() {
         if (this.dataSet == null)
             this.dataSet = new MysqlQuery(this);
-        return this.dataSet;
+        return (MysqlQuery) this.dataSet;
     }
 
     @Deprecated
@@ -66,6 +62,18 @@ public class BuildQuery extends MysqlQueryHelper {
         }
         foot.setValue("__finish__", ds.isFetchFinish());
         return ds;
+    }
+
+    @Override
+    public MysqlQuery open() {
+        super.open();
+        return this.dataSet();
+    }
+
+    @Override
+    public final MysqlQuery openReadonly() {
+        super.openReadonly();
+        return this.dataSet();
     }
 
     @Deprecated
