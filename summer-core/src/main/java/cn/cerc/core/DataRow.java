@@ -485,9 +485,19 @@ public class DataRow implements Serializable, IRecord {
                             throw new RuntimeException(String.format("error enum %d of %s", tmp, clazz.getName()));
                     } else if (value.getClass() == Double.class && field.getType() == Integer.class) {
                         Double tmp = (Double) value;
+                        if (tmp.intValue() > Integer.MAX_VALUE) {
+                            throw new RuntimeException(
+                                    String.format("field %s error: %s as %s,the value is larger than Integer.MAX_VALUE",
+                                            field.getName(), value.getClass().getName(), field.getType().getName()));
+                        }
                         field.set(entity, tmp.intValue());
                     } else if (value.getClass() == Long.class && field.getType() == Integer.class) {
                         Long tmp = (Long) value;
+                        if (tmp.intValue() > Integer.MAX_VALUE) {
+                            throw new RuntimeException(
+                                    String.format("field %s error: %s as %s,the value is larger than Integer.MAX_VALUE",
+                                            field.getName(), value.getClass().getName(), field.getType().getName()));
+                        }
                         field.set(entity, tmp.intValue());
                     } else {
                         throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
