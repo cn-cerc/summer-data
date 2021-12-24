@@ -52,7 +52,7 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
         MysqlServerMaster server = this.getMysql();
         List<String> list = server.tables(this);
         String table = table();
-        if (!list.contains(table))
+        if (!list.contains(table.toLowerCase()))
             server.execute(getCreateSql());
         return true;
     }
