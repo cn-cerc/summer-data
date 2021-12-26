@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -43,15 +44,14 @@ public class DataRow implements Serializable, IRecord {
         this.createFields = true;
     }
 
-    public DataRow(DataSet dataSet) {
-        super();
-        this.dataSet = dataSet;
-        this.fields = dataSet.fields();
-    }
-
     public DataRow(FieldDefs fieldDefs) {
         super();
         this.fields = fieldDefs;
+    }
+
+    public DataRow(DataSet dataSet) {
+        super();
+        this.setDataSet(dataSet);
     }
 
     public DataRowState state() {
@@ -589,6 +589,16 @@ public class DataRow implements Serializable, IRecord {
         row.dataSet = this.dataSet;
         row.createFields = this.createFields;
         return row;
+    }
+
+    public DataRow setDataSet(DataSet dataSet) {
+        Objects.nonNull(dataSet);
+        if (this.dataSet != dataSet) {
+            this.dataSet = dataSet;
+            this.fields = dataSet.fields();
+            this.createFields = false;
+        }
+        return this;
     }
 
 }

@@ -60,6 +60,13 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this;
     }
 
+    public DataSet append(DataRow row) {
+        row.setDataSet(this);
+        records.add(row);
+        recNo = records.size();
+        return this;
+    }
+
     @Deprecated
     public final DataSet append(int index) {
         DataRow record = new DataRow(this).setState(DataRowState.Insert);
@@ -761,22 +768,30 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this;
     }
 
-    public static void main(String[] args) {
-        DataSet ds1 = new DataSet();
-        ds1.append();
-        ds1.setValue("code", "1");
-        ds1.setValue("name", "a0");
-        ds1.setValue("value", 10);
-        ds1.post();
+    public static void main(String[] args) throws InterruptedException {
+        DataSet ds = new DataSet();
+        for (int i = 0; i < 1000; i++)
+            ds.append().setValue("code", "001").setValue("name", "jason").setValue("amount", 1);
+        // 常规处理方式
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < ds.size(); i++) {
+            Thread.sleep(5);
+            DataRow item = ds.records().get(i);
+            item.setValue("amount", item.getValue("amount" + 1));
+        }
+        System.out.println("常规处理方式，耗时：" + (System.currentTimeMillis() - start));
+        Thread.sleep(5000);
 
-        ds1.setBatchSave(true);
-        ds1.edit().setValue("name", "a1");
-        System.out.println(ds1.setCurd(true).json());
-        System.out.println(ds1.setCurd(false).json());
-
-        ds1.delete();
-        System.out.println(ds1.setCurd(true).json());
-        System.out.println(ds1.setCurd(false).json());
+        start = System.currentTimeMillis();
+        ds.records.parallelStream().map((item) -> {
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return item.setValue("amount", item.getValue("amount" + 1));
+        }).allMatch(item -> true);
+        System.out.println("并行处理方式，耗时：" + (System.currentTimeMillis() - start));
     }
 
 }
