@@ -2,6 +2,7 @@ package cn.cerc.db.core;
 
 import java.util.Objects;
 
+import cn.cerc.core.DataRow;
 import cn.cerc.core.Datetime;
 import cn.cerc.core.SqlText;
 import cn.cerc.core.Utils;
@@ -121,7 +122,7 @@ public class SqlWhere {
      * @param value 条件值
      * @return this
      */
-    public final SqlWhere is(String field, boolean value) {
+    public final SqlWhere isNull(String field, boolean value) {
         if (this.size++ > 0)
             sb.append(operation == OperationEnum.And ? " and " : " or ");
         sb.append(field);
@@ -130,6 +131,17 @@ public class SqlWhere {
         else
             sb.append(" is not null");
         return this;
+    }
+
+    /**
+     * 设置条件：是否为null
+     * 
+     * @param field 数据表字段名
+     * @param value 从中取出相应的字段记录作为条件值
+     * @return this
+     */
+    public final SqlWhere isNull(String field, DataRow value) {
+        return isNull(field, value.getBoolean(field));
     }
 
     public final SqlWhere like(String field, String value) {
@@ -147,8 +159,8 @@ public class SqlWhere {
             return like(field, value, LinkOptionEnum.Right);
     }
 
-    public final SqlWhere likeAll(String field, String value) {
-        return like(field, value, LinkOptionEnum.All);
+    public final SqlWhere like(String field, DataRow value) {
+        return like(field, value.getString(field));
     }
 
     public final SqlWhere like(String field, String value, LinkOptionEnum linkOption) {
@@ -195,6 +207,10 @@ public class SqlWhere {
         return this;
     }
 
+    public final SqlWhere between(String field, DataRow value) {
+        return between(field, value.getValue(field + "_from"), value.getValue(field + "_to"));
+    }
+
     public SqlText build() {
         if (this.sqlText != null && sb.length() > 0)
             this.sqlText.add("where " + this.text());
@@ -226,12 +242,15 @@ public class SqlWhere {
     private SqlWhere appendField(String field, Object value, String opera) {
         if (value == null)
             return this;
-        if (value instanceof String && ((String) value).length() == 0)
+        Object tmp = value;
+        if (value instanceof DataRow)
+            tmp = ((DataRow) value).getValue(field);
+        if (tmp instanceof String && ((String) tmp).length() == 0)
             return this;
         if (this.size++ > 0)
             sb.append(operation == OperationEnum.And ? " and " : " or ");
         sb.append(field).append(opera);
-        appendValue(value);
+        appendValue(tmp);
         return this;
     }
 

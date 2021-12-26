@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
+import cn.cerc.core.DataRow;
 import cn.cerc.core.FastDate;
 import cn.cerc.db.core.SqlWhere.LinkOptionEnum;
 import cn.cerc.db.mysql.MysqlQuery;
@@ -42,7 +43,7 @@ public class SqlWhereTest {
 
     @Test
     public void test_like() {
-        assertEquals("", where.like("name", "").like("name", null).text());
+        assertEquals("", where.like("name", "").text());
         assertEquals("name like 'a%%'", where.like("name", "a").text());
         assertEquals("name like 'a%%'", where.clear().like("name", "a*").text());
         assertEquals("name like '%%a'", where.clear().like("name", "*a").text());
@@ -69,4 +70,12 @@ public class SqlWhereTest {
         assertEquals("value is not null", where.clear().is("value", false).text());
     }
 
+    @Test
+    public void test_headIn() {
+        DataRow row = new DataRow();
+        row.setValue("value", true);
+        row.setValue("code", "a");
+        assertEquals("value is null", where.clear().isNull("value", row).text());
+        assertEquals("code='a'", where.clear().eq("code", row).text());
+    }
 }
