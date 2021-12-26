@@ -66,8 +66,8 @@ public class SqlWhereTest {
 
     @Test
     public void test_is() {
-        assertEquals("value is null", where.clear().is("value", true).text());
-        assertEquals("value is not null", where.clear().is("value", false).text());
+        assertEquals("value is null", where.clear().isNull("value", true).text());
+        assertEquals("value is not null", where.clear().isNull("value", false).text());
     }
 
     @Test
