@@ -280,6 +280,10 @@ public class SqlQuery extends DataSet implements IHandle {
         return this;
     }
 
+    public SqlWhere addWhere() {
+        return new SqlWhere(this.sql());
+    }
+
     public final String sqlText() {
         return this.sql.text();
     }
