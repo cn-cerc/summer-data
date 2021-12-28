@@ -18,6 +18,7 @@ import cn.cerc.core.ISession;
 import cn.cerc.core.SqlServerType;
 import cn.cerc.core.SqlServerTypeException;
 import cn.cerc.core.SqlText;
+import cn.cerc.core.SqlWhere;
 import cn.cerc.core.Utils;
 import cn.cerc.db.mssql.MssqlServer;
 import cn.cerc.db.mysql.MysqlServer;
@@ -281,7 +282,11 @@ public class SqlQuery extends DataSet implements IHandle {
     }
 
     public SqlWhere addWhere() {
-        return new SqlWhere(this.sql());
+        return sql.addWhere();
+    }
+
+    public SqlWhere addWhere(DataRow dataRow) {
+        return sql.addWhere(dataRow);
     }
 
     public final String sqlText() {

@@ -233,4 +233,12 @@ public class SqlText implements Serializable {
         return sqlServerType;
     }
 
+    public SqlWhere addWhere() {
+        return new SqlWhere().setSqlText(this);
+    }
+
+    public SqlWhere addWhere(DataRow dataRow) {
+        return new SqlWhere().setSqlText(this).setDataRow(dataRow);
+    }
+
 }
