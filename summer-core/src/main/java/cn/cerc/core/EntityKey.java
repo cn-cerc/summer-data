@@ -36,7 +36,7 @@ public @interface EntityKey {
     int expire() default 3600;
 
     /**
-     * @return 是否虚拟对象，若为虚拟对象则必须自行实现EntityCacheImpl接口
+     * @return 是否虚拟对象，若为虚拟对象则必须自行实现VirtualEntityImpl接口
      */
     boolean virtual() default false;
 
