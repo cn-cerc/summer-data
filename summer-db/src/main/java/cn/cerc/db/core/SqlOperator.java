@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -123,6 +124,35 @@ public class SqlOperator implements IHandle {
     @Deprecated // 请改使用 setUpdateKey
     public final void setPrimaryKey(String primaryKey) {
         this.setOid(primaryKey);
+    }
+
+    // 取出所有数据
+    public void select(DataSet query, Connection connection, String sql) throws SQLException {
+        try (Statement st = connection.createStatement()) {
+            try (ResultSet rs = st.executeQuery(sql.replace("\\", "\\\\"))) {
+                // 取得字段清单
+                ResultSetMetaData meta = rs.getMetaData();
+                FieldDefs defs = query.fields();
+                for (int i = 1; i <= meta.getColumnCount(); i++) {
+                    String field = meta.getColumnLabel(i);
+                    if (!defs.exists(field))
+                        defs.add(field, FieldKind.Storage);
+                }
+                // 取得所有内容
+                while (rs.next()) {
+                    DataRow row = query.newRecord();
+                    if (row == null)
+                        break;
+                    for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
+                        String fn = rs.getMetaData().getColumnLabel(i);
+                        row.setValue(fn, rs.getObject(fn));
+                    }
+                    row.setState(DataRowState.None);
+                    query.records().add(row);
+                }
+            }
+        }
+
     }
 
     public final boolean insert(Connection connection, DataRow record) {

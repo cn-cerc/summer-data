@@ -769,6 +769,10 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this;
     }
 
+    public DataRow newRecord() {
+        return new DataRow(this).setState(DataRowState.Insert);
+    }
+    
     public static void main(String[] args) throws InterruptedException {
         DataSet ds = new DataSet();
         for (int i = 0; i < 1000; i++)

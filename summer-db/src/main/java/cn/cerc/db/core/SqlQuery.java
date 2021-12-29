@@ -1,14 +1,8 @@
 package cn.cerc.db.core;
 
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.cerc.db.core.FieldMeta.FieldKind;
 import cn.cerc.db.mssql.MssqlServer;
 import cn.cerc.db.mysql.MysqlServer;
 import cn.cerc.db.mysql.MysqlServerMaster;
@@ -76,14 +70,11 @@ public class SqlQuery extends DataSet implements IHandle {
         String sql = sql().getCommand();
         log.debug(sql.replaceAll("\r\n", " "));
         try (ServerClient client = getConnectionClient()) {
-            try (Statement st = client.getConnection().createStatement()) {
-                try (ResultSet rs = st.executeQuery(sql.replace("\\", "\\\\"))) {
-                    // 取出所有数据
-                    append(rs);
-                    this.first();
-                    this.setActive(true);
-                }
-            }
+            this.operator().select(this, client.getConnection(), sql);
+            if (this.maximum() > -1)
+                BigdataException.check(this, this.size());
+            this.first();
+            this.setActive(true);
         } catch (Exception e) {
             log.error(sql);
             throw new RuntimeException(e);
@@ -101,13 +92,12 @@ public class SqlQuery extends DataSet implements IHandle {
 
         log.debug(sqlText.replaceAll("\r\n", " "));
         try (ServerClient client = getConnectionClient()) {
-            try (Statement st = client.getConnection().createStatement()) {
-                try (ResultSet rs = st.executeQuery(sqlText.replace("\\", "\\\\"))) {
-                    int oldSize = this.size();
-                    append(rs);
-                    return this.size() - oldSize;
-                }
-            }
+            int oldSize = this.size();
+            this.operator().select(this, client.getConnection(), sqlText);
+            if (this.maximum() > -1)
+                BigdataException.check(this, this.size());
+            this.last();
+            return this.size() - oldSize;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
@@ -159,35 +149,13 @@ public class SqlQuery extends DataSet implements IHandle {
         }
     }
 
-    private void append(ResultSet rs) throws SQLException {
-        // 取得字段清单
-        ResultSetMetaData meta = rs.getMetaData();
-        FieldDefs defs = this.fields();
-        for (int i = 1; i <= meta.getColumnCount(); i++) {
-            String field = meta.getColumnLabel(i);
-            if (!defs.exists(field))
-                defs.add(field, FieldKind.Storage);
+    @Override
+    public DataRow newRecord() {
+        if (this.maximum() > -1 && this.maximum() <= this.size()) {
+            setFetchFinish(false);
+            return null;
         }
-        // 取得所有数据
-        int total = this.size();
-        while (rs.next()) {
-            total++;
-            if (this.maximum() > -1 && this.maximum() < total) {
-                setFetchFinish(false);
-                break;
-            }
-            DataRow record = new DataRow(this).setState(DataRowState.Insert);
-            for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
-                String fn = rs.getMetaData().getColumnLabel(i);
-                record.setValue(fn, rs.getObject(fn));
-            }
-            record.setState(DataRowState.None);
-            this.records().add(record);
-            this.last();
-        }
-        if (this.maximum() > -1) {
-            BigdataException.check(this, this.size());
-        }
+        return super.newRecord();
     }
 
     @Override
