@@ -126,13 +126,19 @@ public class SqlOperator implements IHandle {
         this.setOid(primaryKey);
     }
 
+    public interface ResultSetReader {
+        FieldDefs fields();
+        DataRow createDataRow();
+    }
+
     // 取出所有数据
-    public void select(DataSet query, Connection connection, String sql) throws SQLException {
+    public int select(ResultSetReader reader, Connection connection, String sql) throws SQLException {
+        int total = 0;
         try (Statement st = connection.createStatement()) {
             try (ResultSet rs = st.executeQuery(sql.replace("\\", "\\\\"))) {
                 // 取得字段清单
                 ResultSetMetaData meta = rs.getMetaData();
-                FieldDefs defs = query.fields();
+                FieldDefs defs = reader.fields();
                 for (int i = 1; i <= meta.getColumnCount(); i++) {
                     String field = meta.getColumnLabel(i);
                     if (!defs.exists(field))
@@ -140,19 +146,19 @@ public class SqlOperator implements IHandle {
                 }
                 // 取得所有内容
                 while (rs.next()) {
-                    DataRow row = query.newRecord();
+                    DataRow row = reader.createDataRow();
                     if (row == null)
                         break;
+                    total++;
                     for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
                         String fn = rs.getMetaData().getColumnLabel(i);
                         row.setValue(fn, rs.getObject(fn));
                     }
                     row.setState(DataRowState.None);
-                    query.records().add(row);
                 }
             }
         }
-
+        return total;
     }
 
     public final boolean insert(Connection connection, DataRow record) {
@@ -407,14 +413,6 @@ public class SqlOperator implements IHandle {
         if (searchKeys.size() == 0)
             throw new RuntimeException("search key is empty");
     }
-
-//    public final List<String> getSearchKeys() {
-//        return searchKeys;
-//    }
-//
-//    public final void setSearchKeys(List<String> searchKeys) {
-//        this.searchKeys = searchKeys;
-//    }
 
     @Deprecated // 请改使用 getSearchKeys
     public final List<String> getPrimaryKeys() {

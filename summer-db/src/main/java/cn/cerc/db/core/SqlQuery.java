@@ -92,12 +92,10 @@ public class SqlQuery extends DataSet implements IHandle {
 
         log.debug(sqlText.replaceAll("\r\n", " "));
         try (ServerClient client = getConnectionClient()) {
-            int oldSize = this.size();
-            this.operator().select(this, client.getConnection(), sqlText);
+            int total = this.operator().select(this, client.getConnection(), sqlText);
             if (this.maximum() > -1)
                 BigdataException.check(this, this.size());
-            this.last();
-            return this.size() - oldSize;
+            return total;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
@@ -150,12 +148,12 @@ public class SqlQuery extends DataSet implements IHandle {
     }
 
     @Override
-    public DataRow newRecord() {
+    public DataRow createDataRow() {
         if (this.maximum() > -1 && this.maximum() <= this.size()) {
             setFetchFinish(false);
             return null;
         }
-        return super.newRecord();
+        return super.createDataRow();
     }
 
     @Override

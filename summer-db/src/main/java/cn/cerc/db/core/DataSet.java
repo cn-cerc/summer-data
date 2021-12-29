@@ -9,13 +9,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.cerc.db.SummerDB;
 import cn.cerc.db.core.FieldMeta.FieldKind;
+import cn.cerc.db.core.SqlOperator.ResultSetReader;
 
-public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRecord {
+public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRecord, ResultSetReader {
     private static final Logger log = LoggerFactory.getLogger(DataSet.class);
     private static final long serialVersionUID = 873159747066855363L;
     private static final ClassResource res = new ClassResource(DataSet.class, SummerDB.ID);
@@ -53,11 +56,20 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         super();
     }
 
-    public DataSet append() {
-        DataRow record = new DataRow(this).setState(DataRowState.Insert);
-        records.add(record);
+    @Nullable
+    @Override
+    public DataRow createDataRow() {
+        DataRow row = new DataRow(this).setState(DataRowState.Insert);
+        records.add(row);
         recNo = records.size();
-        doAppend(record);
+        return row;
+    }
+
+    public DataSet append() {
+        DataRow row = createDataRow();
+        if (row == null)
+            throw new BigdataException(this, this.size());
+        doAppend(row);
         return this;
     }
 
@@ -258,6 +270,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this.records.size();
     }
 
+    @Override
     public FieldDefs fields() {
         return this.fields;
     }
@@ -769,10 +782,6 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this;
     }
 
-    public DataRow newRecord() {
-        return new DataRow(this).setState(DataRowState.Insert);
-    }
-    
     public static void main(String[] args) throws InterruptedException {
         DataSet ds = new DataSet();
         for (int i = 0; i < 1000; i++)
