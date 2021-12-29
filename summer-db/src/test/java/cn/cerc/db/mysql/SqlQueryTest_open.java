@@ -2,8 +2,8 @@ package cn.cerc.db.mysql;
 
 import org.junit.Before;
 
-import cn.cerc.core.ISession;
 import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.ISession;
 import cn.cerc.db.core.StubSession;
 
 public class SqlQueryTest_open implements IHandle {

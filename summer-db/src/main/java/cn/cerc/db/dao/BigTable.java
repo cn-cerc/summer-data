@@ -17,13 +17,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.cerc.core.ClassData;
-import cn.cerc.core.ClassFactory;
-import cn.cerc.core.ISession;
-import cn.cerc.core.SqlText;
-import cn.cerc.core.Utils;
+import cn.cerc.db.core.ClassData;
+import cn.cerc.db.core.ClassFactory;
 import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.ISession;
+import cn.cerc.db.core.SqlText;
 import cn.cerc.db.core.UpdateMode;
+import cn.cerc.db.core.Utils;
 import cn.cerc.db.mysql.MysqlClient;
 import cn.cerc.db.redis.JedisFactory;
 import redis.clients.jedis.Jedis;

@@ -3,10 +3,10 @@ package cn.cerc.db.other;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.cerc.core.DataRow;
-import cn.cerc.core.DataSet;
-import cn.cerc.core.FieldMeta;
-import cn.cerc.core.Utils;
+import cn.cerc.db.core.DataRow;
+import cn.cerc.db.core.DataSet;
+import cn.cerc.db.core.FieldMeta;
+import cn.cerc.db.core.Utils;
 
 /**
  * 对数据返回的记录进行过滤，以降低网络流量
@@ -28,12 +28,12 @@ public class RecordFilter {
         // 防止数据回写到资料库
         dataOut.disableStorage();
         // 删减字段
-        if (processor.getFieldDefs() != null) {
+        if (processor.fields() != null) {
             List<FieldMeta> items = new ArrayList<>();
             for (FieldMeta meta : dataOut.fields()) 
                 items.add(meta);
             for (FieldMeta meta : items) {
-                if (!processor.getFieldDefs().exists(meta.code()))
+                if (!processor.fields().exists(meta.code()))
                     dataOut.fields().remove(meta.code());
             }
         }

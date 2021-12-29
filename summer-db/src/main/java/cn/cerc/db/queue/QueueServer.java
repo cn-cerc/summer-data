@@ -14,10 +14,10 @@ import com.aliyun.mns.common.ServiceException;
 import com.aliyun.mns.model.Message;
 import com.aliyun.mns.model.QueueMeta;
 
-import cn.cerc.core.ClassResource;
-import cn.cerc.core.IConfig;
-import cn.cerc.core.IConnection;
 import cn.cerc.db.SummerDB;
+import cn.cerc.db.core.ClassResource;
+import cn.cerc.db.core.IConfig;
+import cn.cerc.db.core.IConnection;
 import cn.cerc.db.core.ServerConfig;
 
 @Component

@@ -1,7 +1,5 @@
 package cn.cerc.db.core;
 
-import cn.cerc.core.DataRow;
-
 public interface NosqlOperator {
 
     boolean insert(DataRow record);

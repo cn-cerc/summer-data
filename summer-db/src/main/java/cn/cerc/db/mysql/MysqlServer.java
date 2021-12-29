@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import com.mchange.v2.resourcepool.TimeoutException;
 
-import cn.cerc.db.core.ConnectionClient;
+import cn.cerc.db.core.ServerClient;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISqlServer;
 
@@ -50,7 +50,7 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
     @Override
     public final boolean execute(String sql) {
         log.debug(sql);
-        try (ConnectionClient client = getClient()) {
+        try (ServerClient client = getClient()) {
             try (Statement st = client.getConnection().createStatement()) {
                 st.execute(sql);
                 return true;

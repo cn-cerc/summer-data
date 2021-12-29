@@ -1,10 +1,10 @@
 package cn.cerc.db.mysql;
 
-import cn.cerc.core.DataSetGson;
-import cn.cerc.core.SqlServerType;
-import cn.cerc.core.Utils;
+import cn.cerc.db.core.DataSetGson;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.SqlQuery;
+import cn.cerc.db.core.SqlServerType;
+import cn.cerc.db.core.Utils;
 
 public class MysqlQuery extends SqlQuery implements IHandle {
     private static final long serialVersionUID = -400986212909017761L;

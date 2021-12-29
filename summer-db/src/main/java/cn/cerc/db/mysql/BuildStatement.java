@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import cn.cerc.core.Datetime;
-import cn.cerc.core.Utils;
+import cn.cerc.db.core.Datetime;
+import cn.cerc.db.core.Utils;
 
 /**
  * 生成原生sql操作对象

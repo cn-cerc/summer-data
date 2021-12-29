@@ -4,9 +4,9 @@ import com.aliyun.mns.client.CloudAccount;
 import com.aliyun.mns.client.CloudQueue;
 import com.aliyun.mns.client.MNSClient;
 
-import cn.cerc.core.ClassConfig;
-import cn.cerc.core.ClassResource;
 import cn.cerc.db.SummerDB;
+import cn.cerc.db.core.ClassConfig;
+import cn.cerc.db.core.ClassResource;
 
 public class QueueFactory {
 

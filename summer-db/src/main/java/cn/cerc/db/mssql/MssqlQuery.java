@@ -1,10 +1,10 @@
 package cn.cerc.db.mssql;
 
-import cn.cerc.core.DataSetGson;
-import cn.cerc.core.SqlServerType;
-import cn.cerc.core.Utils;
+import cn.cerc.db.core.DataSetGson;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.SqlQuery;
+import cn.cerc.db.core.SqlServerType;
+import cn.cerc.db.core.Utils;
 
 public class MssqlQuery extends SqlQuery implements IHandle {
     private static final long serialVersionUID = -3510548502879617750L;

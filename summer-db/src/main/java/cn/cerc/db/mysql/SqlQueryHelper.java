@@ -1,17 +1,17 @@
 package cn.cerc.db.mysql;
 
-import static cn.cerc.core.Utils.safeString;
+import static cn.cerc.db.core.Utils.safeString;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.cerc.core.Datetime;
-import cn.cerc.core.ISession;
-import cn.cerc.core.SqlServerType;
-import cn.cerc.core.Utils;
+import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.ISession;
 import cn.cerc.db.core.SqlQuery;
+import cn.cerc.db.core.SqlServerType;
+import cn.cerc.db.core.Utils;
 
 /**
  * 用于组合生成select指令，便于多条件查询编写

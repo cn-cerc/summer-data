@@ -1,9 +1,9 @@
 package cn.cerc.db.sqlite;
 
-import cn.cerc.core.DataSetGson;
-import cn.cerc.core.SqlServerType;
-import cn.cerc.core.Utils;
+import cn.cerc.db.core.DataSetGson;
 import cn.cerc.db.core.SqlQuery;
+import cn.cerc.db.core.SqlServerType;
+import cn.cerc.db.core.Utils;
 
 public class SqliteQuery extends SqlQuery {
     private static final long serialVersionUID = 927151029588126209L;

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
-import cn.cerc.core.ClassConfig;
+import cn.cerc.db.core.ClassConfig;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)

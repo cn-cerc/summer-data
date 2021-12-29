@@ -8,18 +8,7 @@ import java.sql.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.cerc.core.DataRow;
-import cn.cerc.core.DataRowState;
-import cn.cerc.core.DataSet;
-import cn.cerc.core.DataSetGson;
-import cn.cerc.core.FieldDefs;
-import cn.cerc.core.FieldMeta.FieldKind;
-import cn.cerc.core.ISession;
-import cn.cerc.core.SqlServerType;
-import cn.cerc.core.SqlServerTypeException;
-import cn.cerc.core.SqlText;
-import cn.cerc.core.SqlWhere;
-import cn.cerc.core.Utils;
+import cn.cerc.db.core.FieldMeta.FieldKind;
 import cn.cerc.db.mssql.MssqlServer;
 import cn.cerc.db.mysql.MysqlServer;
 import cn.cerc.db.mysql.MysqlServerMaster;
@@ -86,7 +75,7 @@ public class SqlQuery extends DataSet implements IHandle {
         this.setFetchFinish(true);
         String sql = sql().getCommand();
         log.debug(sql.replaceAll("\r\n", " "));
-        try (ConnectionClient client = getConnectionClient()) {
+        try (ServerClient client = getConnectionClient()) {
             try (Statement st = client.getConnection().createStatement()) {
                 try (ResultSet rs = st.executeQuery(sql.replace("\\", "\\\\"))) {
                     // 取出所有数据
@@ -111,7 +100,7 @@ public class SqlQuery extends DataSet implements IHandle {
         }
 
         log.debug(sqlText.replaceAll("\r\n", " "));
-        try (ConnectionClient client = getConnectionClient()) {
+        try (ServerClient client = getConnectionClient()) {
             try (Statement st = client.getConnection().createStatement()) {
                 try (ResultSet rs = st.executeQuery(sqlText.replace("\\", "\\\\"))) {
                     int oldSize = this.size();
@@ -127,7 +116,7 @@ public class SqlQuery extends DataSet implements IHandle {
     public final void save() {
         if (!this.isBatchSave())
             throw new RuntimeException("batchSave is false");
-        ConnectionClient client = null;
+        ServerClient client = null;
         try {
             if (this.storage())
                 client = getConnectionClient();
@@ -203,7 +192,7 @@ public class SqlQuery extends DataSet implements IHandle {
 
     @Override
     public final void insertStorage(DataRow record) throws Exception {
-        try (ConnectionClient client = getConnectionClient()) {
+        try (ServerClient client = getConnectionClient()) {
             if (operator().insert(client.getConnection(), record))
                 record.setState(DataRowState.None);
         }
@@ -211,7 +200,7 @@ public class SqlQuery extends DataSet implements IHandle {
 
     @Override
     public final void updateStorage(DataRow record) throws Exception {
-        try (ConnectionClient client = getConnectionClient()) {
+        try (ServerClient client = getConnectionClient()) {
             if (operator().update(client.getConnection(), record))
                 record.setState(DataRowState.None);
         }
@@ -219,7 +208,7 @@ public class SqlQuery extends DataSet implements IHandle {
 
     @Override
     public final void deleteStorage(DataRow record) throws Exception {
-        try (ConnectionClient client = getConnectionClient()) {
+        try (ServerClient client = getConnectionClient()) {
             if (operator().delete(client.getConnection(), record))
                 garbage().remove(record);
         }
@@ -230,8 +219,8 @@ public class SqlQuery extends DataSet implements IHandle {
      * 
      * @return 返回 ConnectionClient 接口对象
      */
-    private final ConnectionClient getConnectionClient() {
-        return (ConnectionClient) server().getClient();
+    private final ServerClient getConnectionClient() {
+        return (ServerClient) server().getClient();
     }
 
     public final SqlOperator operator() {

@@ -1,8 +1,8 @@
 package cn.cerc.db.queue;
 
-import cn.cerc.core.ClassResource;
-import cn.cerc.core.DataRow;
 import cn.cerc.db.SummerDB;
+import cn.cerc.db.core.ClassResource;
+import cn.cerc.db.core.DataRow;
 import cn.cerc.db.core.NosqlOperator;
 
 public class QueueOperator implements NosqlOperator {

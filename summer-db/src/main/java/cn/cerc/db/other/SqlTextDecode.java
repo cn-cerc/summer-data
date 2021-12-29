@@ -7,9 +7,9 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 
-import cn.cerc.core.DataRow;
-import cn.cerc.core.FieldDefs;
-import cn.cerc.core.SqlText;
+import cn.cerc.db.core.DataRow;
+import cn.cerc.db.core.FieldDefs;
+import cn.cerc.db.core.SqlText;
 import cn.cerc.db.other.SqlFieldFilter.FieldWhereRelation;
 
 /**
@@ -83,7 +83,7 @@ public class SqlTextDecode {
         return SqlText.findTableName(this.sql);
     }
 
-    public FieldDefs getFieldDefs() {
+    public FieldDefs fields() {
         return this.fieldDefs;
     }
 
@@ -105,7 +105,7 @@ public class SqlTextDecode {
 
     public static void main(String[] args) {
         SqlTextDecode decode = new SqlTextDecode("select code_,name_ from SvrDept where a='a1' and b='bb1' order by a,b");
-        System.out.println(decode.getFieldDefs());
+        System.out.println(decode.fields());
         System.out.println(decode.getTable());
         for (SqlFieldFilter fw : decode.getWhere())
             System.out.println(new Gson().toJson(fw));

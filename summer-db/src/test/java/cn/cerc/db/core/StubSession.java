@@ -3,7 +3,6 @@ package cn.cerc.db.core;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import cn.cerc.core.ISession;
 import cn.cerc.db.mongo.MongoDB;
 import cn.cerc.db.mssql.MssqlServer;
 import cn.cerc.db.mysql.MysqlServerMaster;

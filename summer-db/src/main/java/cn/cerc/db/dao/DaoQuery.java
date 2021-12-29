@@ -1,9 +1,9 @@
 package cn.cerc.db.dao;
 
-import cn.cerc.core.DataSetGson;
-import cn.cerc.core.SqlText;
-import cn.cerc.core.Utils;
+import cn.cerc.db.core.DataSetGson;
 import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.SqlText;
+import cn.cerc.db.core.Utils;
 import cn.cerc.db.mysql.MysqlQuery;
 
 public class DaoQuery<T> extends MysqlQuery {

@@ -8,11 +8,11 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 
-import cn.cerc.core.Datetime;
-import cn.cerc.core.Describe;
-import cn.cerc.core.Utils;
+import cn.cerc.db.core.Datetime;
+import cn.cerc.db.core.Describe;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISqlDatabase;
+import cn.cerc.db.core.Utils;
 
 public class SqliteDatabase implements ISqlDatabase {
     public static final String DefaultOID = "id_";

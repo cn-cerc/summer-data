@@ -1,6 +1,6 @@
 package cn.cerc.db.jiguang;
 
-import cn.cerc.core.IConfig;
+import cn.cerc.db.core.IConfig;
 import cn.cerc.db.core.ServerConfig;
 import cn.jpush.api.JPushClient;
 

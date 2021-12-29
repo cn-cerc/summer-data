@@ -3,9 +3,9 @@ package cn.cerc.db.mysql;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import cn.cerc.db.core.ConnectionClient;
+import cn.cerc.db.core.ServerClient;
 
-public class MysqlClient implements ConnectionClient {
+public class MysqlClient implements ServerClient {
     private int count = 0;
     private final MysqlServer mysql;
     private Connection connection;

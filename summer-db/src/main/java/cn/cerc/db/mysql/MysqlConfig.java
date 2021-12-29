@@ -6,8 +6,8 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cn.cerc.core.ClassConfig;
-import cn.cerc.core.Utils;
+import cn.cerc.db.core.ClassConfig;
+import cn.cerc.db.core.Utils;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)

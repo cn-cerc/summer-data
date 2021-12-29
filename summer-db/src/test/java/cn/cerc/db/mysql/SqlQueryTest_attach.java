@@ -3,9 +3,9 @@ package cn.cerc.db.mysql;
 import org.junit.Before;
 import org.junit.Test;
 
-import cn.cerc.core.ISession;
-import cn.cerc.core.DataRow;
+import cn.cerc.db.core.DataRow;
 import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.ISession;
 import cn.cerc.db.core.StubSession;
 
 public class SqlQueryTest_attach implements IHandle {

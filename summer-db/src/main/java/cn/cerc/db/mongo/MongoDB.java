@@ -10,8 +10,8 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
 
-import cn.cerc.core.IConfig;
-import cn.cerc.core.IConnection;
+import cn.cerc.db.core.IConfig;
+import cn.cerc.db.core.IConnection;
 import cn.cerc.db.core.ServerConfig;
 
 @Component

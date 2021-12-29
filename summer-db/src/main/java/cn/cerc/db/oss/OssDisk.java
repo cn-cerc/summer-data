@@ -11,8 +11,8 @@ import com.aliyun.oss.OSSException;
 import com.aliyun.oss.model.CopyObjectResult;
 import com.aliyun.oss.model.ObjectMetadata;
 
-import cn.cerc.core.ClassResource;
 import cn.cerc.db.SummerDB;
+import cn.cerc.db.core.ClassResource;
 import cn.cerc.db.core.IHandle;
 
 public class OssDisk {

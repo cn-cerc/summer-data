@@ -1,10 +1,11 @@
 package cn.cerc.db.other;
 
-import cn.cerc.core.Utils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
+import cn.cerc.db.core.Utils;
 
 import java.util.Arrays;
 import java.util.Collection;

@@ -6,8 +6,6 @@ import org.springframework.stereotype.Component;
 
 import com.google.gson.annotations.Expose;
 
-import cn.cerc.core.ISession;
-
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class Handle implements IHandle {

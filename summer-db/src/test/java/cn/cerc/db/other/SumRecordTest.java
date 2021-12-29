@@ -1,7 +1,8 @@
 package cn.cerc.db.other;
 
-import cn.cerc.core.DataSet;
 import cn.cerc.db.SampleData;
+import cn.cerc.db.core.DataSet;
+
 import org.junit.Before;
 import org.junit.Test;
 

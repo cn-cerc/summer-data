@@ -11,10 +11,10 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.cerc.core.ClassData;
-import cn.cerc.core.ClassFactory;
-import cn.cerc.core.ClassResource;
 import cn.cerc.db.SummerDB;
+import cn.cerc.db.core.ClassData;
+import cn.cerc.db.core.ClassFactory;
+import cn.cerc.db.core.ClassResource;
 import cn.cerc.db.core.UpdateMode;
 import cn.cerc.db.mysql.BuildStatement;
 

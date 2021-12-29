@@ -15,15 +15,15 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import cn.cerc.core.DataRow;
-import cn.cerc.core.DataSet;
-import cn.cerc.core.Datetime;
-import cn.cerc.core.Describe;
-import cn.cerc.core.FastDate;
-import cn.cerc.core.ISession;
-import cn.cerc.core.Utils;
+import cn.cerc.db.core.DataRow;
+import cn.cerc.db.core.DataSet;
+import cn.cerc.db.core.Datetime;
+import cn.cerc.db.core.Describe;
+import cn.cerc.db.core.FastDate;
 import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.ISession;
 import cn.cerc.db.core.ISqlDatabase;
+import cn.cerc.db.core.Utils;
 
 public class MssqlDatabase implements IHandle, ISqlDatabase {
     public static final String DefaultOID = "UpdateKey_";

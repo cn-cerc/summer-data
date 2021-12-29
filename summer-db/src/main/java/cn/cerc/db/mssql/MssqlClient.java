@@ -2,9 +2,9 @@ package cn.cerc.db.mssql;
 
 import java.sql.Connection;
 
-import cn.cerc.db.core.ConnectionClient;
+import cn.cerc.db.core.ServerClient;
 
-public class MssqlClient implements ConnectionClient {
+public class MssqlClient implements ServerClient {
     private final Connection connection;
 
     public MssqlClient(Connection connection) {

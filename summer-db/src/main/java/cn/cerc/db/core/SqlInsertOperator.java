@@ -6,10 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import cn.cerc.core.DataRow;
-import cn.cerc.core.FieldDefs;
-import cn.cerc.core.FieldMeta;
-
 public class SqlInsertOperator implements AutoCloseable {
     private PreparedStatement statement;
     private Connection connection;
