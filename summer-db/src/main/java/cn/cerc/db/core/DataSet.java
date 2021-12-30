@@ -66,7 +66,9 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     public DataSet append() {
-        DataRow row = createDataRow();
+        DataRow row = new DataRow(this).setState(DataRowState.Insert);
+        records.add(row);
+        recNo = records.size();
         if (row == null)
             throw new BigdataException(this, this.size());
         doAppend(row);
