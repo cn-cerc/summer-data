@@ -210,6 +210,10 @@ public class SqlText implements Serializable {
 
     // 根据 sql 获取数据库表名
     public static String findTableName(String sql) {
+        // 函数、视图、存储过程则不获取table
+        if (sql.contains("call ") || sql.contains("show")) {
+            return null;
+        }
         String result = null;
         String[] items = sql.split("[ \r\n]");
         for (int i = 0; i < items.length; i++) {
