@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
@@ -72,13 +74,6 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         if (row == null)
             throw new BigdataException(this, this.size());
         doAppend(row);
-        return this;
-    }
-
-    public DataSet append(DataRow row) {
-        row.setDataSet(this);
-        records.add(row);
-        recNo = records.size();
         return this;
     }
 
@@ -782,6 +777,19 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         garbage.clear();
         this.recNo = 0;
         return this;
+    }
+
+    public void moveTo(DataSet target, Consumer<DataRow> action) {
+        Objects.nonNull(action);
+        int total = records.size();
+        for (int i = 0; i < total; i++) {
+            DataRow item = records.get(i);
+            item.setDataSet(target);
+            action.accept(item);
+            target.records().add(item);
+        }
+        records.clear();
+        target.last();
     }
 
     public static void main(String[] args) throws InterruptedException {
