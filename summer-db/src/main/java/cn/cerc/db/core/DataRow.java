@@ -591,6 +591,19 @@ public class DataRow implements Serializable, IRecord {
         return row;
     }
 
+    public DataRow moveTo(DataSet target) {
+        if (dataSet == target)
+            throw new IllegalArgumentException();
+        if (dataSet != null) {
+            dataSet.records().remove(this);
+            dataSet.last();
+        }
+        this.setDataSet(target);
+        target.records().add(this);
+        target.last();
+        return this;
+    }
+
     public DataRow setDataSet(DataSet dataSet) {
         Objects.nonNull(dataSet);
         if (this.dataSet != dataSet) {
