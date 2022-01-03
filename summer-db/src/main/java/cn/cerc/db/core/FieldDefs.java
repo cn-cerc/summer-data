@@ -141,10 +141,13 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return json();
     }
 
-    public void copy(FieldDefs source) {
-        for (FieldMeta meta : source.getItems()) {
+    public void copyFrom(FieldDefs source) {
+        for (FieldMeta meta : source.getItems())
             this.add(meta.clone());
-        }
+    }
+
+    public void copyTo(FieldDefs target) {
+        target.copyFrom(this);
     }
 
     public FieldDefs readDefine(Class<?> clazz, String... names) {
