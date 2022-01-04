@@ -471,7 +471,7 @@ public class DataRow implements Serializable, IRecord {
                     else if (field.getType() == Datetime.class)
                         field.set(entity, kv.asDatetime());
                     else if (field.getType().isEnum())
-                        field.set(entity, kv.asEnum((Class<Enum<?>>) field.getType(), value));
+                        field.set(entity, kv.asEnum((Class<Enum<?>>) field.getType()));
                     else
                         throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
                                 value.getClass().getName(), field.getType().getName()));

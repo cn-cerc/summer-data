@@ -253,7 +253,7 @@ public class KeyValue {
     }
 
     @SuppressWarnings("rawtypes")
-    public Enum<?> asEnum(Class<Enum<?>> clazz, Object value2) {
+    public Enum<?> asEnum(Class<Enum<?>> clazz) {
         int tmp = asInt();
         Enum[] list = clazz.getEnumConstants();
         if (tmp >= 0 && tmp < list.length)
