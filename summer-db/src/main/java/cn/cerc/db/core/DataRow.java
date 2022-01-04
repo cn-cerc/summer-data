@@ -3,7 +3,6 @@ package cn.cerc.db.core;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -412,103 +411,78 @@ public class DataRow implements Serializable, IRecord {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     public void saveToEntity(Object entity) {
-        try {
-            Map<String, Field> items = DataRow.getEntityFields(entity.getClass());
-            if (this.fields().size() > items.size()) {
-                log.warn("fields.size > propertys.size");
-            } else if (this.fields().size() < items.size()) {
-                String fmt = "fields.size %d < propertys.size %d";
-                throw new RuntimeException(String.format(fmt, this.fields().size(), items.size()));
+        Map<String, Field> items = DataRow.getEntityFields(entity.getClass());
+        if (this.fields().size() > items.size()) {
+            log.warn("fields.size > propertys.size");
+        } else if (this.fields().size() < items.size()) {
+            String fmt = "fields.size %d < propertys.size %d";
+            throw new RuntimeException(String.format(fmt, this.fields().size(), items.size()));
+        }
+
+        // 查找并赋值
+        for (FieldMeta meta : this.fields()) {
+            Object value = this.getValue(meta.code());
+
+            // 查找指定的对象属性
+            Field field = null;
+            for (String itemName : items.keySet()) {
+                if (itemName.equals(meta.code())) {
+                    field = items.get(itemName);
+                    if (field.getModifiers() == PRIVATE || field.getModifiers() == PROTECTED)
+                        field.setAccessible(true);
+                    break;
+                }
+            }
+            if (field == null) {
+                log.warn("not find property: " + meta.code());
+                continue;
             }
 
-            // 查找并赋值
-            for (FieldMeta meta : this.fields()) {
-                Object value = this.getValue(meta.code());
-
-                // 查找指定的对象属性
-                Field field = null;
-                for (String itemName : items.keySet()) {
-                    if (itemName.equals(meta.code())) {
-                        field = items.get(itemName);
-                        if (field.getModifiers() == PRIVATE || field.getModifiers() == PROTECTED)
-                            field.setAccessible(true);
-                        break;
-                    }
-                }
-                if (field == null) {
-                    log.warn("not find property: " + meta.code());
-                    continue;
-                }
-
-                // 给属性赋值
+            // 给属性赋值
+            try {
                 if (value == null) {
                     field.set(entity, null);
                 } else if (field.getType().equals(value.getClass())) {
                     field.set(entity, value);
                 } else {
-                    if ("int".equals(field.getType().getName())) {
-                        field.setInt(entity, (Integer) value);
-                    } else if ("double".equals(field.getType().getName())) {
-                        field.setDouble(entity, (Double) value);
-                    } else if ("long".equals(field.getType().getName())) {
-                        if (value instanceof BigInteger) {
-                            field.setLong(entity, ((BigInteger) value).longValue());
-                        } else {
-                            field.setLong(entity, (Long) value);
-                        }
-                    } else if ("boolean".equals(field.getType().getName())) {
-                        field.setBoolean(entity, (Boolean) value);
-                    } else if (Datetime.class.getName().equals(field.getType().getName())) {
-                        if (value instanceof String)
-                            field.set(entity, new Datetime((String) value));
-                        else if (value instanceof Date)
-                            field.set(entity, new Datetime((Date) value));
-                        else
-                            throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
-                                    value.getClass().getName(), field.getType().getName()));
-                    } else if (field.getType().isEnum()) {
-                        int tmp = 0;
-                        if (value instanceof Double)
-                            tmp = ((Double) value).intValue();
-                        else if (value instanceof Integer)
-                            tmp = ((Integer) value).intValue();
-                        else if (value != null)
-                            throw new RuntimeException("not support type:" + value.getClass());
-                        @SuppressWarnings({ "unchecked", "rawtypes" })
-                        Class<Enum> clazz = (Class<Enum>) field.getType();
-                        @SuppressWarnings("rawtypes")
-                        Enum[] list = clazz.getEnumConstants();
-                        if (tmp >= 0 && tmp < list.length)
-                            field.set(entity, list[tmp]);
-                        else
-                            throw new RuntimeException(String.format("error enum %d of %s", tmp, clazz.getName()));
-                    } else if (value.getClass() == Double.class && field.getType() == Integer.class) {
-                        Double tmp = (Double) value;
-                        if (tmp.intValue() > Integer.MAX_VALUE) {
-                            throw new RuntimeException(
-                                    String.format("field %s error: %s as %s,the value is larger than Integer.MAX_VALUE",
-                                            field.getName(), value.getClass().getName(), field.getType().getName()));
-                        }
-                        field.set(entity, tmp.intValue());
-                    } else if (value.getClass() == Long.class && field.getType() == Integer.class) {
-                        Long tmp = (Long) value;
-                        if (tmp.intValue() > Integer.MAX_VALUE) {
-                            throw new RuntimeException(
-                                    String.format("field %s error: %s as %s,the value is larger than Integer.MAX_VALUE",
-                                            field.getName(), value.getClass().getName(), field.getType().getName()));
-                        }
-                        field.set(entity, tmp.intValue());
-                    } else {
+                    KeyValue kv = new KeyValue(value);
+                    if ("boolean".equals(field.getType().getName()))
+                        field.setBoolean(entity, kv.asBoolean());
+                    else if ("int".equals(field.getType().getName()))
+                        field.setInt(entity, kv.asInt());
+                    else if ("long".equals(field.getType().getName()))
+                        field.setLong(entity, kv.asLong());
+                    else if ("float".equals(field.getType().getName()))
+                        field.setDouble(entity, kv.asFloat());
+                    else if ("double".equals(field.getType().getName()))
+                        field.setDouble(entity, kv.asDouble());
+                    else if (field.getType() == Boolean.class)
+                        field.set(entity, Boolean.valueOf(kv.asBoolean()));
+                    else if (field.getType() == Integer.class)
+                        field.set(entity, Integer.valueOf(kv.asInt()));
+                    else if (field.getType() == Long.class)
+                        field.set(entity, Long.valueOf(kv.asLong()));
+                    else if (field.getType() == Float.class)
+                        field.set(entity, Float.valueOf(kv.asFloat()));
+                    else if (field.getType() == Double.class)
+                        field.set(entity, Double.valueOf(kv.asDouble()));
+                    else if (field.getType() == Datetime.class)
+                        field.set(entity, kv.asDatetime());
+                    else if (field.getType().isEnum())
+                        field.set(entity, kv.asEnum((Class<Enum<?>>) field.getType(), value));
+                    else
                         throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
                                 value.getClass().getName(), field.getType().getName()));
-                    }
                 }
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+                e.printStackTrace();
+                throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
+                        value.getClass().getName(), field.getType().getName()));
             }
-        } catch (IllegalArgumentException | IllegalAccessException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
         }
+
     }
 
     public DataRow loadFromEntity(Object entity) {

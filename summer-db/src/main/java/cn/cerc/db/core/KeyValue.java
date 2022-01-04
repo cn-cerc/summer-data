@@ -252,6 +252,16 @@ public class KeyValue {
         return this.asDatetime().toFastTime();
     }
 
+    @SuppressWarnings("rawtypes")
+    public Enum<?> asEnum(Class<Enum<?>> clazz, Object value2) {
+        int tmp = asInt();
+        Enum[] list = clazz.getEnumConstants();
+        if (tmp >= 0 && tmp < list.length)
+            return list[tmp];
+        else
+            throw new RuntimeException(String.format("error enum %d of %s", tmp, clazz.getName()));
+    }
+
     @Override
     public final String toString() {
         return new Gson().toJson(this);
