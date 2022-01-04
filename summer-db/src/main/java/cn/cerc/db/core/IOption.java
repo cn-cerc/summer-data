@@ -4,10 +4,10 @@ public interface IOption {
 
     String getTitle();
 
-    String getValue(IHandle handle, String def);
-
-    default String getValue(IHandle handle) {
-        return getValue(handle, "");
+    String getValue(IHandle handle);
+    
+    default String getDefault() {
+        return "";
     }
 
     default String getKey() {
