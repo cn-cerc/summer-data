@@ -468,6 +468,7 @@ public class Utils {
         return obj;
     }
 
+    @Deprecated
     public static <T> void objectAsRecord(DataRow record, T object) {
         Class<?> clazz = object.getClass();
         for (Field method : clazz.getDeclaredFields()) {
