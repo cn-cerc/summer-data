@@ -9,11 +9,12 @@ import java.lang.annotation.Target;
 @Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })
 @Retention(RUNTIME)
 public @interface Describe {
-    // 描述或备注
-    String value() default "";
 
     // 名称
-    String name() default "";
+    String name();
+
+    // 备注
+    String remark() default "";
 
     // 版本
     int version() default 1;
