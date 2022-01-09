@@ -78,9 +78,9 @@ public class SqlQuery extends DataSet implements IHandle {
             this.operator().select(this, client.getConnection(), sql);
             if (this.maximum() > -1)
                 BigdataException.check(this, this.size());
-            this.first();
             this.setActive(true);
             this.doAfterOpen();
+            this.first();
         } catch (Exception e) {
             log.error(sql);
             throw new RuntimeException(e);
@@ -101,6 +101,7 @@ public class SqlQuery extends DataSet implements IHandle {
             int total = this.operator().select(this, client.getConnection(), sqlText);
             if (this.maximum() > -1)
                 BigdataException.check(this, this.size());
+            this.doAfterOpen();
             return total;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
