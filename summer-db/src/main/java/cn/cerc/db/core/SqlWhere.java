@@ -476,4 +476,21 @@ public class SqlWhere {
     public static SqlWhere create(Class<?> clazz) {
         return new SqlText(clazz).addSelectDefault().addWhere();
     }
+
+    public static SqlWhere create(Class<?> clazz, IHandle handle, Object... values) {
+        EntityKey entityKey = clazz.getDeclaredAnnotation(EntityKey.class);
+        int offset = entityKey.corpNo() ? 1 : 0;
+        SqlWhere where = SqlWhere.create(clazz);
+        if (entityKey.corpNo())
+            where.eq(entityKey.fields()[0], handle.getCorpNo());
+        for (int i = 0; i < values.length; i++) {
+            String field = entityKey.fields()[i + offset];
+            Object value = values[i];
+            if (value == null)
+                where.isNull(field);
+            else
+                where.eq(field, value);
+        }
+        return where;
+    }
 }
