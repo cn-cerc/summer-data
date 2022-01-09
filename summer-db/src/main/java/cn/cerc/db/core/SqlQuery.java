@@ -1,5 +1,8 @@
 package cn.cerc.db.core;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +30,8 @@ public class SqlQuery extends DataSet implements IHandle {
     private ISqlServer server;
     private ISqlServer master;
     private ISqlServer salve;
+    //
+    private List<DataSetActiveEvent> afterOpenListener;
 
     public SqlQuery(IHandle handle, SqlServerType sqlServerType) {
         super();
@@ -75,6 +80,7 @@ public class SqlQuery extends DataSet implements IHandle {
                 BigdataException.check(this, this.size());
             this.first();
             this.setActive(true);
+            this.doAfterOpen();
         } catch (Exception e) {
             log.error(sql);
             throw new RuntimeException(e);
@@ -363,4 +369,20 @@ public class SqlQuery extends DataSet implements IHandle {
     public SqlServerType getSqlServerType() {
         return sqlServerType;
     }
+
+    public interface DataSetActiveEvent {
+        void afterExecute(SqlQuery sqlQuery);
+    }
+
+    public final void onAfterOpen(DataSetActiveEvent appendEvent) {
+        if (this.afterOpenListener == null)
+            this.afterOpenListener = new ArrayList<>();
+        this.afterOpenListener.add(appendEvent);
+    }
+
+    protected final void doAfterOpen() {
+        if (afterOpenListener != null)
+            afterOpenListener.forEach(event -> event.afterExecute(this));
+    }
+
 }
