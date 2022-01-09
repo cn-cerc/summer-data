@@ -269,8 +269,9 @@ public class SqlQuery extends DataSet implements IHandle {
         return sql();
     }
 
-    public final void setSql(SqlText sqlText) {
+    public SqlQuery setSql(SqlText sqlText) {
         this.sql = sqlText;
+        return this;
     }
 
     @Deprecated
