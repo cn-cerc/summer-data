@@ -262,7 +262,7 @@ public class SqlQuery extends DataSet implements IHandle {
         return sql();
     }
 
-    protected final void setSql(SqlText sqlText) {
+    public final void setSql(SqlText sqlText) {
         this.sql = sqlText;
     }
 
