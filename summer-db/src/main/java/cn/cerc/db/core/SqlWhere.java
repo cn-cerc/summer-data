@@ -472,4 +472,8 @@ public class SqlWhere {
         System.out.println(new SqlWhere().in("code", List.of(1, 3, 4)));
         System.out.println(new SqlWhere().in("code", "select code_ from xxx"));
     }
+
+    public static SqlWhere create(Class<?> clazz) {
+        return new SqlText(clazz).addSelectDefault().addWhere();
+    }
 }
