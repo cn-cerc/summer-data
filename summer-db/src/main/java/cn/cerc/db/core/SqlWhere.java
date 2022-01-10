@@ -88,7 +88,7 @@ public class SqlWhere {
      * @return this
      */
     public SqlWhere eq(String field) {
-        Objects.nonNull(dataRow);
+        Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
@@ -113,7 +113,7 @@ public class SqlWhere {
      * @return this
      */
     public SqlWhere neq(String field) {
-        Objects.nonNull(dataRow);
+        Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
@@ -138,7 +138,7 @@ public class SqlWhere {
      * @return this
      */
     public SqlWhere gt(String field) {
-        Objects.nonNull(dataRow);
+        Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
@@ -163,7 +163,7 @@ public class SqlWhere {
      * @return this
      */
     public SqlWhere gte(String field) {
-        Objects.nonNull(dataRow);
+        Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
@@ -188,7 +188,7 @@ public class SqlWhere {
      * @return this
      */
     public SqlWhere lt(String field) {
-        Objects.nonNull(dataRow);
+        Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
@@ -213,7 +213,7 @@ public class SqlWhere {
      * @return this
      */
     public SqlWhere lte(String field) {
-        Objects.nonNull(dataRow);
+        Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
@@ -247,7 +247,7 @@ public class SqlWhere {
      * @return this
      */
     public SqlWhere isNull(String field) {
-        Objects.nonNull(dataRow);
+        Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
@@ -270,7 +270,7 @@ public class SqlWhere {
     }
 
     public final SqlWhere like(String field) {
-        Objects.nonNull(dataRow);
+        Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
@@ -341,7 +341,7 @@ public class SqlWhere {
     }
 
     public final SqlWhere between(String field) {
-        Objects.nonNull(dataRow);
+        Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
@@ -356,7 +356,7 @@ public class SqlWhere {
     }
 
     public SqlText build(SqlText sqlText) {
-        Objects.nonNull(sqlText);
+        Objects.requireNonNull(sqlText);
         SqlWhere origin = this.origin != null ? this.origin : this;
         origin.sqlText = sqlText;
         return this.build();
@@ -423,7 +423,7 @@ public class SqlWhere {
     }
 
     private void appendValue(Object value) {
-        Objects.nonNull(value);
+        Objects.requireNonNull(value);
         if (value instanceof String && ((String) value).length() == 0)
             throw new RuntimeException("not support empty string");
         if (value instanceof String) {

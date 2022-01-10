@@ -780,7 +780,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     public void moveTo(DataSet target, Consumer<DataRow> action) {
-        Objects.nonNull(action);
+        Objects.requireNonNull(action);
         int total = records.size();
         for (int i = 0; i < total; i++) {
             DataRow item = records.get(i);

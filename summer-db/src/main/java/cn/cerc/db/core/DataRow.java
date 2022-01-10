@@ -579,7 +579,7 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public DataRow setDataSet(DataSet dataSet) {
-        Objects.nonNull(dataSet);
+        Objects.requireNonNull(dataSet);
         if (this.dataSet != dataSet) {
             this.dataSet = dataSet;
             this.fields = dataSet.fields();
