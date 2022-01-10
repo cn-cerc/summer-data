@@ -110,7 +110,9 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
                     // 转换为Java的数据类型
                     String codeType = getType(dataType);
                     String columnType = dsColumn.getString("column_type");
-                    if ("datetime".equals(dataType) || "text".equals(dataType) || "ntext".equals(dataType)) {
+                    if ("datetime".equals(dataType) || "text".equals(dataType) || "ntext".equals(dataType)
+                            || "mediumtext".equals(dataType) || "longtext".equals(dataType)
+                            || "timestamp".equals(dataType) || "blob".equals(dataType)) {
                         writer.write("@Column(");
                         if (!"YES".equals(nullable)) {
                             writer.write("nullable = false, ");
@@ -159,6 +161,9 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
         case "varchar":
         case "text":
         case "ntext":
+        case "mediumtext":
+        case "longtext":
+        case "blob":
             type = "String";
             break;
         case "int":
@@ -175,6 +180,7 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
             type = "Boolean";
             break;
         case "datetime":
+        case "timestamp":
             type = "Datetime";
             break;
         default:
