@@ -22,6 +22,7 @@ public class SqlText implements Serializable {
     private String text;
     private ClassData classData;
     private SqlServerType sqlServerType;
+    private Class<?> clazz;
 
     public SqlText(SqlServerType sqlServerType) {
         super();
@@ -30,6 +31,7 @@ public class SqlText implements Serializable {
 
     public SqlText(Class<?> clazz) {
         super();
+        this.clazz = clazz;
         SqlServer server = clazz.getAnnotation(SqlServer.class);
         this.sqlServerType = (server != null) ? server.type() : SqlServerType.Mysql;
         classData = ClassFactory.get(clazz);
@@ -245,6 +247,13 @@ public class SqlText implements Serializable {
 
     public SqlWhere addWhere(DataRow dataRow) {
         return new SqlWhere().setSqlText(this).setDataRow(dataRow);
+    }
+
+    public SqlText addSelectDefault() {
+        if (this.clazz == null)
+            throw new IllegalArgumentException("clazz is null");
+        this.add("select * from %s", Utils.findTable(clazz));
+        return this;
     }
 
 }

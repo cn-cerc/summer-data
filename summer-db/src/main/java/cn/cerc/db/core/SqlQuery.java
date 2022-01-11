@@ -1,5 +1,8 @@
 package cn.cerc.db.core;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +30,8 @@ public class SqlQuery extends DataSet implements IHandle {
     private ISqlServer server;
     private ISqlServer master;
     private ISqlServer salve;
+    //
+    private List<DataSetActiveEvent> afterOpenListener;
 
     public SqlQuery(IHandle handle, SqlServerType sqlServerType) {
         super();
@@ -65,6 +70,8 @@ public class SqlQuery extends DataSet implements IHandle {
     }
 
     private final void open(boolean masterServer) {
+        if (this.readonly())
+            throw new UnsupportedOperationException("DataSet is readonly");
         this.setStorage(masterServer);
         this.setFetchFinish(true);
         String sql = sql().getCommand();
@@ -73,8 +80,9 @@ public class SqlQuery extends DataSet implements IHandle {
             this.operator().select(this, client.getConnection(), sql);
             if (this.maximum() > -1)
                 BigdataException.check(this, this.size());
-            this.first();
             this.setActive(true);
+            this.doAfterOpen();
+            this.first();
         } catch (Exception e) {
             log.error(sql);
             throw new RuntimeException(e);
@@ -83,6 +91,8 @@ public class SqlQuery extends DataSet implements IHandle {
 
     // 追加相同数据表的其它记录，与已有记录合并
     public int attach(String sqlText) {
+        if (this.readonly())
+            throw new UnsupportedOperationException("DataSet is readonly");
         if (!this.active()) {
             this.clear();
             this.add(sqlText);
@@ -95,6 +105,7 @@ public class SqlQuery extends DataSet implements IHandle {
             int total = this.operator().select(this, client.getConnection(), sqlText);
             if (this.maximum() > -1)
                 BigdataException.check(this, this.size());
+            this.doAfterOpen();
             return total;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
@@ -262,8 +273,9 @@ public class SqlQuery extends DataSet implements IHandle {
         return sql();
     }
 
-    protected final void setSql(SqlText sqlText) {
+    public SqlQuery setSql(SqlText sqlText) {
         this.sql = sqlText;
+        return this;
     }
 
     @Deprecated
@@ -363,4 +375,20 @@ public class SqlQuery extends DataSet implements IHandle {
     public SqlServerType getSqlServerType() {
         return sqlServerType;
     }
+
+    public interface DataSetActiveEvent {
+        void afterExecute(SqlQuery sqlQuery);
+    }
+
+    public final void onAfterOpen(DataSetActiveEvent appendEvent) {
+        if (this.afterOpenListener == null)
+            this.afterOpenListener = new ArrayList<>();
+        this.afterOpenListener.add(appendEvent);
+    }
+
+    protected final void doAfterOpen() {
+        if (afterOpenListener != null)
+            afterOpenListener.forEach(event -> event.afterExecute(this));
+    }
+
 }

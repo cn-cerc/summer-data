@@ -222,4 +222,14 @@ public interface IRecord {
         return this.getDatetime(field).toFastTime();
     }
 
+    @SuppressWarnings("rawtypes")
+    default Enum<?> getEnum(String field, Class<? extends Enum> clazz) {
+        final int index = getInt(field);
+        Enum[] list = clazz.getEnumConstants();
+        if (index >= 0 && index < list.length)
+            return list[index];
+        else
+            throw new RuntimeException(String.format("error enum %d of %s", index, clazz.getName()));
+    }
+
 }

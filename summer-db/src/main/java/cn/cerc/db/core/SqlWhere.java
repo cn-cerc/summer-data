@@ -88,11 +88,14 @@ public class SqlWhere {
      * @return this
      */
     public SqlWhere eq(String field) {
-        Objects.nonNull(dataRow);
+        Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
-        return this.eq(dbField, dataRow.getValue(field));
+        if (dataRow.has(field))
+            return this.eq(dbField, dataRow.getValue(field));
+        else
+            return this;
     }
 
     /**
@@ -113,7 +116,7 @@ public class SqlWhere {
      * @return this
      */
     public SqlWhere neq(String field) {
-        Objects.nonNull(dataRow);
+        Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
@@ -138,7 +141,7 @@ public class SqlWhere {
      * @return this
      */
     public SqlWhere gt(String field) {
-        Objects.nonNull(dataRow);
+        Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
@@ -163,7 +166,7 @@ public class SqlWhere {
      * @return this
      */
     public SqlWhere gte(String field) {
-        Objects.nonNull(dataRow);
+        Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
@@ -188,7 +191,7 @@ public class SqlWhere {
      * @return this
      */
     public SqlWhere lt(String field) {
-        Objects.nonNull(dataRow);
+        Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
@@ -213,7 +216,7 @@ public class SqlWhere {
      * @return this
      */
     public SqlWhere lte(String field) {
-        Objects.nonNull(dataRow);
+        Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
@@ -247,7 +250,7 @@ public class SqlWhere {
      * @return this
      */
     public SqlWhere isNull(String field) {
-        Objects.nonNull(dataRow);
+        Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
@@ -270,7 +273,7 @@ public class SqlWhere {
     }
 
     public final SqlWhere like(String field) {
-        Objects.nonNull(dataRow);
+        Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
@@ -341,7 +344,7 @@ public class SqlWhere {
     }
 
     public final SqlWhere between(String field) {
-        Objects.nonNull(dataRow);
+        Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
@@ -356,7 +359,7 @@ public class SqlWhere {
     }
 
     public SqlText build(SqlText sqlText) {
-        Objects.nonNull(sqlText);
+        Objects.requireNonNull(sqlText);
         SqlWhere origin = this.origin != null ? this.origin : this;
         origin.sqlText = sqlText;
         return this.build();
@@ -413,8 +416,6 @@ public class SqlWhere {
             throw new RuntimeException("field contains error character[']");
         if (value == null)
             return this;
-        if (value instanceof String && ((String) value).length() == 0)
-            return this;
         if (this.size++ > 0)
             sb.append(joinMode == JoinDirectionEnum.And ? " and " : " or ");
         sb.append(field).append(opera);
@@ -423,9 +424,7 @@ public class SqlWhere {
     }
 
     private void appendValue(Object value) {
-        Objects.nonNull(value);
-        if (value instanceof String && ((String) value).length() == 0)
-            throw new RuntimeException("not support empty string");
+        Objects.requireNonNull(value);
         if (value instanceof String) {
             String tmp = (String) value;
             if (tmp.length() > 0) {
@@ -471,5 +470,26 @@ public class SqlWhere {
     public static void main(String[] args) {
         System.out.println(new SqlWhere().in("code", List.of(1, 3, 4)));
         System.out.println(new SqlWhere().in("code", "select code_ from xxx"));
+    }
+
+    public static SqlWhere create(Class<?> clazz) {
+        return new SqlText(clazz).addSelectDefault().addWhere();
+    }
+
+    public static SqlWhere create(IHandle handle, Class<?> clazz, Object... values) {
+        EntityKey entityKey = clazz.getDeclaredAnnotation(EntityKey.class);
+        int offset = entityKey.corpNo() ? 1 : 0;
+        SqlWhere where = SqlWhere.create(clazz);
+        if (entityKey.corpNo())
+            where.eq(entityKey.fields()[0], handle.getCorpNo());
+        for (int i = 0; i < values.length; i++) {
+            String field = entityKey.fields()[i + offset];
+            Object value = values[i];
+            if (value == null)
+                where.isNull(field);
+            else
+                where.eq(field, value);
+        }
+        return where;
     }
 }
