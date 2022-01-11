@@ -92,7 +92,10 @@ public class SqlWhere {
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
-        return this.eq(dbField, dataRow.getValue(field));
+        if (dataRow.has(field))
+            return this.eq(dbField, dataRow.getValue(field));
+        else
+            return this;
     }
 
     /**
@@ -413,8 +416,6 @@ public class SqlWhere {
             throw new RuntimeException("field contains error character[']");
         if (value == null)
             return this;
-        if (value instanceof String && ((String) value).length() == 0)
-            return this;
         if (this.size++ > 0)
             sb.append(joinMode == JoinDirectionEnum.And ? " and " : " or ");
         sb.append(field).append(opera);
@@ -424,8 +425,6 @@ public class SqlWhere {
 
     private void appendValue(Object value) {
         Objects.requireNonNull(value);
-        if (value instanceof String && ((String) value).length() == 0)
-            throw new RuntimeException("not support empty string");
         if (value instanceof String) {
             String tmp = (String) value;
             if (tmp.length() > 0) {
