@@ -427,11 +427,11 @@ public class SqlWhere {
         Objects.requireNonNull(value);
         if (value instanceof String) {
             String tmp = (String) value;
+            sb.append("'");
             if (tmp.length() > 0) {
-                sb.append("'");
                 sb.append(Utils.safeString((String) value));
-                sb.append("'");
             }
+            sb.append("'");
         } else if (value instanceof Datetime) {
             sb.append("'");
             sb.append(value.toString());
