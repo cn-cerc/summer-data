@@ -70,8 +70,8 @@ public class SqlQuery extends DataSet implements IHandle {
     }
 
     private final void open(boolean masterServer) {
-        if (this.readonly())
-            throw new UnsupportedOperationException("DataSet is readonly");
+        // if (this.readonly())
+            // throw new UnsupportedOperationException("DataSet is readonly");
         this.setStorage(masterServer);
         this.setFetchFinish(true);
         String sql = sql().getCommand();
@@ -91,8 +91,8 @@ public class SqlQuery extends DataSet implements IHandle {
 
     // 追加相同数据表的其它记录，与已有记录合并
     public int attach(String sqlText) {
-        if (this.readonly())
-            throw new UnsupportedOperationException("DataSet is readonly");
+        // if (this.readonly())
+            // throw new UnsupportedOperationException("DataSet is readonly");
         if (!this.active()) {
             this.clear();
             this.add(sqlText);

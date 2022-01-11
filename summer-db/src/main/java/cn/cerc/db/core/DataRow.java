@@ -64,8 +64,8 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public DataRow setState(DataRowState value) {
-        if (this.readonly())
-            throw new UnsupportedOperationException("DataRow is readonly");
+        // if (this.readonly())
+            // throw new UnsupportedOperationException("DataRow is readonly");
         if (state != value) {
             if ((this.state == DataRowState.Insert) && (value == DataRowState.Update))
                 throw new RuntimeException("change state error: insert => update");
@@ -80,8 +80,8 @@ public class DataRow implements Serializable, IRecord {
 
     @Override
     public DataRow setValue(String field, Object value) {
-        if (this.readonly())
-            throw new UnsupportedOperationException("DataRow is readonly");
+        // if (this.readonly())
+            // throw new UnsupportedOperationException("DataRow is readonly");
         if (field == null || "".equals(field))
             throw new RuntimeException("field is null!");
         this.addField(field);
@@ -227,8 +227,8 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public void copyValues(DataRow source, String... fields) {
-        if (this.readonly())
-            throw new UnsupportedOperationException("DataRow is readonly");
+        // if (this.readonly())
+            // throw new UnsupportedOperationException("DataRow is readonly");
         if (fields.length > 0) {
             for (String field : fields) {
                 this.setValue(field, source.getValue(field));
@@ -273,8 +273,8 @@ public class DataRow implements Serializable, IRecord {
     public final void setJSON(Object jsonObj) {
         if (!(jsonObj instanceof Map<?, ?>))
             throw new RuntimeException("not support type：" + jsonObj.getClass().getName());
-        if (this.readonly())
-            throw new UnsupportedOperationException("DataRow is readonly");
+        // if (this.readonly())
+            // throw new UnsupportedOperationException("DataRow is readonly");
 
         @SuppressWarnings("unchecked")
         Map<String, Object> head = (Map<String, Object>) jsonObj;
@@ -335,8 +335,8 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public void clear() {
-        if (this.readonly())
-            throw new UnsupportedOperationException("DataRow is readonly");
+        // if (this.readonly())
+            // throw new UnsupportedOperationException("DataRow is readonly");
         items.clear();
         this.setState(DataRowState.None);
         if (this.dataSet == null)
@@ -392,8 +392,8 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public void remove(String field) {
-        if (this.readonly())
-            throw new UnsupportedOperationException("DataRow is readonly");
+        // if (this.readonly())
+            // throw new UnsupportedOperationException("DataRow is readonly");
         items.remove(field);
         if (history != null)
             history.remove(field);
@@ -409,8 +409,8 @@ public class DataRow implements Serializable, IRecord {
     private void addField(String field) {
         if (field == null)
             throw new RuntimeException("field is null");
-        if (this.readonly())
-            throw new UnsupportedOperationException("DataRow is readonly");
+        // if (this.readonly())
+            // throw new UnsupportedOperationException("DataRow is readonly");
         if (!fields.exists(field))
             fields.add(field);
     }
@@ -560,8 +560,8 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public DataRow setHistory(DataRow history) {
-        if (this.readonly())
-            throw new UnsupportedOperationException("DataRow is readonly");
+        // if (this.readonly())
+            // throw new UnsupportedOperationException("DataRow is readonly");
         this.history = history;
         if (this.history != null)
             this.history.setState(DataRowState.History);
@@ -579,8 +579,8 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public DataRow moveTo(DataSet target) {
-        if (this.readonly())
-            throw new UnsupportedOperationException("DataRow is readonly");
+        // if (this.readonly())
+            // throw new UnsupportedOperationException("DataRow is readonly");
         if (dataSet == target)
             throw new IllegalArgumentException();
         if (dataSet != null) {
@@ -594,8 +594,8 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public DataRow setDataSet(DataSet dataSet) {
-        if (this.readonly())
-            throw new UnsupportedOperationException("DataRow is readonly");
+        // if (this.readonly())
+            // throw new UnsupportedOperationException("DataRow is readonly");
         Objects.requireNonNull(dataSet);
         if (this.dataSet != dataSet) {
             this.dataSet = dataSet;

@@ -61,8 +61,8 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     @Nullable
     @Override
     public DataRow createDataRow() {
-        if (this.readonly)
-            throw new UnsupportedOperationException("DataSet is readonly");
+        // if (this.readonly)
+            // throw new UnsupportedOperationException("DataSet is readonly");
         DataRow row = new DataRow(this).setState(DataRowState.Insert);
         records.add(row);
         recNo = records.size();
@@ -70,8 +70,8 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     public DataSet append() {
-        if (this.readonly)
-            throw new UnsupportedOperationException("DataSet is readonly");
+        // if (this.readonly)
+            // throw new UnsupportedOperationException("DataSet is readonly");
         DataRow row = new DataRow(this).setState(DataRowState.Insert);
         records.add(row);
         recNo = records.size();
@@ -83,8 +83,8 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
 
     @Deprecated
     public final DataSet append(int index) {
-        if (this.readonly)
-            throw new UnsupportedOperationException("DataSet is readonly");
+        // if (this.readonly)
+            // throw new UnsupportedOperationException("DataSet is readonly");
         DataRow record = new DataRow(this).setState(DataRowState.Insert);
         if (index == -1 || index == records.size()) {
             this.records.add(record);
@@ -98,8 +98,8 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     public DataSet edit() {
-        if (this.readonly)
-            throw new UnsupportedOperationException("DataSet is readonly");
+        // if (this.readonly)
+            // throw new UnsupportedOperationException("DataSet is readonly");
         if (bof() || eof())
             throw new RuntimeException(res.getString(1, "当前记录为空，无法修改"));
         DataRow row = this.current();
@@ -109,8 +109,8 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     public DataSet delete() {
-        if (this.readonly)
-            throw new UnsupportedOperationException("DataSet is readonly");
+        // if (this.readonly)
+            // throw new UnsupportedOperationException("DataSet is readonly");
         if (bof() || eof())
             throw new RuntimeException(res.getString(2, "当前记录为空，无法删除"));
         DataRow record = this.current();
@@ -360,8 +360,8 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
 
     @Override
     public DataSet setValue(String field, Object value) {
-        if (this.readonly)
-            throw new UnsupportedOperationException("DataSet is readonly");
+        // if (this.readonly)
+            // throw new UnsupportedOperationException("DataSet is readonly");
         this.current().setValue(field, value);
         return this;
     }
@@ -381,8 +381,8 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     public void copyRecord(DataRow source, FieldDefs defs) {
-        if (this.readonly)
-            throw new UnsupportedOperationException("DataSet is readonly");
+        // if (this.readonly)
+            // throw new UnsupportedOperationException("DataSet is readonly");
         DataRow record = this.current();
         if (search != null) {
             search.remove(record);
@@ -394,8 +394,8 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     public void copyRecord(DataRow source, String... fields) {
-        if (this.readonly)
-            throw new UnsupportedOperationException("DataSet is readonly");
+        // if (this.readonly)
+            // throw new UnsupportedOperationException("DataSet is readonly");
         DataRow record = this.current();
         if (search != null) {
             search.remove(record);
@@ -407,8 +407,8 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     public void copyRecord(DataRow sourceRecord, String[] sourceFields, String[] targetFields) {
-        if (this.readonly)
-            throw new UnsupportedOperationException("DataSet is readonly");
+        // if (this.readonly)
+            // throw new UnsupportedOperationException("DataSet is readonly");
         if (targetFields.length != sourceFields.length)
             throw new RuntimeException(res.getString(7, "前后字段数目不一样，请您确认！"));
         DataRow record = this.current();
@@ -551,8 +551,8 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     public void emptyDataSet() {
-        if (this.readonly)
-            throw new UnsupportedOperationException("DataSet is readonly");
+        // if (this.readonly)
+            // throw new UnsupportedOperationException("DataSet is readonly");
         garbage.clear();
         records.clear();
         recNo = 0;
@@ -623,8 +623,8 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     public DataSet appendDataSet(DataSet source) {
-        if (this.readonly)
-            throw new UnsupportedOperationException("DataSet is readonly");
+        // if (this.readonly)
+            // throw new UnsupportedOperationException("DataSet is readonly");
         if (search != null) {
             search.clear();
             search = null;
@@ -674,8 +674,8 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     public DataSet setState(int state) {
-        if (this.readonly)
-            throw new UnsupportedOperationException("DataSet is readonly");
+        // if (this.readonly)
+            // throw new UnsupportedOperationException("DataSet is readonly");
         this.state = state;
         return this;
     }
@@ -810,8 +810,8 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     public void moveTo(DataSet target, Consumer<DataRow> action) {
-        if (this.readonly)
-            throw new UnsupportedOperationException("DataSet is readonly");
+        // if (this.readonly)
+            // throw new UnsupportedOperationException("DataSet is readonly");
         Objects.requireNonNull(action);
         int total = records.size();
         for (int i = 0; i < total; i++) {
