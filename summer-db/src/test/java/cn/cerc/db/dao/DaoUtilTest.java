@@ -35,8 +35,7 @@ public class DaoUtilTest {
         record.setValue("ID_", Utils.newGuid());
         record.setValue("Code_", "18100101");
         record.setValue("Name_", "王五");
-        UserTest user = new UserTest();
-        record.saveToEntity(user);
+        record.asEntity(UserTest.class);
     }
 
 }
