@@ -51,6 +51,7 @@ public class SqlQuery extends DataSet implements IHandle {
         this.session = session;
     }
 
+    @Deprecated
     @Override
     public final void clear() {
         this.setActive(false);
