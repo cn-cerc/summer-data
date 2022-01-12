@@ -6,44 +6,46 @@ import java.util.Date;
 
 import com.google.gson.Gson;
 
-public class KeyValue {
-    private String key;
-    private Object value;
+public class Variant {
+    private Object data;
+    private boolean modified;
+    private String tag;
 
-    public KeyValue() {
+    public Variant() {
         super();
     }
 
-    public KeyValue(Object value) {
+    public Variant(Object data) {
         super();
-        this.setValue(value);
+        this.setData(data);
     }
 
-    public final String key() {
-        return this.key;
+    public final String tag() {
+        return this.tag;
     }
 
-    @Deprecated
-    public String getKey() {
-        return key();
+    public final Object data() {
+        return this.data;
     }
 
-    public final Object value() {
-        return this.value;
-    }
-
-    public KeyValue setValue(Object data) {
-        this.value = data;
+    public Variant setData(Object data) {
+        if (this.data == null && data != null)
+            modified = true;
+        else if (this.data != null && data == null)
+            modified = true;
+        else if (!this.data.equals(data))
+            modified = true;
+        this.data = data;
         return this;
     }
 
-    public final KeyValue setKey(String value) {
-        this.key = value;
+    public final Variant setTag(String tag) {
+        this.tag = tag;
         return this;
     }
 
-    public final String asString() {
-        Object value = this.value();
+    public final String getString() {
+        Object value = this.data();
         if (value == null) {
             return "";
         } else if (value instanceof String) {
@@ -62,8 +64,8 @@ public class KeyValue {
         }
     }
 
-    public final boolean asBoolean() {
-        Object value = this.value();
+    public final boolean getBoolean() {
+        Object value = this.data();
         if (value == null) {
             return false;
         } else if (value instanceof Boolean) {
@@ -80,8 +82,8 @@ public class KeyValue {
         }
     }
 
-    public final int asInt() {
-        Object value = this.value();
+    public final int getInt() {
+        Object value = this.data();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -119,8 +121,8 @@ public class KeyValue {
         }
     }
 
-    public final long asLong() {
-        Object value = this.value();
+    public final long getLong() {
+        Object value = this.data();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -155,8 +157,8 @@ public class KeyValue {
         }
     }
 
-    public final float asFloat() {
-        Object value = this.value();
+    public final float getFloat() {
+        Object value = this.data();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -187,8 +189,8 @@ public class KeyValue {
         }
     }
 
-    public final double asDouble() {
-        Object value = this.value();
+    public final double getDouble() {
+        Object value = this.data();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -213,24 +215,24 @@ public class KeyValue {
         }
     }
 
-    public final BigInteger asBigInteger() {
-        Object value = this.value();
+    public final BigInteger getBigInteger() {
+        Object value = this.data();
         if (value instanceof BigInteger) {
             return (BigInteger) value;
         } else
-            return BigInteger.valueOf(asLong());
+            return BigInteger.valueOf(getLong());
     }
 
     public final BigDecimal asBigDecimal() {
-        Object value = this.value();
+        Object value = this.data();
         if (value instanceof BigDecimal)
             return (BigDecimal) value;
         else
-            return BigDecimal.valueOf(asDouble());
+            return BigDecimal.valueOf(getDouble());
     }
 
-    public final Datetime asDatetime() {
-        Object value = this.value();
+    public final Datetime getDatetime() {
+        Object value = this.data();
         if (value == null) {
             return Datetime.zero();
         } else if (value instanceof Datetime) {
@@ -244,17 +246,17 @@ public class KeyValue {
         }
     }
 
-    public final FastDate asFastDate() {
-        return this.asDatetime().toFastDate();
+    public final FastDate getFastDate() {
+        return this.getDatetime().toFastDate();
     }
 
-    public final FastTime asFastTime() {
-        return this.asDatetime().toFastTime();
+    public final FastTime getFastTime() {
+        return this.getDatetime().toFastTime();
     }
 
     @SuppressWarnings("rawtypes")
-    public Enum<?> asEnum(Class<? extends Enum> clazz) {
-        int tmp = asInt();
+    public Enum<?> getEnum(Class<? extends Enum> clazz) {
+        int tmp = getInt();
         Enum[] list = clazz.getEnumConstants();
         if (tmp >= 0 && tmp < list.length)
             return list[tmp];
@@ -267,13 +269,17 @@ public class KeyValue {
         return new Gson().toJson(this);
     }
 
-    public static void main(String[] args) {
-        System.out.println(new KeyValue());
-        System.out.println(new KeyValue("202109"));
-        System.out.println(new KeyValue("202109").setKey("date"));
+    public boolean isModified() {
+        return modified;
+    }
 
-        KeyValue kv = new KeyValue("3").setKey("id");
-        System.out.println(kv.key());
+    public static void main(String[] args) {
+        System.out.println(new Variant());
+        System.out.println(new Variant("202109"));
+        System.out.println(new Variant("202109").setTag("date"));
+
+        Variant kv = new Variant("3").setTag("id");
+        System.out.println(kv.tag());
     }
 
 }
