@@ -8,7 +8,7 @@ import com.google.gson.Gson;
 
 public class Variant {
     private Object data;
-    private boolean modified;
+    private transient boolean modified;
     private String tag;
 
     public Variant() {

@@ -173,7 +173,7 @@ public class SqlOperator implements IHandle {
         try (BuildStatement bs = new BuildStatement(connection)) {
             bs.append("insert into ").append(this.table()).append(" (");
             int i = 0;
-            for (String field : record.items().keySet()) {
+            for (String field : record.fields().names()) {
                 FieldMeta meta = record.fields().get(field);
                 if (meta.storage() && !meta.autoincrement()) {
                     i++;
@@ -184,14 +184,13 @@ public class SqlOperator implements IHandle {
             }
             bs.append(") values (");
             i = 0;
-            for (String field : record.items().keySet()) {
-                FieldMeta meta = record.fields().get(field);
+            for (FieldMeta meta : record.fields()) {
                 if (meta.kind() == FieldKind.Storage) {
                     if (!meta.autoincrement()) {
                         i++;
                         if (i > 1)
                             bs.append(",");
-                        bs.append("?", record.getValue(field));
+                        bs.append("?", record.getValue(meta.code()));
                     }
                 }
             }

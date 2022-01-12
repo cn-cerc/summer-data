@@ -42,13 +42,13 @@ public class SqlQueryTest implements IHandle {
         assertEquals(String.format("%s limit %s", sql, (BigdataException.MAX_RECORDS + 2)),
                 ds.sql().getCommand());
 
-        ds.clear();
+        ds = new MysqlQuery(this);
         sql = String.format("select Code_,Name_ from %s limit 1", userInfo);
         ds.sql().setMaximum(-1);
         ds.add(sql);
         assertEquals(sql, ds.sql().getCommand());
 
-        ds.clear();
+        ds = new MysqlQuery(this);
         ds.sql().setMaximum(BigdataException.MAX_RECORDS);
         sql = String.format("select Code_,Name_ from %s", userInfo);
         ds.add(sql);

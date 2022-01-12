@@ -49,17 +49,11 @@ public class MongoQueryTest implements IHandle {
             ds.append();
             ds.setValue("code", "a001");
             ds.setValue("value", i);
-            ds.setChildDataSet("data", data);
-            DataSet ds2 = ds.getChildDataSet("data");
-            System.out.println(ds2);
             ds.post();
         }
         ds.append();
         ds.setValue("code", "a001QQ");
         ds.setValue("value", 30);
-        ds.setChildDataSet("data", data);
-        DataSet ds2 = ds.getChildDataSet("data");
-        System.out.println(ds2);
         ds.post();
     }
 

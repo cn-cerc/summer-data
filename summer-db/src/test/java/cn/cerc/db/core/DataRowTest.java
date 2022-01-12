@@ -126,7 +126,7 @@ public class DataRowTest {
         rs.setValue("C", "C001");
         int i = 0;
         for (@SuppressWarnings("unused")
-                String key : rs.items().keySet()) {
+                String key : rs.fields().names()) {
             i++;
         }
         assertEquals(i, rs.size());
