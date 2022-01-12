@@ -177,7 +177,11 @@ public interface IRecord {
             String str = (String) value;
             if ("".equals(str))
                 return 0;
-            return new BigDecimal(str).doubleValue();
+            try {
+                return new BigDecimal(str).doubleValue();
+            } catch (Exception e) {
+                throw new RuntimeException(String.format("Error converting value %s to double", str));
+            }
         } else {
             throw new ClassCastException(String.format("not support class: %s", value.getClass().getName()));
         }
@@ -231,5 +235,4 @@ public interface IRecord {
         else
             throw new RuntimeException(String.format("error enum %d of %s", index, clazz.getName()));
     }
-
 }
