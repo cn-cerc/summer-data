@@ -391,4 +391,10 @@ public class SqlQuery extends DataSet implements IHandle {
             afterOpenListener.forEach(event -> event.afterExecute(this));
     }
 
+    @Override
+    public SqlQuery setReadonly(boolean readonly) {
+        super.setReadonly(readonly);
+        return this;
+    }
+
 }

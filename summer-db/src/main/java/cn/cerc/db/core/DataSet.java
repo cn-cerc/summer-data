@@ -659,9 +659,10 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return readonly;
     }
 
-    public void setReadonly(boolean readonly) {
+    public DataSet setReadonly(boolean readonly) {
         this.readonly = readonly;
         this.head.setReadonly(readonly);
+        return this;
     }
 
     public int state() {
