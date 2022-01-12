@@ -19,6 +19,7 @@ import cn.cerc.db.core.DataRow;
 import cn.cerc.db.core.DataRowState;
 import cn.cerc.db.core.DataSet;
 import cn.cerc.db.core.DataSetGson;
+import cn.cerc.db.core.FieldMeta;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
 import cn.cerc.db.core.NosqlOperator;
@@ -242,6 +243,18 @@ public class MongoQuery extends DataSet implements IHandle {
             record.setState(DataRowState.None);
         }
         return dataSet;
+    }
+
+    // 将DataSet转成通用类型，方便存入MongoDB
+    public void setChildDataSet(String field, DataSet dataSet) {
+        List<Map<String, Object>> items = new ArrayList<>();
+        for (DataRow child : dataSet.records()) {
+            Map<String, Object> map = new LinkedHashMap<>();
+            for (FieldMeta meta : child.fields())
+                map.put(meta.code(), child.getValue(meta.code()));
+            items.add(map);
+        }
+        this.setValue(field, items);
     }
 
     @SuppressWarnings("unchecked")
