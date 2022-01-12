@@ -1,6 +1,6 @@
 package cn.cerc.db.core;
 
-public class SyncUpdateException extends Exception {
+public class SyncUpdateException extends ServiceException {
     private static final long serialVersionUID = -7421586617677073495L;
 
     public SyncUpdateException(Exception e) {
