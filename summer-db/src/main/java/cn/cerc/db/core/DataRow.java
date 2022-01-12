@@ -458,31 +458,31 @@ public class DataRow implements Serializable, IRecord {
                 } else if (field.getType().equals(value.getClass())) {
                     field.set(entity, value);
                 } else {
-                    KeyValue kv = new KeyValue(value);
+                    Variant kv = new Variant(value);
                     if ("boolean".equals(field.getType().getName()))
-                        field.setBoolean(entity, kv.asBoolean());
+                        field.setBoolean(entity, kv.getBoolean());
                     else if ("int".equals(field.getType().getName()))
-                        field.setInt(entity, kv.asInt());
+                        field.setInt(entity, kv.getInt());
                     else if ("long".equals(field.getType().getName()))
-                        field.setLong(entity, kv.asLong());
+                        field.setLong(entity, kv.getLong());
                     else if ("float".equals(field.getType().getName()))
-                        field.setDouble(entity, kv.asFloat());
+                        field.setDouble(entity, kv.getFloat());
                     else if ("double".equals(field.getType().getName()))
-                        field.setDouble(entity, kv.asDouble());
+                        field.setDouble(entity, kv.getDouble());
                     else if (field.getType() == Boolean.class)
-                        field.set(entity, Boolean.valueOf(kv.asBoolean()));
+                        field.set(entity, Boolean.valueOf(kv.getBoolean()));
                     else if (field.getType() == Integer.class)
-                        field.set(entity, Integer.valueOf(kv.asInt()));
+                        field.set(entity, Integer.valueOf(kv.getInt()));
                     else if (field.getType() == Long.class)
-                        field.set(entity, Long.valueOf(kv.asLong()));
+                        field.set(entity, Long.valueOf(kv.getLong()));
                     else if (field.getType() == Float.class)
-                        field.set(entity, Float.valueOf(kv.asFloat()));
+                        field.set(entity, Float.valueOf(kv.getFloat()));
                     else if (field.getType() == Double.class)
-                        field.set(entity, Double.valueOf(kv.asDouble()));
+                        field.set(entity, Double.valueOf(kv.getDouble()));
                     else if (field.getType() == Datetime.class)
-                        field.set(entity, kv.asDatetime());
+                        field.set(entity, kv.getDatetime());
                     else if (field.getType().isEnum())
-                        field.set(entity, kv.asEnum((Class<Enum<?>>) field.getType()));
+                        field.set(entity, kv.getEnum((Class<Enum<?>>) field.getType()));
                     else
                         throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
                                 value.getClass().getName(), field.getType().getName()));
