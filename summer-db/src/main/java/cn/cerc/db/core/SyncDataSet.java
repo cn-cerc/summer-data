@@ -11,7 +11,7 @@ public class SyncDataSet {
         this.keyFields = keyFields;
     }
 
-    public int execute(ISyncDataSet sync) throws SyncUpdateException {
+    public int execute(ISyncDataSet sync) throws ServiceException {
         int result = 0;
         source.first();
         while (source.fetch()) {
