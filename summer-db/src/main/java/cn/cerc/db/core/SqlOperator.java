@@ -161,6 +161,7 @@ public class SqlOperator implements IHandle {
         return total;
     }
 
+    @SuppressWarnings("deprecation")
     public final boolean insert(Connection connection, DataRow record) {
         resetUpdateKey(connection, record);
 
