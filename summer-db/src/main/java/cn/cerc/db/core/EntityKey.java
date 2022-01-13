@@ -40,4 +40,10 @@ public @interface EntityKey {
      */
     boolean virtual() default false;
 
+    /**
+     * 
+     * @return 是否总记录数小于1000行的小表
+     */
+    boolean smallTable() default false;
+
 }
