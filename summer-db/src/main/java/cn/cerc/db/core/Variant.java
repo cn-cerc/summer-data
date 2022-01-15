@@ -1,5 +1,6 @@
 package cn.cerc.db.core;
 
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
@@ -273,6 +274,44 @@ public class Variant {
         return modified;
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> void writeToEntity(T entity, Field field) throws IllegalAccessException {
+        if ("boolean".equals(field.getType().getName()))
+            field.setBoolean(entity, this.getBoolean());
+        else if ("int".equals(field.getType().getName()))
+            field.setInt(entity, this.getInt());
+        else if ("long".equals(field.getType().getName()))
+            field.setLong(entity, this.getLong());
+        else if ("float".equals(field.getType().getName()))
+            field.setDouble(entity, this.getFloat());
+        else if ("double".equals(field.getType().getName()))
+            field.setDouble(entity, this.getDouble());
+        else if (field.getType() == Boolean.class)
+            field.set(entity, Boolean.valueOf(this.getBoolean()));
+        else if (field.getType() == Integer.class)
+            field.set(entity, Integer.valueOf(this.getInt()));
+        else if (field.getType() == Long.class)
+            field.set(entity, Long.valueOf(this.getLong()));
+        else if (field.getType() == Float.class)
+            field.set(entity, Float.valueOf(this.getFloat()));
+        else if (field.getType() == Double.class)
+            field.set(entity, Double.valueOf(this.getDouble()));
+        else if (field.getType() == Datetime.class)
+            field.set(entity, this.getDatetime());
+        else if (field.getType() == String.class)
+            field.set(entity, this.getString());
+        else if (field.getType().isEnum())
+            field.set(entity, this.getEnum((Class<Enum<?>>) field.getType()));
+        else {
+            if (this.data() != null)
+                throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
+                        this.data().getClass().getName(), field.getType().getName()));
+            else
+                throw new RuntimeException(
+                        String.format("field %s error: %s to null", field.getName(), field.getType().getName()));
+        }
+    }
+    
     public static void main(String[] args) {
         System.out.println(new Variant());
         System.out.println(new Variant("202109"));
