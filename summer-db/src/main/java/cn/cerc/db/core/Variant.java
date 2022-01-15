@@ -30,6 +30,8 @@ public class Variant {
     }
 
     public Variant setData(Object data) {
+        if (this.data == data)
+            return this;
         if (this.data == null && data != null)
             modified = true;
         else if (this.data != null && data == null)
