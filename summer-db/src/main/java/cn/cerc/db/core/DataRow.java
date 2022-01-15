@@ -433,6 +433,7 @@ public class DataRow implements Serializable, IRecord {
         }
 
         // 查找并赋值
+        Variant variant = new Variant();
         for (FieldMeta meta : this.fields()) {
             Object value = this.getValue(meta.code());
 
@@ -454,39 +455,15 @@ public class DataRow implements Serializable, IRecord {
             // 给属性赋值
             try {
                 if (value == null) {
-                    field.set(entity, null);
-                } else if (field.getType().equals(value.getClass())) {
+                    Column column = field.getAnnotation(Column.class);
+                    if (column == null || column.nullable()) {
+                        field.set(entity, null);
+                    } else
+                        variant.setData(null).writeToEntity(entity, field);
+                } else if (field.getType().equals(value.getClass()))
                     field.set(entity, value);
-                } else {
-                    Variant kv = new Variant(value);
-                    if ("boolean".equals(field.getType().getName()))
-                        field.setBoolean(entity, kv.getBoolean());
-                    else if ("int".equals(field.getType().getName()))
-                        field.setInt(entity, kv.getInt());
-                    else if ("long".equals(field.getType().getName()))
-                        field.setLong(entity, kv.getLong());
-                    else if ("float".equals(field.getType().getName()))
-                        field.setDouble(entity, kv.getFloat());
-                    else if ("double".equals(field.getType().getName()))
-                        field.setDouble(entity, kv.getDouble());
-                    else if (field.getType() == Boolean.class)
-                        field.set(entity, Boolean.valueOf(kv.getBoolean()));
-                    else if (field.getType() == Integer.class)
-                        field.set(entity, Integer.valueOf(kv.getInt()));
-                    else if (field.getType() == Long.class)
-                        field.set(entity, Long.valueOf(kv.getLong()));
-                    else if (field.getType() == Float.class)
-                        field.set(entity, Float.valueOf(kv.getFloat()));
-                    else if (field.getType() == Double.class)
-                        field.set(entity, Double.valueOf(kv.getDouble()));
-                    else if (field.getType() == Datetime.class)
-                        field.set(entity, kv.getDatetime());
-                    else if (field.getType().isEnum())
-                        field.set(entity, kv.getEnum((Class<Enum<?>>) field.getType()));
-                    else
-                        throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
-                                value.getClass().getName(), field.getType().getName()));
-                }
+                else
+                    variant.setData(value).writeToEntity(entity, field);
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 e.printStackTrace();
                 throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
