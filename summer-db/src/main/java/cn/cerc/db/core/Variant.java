@@ -224,7 +224,7 @@ public class Variant {
             return BigInteger.valueOf(getLong());
     }
 
-    public final BigDecimal asBigDecimal() {
+    public final BigDecimal getBigDecimal() {
         Object value = this.data();
         if (value instanceof BigDecimal)
             return (BigDecimal) value;
@@ -311,7 +311,7 @@ public class Variant {
                         String.format("field %s error: %s to null", field.getName(), field.getType().getName()));
         }
     }
-    
+
     public static void main(String[] args) {
         System.out.println(new Variant());
         System.out.println(new Variant("202109"));
