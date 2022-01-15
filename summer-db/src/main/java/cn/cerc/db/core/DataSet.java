@@ -366,6 +366,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this;
     }
 
+    @Deprecated
     public DataSet setNull(String field) {
         return setValue(field, null);
     }
