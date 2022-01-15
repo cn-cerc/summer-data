@@ -415,7 +415,6 @@ public class DataRow implements Serializable, IRecord {
             fields.add(field);
     }
 
-    @SuppressWarnings("unchecked")
     public <T> T asEntity(Class<T> clazz) {
         T entity = null;
         try {
