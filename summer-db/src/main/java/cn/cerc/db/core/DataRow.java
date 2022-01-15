@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -93,7 +94,9 @@ public class DataRow implements Serializable, IRecord {
         Object newValue = value;
         if (value instanceof Datetime) // 将Datetime转化为Date存储
             newValue = ((Datetime) value).asBaseDate();
-        if (value != null && value.getClass().isEnum())
+        else if (value instanceof Optional<?>)
+            newValue = ((Optional<?>) value).orElse(null);
+        else if (value != null && value.getClass().isEnum())
             newValue = ((Enum<?>) value).ordinal();
 
         if ((search == null) && (this.state != DataRowState.Update)) {
