@@ -22,7 +22,8 @@ public class Handle implements IHandle {
     }
 
     public Handle(IHandle handle) {
-        this.session = handle.getSession();
+        if (handle != null)
+            this.session = handle.getSession();
     }
 
     @Override
