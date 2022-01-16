@@ -28,6 +28,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -688,5 +689,19 @@ public class Utils {
             }
         }
         return uid;
+    }
+
+    public final static String findVersion(Class<?> clazz) {
+        String result = null;
+        boolean has = false;
+        for (Field field : clazz.getDeclaredFields()) {
+            if (field.getDeclaredAnnotation(Version.class) != null) {
+                if (has)
+                    throw new RuntimeException("暂不支持多个Version字段");
+                result = field.getName();
+                has = true;
+            }
+        }
+        return result;
     }
 }
