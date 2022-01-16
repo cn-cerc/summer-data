@@ -28,9 +28,9 @@ import com.google.gson.reflect.TypeToken;
 public class DataRow implements Serializable, IRecord {
     private static final Logger log = LoggerFactory.getLogger(DataRow.class);
     private static final long serialVersionUID = 4454304132898734723L;
-    public static final int PUBLIC = 1;
-    public static final int PRIVATE = 2;
-    public static final int PROTECTED = 4;
+    private static final int PUBLIC = 1;
+    private static final int PRIVATE = 2;
+    private static final int PROTECTED = 4;
     private DataRowState state = DataRowState.None;
     private Map<String, Object> items = new LinkedHashMap<>();
     private DataSet dataSet;
