@@ -425,7 +425,11 @@ public class DataRow implements Serializable, IRecord {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        saveToEntity(entity);
+        return entity;
+    }
 
+    public void saveToEntity(Object entity) {
         Map<String, Field> items = DataRow.getEntityFields(entity.getClass());
         if (this.fields().size() > items.size()) {
             log.warn("fields.size > propertys.size");
@@ -472,7 +476,6 @@ public class DataRow implements Serializable, IRecord {
                         value.getClass().getName(), field.getType().getName()));
             }
         }
-        return entity;
     }
 
     public DataRow loadFromEntity(Object entity) {
