@@ -35,6 +35,7 @@ public class SqlOperator implements IHandle {
     private boolean debug = false;
     private List<String> searchKeys = new ArrayList<>();
     private ISession session;
+    private String versionField;
 
     public SqlOperator(IHandle handle, SqlServerType sqlServerType) {
         super();
@@ -128,6 +129,7 @@ public class SqlOperator implements IHandle {
 
     public interface ResultSetReader {
         FieldDefs fields();
+
         DataRow createDataRow();
     }
 
@@ -287,7 +289,10 @@ public class SqlOperator implements IHandle {
             if (pkCount == 0)
                 throw new RuntimeException("serach keys value not exists");
 
-            if (this.updateMode() == UpdateMode.strict) {
+            if (versionField != null) {
+                bs.append(" and ").append(versionField);
+                bs.append("=?", delta.get(versionField));
+            } else if (this.updateMode() == UpdateMode.strict) {
                 for (String field : delta.keySet()) {
                     if (!searchKeys.contains(field)) {
                         FieldMeta meta = record.fields().get(field);
@@ -566,6 +571,14 @@ public class SqlOperator implements IHandle {
         } else {
             return false;
         }
+    }
+
+    public String getVersionField() {
+        return versionField;
+    }
+
+    public void setVersionField(String versionField) {
+        this.versionField = versionField;
     }
 
 }
