@@ -5,9 +5,7 @@ import java.util.Objects;
 public interface EntityImpl {
 
     /**
-     * 返回EntityQuery
-     * 
-     * @param entityHome EntityQuery
+     * @return EntityQuery
      */
     EntityHomeImpl getEntityHome();
 

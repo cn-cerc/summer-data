@@ -54,24 +54,14 @@ public class JPushBuilder {
         builder.setAudience(Audience.alias(alias));
         builder.setPlatform(Platform.android_ios());
 
-        IosAlert iosAlert = IosAlert.newBuilder()
-                .setTitleAndBody(this.title, "", this.message)
-                .build();
+        IosAlert iosAlert = IosAlert.newBuilder().setTitleAndBody(this.title, "", this.message).build();
 
         builder.setNotification(Notification.newBuilder()
-                        .addPlatformNotification(
-                                AndroidNotification.newBuilder().setAlert(message)
-                                        .setTitle(this.title)
-                                        .addExtras(this.extras)
-                                        .build())
-                        .addPlatformNotification(
-                                IosNotification.newBuilder().setAlert(iosAlert)
-                                        .incrBadge(1)
-                                        .addExtras(this.extras)
-                                        .setSound(this.sound)
-                                        .build())
-                        .build())
-                .build();
+                .addPlatformNotification(AndroidNotification.newBuilder().setAlert(message).setTitle(this.title)
+                        .addExtras(this.extras).build())
+                .addPlatformNotification(IosNotification.newBuilder().setAlert(iosAlert).incrBadge(1)
+                        .addExtras(this.extras).setSound(this.sound).build())
+                .build()).build();
         // 设置生产环境 iOS 平台专用
         builder.setOptions(Options.newBuilder().setApnsProduction(true).build()).build();
         PushPayload payload = builder.build();
@@ -116,7 +106,10 @@ public class JPushBuilder {
     }
 
     /**
-     * 增加附加参数到 extras
+     * 
+     * @param key   key
+     * @param value value
+     * @return 增加附加参数到 extras
      */
     public JPushBuilder addExtra(String key, String value) {
         extras.put(key, value);

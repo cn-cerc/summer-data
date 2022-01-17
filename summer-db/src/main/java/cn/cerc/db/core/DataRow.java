@@ -348,8 +348,7 @@ public class DataRow implements Serializable, IRecord {
     }
 
     /**
-     * 
-     * @param field
+     * @param field 字段代码
      * @return 判断是否有此栏位，以及此栏位是否有值
      */
     public boolean has(String field) {
