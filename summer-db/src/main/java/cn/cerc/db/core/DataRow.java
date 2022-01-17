@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import javax.persistence.Column;
-import javax.persistence.Id;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,9 +27,6 @@ import com.google.gson.reflect.TypeToken;
 public class DataRow implements Serializable, IRecord {
     private static final Logger log = LoggerFactory.getLogger(DataRow.class);
     private static final long serialVersionUID = 4454304132898734723L;
-    private static final int PUBLIC = 1;
-    private static final int PRIVATE = 2;
-    private static final int PROTECTED = 4;
     private DataRowState state = DataRowState.None;
     private Map<String, Object> items = new LinkedHashMap<>();
     private DataSet dataSet;
@@ -430,7 +426,8 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public void saveToEntity(Object entity) {
-        Map<String, Field> items = DataRow.getEntityFields(entity.getClass());
+        EntityHelper<? extends Object> helper = EntityHelper.create(entity.getClass());
+        Map<String, Field> items = helper.fields();
         if (this.fields().size() > items.size()) {
             log.warn("fields.size > propertys.size");
         } else if (this.fields().size() < items.size()) {
@@ -448,8 +445,6 @@ public class DataRow implements Serializable, IRecord {
             for (String itemName : items.keySet()) {
                 if (itemName.equals(meta.code())) {
                     field = items.get(itemName);
-                    if (field.getModifiers() == PRIVATE || field.getModifiers() == PROTECTED)
-                        field.setAccessible(true);
                     break;
                 }
             }
@@ -480,11 +475,10 @@ public class DataRow implements Serializable, IRecord {
 
     public DataRow loadFromEntity(Object entity) {
         try {
-            Map<String, Field> fields = DataRow.getEntityFields(entity.getClass());
+            EntityHelper<? extends Object> helper = EntityHelper.create(entity.getClass());
+            Map<String, Field> fields = helper.fields();
             for (String fieldCode : fields.keySet()) {
                 Field field = fields.get(fieldCode);
-                if (field.getModifiers() == PRIVATE || field.getModifiers() == PROTECTED)
-                    field.setAccessible(true);
                 this.setValue(fieldCode, field.get(entity));
             }
         } catch (IllegalArgumentException | IllegalAccessException e) {
@@ -492,31 +486,6 @@ public class DataRow implements Serializable, IRecord {
             throw new RuntimeException(e);
         }
         return this;
-    }
-
-    public static Map<String, Field> getEntityFields(Class<?> entityClass) {
-        // 找出所有可用的的数据字段
-        Map<String, Field> items = new LinkedHashMap<>();
-        for (Field field : entityClass.getDeclaredFields()) {
-            Column column = field.getAnnotation(Column.class);
-            if (column != null) {
-                String name = !"".equals(column.name()) ? column.name() : field.getName();
-                if (field.getModifiers() == DataRow.PRIVATE || field.getModifiers() == DataRow.PROTECTED) {
-                    field.setAccessible(true);
-                    items.put(name, field);
-                } else if (field.getModifiers() == PUBLIC) {
-                    items.put(name, field);
-                }
-                continue;
-            }
-            Id id = field.getAnnotation(Id.class);
-            if (id != null) {
-                if (field.getModifiers() == PRIVATE || field.getModifiers() == PROTECTED
-                        || field.getModifiers() == PUBLIC)
-                    items.put(field.getName(), field);
-            }
-        }
-        return items;
     }
 
     @Deprecated

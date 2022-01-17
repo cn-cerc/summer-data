@@ -25,10 +25,7 @@ import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -667,41 +664,15 @@ public class Utils {
     }
 
     public final static String findTable(Class<?> clazz) {
-        String table = null;
-        // 取得表名
-        Table object = clazz.getDeclaredAnnotation(Table.class);
-        if (object != null)
-            table = object.name();
-        if (Utils.isEmpty(table))
-            table = clazz.getSimpleName();
-        return table;
+        return EntityHelper.create(clazz).table();
     }
 
     public final static String findOid(Class<?> clazz, String defaultUid) {
-        String uid = defaultUid;
-        boolean has = false;
-        for (Field field : clazz.getDeclaredFields()) {
-            if (field.getDeclaredAnnotation(Id.class) != null) {
-                if (has)
-                    throw new RuntimeException("暂不支持多个主键");
-                uid = field.getName();
-                has = true;
-            }
-        }
-        return uid;
+        return EntityHelper.create(clazz).idFieldCode();
     }
 
     public final static String findVersion(Class<?> clazz) {
-        String result = null;
-        boolean has = false;
-        for (Field field : clazz.getDeclaredFields()) {
-            if (field.getDeclaredAnnotation(Version.class) != null) {
-                if (has)
-                    throw new RuntimeException("暂不支持多个Version字段");
-                result = field.getName();
-                has = true;
-            }
-        }
-        return result;
+        Field field = EntityHelper.create(clazz).versionField().orElse(null);
+        return field != null ? field.getName() : null;
     }
 }
