@@ -112,11 +112,11 @@ public class EntityHelper<T> {
     }
 
     public Optional<Field> versionField() {
-        return idField;
+        return versionField;
     }
 
     public String versionFieldCode() {
-        return idField.isPresent() ? idField.get().getName() : null;
+        return versionField.isPresent() ? versionField.get().getName() : null;
     }
 
     public SqlServerType sqlServerType() {
