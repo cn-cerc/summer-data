@@ -511,7 +511,7 @@ public class SqlWhere {
         return new SqlText(clazz).addSelectDefault().addWhere();
     }
 
-    public static SqlWhere create(IHandle handle, Class<? extends EntityImpl> clazz, Object... values) {
+    public static SqlWhere create(IHandle handle, Class<? extends EntityImpl> clazz, String... values) {
         EntityKey entityKey = clazz.getDeclaredAnnotation(EntityKey.class);
         int offset = entityKey.corpNo() ? 1 : 0;
         SqlWhere where = SqlWhere.create(clazz);
