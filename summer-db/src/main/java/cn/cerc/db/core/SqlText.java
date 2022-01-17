@@ -22,14 +22,14 @@ public class SqlText implements Serializable {
     private String text;
     private ClassData classData;
     private SqlServerType sqlServerType;
-    private Class<?> clazz;
+    private Class<? extends EntityImpl> clazz;
 
     public SqlText(SqlServerType sqlServerType) {
         super();
         this.sqlServerType = sqlServerType;
     }
 
-    public SqlText(Class<?> clazz) {
+    public SqlText(Class<? extends EntityImpl> clazz) {
         super();
         this.clazz = clazz;
         SqlServer server = clazz.getAnnotation(SqlServer.class);
@@ -252,7 +252,7 @@ public class SqlText implements Serializable {
     public SqlText addSelectDefault() {
         if (this.clazz == null)
             throw new IllegalArgumentException("clazz is null");
-        this.add("select * from %s", Utils.findTable(clazz));
+        this.add("select * from %s", EntityHelper.create(clazz).table());
         return this;
     }
 

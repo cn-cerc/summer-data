@@ -6,9 +6,11 @@ import javax.persistence.Id;
 import javax.persistence.Version;
 
 import cn.cerc.db.core.EntityHelper;
+import cn.cerc.db.core.EntityHomeImpl;
+import cn.cerc.db.core.EntityImpl;
 
 @Entity
-public class UserTest {
+public class UserTest implements EntityImpl {
     @Id
     public String id_;
     @Column(name = "Code_")
@@ -27,5 +29,15 @@ public class UserTest {
         System.out.println(meta.idField());
         System.out.println(meta.versionField());
         System.out.println(meta.idFieldCode());
+    }
+
+    @Override
+    public EntityHomeImpl getEntityHome() {
+        return null;
+    }
+
+    @Override
+    public void setEntityHome(EntityHomeImpl entityHome) {
+
     }
 }

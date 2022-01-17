@@ -507,11 +507,11 @@ public class SqlWhere {
         return joinGroup;
     }
 
-    public static SqlWhere create(Class<?> clazz) {
+    public static SqlWhere create(Class<? extends EntityImpl> clazz) {
         return new SqlText(clazz).addSelectDefault().addWhere();
     }
 
-    public static SqlWhere create(IHandle handle, Class<?> clazz, Object... values) {
+    public static SqlWhere create(IHandle handle, Class<? extends EntityImpl> clazz, Object... values) {
         EntityKey entityKey = clazz.getDeclaredAnnotation(EntityKey.class);
         int offset = entityKey.corpNo() ? 1 : 0;
         SqlWhere where = SqlWhere.create(clazz);

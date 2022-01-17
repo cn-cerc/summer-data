@@ -19,6 +19,8 @@ import cn.cerc.db.core.DataRow;
 import cn.cerc.db.core.DataSet;
 import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.Describe;
+import cn.cerc.db.core.EntityHelper;
+import cn.cerc.db.core.EntityImpl;
 import cn.cerc.db.core.FastDate;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
@@ -27,24 +29,26 @@ import cn.cerc.db.core.Utils;
 
 public class MysqlDatabase implements IHandle, ISqlDatabase {
     public static final String DefaultOID = "UID_";
-    private Class<?> clazz;
+    private Class<? extends EntityImpl> clazz;
+    private EntityHelper<? extends EntityImpl> helper;
     private ISession session;
 
-    public MysqlDatabase(IHandle handle, Class<?> clazz) {
+    public MysqlDatabase(IHandle handle, Class<? extends EntityImpl> clazz) {
         super();
         this.clazz = clazz;
+        this.helper = EntityHelper.create(clazz);
         if (handle != null)
             this.setSession(handle.getSession());
     }
 
     @Override
     public final String table() {
-        return Utils.findTable(clazz);
+        return helper.table();
     }
 
     @Override
-    public String oid() {
-        return Utils.findOid(clazz, DefaultOID);
+    public final String oid() {
+        return helper.idFieldCode();
     }
 
     @Override

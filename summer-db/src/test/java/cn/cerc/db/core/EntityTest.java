@@ -9,7 +9,7 @@ import javax.persistence.Version;
 
 @Entity
 @SqlServer
-public class EntityTest {
+public class EntityTest implements EntityImpl {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id_;
@@ -24,10 +24,21 @@ public class EntityTest {
     @Column
     @Version
     private Integer version_;
-    
+
     public enum TypeEnum {
         V1, V2;
     }
+
+    @Override
+    public EntityHomeImpl getEntityHome() {
+        return null;
+    }
+
+    @Override
+    public void setEntityHome(EntityHomeImpl entityHome) {
+
+    }
+
     public static void main(String[] args) {
         FieldDefs defs = new FieldDefs(EntityTest.class);
         DataRow row = new DataRow(defs);
@@ -38,4 +49,5 @@ public class EntityTest {
         System.out.println(entity.Type_);
         System.out.println();
     }
+
 }

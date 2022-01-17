@@ -663,16 +663,13 @@ public class Utils {
         return !Utils.isBlank(str);
     }
 
-    public final static String findTable(Class<?> clazz) {
+    @Deprecated
+    public final static String findTable(Class<? extends EntityImpl> clazz) {
         return EntityHelper.create(clazz).table();
     }
 
-    public final static String findOid(Class<?> clazz, String defaultUid) {
+    @Deprecated
+    public final static String findOid(Class<? extends EntityImpl> clazz, String defaultUid) {
         return EntityHelper.create(clazz).idFieldCode();
-    }
-
-    public final static String findVersion(Class<?> clazz) {
-        Field field = EntityHelper.create(clazz).versionField().orElse(null);
-        return field != null ? field.getName() : null;
     }
 }

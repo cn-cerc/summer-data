@@ -414,19 +414,15 @@ public class DataRow implements Serializable, IRecord {
             fields.add(field);
     }
 
-    public <T> T asEntity(Class<T> clazz) {
-        T entity = null;
-        try {
-            entity = clazz.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public <T extends EntityImpl> T asEntity(Class<T> clazz) {
+        EntityHelper<T> helper = EntityHelper.create(clazz);
+        T entity = helper.newEntity();
         saveToEntity(entity);
         return entity;
     }
 
-    public void saveToEntity(Object entity) {
-        EntityHelper<? extends Object> helper = EntityHelper.create(entity.getClass());
+    public void saveToEntity(EntityImpl entity) {
+        EntityHelper<? extends EntityImpl> helper = EntityHelper.create(entity.getClass());
         Map<String, Field> items = helper.fields();
         if (this.fields().size() > items.size()) {
             log.warn("fields.size > propertys.size");
@@ -441,13 +437,7 @@ public class DataRow implements Serializable, IRecord {
             Object value = this.getValue(meta.code());
 
             // 查找指定的对象属性
-            Field field = null;
-            for (String itemName : items.keySet()) {
-                if (itemName.equals(meta.code())) {
-                    field = items.get(itemName);
-                    break;
-                }
-            }
+            Field field = items.get(meta.code());
             if (field == null) {
                 log.warn("not find property: " + meta.code());
                 continue;
@@ -473,14 +463,11 @@ public class DataRow implements Serializable, IRecord {
         }
     }
 
-    public DataRow loadFromEntity(Object entity) {
+    public <T extends EntityImpl> DataRow loadFromEntity(T entity) {
         try {
-            EntityHelper<? extends Object> helper = EntityHelper.create(entity.getClass());
-            Map<String, Field> fields = helper.fields();
-            for (String fieldCode : fields.keySet()) {
-                Field field = fields.get(fieldCode);
-                this.setValue(fieldCode, field.get(entity));
-            }
+            Map<String, Field> fields = EntityHelper.create(entity.getClass()).fields();
+            for (String fieldCode : fields.keySet())
+                this.setValue(fieldCode, fields.get(fieldCode).get(entity));
         } catch (IllegalArgumentException | IllegalAccessException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
@@ -489,7 +476,7 @@ public class DataRow implements Serializable, IRecord {
     }
 
     @Deprecated
-    public final <T> T asObject(Class<T> clazz) {
+    public final <T extends EntityImpl> T asObject(Class<T> clazz) {
         return asEntity(clazz);
     }
 

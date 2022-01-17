@@ -1,7 +1,7 @@
 package cn.cerc.db.core;
 
 @Deprecated
-public interface SupportRecord {
+public interface SupportRecord extends EntityImpl {
 
     @Deprecated
     default DataRow asRecord() {

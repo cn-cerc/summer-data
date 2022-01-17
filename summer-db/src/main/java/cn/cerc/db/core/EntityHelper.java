@@ -28,7 +28,7 @@ public class EntityHelper<T> {
     // 找出所有可用的的数据字段
     private Map<String, Field> fields = new LinkedHashMap<>();
 
-    public static <T> EntityHelper<T> create(Class<T> clazz) {
+    public static <T extends EntityImpl> EntityHelper<T> create(Class<T> clazz) {
         @SuppressWarnings("unchecked")
         EntityHelper<T> result = (EntityHelper<T>) items.get(clazz);
         if (result != null)
