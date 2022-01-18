@@ -176,7 +176,7 @@ public class EntityHelper<T> {
                         variant.setData(null).writeToEntity(entity, field);
                 }
                 if (field.getAnnotation(Version.class) != null)
-                    field.set(entity, field.getInt(entity) + 1);
+                    field.set(entity, ((Integer) field.get(entity)) + 1);
             }
         } catch (IllegalArgumentException | IllegalAccessException e) {
             e.printStackTrace();
