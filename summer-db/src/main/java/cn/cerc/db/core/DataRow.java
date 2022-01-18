@@ -10,9 +10,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.persistence.Column;
-import javax.persistence.Id;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,9 +27,6 @@ import com.google.gson.reflect.TypeToken;
 public class DataRow implements Serializable, IRecord {
     private static final Logger log = LoggerFactory.getLogger(DataRow.class);
     private static final long serialVersionUID = 4454304132898734723L;
-    private static final int PUBLIC = 1;
-    private static final int PRIVATE = 2;
-    private static final int PROTECTED = 4;
     private DataRowState state = DataRowState.None;
     private Map<String, Object> items = new LinkedHashMap<>();
     private DataSet dataSet;
@@ -93,7 +90,9 @@ public class DataRow implements Serializable, IRecord {
         Object newValue = value;
         if (value instanceof Datetime) // 将Datetime转化为Date存储
             newValue = ((Datetime) value).asBaseDate();
-        if (value != null && value.getClass().isEnum())
+        else if (value instanceof Optional<?>)
+            newValue = ((Optional<?>) value).orElse(null);
+        else if (value != null && value.getClass().isEnum())
             newValue = ((Enum<?>) value).ordinal();
 
         if ((search == null) && (this.state != DataRowState.Update)) {
@@ -349,8 +348,7 @@ public class DataRow implements Serializable, IRecord {
     }
 
     /**
-     * 
-     * @param field
+     * @param field 字段代码
      * @return 判断是否有此栏位，以及此栏位是否有值
      */
     public boolean has(String field) {
@@ -415,16 +413,16 @@ public class DataRow implements Serializable, IRecord {
             fields.add(field);
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T asEntity(Class<T> clazz) {
-        T entity = null;
-        try {
-            entity = clazz.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public <T extends EntityImpl> T asEntity(Class<T> clazz) {
+        EntityHelper<T> helper = EntityHelper.create(clazz);
+        T entity = helper.newEntity();
+        saveToEntity(entity);
+        return entity;
+    }
 
-        Map<String, Field> items = DataRow.getEntityFields(entity.getClass());
+    public void saveToEntity(EntityImpl entity) {
+        EntityHelper<? extends EntityImpl> helper = EntityHelper.create(entity.getClass());
+        Map<String, Field> items = helper.fields();
         if (this.fields().size() > items.size()) {
             log.warn("fields.size > propertys.size");
         } else if (this.fields().size() < items.size()) {
@@ -433,19 +431,12 @@ public class DataRow implements Serializable, IRecord {
         }
 
         // 查找并赋值
+        Variant variant = new Variant();
         for (FieldMeta meta : this.fields()) {
             Object value = this.getValue(meta.code());
 
             // 查找指定的对象属性
-            Field field = null;
-            for (String itemName : items.keySet()) {
-                if (itemName.equals(meta.code())) {
-                    field = items.get(itemName);
-                    if (field.getModifiers() == PRIVATE || field.getModifiers() == PROTECTED)
-                        field.setAccessible(true);
-                    break;
-                }
-            }
+            Field field = items.get(meta.code());
             if (field == null) {
                 log.warn("not find property: " + meta.code());
                 continue;
@@ -454,55 +445,28 @@ public class DataRow implements Serializable, IRecord {
             // 给属性赋值
             try {
                 if (value == null) {
-                    field.set(entity, null);
-                } else if (field.getType().equals(value.getClass())) {
+                    Column column = field.getAnnotation(Column.class);
+                    if (column == null || column.nullable()) {
+                        field.set(entity, null);
+                    } else
+                        variant.setData(null).writeToEntity(entity, field);
+                } else if (field.getType().equals(value.getClass()))
                     field.set(entity, value);
-                } else {
-                    Variant kv = new Variant(value);
-                    if ("boolean".equals(field.getType().getName()))
-                        field.setBoolean(entity, kv.getBoolean());
-                    else if ("int".equals(field.getType().getName()))
-                        field.setInt(entity, kv.getInt());
-                    else if ("long".equals(field.getType().getName()))
-                        field.setLong(entity, kv.getLong());
-                    else if ("float".equals(field.getType().getName()))
-                        field.setDouble(entity, kv.getFloat());
-                    else if ("double".equals(field.getType().getName()))
-                        field.setDouble(entity, kv.getDouble());
-                    else if (field.getType() == Boolean.class)
-                        field.set(entity, Boolean.valueOf(kv.getBoolean()));
-                    else if (field.getType() == Integer.class)
-                        field.set(entity, Integer.valueOf(kv.getInt()));
-                    else if (field.getType() == Long.class)
-                        field.set(entity, Long.valueOf(kv.getLong()));
-                    else if (field.getType() == Float.class)
-                        field.set(entity, Float.valueOf(kv.getFloat()));
-                    else if (field.getType() == Double.class)
-                        field.set(entity, Double.valueOf(kv.getDouble()));
-                    else if (field.getType() == Datetime.class)
-                        field.set(entity, kv.getDatetime());
-                    else if (field.getType().isEnum())
-                        field.set(entity, kv.getEnum((Class<Enum<?>>) field.getType()));
-                    else
-                        throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
-                                value.getClass().getName(), field.getType().getName()));
-                }
+                else
+                    variant.setData(value).writeToEntity(entity, field);
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 e.printStackTrace();
                 throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
                         value.getClass().getName(), field.getType().getName()));
             }
         }
-        return entity;
     }
 
-    public DataRow loadFromEntity(Object entity) {
+    public <T extends EntityImpl> DataRow loadFromEntity(T entity) {
         try {
-            Map<String, Field> fields = DataRow.getEntityFields(entity.getClass());
-            for (String fieldCode : fields.keySet()) {
-                Field field = fields.get(fieldCode);
-                this.setValue(fieldCode, field.get(entity));
-            }
+            Map<String, Field> fields = EntityHelper.create(entity.getClass()).fields();
+            for (String fieldCode : fields.keySet())
+                this.setValue(fieldCode, fields.get(fieldCode).get(entity));
         } catch (IllegalArgumentException | IllegalAccessException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
@@ -510,33 +474,8 @@ public class DataRow implements Serializable, IRecord {
         return this;
     }
 
-    public static Map<String, Field> getEntityFields(Class<?> entityClass) {
-        // 找出所有可用的的数据字段
-        Map<String, Field> items = new LinkedHashMap<>();
-        for (Field field : entityClass.getDeclaredFields()) {
-            Column column = field.getAnnotation(Column.class);
-            if (column != null) {
-                String name = !"".equals(column.name()) ? column.name() : field.getName();
-                if (field.getModifiers() == DataRow.PRIVATE || field.getModifiers() == DataRow.PROTECTED) {
-                    field.setAccessible(true);
-                    items.put(name, field);
-                } else if (field.getModifiers() == PUBLIC) {
-                    items.put(name, field);
-                }
-                continue;
-            }
-            Id id = field.getAnnotation(Id.class);
-            if (id != null) {
-                if (field.getModifiers() == PRIVATE || field.getModifiers() == PROTECTED
-                        || field.getModifiers() == PUBLIC)
-                    items.put(field.getName(), field);
-            }
-        }
-        return items;
-    }
-
     @Deprecated
-    public final <T> T asObject(Class<T> clazz) {
+    public final <T extends EntityImpl> T asObject(Class<T> clazz) {
         return asEntity(clazz);
     }
 

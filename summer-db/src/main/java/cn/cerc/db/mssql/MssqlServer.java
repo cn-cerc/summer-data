@@ -127,9 +127,9 @@ public class MssqlServer implements ISqlServer, AutoCloseable {
     }
 
     /**
-     * 取得数据库中所有的表名
      * 
-     * @return 返回列表
+     * @param handle handle
+     * @return 取得数据库中所有的表名
      */
     public final List<String> tables(IHandle handle) {
         if (tables != null)

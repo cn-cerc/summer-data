@@ -10,27 +10,31 @@ import javax.persistence.Table;
 
 import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.Describe;
+import cn.cerc.db.core.EntityHelper;
+import cn.cerc.db.core.EntityImpl;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISqlDatabase;
 import cn.cerc.db.core.Utils;
 
 public class SqliteDatabase implements ISqlDatabase {
     public static final String DefaultOID = "id_";
-    private Class<?> clazz;
+    private Class<? extends EntityImpl> clazz;
+    private EntityHelper<? extends EntityImpl> helper;
 
-    public SqliteDatabase(IHandle handle, Class<?> clazz) {
+    public SqliteDatabase(IHandle handle, Class<? extends EntityImpl> clazz) {
         super();
         this.clazz = clazz;
+        this.helper = EntityHelper.create(clazz);
     }
 
     @Override
     public final String table() {
-        return Utils.findTable(this.clazz);
+        return helper.table();
     }
 
     @Override
     public final String oid() {
-        return Utils.findOid(clazz, DefaultOID);
+        return helper.idFieldCode();
     }
 
     @Override

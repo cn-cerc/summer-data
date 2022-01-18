@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.cerc.db.core.ClassData;
 import cn.cerc.db.core.ClassFactory;
+import cn.cerc.db.core.EntityHelper;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
 import cn.cerc.db.core.SqlText;
@@ -75,7 +76,7 @@ public abstract class BigTable<T extends BigRecord> implements IHandle {
     @SuppressWarnings("unchecked")
     private void initClazz() {
         this.clazz = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-        this.tableId = Utils.findTable(clazz);
+        this.tableId = EntityHelper.create(clazz).table();
     }
 
     @Deprecated // 请改使用 open
@@ -282,7 +283,7 @@ public abstract class BigTable<T extends BigRecord> implements IHandle {
             return;
         }
 
-        String tableName = Utils.findTable(clazz);
+        String tableName = EntityHelper.create(clazz).table();
         if (tableName == null) {
             throw new RuntimeException("tableName is null");
         }

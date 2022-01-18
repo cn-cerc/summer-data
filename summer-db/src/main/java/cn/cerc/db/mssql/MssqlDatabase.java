@@ -19,6 +19,8 @@ import cn.cerc.db.core.DataRow;
 import cn.cerc.db.core.DataSet;
 import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.Describe;
+import cn.cerc.db.core.EntityHelper;
+import cn.cerc.db.core.EntityImpl;
 import cn.cerc.db.core.FastDate;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
@@ -27,26 +29,28 @@ import cn.cerc.db.core.Utils;
 
 public class MssqlDatabase implements IHandle, ISqlDatabase {
     public static final String DefaultOID = "UpdateKey_";
-    private Class<?> clazz;
+    private Class<? extends EntityImpl> clazz;
+    private EntityHelper<? extends EntityImpl> helper;
     private ISession session;
 
-    public MssqlDatabase(IHandle handle, Class<?> clazz) {
+    public MssqlDatabase(IHandle handle, Class<? extends EntityImpl> clazz) {
         super();
         this.clazz = clazz;
+        this.helper = EntityHelper.create(clazz);
         if (handle != null)
             this.setSession(handle.getSession());
     }
 
     @Override
     public final String table() {
-        return Utils.findTable(this.clazz);
+        return helper.table();
     }
 
     @Override
     public final String oid() {
-        return Utils.findOid(clazz, DefaultOID);
+        return helper.idFieldCode();
     }
-    
+
     @Override
     public boolean createTable(boolean overwrite) {
         MssqlServer server = (MssqlServer) this.getSession().getProperty(MssqlServer.SessionId);

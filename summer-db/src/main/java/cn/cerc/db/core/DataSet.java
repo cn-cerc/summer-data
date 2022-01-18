@@ -366,6 +366,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this;
     }
 
+    @Deprecated
     public DataSet setNull(String field) {
         return setValue(field, null);
     }
@@ -717,7 +718,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     /**
-     * 关闭写入存储设备功能
+     * @return 关闭写入存储设备功能
      */
     public DataSet disableStorage() {
         this.fields().forEach(meta -> {

@@ -78,7 +78,10 @@ public class SqlWhere {
      * @return this
      */
     public SqlWhere eq(String field, Object value) {
-        return this.appendField(field, value, "=");
+        if (value != null)
+            return this.appendField(field, value, "=");
+        else
+            return this.isNull(field, true);
     }
 
     /**
@@ -106,7 +109,10 @@ public class SqlWhere {
      * @return this
      */
     public SqlWhere neq(String field, Object value) {
-        return this.appendField(field, value, "<>");
+        if (value != null)
+            return this.appendField(field, value, "<>");
+        else
+            return this.isNull(field, false);
     }
 
     /**
@@ -311,8 +317,43 @@ public class SqlWhere {
             if (i < values.size() - 1)
                 sb.append(",");
         }
-        sb.delete(sb.length(), sb.length());
         sb.append(")");
+        return this;
+    }
+
+    /**
+     * 
+     * @param fields     要比较的字段列表
+     * @param valuesList 要比较的字段值
+     * @return 比对多个字段是否一致，形如：(f1=v1 and f2=v2) or (f1=v1 and f2=v2)
+     */
+    public final SqlWhere inGroup(List<String> fields, List<Object[]> valuesList) {
+        if (fields.size() == 0)
+            throw new IllegalArgumentException("fields is empty array");
+        if (valuesList.size() == 0)
+            return this;
+        if (this.size++ > 0)
+            sb.append(joinMode == JoinDirectionEnum.And ? " and " : " or ");
+
+        sb.append("(");
+        for (int row = 0; row < valuesList.size(); row++) {
+            Object[] values = valuesList.get(row);
+            if (values.length != fields.size())
+                throw new IllegalArgumentException("fields.length neq values.length");
+            sb.append("(");
+            for (int i = 0; i < values.length; i++) {
+                sb.append(fields.get(i));
+                sb.append("=");
+                appendValue(values[i]);
+                if (i < values.length - 1)
+                    sb.append(" and ");
+            }
+            sb.append(")");
+            if (row < valuesList.size() - 1)
+                sb.append(" or ");
+        }
+        sb.append(")");
+
         return this;
     }
 
@@ -466,16 +507,11 @@ public class SqlWhere {
         return joinGroup;
     }
 
-    public static void main(String[] args) {
-        System.out.println(new SqlWhere().in("code", List.of(1, 3, 4)));
-        System.out.println(new SqlWhere().in("code", "select code_ from xxx"));
-    }
-
-    public static SqlWhere create(Class<?> clazz) {
+    public static SqlWhere create(Class<? extends EntityImpl> clazz) {
         return new SqlText(clazz).addSelectDefault().addWhere();
     }
 
-    public static SqlWhere create(IHandle handle, Class<?> clazz, Object... values) {
+    public static SqlWhere create(IHandle handle, Class<? extends EntityImpl> clazz, String... values) {
         EntityKey entityKey = clazz.getDeclaredAnnotation(EntityKey.class);
         int offset = entityKey.corpNo() ? 1 : 0;
         SqlWhere where = SqlWhere.create(clazz);
@@ -491,4 +527,22 @@ public class SqlWhere {
         }
         return where;
     }
+
+    public static void main(String[] args) {
+        //code is null
+        System.out.println(new SqlWhere().eq("code", null));
+        
+        //code in (1,3,4)
+        System.out.println(new SqlWhere().in("code", List.of(1, 3, 4)));
+        
+        //code in (select code_ from xxx)
+        System.out.println(new SqlWhere().in("code", "select code_ from xxx"));
+        
+        //((WHCode='A01' and PartCode='P01') or (WHCode='A01' and PartCode='P02'))
+        List<Object[]> items = new ArrayList<>();
+        items.add(new Object[] {"A01", "P01"});
+        items.add(new Object[] {"A01", "P02"});
+        System.out.println(new SqlWhere().inGroup(List.of("WHCode", "PartCode"), items));
+    }
+
 }

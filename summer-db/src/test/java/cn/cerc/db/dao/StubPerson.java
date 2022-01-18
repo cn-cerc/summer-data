@@ -6,6 +6,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import cn.cerc.db.core.EntityHomeImpl;
 import cn.cerc.db.core.SearchKey;
 import cn.cerc.db.core.SpecialNum;
 
@@ -78,6 +79,16 @@ public class StubPerson implements BigRecord {
         // record.num = 52
         this.num += ((StubPerson) record).num - ((StubPerson) base).num;
         // after: this.num = 56
+    }
+
+    @Override
+    public EntityHomeImpl getEntityHome() {
+        return null;
+    }
+
+    @Override
+    public void setEntityHome(EntityHomeImpl entityHome) {
+        
     }
 
     @Override

@@ -25,8 +25,6 @@ import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.slf4j.Logger;
@@ -665,28 +663,13 @@ public class Utils {
         return !Utils.isBlank(str);
     }
 
-    public final static String findTable(Class<?> clazz) {
-        String table = null;
-        // 取得表名
-        Table object = clazz.getDeclaredAnnotation(Table.class);
-        if (object != null)
-            table = object.name();
-        if (Utils.isEmpty(table))
-            table = clazz.getSimpleName();
-        return table;
+    @Deprecated
+    public final static String findTable(Class<? extends EntityImpl> clazz) {
+        return EntityHelper.create(clazz).table();
     }
 
-    public final static String findOid(Class<?> clazz, String defaultUid) {
-        String uid = defaultUid;
-        boolean has = false;
-        for (Field field : clazz.getDeclaredFields()) {
-            if (field.getDeclaredAnnotation(Id.class) != null) {
-                if (has)
-                    throw new RuntimeException("暂不支持多个主键");
-                uid = field.getName();
-                has = true;
-            }
-        }
-        return uid;
+    @Deprecated
+    public final static String findOid(Class<? extends EntityImpl> clazz, String defaultUid) {
+        return EntityHelper.create(clazz).idFieldCode();
     }
 }
