@@ -22,7 +22,7 @@ public interface EntityImpl {
      * @param handle IHandle
      */
     default void onInsertPost(IHandle handle) {
-        EntityHelper.create(this.getClass()).onInsertPostDefault(this);
+       
     }
 
     /**
@@ -31,7 +31,7 @@ public interface EntityImpl {
      * @param handle IHandle
      */
     default void onUpdatePost(IHandle handle) {
-        EntityHelper.create(this.getClass()).onUpdatePostDefault(this);
+
     }
 
     /**
