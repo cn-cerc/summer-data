@@ -157,7 +157,7 @@ public class EntityHelper<T> {
                         variant.setData(def).writeToEntity(entity, field);
                 }
                 if (field.getAnnotation(Version.class) != null)
-                    field.setInt(entity, 0);
+                    field.set(entity, 0);
             }
         } catch (IllegalArgumentException | IllegalAccessException e) {
             e.printStackTrace();
@@ -176,7 +176,7 @@ public class EntityHelper<T> {
                         variant.setData(null).writeToEntity(entity, field);
                 }
                 if (field.getAnnotation(Version.class) != null)
-                    field.setInt(entity, field.getInt(entity) + 1);
+                    field.set(entity, field.getInt(entity) + 1);
             }
         } catch (IllegalArgumentException | IllegalAccessException e) {
             e.printStackTrace();
