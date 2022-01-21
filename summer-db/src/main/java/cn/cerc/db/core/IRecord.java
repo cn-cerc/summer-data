@@ -83,7 +83,7 @@ public interface IRecord {
             String str = (String) value;
             if ("".equals(str))
                 return 0;
-            return Integer.parseInt(str);
+            return Double.valueOf(str).intValue();
         } else {
             throw new ClassCastException(String.format("not support class: %s", value.getClass().getName()));
         }
