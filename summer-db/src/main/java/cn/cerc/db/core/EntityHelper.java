@@ -18,8 +18,6 @@ import cn.cerc.db.sqlite.SqliteDatabase;
 
 public class EntityHelper<T> {
     private static ConcurrentHashMap<Class<?>, EntityHelper<?>> items = new ConcurrentHashMap<>();
-    private static final int PRIVATE = 2;
-    private static final int PROTECTED = 4;
     private Class<T> clazz;
     private String table;
     private Optional<Field> idField = Optional.empty();
@@ -63,7 +61,7 @@ public class EntityHelper<T> {
                 continue;
 
             // 开放读取权限
-            if (field.getModifiers() == PRIVATE || field.getModifiers() == PROTECTED)
+            if (field.getModifiers() == ClassData.PRIVATE || field.getModifiers() == ClassData.PROTECTED)
                 field.setAccessible(true);
 
             // 查找id标识的字段

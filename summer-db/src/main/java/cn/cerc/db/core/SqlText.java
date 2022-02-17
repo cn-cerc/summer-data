@@ -11,10 +11,6 @@ public class SqlText implements Serializable {
     private static final ClassResource res = new ClassResource(SqlText.class, SummerDB.ID);
     // 从数据库每次加载的最大笔数
     public static final int MAX_RECORDS = 50000;
-    //
-    public static final int PUBLIC = 1;
-    public static final int PRIVATE = 2;
-    public static final int PROTECTED = 4;
 
     private int maximum = MAX_RECORDS;
     private int offset = 0;
