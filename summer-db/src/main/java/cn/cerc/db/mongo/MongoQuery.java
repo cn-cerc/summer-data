@@ -11,6 +11,7 @@ import org.bson.Document;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 
 import cn.cerc.db.SummerDB;
@@ -36,6 +37,9 @@ public class MongoQuery extends DataSet implements IHandle {
     private ISession session;
     private boolean active;
     private final SqlText sql = new SqlText(SqlServerType.Mysql);
+    private int limit = MAX_RECORDS;
+    // 从数据库每次加载的最大笔数
+    public static final int MAX_RECORDS = 50000;
 
     public MongoQuery(IHandle handle) {
         super();
@@ -53,7 +57,8 @@ public class MongoQuery extends DataSet implements IHandle {
         // 增加排序条件
         BasicDBObject sort = decodeOrder(this.sql().text());
         // 执行查询
-        ArrayList<Document> list = coll.find(filter).sort(sort).into(new ArrayList<>());
+        FindIterable<Document> findIterable = coll.find(filter).sort(sort).limit(limit);
+        ArrayList<Document> list = findIterable.into(new ArrayList<>());
         // 数据不存在,则状态不为更新,并返回一个空数据
         if (list.isEmpty()) {
             return this;
@@ -333,6 +338,18 @@ public class MongoQuery extends DataSet implements IHandle {
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);
         return this;
+    }
+
+    public void setMaximum(int limit) {
+        if (limit <= 0)
+            throw new RuntimeException("limit 不允许小于等于0");
+        if (limit > MAX_RECORDS)
+            throw new RuntimeException(String.format("limit 不支持大于 %d", MAX_RECORDS));
+        this.limit = limit;
+    }
+
+    public void in(String string, List<String> corpList) {
+
     }
 
 }
