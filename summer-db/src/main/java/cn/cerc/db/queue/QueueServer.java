@@ -19,6 +19,7 @@ import cn.cerc.db.core.ClassResource;
 import cn.cerc.db.core.IConfig;
 import cn.cerc.db.core.IConnection;
 import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.core.Utils;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -45,28 +46,24 @@ public class QueueServer implements IConnection {
 
     @Override
     public MNSClient getClient() {
-        if (client != null) {
+        if (client != null)
             return client;
-        }
 
         if (account == null) {
-            String server = config.getProperty(QueueServer.AccountEndpoint, null);
-            String userCode = config.getProperty(QueueServer.AccessKeyId, null);
+            String endpoint = config.getProperty(QueueServer.AccountEndpoint, null);
+            String accessId = config.getProperty(QueueServer.AccessKeyId, null);
             String password = config.getProperty(QueueServer.AccessKeySecret, null);
-            if (server == null) {
-                throw new RuntimeException(
-                        String.format(res.getString(1, "%s 配置为空"), QueueServer.AccountEndpoint));
-            }
-            if (userCode == null) {
-                throw new RuntimeException(
-                        String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeyId));
-            }
-            if (password == null) {
-                throw new RuntimeException(
-                        String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeySecret));
-            }
+            if (endpoint == null)
+                throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccountEndpoint));
+
+            if (accessId == null)
+                throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeyId));
+
+            if (password == null)
+                throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeySecret));
+
             if (account == null) {
-                account = new CloudAccount(userCode, password, server);
+                account = new CloudAccount(accessId, password, endpoint);
             }
         }
 
@@ -115,11 +112,11 @@ public class QueueServer implements IConnection {
      * @param content 消息内容
      * @return value 返回值，当前均为true
      */
-    public boolean append(CloudQueue queue, String content) {
+    public boolean append(CloudQueue queue, String content) throws ServiceException, ClientException {
         Message message = new Message();
         message.setMessageBody(content);
-        queue.putMessage(message);
-        return true;
+        Message result = queue.putMessage(message);
+        return !Utils.isEmpty(result.getMessageId());
     }
 
     /**
