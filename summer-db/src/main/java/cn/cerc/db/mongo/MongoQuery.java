@@ -348,8 +348,4 @@ public class MongoQuery extends DataSet implements IHandle {
         this.limit = limit;
     }
 
-    public void in(String string, List<String> corpList) {
-
-    }
-
 }
