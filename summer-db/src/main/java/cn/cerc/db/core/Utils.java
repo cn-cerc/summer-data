@@ -30,6 +30,11 @@ import javax.persistence.Transient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import cn.cerc.db.SummerDB;
 
 public class Utils {
@@ -672,4 +677,14 @@ public class Utils {
     public final static String findOid(Class<? extends EntityImpl> clazz, String defaultUid) {
         return EntityHelper.create(clazz).idFieldCode();
     }
+
+    /**
+     * 格式化输出JSON字符串
+     */
+    public final static String formatJson(String json) {
+        JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        return gson.toJson(jsonObject);
+    }
+
 }
