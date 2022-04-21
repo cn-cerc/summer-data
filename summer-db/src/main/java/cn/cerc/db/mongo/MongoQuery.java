@@ -3,8 +3,10 @@ package cn.cerc.db.mongo;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.bson.Document;
@@ -274,6 +276,23 @@ public class MongoQuery extends DataSet implements IHandle {
             throw new RuntimeException("错误的数据类型！");
         }
         return (List<Object>) value;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Set<Object> assignSet(String field) {
+        Object value = this.getValue(field);
+        if (value == null) {
+            Set<Object> items = new LinkedHashSet<>();
+            this.setValue(field, items);
+            return items;
+        }
+        if ((value instanceof Set<?>) || !(value instanceof List<?>))
+            throw new RuntimeException("错误的数据类型！");
+
+        Set<Object> items = new LinkedHashSet<>();
+        List<Object> list = (List<Object>) value;
+        items.addAll(list);
+        return items;
     }
 
     @SuppressWarnings("unchecked")
