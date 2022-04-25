@@ -3,7 +3,7 @@ package cn.cerc.db.core;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import cn.cerc.db.mongo.MongoDB;
+import cn.cerc.db.mongo.MongoConfig;
 import cn.cerc.db.mssql.MssqlServer;
 import cn.cerc.db.mysql.MysqlServerMaster;
 import cn.cerc.db.oss.OssConnection;
@@ -12,14 +12,14 @@ import cn.cerc.db.queue.QueueServer;
 public class StubSession implements ISession {
     private MysqlServerMaster mysql;
     private MssqlServer mssql;
-    private MongoDB mgConn;
+    private MongoConfig mgConn;
     private QueueServer queConn;
     private OssConnection ossConn;
 
     public StubSession() {
         mysql = new MysqlServerMaster();
         mssql = new MssqlServer();
-        mgConn = new MongoDB();
+        mgConn = new MongoConfig();
         queConn = new QueueServer();
         ossConn = new OssConnection();
     }
@@ -41,7 +41,7 @@ public class StubSession implements ISession {
         if (MssqlServer.SessionId.equals(key)) {
             return mssql;
         }
-        if (MongoDB.SessionId.equals(key))
+        if (MongoConfig.SessionId.equals(key))
             return mgConn;
         if (QueueServer.SessionId.equals(key))
             return queConn;

@@ -67,7 +67,7 @@ public class JPushBuilder {
         PushPayload payload = builder.build();
         try {
             PushResult result = JPushConfig.getClient().sendPush(payload);
-            log.info("Got result - " + result);
+            log.debug("Got result - " + result);
         } catch (APIConnectionException e) {
             log.error("Connection error, should retry later", e);
         } catch (APIRequestException e) {

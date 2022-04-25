@@ -18,10 +18,10 @@ import cn.cerc.db.core.NosqlOperator;
 
 public class MongoOperator implements NosqlOperator {
     private String tableName;
-    private MongoDB connection;
+    private MongoConfig connection;
 
     public MongoOperator(ISession session) {
-        this.connection = (MongoDB) session.getProperty(MongoDB.SessionId);
+        this.connection = (MongoConfig) session.getProperty(MongoConfig.SessionId);
     }
 
     public MongoOperator(IHandle owner) {

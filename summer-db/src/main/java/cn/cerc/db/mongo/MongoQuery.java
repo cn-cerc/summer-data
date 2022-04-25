@@ -33,7 +33,7 @@ import cn.cerc.db.core.Utils;
 public class MongoQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = -1262005194419604476L;
     private static final ClassResource res = new ClassResource(MongoQuery.class, SummerDB.ID);
-    private MongoDB connection = null;
+    private MongoConfig connection = null;
     // 数据库保存操作执行对象
     private NosqlOperator operator;
     private ISession session;
@@ -46,7 +46,7 @@ public class MongoQuery extends DataSet implements IHandle {
     public MongoQuery(IHandle handle) {
         super();
         this.session = handle.getSession();
-        connection = (MongoDB) getSession().getProperty(MongoDB.SessionId);
+        connection = (MongoConfig) getSession().getProperty(MongoConfig.SessionId);
     }
 
     public MongoQuery open() {

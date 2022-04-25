@@ -15,12 +15,13 @@ import cn.cerc.db.mysql.MysqlServerMaster;
 import cn.cerc.db.sqlite.SqliteServer;
 
 public class BatchScript implements IHandle {
+
     private static final Logger log = LoggerFactory.getLogger(BatchScript.class);
 
-    private StringBuffer items = new StringBuffer();
+    private StringBuilder builder = new StringBuilder();
     private ISession session;
     private boolean newLine = false;
-    private SqlServerType sqlServerType;
+    private final SqlServerType sqlServerType;
 
     public BatchScript(IHandle handle, SqlServerType sqlServerType) {
         super();
@@ -34,37 +35,37 @@ public class BatchScript implements IHandle {
     }
 
     public BatchScript addSemicolon() {
-        items.append(";" + Utils.vbCrLf);
+        builder.append(";" + Utils.vbCrLf);
         return this;
     }
 
     public BatchScript add(String sql) {
-        items.append(sql.trim() + " ");
+        builder.append(sql.trim() + " ");
         if (newLine) {
-            items.append(Utils.vbCrLf);
+            builder.append(Utils.vbCrLf);
         }
         return this;
     }
 
     public BatchScript add(String format, Object... args) {
-        items.append(String.format(format.trim(), args) + " ");
+        builder.append(String.format(format.trim(), args) + " ");
         if (newLine) {
-            items.append(Utils.vbCrLf);
+            builder.append(Utils.vbCrLf);
         }
         return this;
     }
 
-    public StringBuffer getItems() {
-        return items;
+    public StringBuilder getBuilder() {
+        return builder;
     }
 
     @Override
     public String toString() {
-        return items.toString();
+        return builder.toString();
     }
 
     public void print() {
-        String[] tmp = items.toString().split(";");
+        String[] tmp = builder.toString().split(";");
         for (String item : tmp) {
             if (!"".equals(item.trim())) {
                 log.info(item.trim() + ";");
@@ -73,7 +74,7 @@ public class BatchScript implements IHandle {
     }
 
     public BatchScript exec() {
-        String[] tmp = items.toString().split(";");
+        String[] tmp = builder.toString().split(";");
         ISqlServer server = getSqlServer();
         for (String item : tmp) {
             if (!"".equals(item.trim())) {
@@ -96,7 +97,7 @@ public class BatchScript implements IHandle {
     }
 
     public boolean exists() {
-        String[] tmp = items.toString().split(";");
+        String[] tmp = builder.toString().split(";");
         for (String item : tmp) {
             if (!"".equals(item.trim())) {
                 log.debug(item.trim() + ";");
@@ -120,7 +121,7 @@ public class BatchScript implements IHandle {
     }
 
     public int size() {
-        String[] tmp = items.toString().split(";");
+        String[] tmp = builder.toString().split(";");
         int len = 0;
         for (String item : tmp) {
             if (!"".equals(item.trim())) {
@@ -131,7 +132,7 @@ public class BatchScript implements IHandle {
     }
 
     public String getItem(int i) {
-        String[] tmp = items.toString().split(";");
+        String[] tmp = builder.toString().split(";");
         if (i < 0 && i > (tmp.length - 1)) {
             throw new RuntimeException("Command index out of range.");
         }
@@ -139,7 +140,7 @@ public class BatchScript implements IHandle {
     }
 
     public BatchScript clean() {
-        items = new StringBuffer();
+        builder.setLength(0);
         return this;
     }
 
