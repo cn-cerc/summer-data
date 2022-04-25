@@ -21,16 +21,6 @@ public class QueueConfig {
     }
 
     /**
-     * 回算队列
-     **/
-    public static final String getSummerQueue() {
-        String queue = config.getProperty("application.queue.summer");
-        if (Utils.isEmpty(queue))
-            throw new RuntimeException("the queue key application.queue.summer is empty");
-        return queue;
-    }
-
-    /**
      * 资料同步
      **/
     public static final String getMaterialQueue() {
