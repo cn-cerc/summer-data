@@ -4,7 +4,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public interface ISession extends AutoCloseable {
-    String TOKEN = "sid"; // session id
+    String TOKEN = "sid"; // session id 参数变量
+    String REPLICA = "replica"; // session id 参数复制
     String EDITION = "edition";
     String CORP_NO = "corp_no";
     String USER_CODE = "user_code";
