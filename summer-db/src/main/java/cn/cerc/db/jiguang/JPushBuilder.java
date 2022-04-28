@@ -69,13 +69,13 @@ public class JPushBuilder {
             PushResult result = JPushConfig.getClient().sendPush(payload);
             log.debug("Got result - " + result);
         } catch (APIConnectionException e) {
-            log.error("Connection error, should retry later", e);
+            log.debug("Connection error, should retry later", e);
         } catch (APIRequestException e) {
-            log.error("Should review the error, and fix the request", e);
-            log.info("HTTP Status: " + e.getStatus());
-            log.info("Error Code: " + e.getErrorCode());
-            log.info("Error Message: " + e.getErrorMessage());
-            log.info("PushPayload Message: " + payload);
+            log.debug("Should review the error, and fix the request", e);
+            log.debug("HTTP Status: " + e.getStatus());
+            log.debug("Error Code: " + e.getErrorCode());
+            log.debug("Error Message: " + e.getErrorMessage());
+            log.debug("PushPayload Message: " + payload);
         }
     }
 
