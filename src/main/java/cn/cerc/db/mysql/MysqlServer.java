@@ -7,6 +7,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -98,11 +100,28 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
         return dataSource;
     }
 
+    protected static final HikariDataSource createHikariDataSource(MysqlConfig config) throws SQLException {
+// Examines both filesystem and classpath for .properties file
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl("jdbc:mysql://localhost:3306/simpsons");
+        hikariConfig.setUsername("bart");
+        hikariConfig.setPassword("51mp50n");
+        hikariConfig.addDataSourceProperty("cachePrepStmts", "true");
+        hikariConfig.addDataSourceProperty("prepStmtCacheSize", "250");
+        hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+
+        HikariDataSource dataSource = new HikariDataSource(hikariConfig);
+        dataSource.getMaximumPoolSize();
+        dataSource.getConnection();
+        return dataSource;
+    }
+
     protected static final Connection getPoolConnection(ComboPooledDataSource dataSource) {
         Connection result = null;
         try {
             result = dataSource.getConnection();
-            log.debug("dataSource connection count:" + dataSource.getNumConnections());
+            log.info("MySQL connection pool => getMaxPoolSize {}, connection count {}, busy connection {}",
+                    dataSource.getMaxPoolSize(), dataSource.getNumConnections(), dataSource.getNumBusyConnections());
         } catch (SQLException e) {
             if (e.getCause() instanceof InterruptedException)
                 log.warn("mysql connection create timeout");
@@ -136,7 +155,7 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
 
     /**
      * 取得数据库中所有的表名
-     * 
+     *
      * @return 返回列表
      */
     public final List<String> tables(IHandle handle) {
