@@ -29,7 +29,7 @@ public class MysqlConfig {
     private static final String rds_IdleConnectionTestPeriod = "rds.IdleConnectionTestPeriod"; // default 9s
     public static final ClassConfig appConfig = new ClassConfig();
     public static final String JdbcDriver;
-    private Properties config;
+    private final Properties config;
 
     static {
         JdbcDriver = appConfig.getProperty("spring.datasource.driver-class-name", "com.mysql.cj.jdbc.Driver");
