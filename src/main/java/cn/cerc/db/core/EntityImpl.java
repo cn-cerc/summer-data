@@ -1,5 +1,6 @@
 package cn.cerc.db.core;
 
+import java.util.Map;
 import java.util.Objects;
 
 public interface EntityImpl {
@@ -22,7 +23,7 @@ public interface EntityImpl {
      * @param handle IHandle
      */
     default void onInsertPost(IHandle handle) {
-       
+
     }
 
     /**
@@ -31,6 +32,16 @@ public interface EntityImpl {
      * @param handle IHandle
      */
     default void onUpdatePost(IHandle handle) {
+
+    }
+
+    /**
+     * 输出时自动带出计算字段
+     * 
+     * @param DataRow    关连的数据源
+     * @param manyEntity 关连的对象
+     */
+    default void onJoinName(DataRow sender, Class<? extends EntityImpl> clazz, Map<String, String> items) {
 
     }
 

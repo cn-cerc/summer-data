@@ -676,8 +676,6 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     public DataSet setState(int state) {
-        if (this.readonly)
-            throw new UnsupportedOperationException("DataSet is readonly");
         this.state = state;
         return this;
     }
@@ -726,6 +724,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
                 meta.setKind(FieldKind.Memory);
         });
         this.setStorage(false);
+        this.setReadonly(false);
         return this;
     }
 
