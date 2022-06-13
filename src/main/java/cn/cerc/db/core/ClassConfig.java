@@ -29,7 +29,7 @@ public class ClassConfig implements IConfig {
         try {
             File file = new File(confFile);
             if (file.exists()) {
-                localConfig.load(new FileInputStream(confFile));
+                localConfig.load(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
                 log.info("{} is loaded.", confFile);
             } else {
                 log.warn("{} doesn't exist.", confFile);
