@@ -1,12 +1,13 @@
 package cn.cerc.db.core;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,33 +25,32 @@ public class ClassConfig implements IConfig {
 
     static {
         // 加载本地文件配置
-        String path = System.getProperty("user.home") + System.getProperty("file.separator");
-        String confFile = path + "summer-application.properties";
+        Path localFile = Paths.get(System.getProperty("user.home"), "summer-application.properties");
         try {
-            File file = new File(confFile);
-            if (file.exists()) {
-                localConfig.load(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
-                log.info("{} is loaded.", confFile);
+            if (Files.exists(localFile)) {
+                localConfig.load(Files.newInputStream(localFile));
+                log.info("{} is loaded.", localFile);
             } else {
-                log.warn("{} doesn't exist.", confFile);
+                log.warn("{} doesn't exist.", localFile);
             }
         } catch (FileNotFoundException e) {
-            log.error("The settings file does not exist: {}'", confFile);
+            log.error("The settings file does not exist: {}'", localFile);
         } catch (IOException e) {
-            log.error("Failed to load the settings from the file: {}", confFile);
+            log.error("Failed to load the settings from the file: {}", localFile);
         }
+
         // 加载项目文件配置
-        String confApp = "/application.properties";
+        String appFile = "/application.properties";
         try {
-            InputStream file = ClassConfig.class.getResourceAsStream(confApp);
-            if (file != null) {
-                applicationConfig.load(new InputStreamReader(file, StandardCharsets.UTF_8));
-                log.info("{} is loaded.", confApp);
+            InputStream input = ClassConfig.class.getResourceAsStream(appFile);
+            if (input != null) {
+                applicationConfig.load(new InputStreamReader(input, StandardCharsets.UTF_8));
+                log.info("{} is loaded.", appFile);
             } else {
-                log.warn("{} doesn't exist.", confApp);
+                log.warn("{} doesn't exist.", appFile);
             }
         } catch (IOException e) {
-            log.error("Failed to load the settings from the file: {}", confApp);
+            log.error("Failed to load the settings from the file: {}", appFile);
         }
     }
 
