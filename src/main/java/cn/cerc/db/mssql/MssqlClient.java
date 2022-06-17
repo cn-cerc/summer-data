@@ -8,7 +8,7 @@ public class MssqlClient implements ServerClient {
     private final Connection connection;
 
     public MssqlClient(Connection connection) {
-       this.connection = connection;
+        this.connection = connection;
     }
 
     @Override

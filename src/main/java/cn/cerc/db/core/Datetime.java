@@ -453,7 +453,8 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
             int year = Integer.valueOf(text.substring(0, 4));
             int month = Integer.valueOf(text.substring(5, 7));
             int day = Integer.valueOf(text.substring(8, 10));
-            return ldt.withYear(year == 0 ? 1 : year).withMonth(month == 0 ? 1 : month)
+            return ldt.withYear(year == 0 ? 1 : year)
+                    .withMonth(month == 0 ? 1 : month)
                     .withDayOfMonth(day == 0 ? 1 : day);
         }
         case 16:

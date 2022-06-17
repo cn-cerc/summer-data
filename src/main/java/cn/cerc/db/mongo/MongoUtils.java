@@ -32,19 +32,19 @@ public class MongoUtils {
 
     // 查找一条记录
     public Document findOneDocument(MongoCollection<Document> coll, BasicDBObject projection,
-                                    BasicDBObject fileterBasiObject) {
+            BasicDBObject fileterBasiObject) {
         return findDocument(coll, projection, fileterBasiObject, null, null, null).get(0);
     }
 
     // 查询文档
     public List<Document> findDocument(MongoCollection<Document> coll, BasicDBObject projection,
-                                       BasicDBObject fileterBasiObject) {
+            BasicDBObject fileterBasiObject) {
         return findDocument(coll, projection, fileterBasiObject, null, null, null);
     }
 
     // 查询文档
     public List<Document> findDocument(MongoCollection<Document> coll, BasicDBObject projection,
-                                       BasicDBObject fileterBasiObject, BasicDBObject sort, Integer skip, Integer limit) {
+            BasicDBObject fileterBasiObject, BasicDBObject sort, Integer skip, Integer limit) {
         List<Document> list = null;
         if (skip != null) {
             skip = skip <= 0 ? 0 : skip;
@@ -58,7 +58,11 @@ public class MongoUtils {
         sort = sort == null ? new BasicDBObject("_id", 1) : sort;
         try {
             if (skip != null && limit != null) {
-                list = coll.find(fileterBasiObject).projection(projection).sort(sort).skip(skip).limit(limit)
+                list = coll.find(fileterBasiObject)
+                        .projection(projection)
+                        .sort(sort)
+                        .skip(skip)
+                        .limit(limit)
                         .into(new ArrayList<Document>());
             } else {
                 list = coll.find(fileterBasiObject).projection(projection).sort(sort).into(new ArrayList<Document>());

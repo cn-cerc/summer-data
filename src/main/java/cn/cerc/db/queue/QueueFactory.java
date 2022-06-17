@@ -21,15 +21,13 @@ public class QueueFactory {
         String password = config.getProperty(QueueServer.AccessKeySecret);
         String token = config.getProperty(QueueServer.SecurityToken);
         if (server == null) {
-            throw new RuntimeException(
-                    String.format(res.getString(1, "%s 配置为空"), QueueServer.AccountEndpoint));
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccountEndpoint));
         }
         if (userCode == null) {
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeyId));
         }
         if (password == null) {
-            throw new RuntimeException(
-                    String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeySecret));
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeySecret));
         }
         if (token == null) {
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.SecurityToken));

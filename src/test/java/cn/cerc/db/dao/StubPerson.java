@@ -88,7 +88,7 @@ public class StubPerson implements BigRecord {
 
     @Override
     public void setEntityHome(EntityHomeImpl entityHome) {
-        
+
     }
 
     @Override

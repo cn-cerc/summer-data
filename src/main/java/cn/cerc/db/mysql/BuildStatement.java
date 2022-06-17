@@ -76,7 +76,7 @@ public class BuildStatement implements AutoCloseable {
         String result = ps.toString();
         return result.substring(result.indexOf(':') + 2);
     }
-    
+
     public String getPrepareCommand() {
         return build.toString();
     }

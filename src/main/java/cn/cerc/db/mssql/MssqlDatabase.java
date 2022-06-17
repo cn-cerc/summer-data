@@ -343,8 +343,16 @@ public class MssqlDatabase implements IHandle, ISqlDatabase {
                 if (index.unique()) {
                     sb.append(" unique");
                 }
-                sb.append(" nonclustered index ").append(index.name()).append(" on ").append(table()).append("(")
-                        .append(index.columnList()).append(")").append(" on [primary]").append("\n").append("go\n");
+                sb.append(" nonclustered index ")
+                        .append(index.name())
+                        .append(" on ")
+                        .append(table())
+                        .append("(")
+                        .append(index.columnList())
+                        .append(")")
+                        .append(" on [primary]")
+                        .append("\n")
+                        .append("go\n");
             }
         }
         return sb.toString();

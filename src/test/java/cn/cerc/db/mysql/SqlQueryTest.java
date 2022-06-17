@@ -39,8 +39,7 @@ public class SqlQueryTest implements IHandle {
         String sql;
         sql = String.format("select Code_,Name_ from %s", userInfo);
         ds.add(sql);
-        assertEquals(String.format("%s limit %s", sql, (BigdataException.MAX_RECORDS + 2)),
-                ds.sql().getCommand());
+        assertEquals(String.format("%s limit %s", sql, (BigdataException.MAX_RECORDS + 2)), ds.sql().getCommand());
 
         ds = new MysqlQuery(this);
         sql = String.format("select Code_,Name_ from %s limit 1", userInfo);
@@ -53,8 +52,7 @@ public class SqlQueryTest implements IHandle {
         sql = String.format("select Code_,Name_ from %s", userInfo);
         ds.add(sql);
 
-        assertEquals(String.format("%s limit %s", sql, (BigdataException.MAX_RECORDS + 2)),
-                ds.sql().getCommand());
+        assertEquals(String.format("%s limit %s", sql, (BigdataException.MAX_RECORDS + 2)), ds.sql().getCommand());
     }
 
     @Test

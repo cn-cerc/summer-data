@@ -87,7 +87,8 @@ public class Locker implements Closeable {
                         }
                     }
                     Datetime tmp = new Datetime(lastTime);
-                    this.message = String.format(res.getString(3, "[%s]%s锁定失败， %s完成后(%s)再试"), key, flag, args[1], tmp.getTime());
+                    this.message = String.format(res.getString(3, "[%s]%s锁定失败， %s完成后(%s)再试"), key, flag, args[1],
+                            tmp.getTime());
                 } else {
                     this.message = String.format(res.getString(4, "[%s]%s锁定失败， %s完成后再试"), key, flag, currentValue);
                 }

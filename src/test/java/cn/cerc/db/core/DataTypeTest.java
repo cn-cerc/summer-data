@@ -65,7 +65,7 @@ public class DataTypeTest {
         assertEquals("s4", fieldType.readData("abcd").toString());
         assertEquals("s4", fieldType.readData("abc").toString());
     }
-    
+
     @Test
     public void test_clone() {
         DataType type1 = new DataType();

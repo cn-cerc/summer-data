@@ -52,7 +52,7 @@ public class ClassData {
             sb.append(" from ").append("`" + tableId + "`");
             select = sb.toString();
         }
-        
+
         // 查找自增字段并赋值
         int count = 0;
         for (String key : fields.keySet()) {

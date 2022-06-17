@@ -456,8 +456,9 @@ public class DataRow implements Serializable, IRecord {
                     variant.setData(value).writeToEntity(entity, field);
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 e.printStackTrace();
-                throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
-                        value.getClass().getName(), field.getType().getName()));
+                throw new RuntimeException(
+                        String.format("field %s error: %s as %s", field.getName(), value.getClass().getName(),
+                                field.getType().getName()));
             }
         }
     }

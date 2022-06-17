@@ -38,8 +38,10 @@ public class NasQuery extends DataSet implements IHandle {
 
     public NasQuery open() {
         try {
-            this.fileName = this.sql().text()
-                    .substring(this.sql().text().indexOf("select") + 6, this.sql().text().indexOf("from")).trim();
+            this.fileName = this.sql()
+                    .text()
+                    .substring(this.sql().text().indexOf("select") + 6, this.sql().text().indexOf("from"))
+                    .trim();
             this.filePath = SqlText.findTableName(this.sql().text());
         } catch (Exception e) {
             throw new RuntimeException("command suggest: select fileName from filePath");

@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import cn.cerc.db.core.EntityImpl;
 
-public interface BigRecord extends Serializable, EntityImpl{
+public interface BigRecord extends Serializable, EntityImpl {
 
     /**
      * 将 record 与 base 的差值，合并到self

@@ -14,8 +14,8 @@ public class QueryLocateTest {
             if (!ds.locate("code;value", "a", i + 1))
                 System.err.println("error: " + i);
         }
-        System.out.println(
-                String.format("%d, size: %d, append: %sms, locate：%sms", flag, ds.size(), end, System.currentTimeMillis() - start));
+        System.out.println(String.format("%d, size: %d, append: %sms, locate：%sms", flag, ds.size(), end,
+                System.currentTimeMillis() - start));
     }
 
     public static void main(String[] args) {

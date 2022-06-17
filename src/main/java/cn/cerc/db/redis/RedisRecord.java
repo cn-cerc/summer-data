@@ -20,7 +20,6 @@ public class RedisRecord implements IRecord {
     // 缓存对象
     private boolean connected;
 
-
     public RedisRecord() {
         super();
     }
@@ -79,7 +78,7 @@ public class RedisRecord implements IRecord {
         connected = true;
         existsData = false;
         String recordStr = Redis.get(key);
-        log.debug("cache get: {} - {}" , key  , recordStr);
+        log.debug("cache get: {} - {}", key, recordStr);
         if (recordStr != null && !"".equals(recordStr)) {
             try {
                 record.setJson(recordStr);
@@ -118,7 +117,7 @@ public class RedisRecord implements IRecord {
     public boolean Connected() {
         return connected;
     }
-    
+
     @Deprecated
     public Datetime getDateTime(String field) {
         return record.getDatetime(field);
@@ -158,7 +157,7 @@ public class RedisRecord implements IRecord {
     public Object getValue(String field) {
         return record.getValue(field);
     }
-    
+
     @Deprecated
     public Object getField(String field) {
         return getValue(field);

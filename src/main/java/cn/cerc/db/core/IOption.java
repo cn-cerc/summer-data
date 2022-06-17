@@ -7,7 +7,7 @@ public interface IOption {
     String getTitle();
 
     String getValue(IHandle handle);
-    
+
     default String getDefault() {
         return "";
     }

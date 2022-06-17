@@ -104,7 +104,8 @@ public class SqlTextDecode {
     }
 
     public static void main(String[] args) {
-        SqlTextDecode decode = new SqlTextDecode("select code_,name_ from SvrDept where a='a1' and b='bb1' order by a,b");
+        SqlTextDecode decode = new SqlTextDecode(
+                "select code_,name_ from SvrDept where a='a1' and b='bb1' order by a,b");
         System.out.println(decode.fields());
         System.out.println(decode.getTable());
         for (SqlFieldFilter fw : decode.getWhere())

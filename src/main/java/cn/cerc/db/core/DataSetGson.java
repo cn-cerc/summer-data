@@ -310,8 +310,10 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
         };
 
         GsonBuilder build = new GsonBuilder().registerTypeAdapter(FieldDefs.class, gsonFieldDefs)
-                .registerTypeAdapter(FieldMeta.class, gsonFieldMeta).registerTypeAdapter(DataRow.class, gsonRecord)
-                .registerTypeAdapter(Date.class, gsonDate).registerTypeAdapter(Double.class, gsonDouble)
+                .registerTypeAdapter(FieldMeta.class, gsonFieldMeta)
+                .registerTypeAdapter(DataRow.class, gsonRecord)
+                .registerTypeAdapter(Date.class, gsonDate)
+                .registerTypeAdapter(Double.class, gsonDouble)
                 .serializeNulls();
 
         build.registerTypeAdapter(dataSet.getClass(), this);

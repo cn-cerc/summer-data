@@ -29,5 +29,5 @@ public class MysqlQuery extends SqlQuery implements IHandle {
             new DataSetGson<>(this).decode(json);
         return this;
     }
-    
+
 }

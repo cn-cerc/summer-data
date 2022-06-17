@@ -26,7 +26,7 @@ public class utilsTest2 {
     // 以下代码请勿删除，此是用于大量数据批次测试的范本
     @Parameters
     public static Collection<Object[]> init() {
-        Object[][] objects = {{1.234, 1.23}, {1.235, 1.24}, {1.245, 1.25}};
+        Object[][] objects = { { 1.234, 1.23 }, { 1.235, 1.24 }, { 1.245, 1.25 } };
         return Arrays.asList(objects);
     }
 

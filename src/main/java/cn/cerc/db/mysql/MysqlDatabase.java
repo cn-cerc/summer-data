@@ -93,7 +93,10 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
             }
             if (Utils.isEmpty(fields))
                 throw new RuntimeException("lack primary key");
-            sb.append(",").append("\n").append("primary key (").append(fields.substring(0, fields.length() - 1))
+            sb.append(",")
+                    .append("\n")
+                    .append("primary key (")
+                    .append(fields.substring(0, fields.length() - 1))
                     .append(")");
         }
         sb.append("\n) engine=innodb charset=utf8 collate=utf8_general_ci;");

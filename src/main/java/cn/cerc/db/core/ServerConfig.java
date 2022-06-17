@@ -29,7 +29,7 @@ public enum ServerConfig implements IConfig {
 
     // 正式环境
     public static boolean isServerMaster() {
-        String tmp = config.getString("version", "develop"); 
+        String tmp = config.getString("version", "develop");
         if ("release".equals(tmp)) {
             return true;
         }

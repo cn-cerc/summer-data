@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 public @interface SqlServer {
 
     SqlServerType type() default SqlServerType.Mysql;
-    
+
 }

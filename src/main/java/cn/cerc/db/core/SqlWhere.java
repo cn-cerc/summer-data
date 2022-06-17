@@ -529,19 +529,19 @@ public class SqlWhere {
     }
 
     public static void main(String[] args) {
-        //code is null
+        // code is null
         System.out.println(new SqlWhere().eq("code", null));
-        
-        //code in (1,3,4)
+
+        // code in (1,3,4)
         System.out.println(new SqlWhere().in("code", List.of(1, 3, 4)));
-        
-        //code in (select code_ from xxx)
+
+        // code in (select code_ from xxx)
         System.out.println(new SqlWhere().in("code", "select code_ from xxx"));
-        
-        //((WHCode='A01' and PartCode='P01') or (WHCode='A01' and PartCode='P02'))
+
+        // ((WHCode='A01' and PartCode='P01') or (WHCode='A01' and PartCode='P02'))
         List<Object[]> items = new ArrayList<>();
-        items.add(new Object[] {"A01", "P01"});
-        items.add(new Object[] {"A01", "P02"});
+        items.add(new Object[] { "A01", "P01" });
+        items.add(new Object[] { "A01", "P02" });
         System.out.println(new SqlWhere().inGroup(List.of("WHCode", "PartCode"), items));
     }
 

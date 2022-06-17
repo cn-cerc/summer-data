@@ -24,9 +24,9 @@ public class Queue {
     public String read() {
         message = client.popMessage();
         if (message != null) {
-            log.debug("messageBody：{}" , message.getMessageBodyAsString());
-            log.debug("messageId：{}" , message.getMessageId());
-            log.debug("receiptHandle：{}" , message.getReceiptHandle());
+            log.debug("messageBody：{}", message.getMessageBodyAsString());
+            log.debug("messageId：{}", message.getMessageId());
+            log.debug("receiptHandle：{}", message.getReceiptHandle());
             log.debug(message.getMessageBody());
             receiptHandle = message.getReceiptHandle();
             return message.getMessageBody();

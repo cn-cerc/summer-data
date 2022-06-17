@@ -5,7 +5,7 @@ import org.junit.Test;
 import junit.framework.TestCase;
 
 public class DataSetTest extends TestCase {
-    
+
     @Test
     public void test_list() {
         DataSet ds = new DataSet();

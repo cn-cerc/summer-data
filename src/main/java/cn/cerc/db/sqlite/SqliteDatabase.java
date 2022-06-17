@@ -65,8 +65,13 @@ public class SqliteDatabase implements ISqlDatabase {
                 if (index.unique()) {
                     sb.append(" unique");
                 }
-                sb.append(" index ").append(index.name()).append(" on ").append(table()).append("(")
-                        .append(index.columnList()).append(");\n");
+                sb.append(" index ")
+                        .append(index.name())
+                        .append(" on ")
+                        .append(table())
+                        .append("(")
+                        .append(index.columnList())
+                        .append(");\n");
             }
         }
         return sb.toString();

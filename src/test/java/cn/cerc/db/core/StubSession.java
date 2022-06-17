@@ -94,7 +94,7 @@ public class StubSession implements ISession {
     @Override
     public void setRequest(HttpServletRequest request) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
@@ -106,7 +106,7 @@ public class StubSession implements ISession {
     @Override
     public void setResponse(HttpServletResponse response) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override

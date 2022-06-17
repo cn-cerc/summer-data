@@ -30,7 +30,7 @@ public class RecordFilter {
         // 删减字段
         if (processor.fields() != null) {
             List<FieldMeta> items = new ArrayList<>();
-            for (FieldMeta meta : dataOut.fields()) 
+            for (FieldMeta meta : dataOut.fields())
                 items.add(meta);
             for (FieldMeta meta : items) {
                 if (!processor.fields().exists(meta.code()))
