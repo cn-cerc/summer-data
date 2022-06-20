@@ -3,6 +3,8 @@ package cn.cerc.db.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.Table;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -249,6 +251,23 @@ public class SqlQuery extends DataSet implements IHandle {
 
     public SqlWhere addWhere() {
         return sql.addWhere();
+    }
+
+    /**
+     * 自动生成 select 指令
+     * 
+     * @param clazz extends EntityImpl
+     * @return SqlWhere
+     */
+    public SqlWhere addWhere(Class<? extends EntityImpl> clazz) {
+        // 查找表名
+        String table = clazz.getSimpleName();
+        Table object = clazz.getDeclaredAnnotation(Table.class);
+        if (object != null && !Utils.isEmpty(object.name()))
+            table = object.name();
+        // 自动生成select指令
+        sql.add("select * from %s", table);
+        return this.addWhere();
     }
 
     public SqlWhere addWhere(DataRow dataRow) {
