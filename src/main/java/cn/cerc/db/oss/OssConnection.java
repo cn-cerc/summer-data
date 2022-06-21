@@ -159,16 +159,21 @@ public class OssConnection implements IConnection {
         }
     }
 
+    @Deprecated
+    public String getFileUrl(String fileName, String def) {
+        return this.buildFileUrl(fileName, def);
+    }
+
     /**
-     * 返回可用的文件名称
+     * 构建OSS文件的绝对访问路径
      *
      * @param fileName 带完整路径的文件名
      * @param def      默认值
      * @return 若存在则返回路径，否则返回默认值
      */
-    public String getFileUrl(String fileName, String def) {
+    public String buildFileUrl(String fileName, String def) {
         if (existsFile(fileName)) {
-            return String.format("%s/%s", site, fileName);
+            return String.format("%s/%s", this.getSite(), fileName);
         } else {
             return def;
         }
