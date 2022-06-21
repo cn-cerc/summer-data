@@ -18,11 +18,14 @@ public class SqlWhere {
     private DataRow dataRow = null;
 
     public enum JoinDirectionEnum {
-        And, Or
+        And,
+        Or
     }
 
     public enum LinkOptionEnum {
-        Right, Left, All
+        Right,
+        Left,
+        All
     }
 
     public SqlWhere() {
@@ -394,7 +397,7 @@ public class SqlWhere {
 
     public SqlText build() {
         SqlWhere origin = this.origin != null ? this.origin : this;
-        if (origin.sqlText != null && sb.length() > 0)
+        if (origin.sqlText != null && origin.sb.length() > 0)
             origin.sqlText.add("where " + origin.toString());
         return origin.sqlText;
     }
