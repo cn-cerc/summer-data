@@ -28,7 +28,7 @@ public class MongoConfig implements IConnection, AutoCloseable {
     public static final String mgdb_maxpoolsize = "mgdb.maxpoolsize";
 //    public static final String SessionId = "mongoSession";
 
-    private static MongoClient client;
+    private MongoClient client;
     private static String databaseName;
     private MongoDatabase database;
     private final IConfig config;
@@ -43,31 +43,29 @@ public class MongoConfig implements IConnection, AutoCloseable {
             return database;
         }
 
-        if (MongoConfig.client == null) {
-            databaseName = config.getProperty(MongoConfig.mongodb_database);
-            StringBuilder builder = new StringBuilder();
-            builder.append("mongodb://");
-            // userName
-            builder.append(config.getProperty(MongoConfig.mongodb_username));
-            // password
-            builder.append(":").append(config.getProperty(MongoConfig.mongodb_password));
-            // ip
-            builder.append("@").append(config.getProperty(MongoConfig.mgdb_site));
-            // database
-            builder.append("/").append(config.getProperty(MongoConfig.mongodb_database));
+        databaseName = config.getProperty(MongoConfig.mongodb_database);
+        StringBuilder builder = new StringBuilder();
+        builder.append("mongodb://");
+        // userName
+        builder.append(config.getProperty(MongoConfig.mongodb_username));
+        // password
+        builder.append(":").append(config.getProperty(MongoConfig.mongodb_password));
+        // ip
+        builder.append("@").append(config.getProperty(MongoConfig.mgdb_site));
+        // database
+        builder.append("/").append(config.getProperty(MongoConfig.mongodb_database));
 
-            if ("true".equals(config.getProperty(MongoConfig.mgdb_enablerep))) {
-                // replacaset
-                builder.append("?").append("replicaSet=").append(config.getProperty(MongoConfig.mgdb_replicaset));
-                // poolsize
-                builder.append("&").append("maxPoolSize=").append(config.getProperty(MongoConfig.mgdb_maxpoolsize));
-                builder.append("&").append("connectTimeoutMS=").append("3000");
-                builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
-                log.info("Connect to the MongoDB sharded cluster:" + builder);
-            }
-            MongoClientURI connectionString = new MongoClientURI(builder.toString());
-            client = new MongoClient(connectionString);
+        if ("true".equals(config.getProperty(MongoConfig.mgdb_enablerep))) {
+            // replacaset
+            builder.append("?").append("replicaSet=").append(config.getProperty(MongoConfig.mgdb_replicaset));
+            // poolsize
+            builder.append("&").append("maxPoolSize=").append(config.getProperty(MongoConfig.mgdb_maxpoolsize));
+            builder.append("&").append("connectTimeoutMS=").append("3000");
+            builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
+            log.info("Connect to the MongoDB sharded cluster:" + builder);
         }
+        MongoClientURI connectionString = new MongoClientURI(builder.toString());
+        client = new MongoClient(connectionString);
         database = client.getDatabase(databaseName);
         return database;
     }
@@ -77,8 +75,8 @@ public class MongoConfig implements IConnection, AutoCloseable {
         if (database != null) {
             database = null;
         }
-//        client.close();
-    }
+        client.close();
+   }
 
     public IConfig getConfig() {
         return config;

@@ -5,7 +5,6 @@ import java.util.Date;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -23,9 +22,6 @@ public class MongoOperator implements AutoCloseable {
         super();
         connection = new MongoConfig();
         MongoDatabase db = connection.getClient();
-        BasicDBObject bson = BasicDBObject.parse("db.serverStatus()");
-        Document result = db.runCommand(bson);
-        System.out.println(result);
         collection = db.getCollection(collectionName);
     }
 

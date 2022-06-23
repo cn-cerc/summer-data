@@ -53,34 +53,34 @@ public class MongoQuery extends DataSet implements IHandle {
         try (MongoConfig connection = new MongoConfig()) {
             MongoDatabase db = connection.getClient();
             coll = db.getCollection(table);
-        }
-        // 增加查询条件
-        BasicDBObject filter = decodeWhere(this.sql().text());
-        // 增加排序条件
-        BasicDBObject sort = decodeOrder(this.sql().text());
-        // 执行查询
-        FindIterable<Document> findIterable = coll.find(filter).sort(sort).limit(limit);
-        ArrayList<Document> list = findIterable.into(new ArrayList<>());
-        // 数据不存在,则状态不为更新,并返回一个空数据
-        if (list.isEmpty()) {
+            // 增加查询条件
+            BasicDBObject filter = decodeWhere(this.sql().text());
+            // 增加排序条件
+            BasicDBObject sort = decodeOrder(this.sql().text());
+            // 执行查询
+            FindIterable<Document> findIterable = coll.find(filter).sort(sort).limit(limit);
+            ArrayList<Document> list = findIterable.into(new ArrayList<>());
+            // 数据不存在,则状态不为更新,并返回一个空数据
+            if (list.isEmpty()) {
+                return this;
+            }
+
+            for (Document doc : list) {
+                DataRow record = append().current();
+                for (String field : doc.keySet()) {
+                    if ("_id".equals(field)) {
+                        Object uid = doc.get(field);
+                        record.setValue(field, uid != null ? uid.toString() : uid);
+                    } else {
+                        record.setValue(field, doc.get(field));
+                    }
+                }
+                record.setState(DataRowState.None);
+            }
+            this.first();
+            this.active = true;
             return this;
         }
-
-        for (Document doc : list) {
-            DataRow record = append().current();
-            for (String field : doc.keySet()) {
-                if ("_id".equals(field)) {
-                    Object uid = doc.get(field);
-                    record.setValue(field, uid != null ? uid.toString() : uid);
-                } else {
-                    record.setValue(field, doc.get(field));
-                }
-            }
-            record.setState(DataRowState.None);
-        }
-        this.first();
-        this.active = true;
-        return this;
     }
 
     // 将sql指令查询条件改为MongoDB格式
