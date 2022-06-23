@@ -13,8 +13,6 @@ import org.slf4j.LoggerFactory;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 
-import cn.cerc.db.core.StubSession;
-
 public class MongoUtilsTest {
     private static final Logger log = LoggerFactory.getLogger(MongoUtilsTest.class);
 
@@ -22,8 +20,7 @@ public class MongoUtilsTest {
 
     @BeforeClass
     public static void init() {
-        StubSession handle = new StubSession();
-        utils = new MongoUtils(handle);
+        utils = new MongoUtils();
     }
 
     /**

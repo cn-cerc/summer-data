@@ -26,7 +26,7 @@ public class MongoConfig implements IConnection, AutoCloseable {
     public static final String mgdb_enablerep = "mgdb.enablerep";
     public static final String mgdb_replicaset = "mgdb.replicaset";
     public static final String mgdb_maxpoolsize = "mgdb.maxpoolsize";
-    public static final String SessionId = "mongoSession";
+//    public static final String SessionId = "mongoSession";
 
     private static MongoClient client;
     private static String databaseName;
@@ -77,6 +77,7 @@ public class MongoConfig implements IConnection, AutoCloseable {
         if (database != null) {
             database = null;
         }
+//        client.close();
     }
 
     public IConfig getConfig() {

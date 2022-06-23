@@ -9,20 +9,13 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
-import cn.cerc.db.core.IHandle;
-import cn.cerc.db.core.ISession;
-
-public class MongoUtils {
+public class MongoUtils implements AutoCloseable {
     private MongoConfig connection;
     private MongoDatabase database;
 
-    public MongoUtils(ISession session) {
-        connection = (MongoConfig) session.getProperty(MongoConfig.SessionId);
+    public MongoUtils() {
+        connection = new MongoConfig();
         database = connection.getClient();
-    }
-
-    public MongoUtils(IHandle owner) {
-        this(owner.getSession());
     }
 
     // 获取Collection by name
@@ -110,5 +103,10 @@ public class MongoUtils {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void close() {
+        connection.close();
     }
 }
