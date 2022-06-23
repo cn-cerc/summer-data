@@ -15,6 +15,7 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 
 import cn.cerc.db.SummerDB;
 import cn.cerc.db.core.ClassResource;
@@ -25,7 +26,6 @@ import cn.cerc.db.core.DataSetGson;
 import cn.cerc.db.core.FieldMeta;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
-import cn.cerc.db.core.NosqlOperator;
 import cn.cerc.db.core.SqlServerType;
 import cn.cerc.db.core.SqlText;
 import cn.cerc.db.core.Utils;
@@ -33,9 +33,6 @@ import cn.cerc.db.core.Utils;
 public class MongoQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = -1262005194419604476L;
     private static final ClassResource res = new ClassResource(MongoQuery.class, SummerDB.ID);
-    private MongoConfig connection = null;
-    // 数据库保存操作执行对象
-    private NosqlOperator operator;
     private ISession session;
     private boolean active;
     private final SqlText sql = new SqlText(SqlServerType.Mysql);
@@ -46,41 +43,44 @@ public class MongoQuery extends DataSet implements IHandle {
     public MongoQuery(IHandle handle) {
         super();
         this.session = handle.getSession();
-        connection = (MongoConfig) getSession().getProperty(MongoConfig.SessionId);
     }
 
     public MongoQuery open() {
         this.setStorage(true);
         String table = SqlText.findTableName(this.sql().text());
         // 查找业务ID对应的数据
-        MongoCollection<Document> coll = connection.getClient().getCollection(table);
-        // 增加查询条件
-        BasicDBObject filter = decodeWhere(this.sql().text());
-        // 增加排序条件
-        BasicDBObject sort = decodeOrder(this.sql().text());
-        // 执行查询
-        FindIterable<Document> findIterable = coll.find(filter).sort(sort).limit(limit);
-        ArrayList<Document> list = findIterable.into(new ArrayList<>());
-        // 数据不存在,则状态不为更新,并返回一个空数据
-        if (list.isEmpty()) {
+        MongoCollection<Document> coll = null;
+        try (MongoConfig connection = new MongoConfig()) {
+            MongoDatabase db = connection.getClient();
+            coll = db.getCollection(table);
+            // 增加查询条件
+            BasicDBObject filter = decodeWhere(this.sql().text());
+            // 增加排序条件
+            BasicDBObject sort = decodeOrder(this.sql().text());
+            // 执行查询
+            FindIterable<Document> findIterable = coll.find(filter).sort(sort).limit(limit);
+            ArrayList<Document> list = findIterable.into(new ArrayList<>());
+            // 数据不存在,则状态不为更新,并返回一个空数据
+            if (list.isEmpty()) {
+                return this;
+            }
+
+            for (Document doc : list) {
+                DataRow record = append().current();
+                for (String field : doc.keySet()) {
+                    if ("_id".equals(field)) {
+                        Object uid = doc.get(field);
+                        record.setValue(field, uid != null ? uid.toString() : uid);
+                    } else {
+                        record.setValue(field, doc.get(field));
+                    }
+                }
+                record.setState(DataRowState.None);
+            }
+            this.first();
+            this.active = true;
             return this;
         }
-
-        for (Document doc : list) {
-            DataRow record = append().current();
-            for (String field : doc.keySet()) {
-                if ("_id".equals(field)) {
-                    Object uid = doc.get(field);
-                    record.setValue(field, uid != null ? uid.toString() : uid);
-                } else {
-                    record.setValue(field, doc.get(field));
-                }
-            }
-            record.setState(DataRowState.None);
-        }
-        this.first();
-        this.active = true;
-        return this;
     }
 
     // 将sql指令查询条件改为MongoDB格式
@@ -203,31 +203,24 @@ public class MongoQuery extends DataSet implements IHandle {
 
     @Override
     protected final void insertStorage(DataRow record) {
-        getOperator().insert(record);
+        try (MongoOperator operator = new MongoOperator(SqlText.findTableName(this.sql().text()))) {
+            operator.insert(record);
+        }
     }
 
     @Override
     protected final void updateStorage(DataRow record) {
-        getOperator().update(record);
+        try (MongoOperator operator = new MongoOperator(SqlText.findTableName(this.sql().text()))) {
+            operator.update(record);
+        }
     }
 
     @Override
     protected final void deleteStorage(DataRow record) {
-        if (getOperator().delete(record))
-            garbage().remove(record);
-    }
-
-    private NosqlOperator getOperator() {
-        if (operator == null) {
-            MongoOperator obj = new MongoOperator(this);
-            obj.setTableName(SqlText.findTableName(this.getSqlText().text()));
-            operator = obj;
+        try (MongoOperator operator = new MongoOperator(SqlText.findTableName(this.sql().text()))) {
+            if (operator.delete(record))
+                garbage().remove(record);
         }
-        return operator;
-    }
-
-    public void setOperator(NosqlOperator operator) {
-        this.operator = operator;
     }
 
     // 将通用类型，转成DataSet，方便操作

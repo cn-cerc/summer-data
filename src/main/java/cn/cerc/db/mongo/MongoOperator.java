@@ -6,61 +6,44 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
 import cn.cerc.db.core.DataRow;
 import cn.cerc.db.core.Datetime;
-import cn.cerc.db.core.IHandle;
-import cn.cerc.db.core.ISession;
-import cn.cerc.db.core.NosqlOperator;
 
-public class MongoOperator implements NosqlOperator {
-    private String tableName;
+public class MongoOperator implements AutoCloseable {
     private MongoConfig connection;
+    private MongoCollection<Document> collection;
 
-    public MongoOperator(ISession session) {
-        this.connection = (MongoConfig) session.getProperty(MongoConfig.SessionId);
+    public MongoOperator(String collectionName) {
+        super();
+        connection = new MongoConfig();
+        MongoDatabase db = connection.getClient();
+        collection = db.getCollection(collectionName);
     }
 
-    public MongoOperator(IHandle owner) {
-        this(owner.getSession());
-    }
-
-    @Override
     public boolean insert(DataRow record) {
-        MongoCollection<Document> coll = connection.getClient().getCollection(this.tableName);
         Document doc = getValue(record);
-        coll.insertOne(doc);
+        collection.insertOne(doc);
         return true;
     }
 
-    @Override
     public boolean update(DataRow record) {
-        MongoCollection<Document> coll = connection.getClient().getCollection(this.tableName);
         Document doc = getValue(record);
         String uid = record.getString("_id");
         Object key = "".equals(uid) ? "null" : new ObjectId(uid);
-        UpdateResult res = coll.replaceOne(Filters.eq("_id", key), doc);
+        UpdateResult res = collection.replaceOne(Filters.eq("_id", key), doc);
         return res.getModifiedCount() == 1;
     }
 
-    @Override
     public boolean delete(DataRow record) {
-        MongoCollection<Document> coll = connection.getClient().getCollection(this.tableName);
         String uid = record.getString("_id");
         Object key = "".equals(uid) ? "null" : new ObjectId(uid);
-        DeleteResult res = coll.deleteOne(Filters.eq("_id", key));
+        DeleteResult res = collection.deleteOne(Filters.eq("_id", key));
         return res.getDeletedCount() == 1;
-    }
-
-    public String getTableName() {
-        return tableName;
-    }
-
-    public void setTableName(String tableName) {
-        this.tableName = tableName;
     }
 
     private Document getValue(DataRow record) {
@@ -77,5 +60,11 @@ public class MongoOperator implements NosqlOperator {
             }
         }
         return doc;
+    }
+
+    @Override
+    public void close() {
+        this.connection.close();
+        this.collection = null;
     }
 }
