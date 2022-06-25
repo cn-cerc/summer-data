@@ -10,9 +10,11 @@ import cn.cerc.db.core.IRecord;
 public class RedisRecord implements IRecord {
     private static final Logger log = LoggerFactory.getLogger(RedisRecord.class);
 
+    public static final int TIMEOUT = 3600;
+
     private String key;
     private boolean existsData = false;
-    private int expires = 3600; // 单位：秒
+    private int expires = RedisRecord.TIMEOUT; // 单位：秒
 
     private DataRow record = new DataRow();
     private boolean modified = false;
