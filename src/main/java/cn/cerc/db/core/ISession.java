@@ -14,6 +14,7 @@ public interface ISession extends AutoCloseable {
     String CLIENT_DEVICE = "device"; // client device
     String LOGIN_SERVER = "login_server";
     String REQUEST = "request";
+    String JSESSIONID = "JSESSIONID";
 
     // 自定义参数，注：若key=null则返回实现接口的对象本身
     Object getProperty(String key);
