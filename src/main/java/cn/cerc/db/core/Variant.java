@@ -306,9 +306,8 @@ public class Variant {
             field.set(entity, this.getEnum((Class<Enum<?>>) field.getType()));
         else {
             if (this.data() != null)
-                throw new RuntimeException(
-                        String.format("field %s error: %s as %s", field.getName(), this.data().getClass().getName(),
-                                field.getType().getName()));
+                throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
+                        this.data().getClass().getName(), field.getType().getName()));
             else
                 throw new RuntimeException(
                         String.format("field %s error: %s to null", field.getName(), field.getType().getName()));

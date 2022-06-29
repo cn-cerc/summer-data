@@ -30,7 +30,9 @@ public final class FieldMeta implements Serializable {
     private SetTextEvent onSetTextEvent;
 
     public enum FieldKind {
-        Memory, Storage, Calculated;
+        Memory,
+        Storage,
+        Calculated;
     }
 
     public FieldMeta(String code) {
