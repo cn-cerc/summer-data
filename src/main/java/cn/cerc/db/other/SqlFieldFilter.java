@@ -13,7 +13,8 @@ public class SqlFieldFilter {
     private String value;
 
     public enum FieldWhereRelation {
-        And, Or;
+        And,
+        Or;
     }
 
     public SqlFieldFilter(FieldWhereRelation relation, String text) {

@@ -89,9 +89,8 @@ public class BigOperator {
                         } else if (Datetime.class.getName().equals(field.getType().getName())) {
                             field.set(obj, new Datetime((Date) val));
                         } else {
-                            throw new RuntimeException(
-                                    String.format("error: fieldCode-%s, value-%s %s as %s", fieldCode, val,
-                                            field.getType().getName(), val.getClass().getName()));
+                            throw new RuntimeException(String.format("error: fieldCode-%s, value-%s %s as %s",
+                                    fieldCode, val, field.getType().getName(), val.getClass().getName()));
                         }
                     }
                 } else {

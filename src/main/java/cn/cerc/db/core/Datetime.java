@@ -37,11 +37,18 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
 
     // 字段：年、月、日、时、分、秒
     public enum DateType {
-        Year, Month, Day, Hour, Minute, Second
+        Year,
+        Month,
+        Day,
+        Hour,
+        Minute,
+        Second
     }
 
     public enum DateKind {
-        DateTime, OnlyDate, OnlyTime;
+        DateTime,
+        OnlyDate,
+        OnlyTime;
     }
 
     public Datetime() {

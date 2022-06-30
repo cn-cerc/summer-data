@@ -1,22 +1,18 @@
 package cn.cerc.db.mongo;
 
+import cn.cerc.db.core.IConfig;
+import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.core.Utils;
+import com.mongodb.ConnectionString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
-import com.mongodb.client.MongoDatabase;
-
-import cn.cerc.db.core.IConfig;
-import cn.cerc.db.core.IConnection;
-import cn.cerc.db.core.ServerConfig;
-
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class MongoConfig implements IConnection, AutoCloseable {
+public class MongoConfig {
     private static final Logger log = LoggerFactory.getLogger(MongoConfig.class);
 
     public static final String mongodb_database = "mgdb.dbname";
@@ -28,22 +24,10 @@ public class MongoConfig implements IConnection, AutoCloseable {
     public static final String mgdb_maxpoolsize = "mgdb.maxpoolsize";
 //    public static final String SessionId = "mongoSession";
 
-    private MongoClient client;
     private static String databaseName;
-    private MongoDatabase database;
-    private final IConfig config;
+    private static final IConfig config = ServerConfig.getInstance();
 
-    public MongoConfig() {
-        config = ServerConfig.getInstance();
-    }
-
-    @Override
-    public MongoDatabase getClient() {
-        if (database != null) {
-            return database;
-        }
-
-        databaseName = config.getProperty(MongoConfig.mongodb_database);
+    public static ConnectionString getUri() {
         StringBuilder builder = new StringBuilder();
         builder.append("mongodb://");
         // userName
@@ -62,24 +46,16 @@ public class MongoConfig implements IConnection, AutoCloseable {
             builder.append("&").append("maxPoolSize=").append(config.getProperty(MongoConfig.mgdb_maxpoolsize));
             builder.append("&").append("connectTimeoutMS=").append("3000");
             builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
-            log.info("Connect to the MongoDB sharded cluster:" + builder);
+            log.info("Connect to the MongoDB sharded cluster {}", builder);
         }
-        MongoClientURI connectionString = new MongoClientURI(builder.toString());
-        client = new MongoClient(connectionString);
-        database = client.getDatabase(databaseName);
-        return database;
+        return new ConnectionString(builder.toString());
     }
 
-    @Override
-    public void close() {
-        if (database != null) {
-            database = null;
-        }
-        client.close();
-   }
-
-    public IConfig getConfig() {
-        return config;
+    public static String databaseName() {
+        String databaseName = config.getProperty(MongoConfig.mongodb_database);
+        if (Utils.isEmpty(databaseName))
+            throw new RuntimeException("MongoDB database name is empty.");
+        return databaseName;
     }
 
 }

@@ -1,6 +1,33 @@
 package cn.cerc.db.mongo;
 
+import cn.cerc.db.SummerDB;
+import cn.cerc.db.core.ClassResource;
+import cn.cerc.db.core.DataRow;
+import cn.cerc.db.core.DataRowState;
+import cn.cerc.db.core.DataSet;
+import cn.cerc.db.core.DataSetGson;
+import cn.cerc.db.core.Datetime;
+import cn.cerc.db.core.FieldMeta;
+import cn.cerc.db.core.IHandle;
+import cn.cerc.db.core.ISession;
+import cn.cerc.db.core.SqlServerType;
+import cn.cerc.db.core.SqlText;
+import cn.cerc.db.core.Utils;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
+import org.bson.Document;
+import org.bson.types.ObjectId;
+
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -8,27 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import org.bson.Document;
-
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-
-import cn.cerc.db.SummerDB;
-import cn.cerc.db.core.ClassResource;
-import cn.cerc.db.core.DataRow;
-import cn.cerc.db.core.DataRowState;
-import cn.cerc.db.core.DataSet;
-import cn.cerc.db.core.DataSetGson;
-import cn.cerc.db.core.FieldMeta;
-import cn.cerc.db.core.IHandle;
-import cn.cerc.db.core.ISession;
-import cn.cerc.db.core.SqlServerType;
-import cn.cerc.db.core.SqlText;
-import cn.cerc.db.core.Utils;
 
 public class MongoQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = -1262005194419604476L;
@@ -47,23 +53,20 @@ public class MongoQuery extends DataSet implements IHandle {
 
     public MongoQuery open() {
         this.setStorage(true);
-        String table = SqlText.findTableName(this.sql().text());
         // 查找业务ID对应的数据
-        MongoCollection<Document> coll = null;
-        try (MongoConfig connection = new MongoConfig()) {
-            MongoDatabase db = connection.getClient();
-            coll = db.getCollection(table);
+        try (MongoClient client = MongoClients.create(MongoConfig.getUri())) {
+            MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
+            MongoCollection<Document> collection = database.getCollection(collectionName());
             // 增加查询条件
             BasicDBObject filter = decodeWhere(this.sql().text());
             // 增加排序条件
             BasicDBObject sort = decodeOrder(this.sql().text());
             // 执行查询
-            FindIterable<Document> findIterable = coll.find(filter).sort(sort).limit(limit);
+            FindIterable<Document> findIterable = collection.find(filter).sort(sort).limit(limit);
             ArrayList<Document> list = findIterable.into(new ArrayList<>());
             // 数据不存在,则状态不为更新,并返回一个空数据
-            if (list.isEmpty()) {
+            if (list.isEmpty())
                 return this;
-            }
 
             for (Document doc : list) {
                 DataRow record = append().current();
@@ -81,6 +84,13 @@ public class MongoQuery extends DataSet implements IHandle {
             this.active = true;
             return this;
         }
+    }
+
+    private String collectionName() {
+        String collectionName = SqlText.findTableName(this.sql().text());
+        if (Utils.isEmpty(collectionName))
+            throw new RuntimeException("Mongo table can not be empty.");
+        return collectionName;
     }
 
     // 将sql指令查询条件改为MongoDB格式
@@ -201,24 +211,57 @@ public class MongoQuery extends DataSet implements IHandle {
         return sort;
     }
 
+    private Document getValue(DataRow record) {
+        Document doc = new Document();
+        for (String field : record.fields().names()) {
+            if ("_id".equals(field)) {
+                continue;
+            }
+            Object obj = record.getValue(field);
+            if (obj instanceof Date) {
+                doc.append(field, (new Datetime((Date) obj)).toString());
+            } else {
+                doc.append(field, obj);
+            }
+        }
+        return doc;
+    }
+
     @Override
     protected final void insertStorage(DataRow record) {
-        try (MongoOperator operator = new MongoOperator(SqlText.findTableName(this.sql().text()))) {
-            operator.insert(record);
+        String collectionName = collectionName();
+        try (MongoClient client = MongoClients.create(MongoConfig.getUri())) {
+            MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
+            MongoCollection<Document> collection = database.getCollection(collectionName);
+            Document doc = getValue(record);
+            collection.insertOne(doc);
         }
     }
 
     @Override
     protected final void updateStorage(DataRow record) {
-        try (MongoOperator operator = new MongoOperator(SqlText.findTableName(this.sql().text()))) {
-            operator.update(record);
+        try (MongoClient client = MongoClients.create(MongoConfig.getUri())) {
+            MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
+            MongoCollection<Document> collection = database.getCollection(collectionName());
+            Document doc = getValue(record);
+            String uid = record.getString("_id");
+            Object key = "".equals(uid) ? "null" : new ObjectId(uid);
+            UpdateResult res = collection.replaceOne(Filters.eq("_id", key), doc);
+            if (res.getModifiedCount() != 1)
+                throw new RuntimeException("MongoDB update error");
         }
     }
 
     @Override
     protected final void deleteStorage(DataRow record) {
-        try (MongoOperator operator = new MongoOperator(SqlText.findTableName(this.sql().text()))) {
-            if (operator.delete(record))
+        try (MongoClient client = MongoClients.create(MongoConfig.getUri())) {
+            MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
+            MongoCollection<Document> collection = database.getCollection(collectionName());
+
+            String uid = record.getString("_id");
+            Object key = "".equals(uid) ? "null" : new ObjectId(uid);
+            DeleteResult res = collection.deleteOne(Filters.eq("_id", key));
+            if (res.getDeletedCount() == 1)
                 garbage().remove(record);
         }
     }
@@ -282,10 +325,8 @@ public class MongoQuery extends DataSet implements IHandle {
         if ((value instanceof Set<?>) || !(value instanceof List<?>))
             throw new RuntimeException("错误的数据类型！");
 
-        Set<Object> items = new LinkedHashSet<>();
         List<Object> list = (List<Object>) value;
-        items.addAll(list);
-        return items;
+        return new LinkedHashSet<>(list);
     }
 
     @SuppressWarnings("unchecked")
