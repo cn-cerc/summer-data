@@ -182,8 +182,13 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
         case Day: {
             LocalDateTime self = this.asLocalDateTime();
             LocalDateTime item = target.asLocalDateTime();
-            int year = (self.getYear() - item.getYear()) * 365;
-            return year + self.getDayOfYear() - item.getDayOfYear();
+            int startYear = item.getYear();
+            int endYear = self.getYear();
+            int leapYears = 0;
+            for (int year = startYear; year < endYear; year++)
+                leapYears += Datetime.isLeapYear(year) ? 1 : 0;
+            int days = (endYear - startYear) * 365;
+            return days + self.getDayOfYear() - item.getDayOfYear() + leapYears;
         }
         case Hour:
             return (int) ((this.timestamp - target.timestamp) / 1000 / 60 / 60);
@@ -582,6 +587,15 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
 
     public final boolean isOnlyTime() {
         return dateKind == DateKind.OnlyTime;
+    }
+
+    public static boolean isLeapYear(int year) {
+        return (year % 4 == 0 && year % 100 != 0 || year % 400 == 0);
+    }
+
+    public final boolean isLeapYear() {
+        int year = Integer.parseInt(getYear());
+        return Datetime.isLeapYear(year);
     }
 
     public final EnumSet<DateType> getOptions() {
