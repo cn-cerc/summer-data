@@ -1,5 +1,28 @@
 package cn.cerc.db.mongo;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import org.bson.Document;
+import org.bson.types.ObjectId;
+
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
+
 import cn.cerc.db.SummerDB;
 import cn.cerc.db.core.ClassResource;
 import cn.cerc.db.core.DataRow;
@@ -13,28 +36,6 @@ import cn.cerc.db.core.ISession;
 import cn.cerc.db.core.SqlServerType;
 import cn.cerc.db.core.SqlText;
 import cn.cerc.db.core.Utils;
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.result.DeleteResult;
-import com.mongodb.client.result.UpdateResult;
-import org.bson.Document;
-import org.bson.types.ObjectId;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 public class MongoQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = -1262005194419604476L;
@@ -54,36 +55,35 @@ public class MongoQuery extends DataSet implements IHandle {
     public MongoQuery open() {
         this.setStorage(true);
         // 查找业务ID对应的数据
-        try (MongoClient client = MongoClients.create(MongoConfig.getUri())) {
-            MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
-            MongoCollection<Document> collection = database.getCollection(collectionName());
-            // 增加查询条件
-            BasicDBObject filter = decodeWhere(this.sql().text());
-            // 增加排序条件
-            BasicDBObject sort = decodeOrder(this.sql().text());
-            // 执行查询
-            FindIterable<Document> findIterable = collection.find(filter).sort(sort).limit(limit);
-            ArrayList<Document> list = findIterable.into(new ArrayList<>());
-            // 数据不存在,则状态不为更新,并返回一个空数据
-            if (list.isEmpty())
-                return this;
-
-            for (Document doc : list) {
-                DataRow record = append().current();
-                for (String field : doc.keySet()) {
-                    if ("_id".equals(field)) {
-                        Object uid = doc.get(field);
-                        record.setValue(field, uid != null ? uid.toString() : uid);
-                    } else {
-                        record.setValue(field, doc.get(field));
-                    }
-                }
-                record.setState(DataRowState.None);
-            }
-            this.first();
-            this.active = true;
+        MongoClient client = MongoConfig.getClient();
+        MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
+        MongoCollection<Document> collection = database.getCollection(collectionName());
+        // 增加查询条件
+        BasicDBObject filter = decodeWhere(this.sql().text());
+        // 增加排序条件
+        BasicDBObject sort = decodeOrder(this.sql().text());
+        // 执行查询
+        FindIterable<Document> findIterable = collection.find(filter).sort(sort).limit(limit);
+        ArrayList<Document> list = findIterable.into(new ArrayList<>());
+        // 数据不存在,则状态不为更新,并返回一个空数据
+        if (list.isEmpty())
             return this;
+
+        for (Document doc : list) {
+            DataRow record = append().current();
+            for (String field : doc.keySet()) {
+                if ("_id".equals(field)) {
+                    Object uid = doc.get(field);
+                    record.setValue(field, uid != null ? uid.toString() : uid);
+                } else {
+                    record.setValue(field, doc.get(field));
+                }
+            }
+            record.setState(DataRowState.None);
         }
+        this.first();
+        this.active = true;
+        return this;
     }
 
     private String collectionName() {
@@ -230,40 +230,37 @@ public class MongoQuery extends DataSet implements IHandle {
     @Override
     protected final void insertStorage(DataRow record) {
         String collectionName = collectionName();
-        try (MongoClient client = MongoClients.create(MongoConfig.getUri())) {
-            MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
-            MongoCollection<Document> collection = database.getCollection(collectionName);
-            Document doc = getValue(record);
-            collection.insertOne(doc);
-        }
+        MongoClient client = MongoConfig.getClient();
+        MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
+        MongoCollection<Document> collection = database.getCollection(collectionName);
+        Document doc = getValue(record);
+        collection.insertOne(doc);
     }
 
     @Override
     protected final void updateStorage(DataRow record) {
-        try (MongoClient client = MongoClients.create(MongoConfig.getUri())) {
-            MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
-            MongoCollection<Document> collection = database.getCollection(collectionName());
-            Document doc = getValue(record);
-            String uid = record.getString("_id");
-            Object key = "".equals(uid) ? "null" : new ObjectId(uid);
-            UpdateResult res = collection.replaceOne(Filters.eq("_id", key), doc);
-            if (res.getModifiedCount() != 1)
-                throw new RuntimeException("MongoDB update error");
-        }
+        MongoClient client = MongoConfig.getClient();
+        MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
+        MongoCollection<Document> collection = database.getCollection(collectionName());
+        Document doc = getValue(record);
+        String uid = record.getString("_id");
+        Object key = "".equals(uid) ? "null" : new ObjectId(uid);
+        UpdateResult res = collection.replaceOne(Filters.eq("_id", key), doc);
+        if (res.getModifiedCount() != 1)
+            throw new RuntimeException("MongoDB update error");
     }
 
     @Override
     protected final void deleteStorage(DataRow record) {
-        try (MongoClient client = MongoClients.create(MongoConfig.getUri())) {
-            MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
-            MongoCollection<Document> collection = database.getCollection(collectionName());
+        MongoClient client = MongoConfig.getClient();
+        MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
+        MongoCollection<Document> collection = database.getCollection(collectionName());
 
-            String uid = record.getString("_id");
-            Object key = "".equals(uid) ? "null" : new ObjectId(uid);
-            DeleteResult res = collection.deleteOne(Filters.eq("_id", key));
-            if (res.getDeletedCount() == 1)
-                garbage().remove(record);
-        }
+        String uid = record.getString("_id");
+        Object key = "".equals(uid) ? "null" : new ObjectId(uid);
+        DeleteResult res = collection.deleteOne(Filters.eq("_id", key));
+        if (res.getDeletedCount() == 1)
+            garbage().remove(record);
     }
 
     // 将通用类型，转成DataSet，方便操作

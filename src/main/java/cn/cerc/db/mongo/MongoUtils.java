@@ -1,22 +1,21 @@
 package cn.cerc.db.mongo;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import org.bson.Document;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.bson.Document;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 
 public class MongoUtils {
     private MongoDatabase database;
 
     public MongoUtils() {
-        try (MongoClient client = MongoClients.create(MongoConfig.getUri())) {
-            database = client.getDatabase(MongoConfig.databaseName());
-        }
+        MongoClient client = MongoConfig.getClient();
+        database = client.getDatabase(MongoConfig.databaseName());
     }
 
     // 获取Collection by name
