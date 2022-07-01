@@ -1,17 +1,18 @@
 package cn.cerc.db.mongo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import com.mongodb.ConnectionString;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+
 import cn.cerc.db.core.IConfig;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
-import com.mongodb.ConnectionString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 @Component
-@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MongoConfig {
     private static final Logger log = LoggerFactory.getLogger(MongoConfig.class);
 
@@ -24,31 +25,37 @@ public class MongoConfig {
     public static final String mgdb_maxpoolsize = "mgdb.maxpoolsize";
 //    public static final String SessionId = "mongoSession";
 
-    private static String databaseName;
     private static final IConfig config = ServerConfig.getInstance();
+    private static volatile MongoClient client;
 
-    public static ConnectionString getUri() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("mongodb://");
-        // userName
-        builder.append(config.getProperty(MongoConfig.mongodb_username));
-        // password
-        builder.append(":").append(config.getProperty(MongoConfig.mongodb_password));
-        // ip
-        builder.append("@").append(config.getProperty(MongoConfig.mgdb_site));
-        // database
-        builder.append("/").append(config.getProperty(MongoConfig.mongodb_database));
+    public static MongoClient getClient() {
+        if (client == null) {
+            synchronized (MongoConfig.class) {
+                StringBuilder builder = new StringBuilder();
+                builder.append("mongodb://");
+                // userName
+                builder.append(config.getProperty(MongoConfig.mongodb_username));
+                // password
+                builder.append(":").append(config.getProperty(MongoConfig.mongodb_password));
+                // ip
+                builder.append("@").append(config.getProperty(MongoConfig.mgdb_site));
+                // database
+                builder.append("/").append(config.getProperty(MongoConfig.mongodb_database));
 
-        if ("true".equals(config.getProperty(MongoConfig.mgdb_enablerep))) {
-            // replacaset
-            builder.append("?").append("replicaSet=").append(config.getProperty(MongoConfig.mgdb_replicaset));
-            // poolsize
-            builder.append("&").append("maxPoolSize=").append(config.getProperty(MongoConfig.mgdb_maxpoolsize));
-            builder.append("&").append("connectTimeoutMS=").append("3000");
-            builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
-            log.info("Connect to the MongoDB sharded cluster {}", builder);
+                if ("true".equals(config.getProperty(MongoConfig.mgdb_enablerep))) {
+                    // replacaset
+                    builder.append("?").append("replicaSet=").append(config.getProperty(MongoConfig.mgdb_replicaset));
+                    // poolsize
+                    builder.append("&").append("maxPoolSize=").append(config.getProperty(MongoConfig.mgdb_maxpoolsize));
+                    builder.append("&").append("connectTimeoutMS=").append("3000");
+                    builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
+                    log.info("Connect to the MongoDB sharded cluster {}", builder);
+                }
+                ConnectionString connectionString = new ConnectionString(builder.toString());
+                client = MongoClients.create(connectionString);
+            }
         }
-        return new ConnectionString(builder.toString());
+        return client;
     }
 
     public static String databaseName() {
