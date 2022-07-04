@@ -4,15 +4,21 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public interface ISession extends AutoCloseable {
-    String TOKEN = "sid"; // session id 参数变量
     String EDITION = "edition";
     String CORP_NO = "corp_no";
     String USER_CODE = "user_code";
     String USER_NAME = "user_name";
     String VERSION = "version";
-    String LANGUAGE_ID = "language_id";
+
     String CLIENT_DEVICE = "device"; // client device
+    String CLIENT_ID = "CLIENTID";// deviceId, machineCode 表示同一个设备码栏位
+    //
+    String COOKIE_ID = "cookie_id"; // cookie id 参数变量
     String LOGIN_SERVER = "login_server";
+    String LANGUAGE_ID = "language";
+
+    String TOKEN = "sid"; // session id 参数变量
+
     String REQUEST = "request";
 
     // 自定义参数，注：若key=null则返回实现接口的对象本身
@@ -81,4 +87,5 @@ public interface ISession extends AutoCloseable {
     HttpServletResponse getResponse();
 
     void setResponse(HttpServletResponse response);
+
 }
