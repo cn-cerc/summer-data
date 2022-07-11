@@ -29,27 +29,30 @@ public enum ServerConfig implements IConfig {
 
     // 正式环境
     public static boolean isServerMaster() {
-        String tmp = config.getString("version", "develop");
-        if ("release".equals(tmp)) {
+        String value = config.getString("version", "develop");
+        if ("release".equals(value))
             return true;
-        }
-        return "master".equals(tmp);
+        return "master".equals(value);
     }
 
     // 测试环境
     public static boolean isServerBeta() {
-        String tmp = config.getString("version", "develop");
-        return "beta".equals(tmp);
+        return "beta".equals(config.getString("version", "develop"));
+    }
+
+    // alpha环境
+    public static boolean isServerAplha() {
+        return "alpha".equals(config.getString("version", "develop"));
     }
 
     // 开发环境
     public static boolean isServerDevelop() {
-        if (isServerMaster()) {
+        if (isServerMaster())
             return false;
-        }
-        if (isServerBeta()) {
+        if (isServerBeta())
             return false;
-        }
+        if (isServerAplha())
+            return false;
         return true;
     }
 
