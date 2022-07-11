@@ -50,6 +50,10 @@ public enum ServerConfig implements IConfig {
         if (isServerBeta()) {
             return false;
         }
+        String tmp = config.getString("version", "develop");
+        if ("alpha".equals(tmp)) {
+            return true;
+        }
         return true;
     }
 
