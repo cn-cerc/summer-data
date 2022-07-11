@@ -46,7 +46,7 @@ public class QueueServer implements IConnection {
 
     @Override
     public MNSClient getClient() {
-        if (client != null)
+        if (client != null && client.isOpen())
             return client;
 
         if (account == null) {
