@@ -42,6 +42,11 @@ public enum ServerConfig implements IConfig {
         return "beta".equals(tmp);
     }
 
+    public static boolean isServerAplha() {
+        String tmp = config.getString("version", "develop");
+        return "alpha".equals(tmp);
+    }
+
     // 开发环境
     public static boolean isServerDevelop() {
         if (isServerMaster()) {
@@ -49,10 +54,6 @@ public enum ServerConfig implements IConfig {
         }
         if (isServerBeta()) {
             return false;
-        }
-        String tmp = config.getString("version", "develop");
-        if ("alpha".equals(tmp)) {
-            return true;
         }
         return true;
     }
