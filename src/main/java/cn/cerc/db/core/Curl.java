@@ -40,6 +40,10 @@ public class Curl {
      */
     private String requestEncoding = "UTF-8";
     /**
+     * 请求头
+     */
+    private final Map<String, Object> headers = new HashMap<>();
+    /**
      * 返回的内容编码
      */
     private String recvEncoding = "UTF-8";
@@ -89,7 +93,7 @@ public class Curl {
             connection.setRequestProperty("accept", "*/*");
             connection.setRequestProperty("connection", "Keep-Alive");
             connection.setRequestProperty("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
-
+            headers.forEach((k, v) -> connection.setRequestProperty(k, (String) v));
             // 建立实际的连接
             connection.connect();
 
@@ -142,21 +146,21 @@ public class Curl {
             }
 
             URL url = new URL(reqUrl);
-            url_con = (HttpURLConnection) url.openConnection();
-            url_con.setRequestMethod("GET");
-
-            url_con.setDoOutput(true);
+            final HttpURLConnection fcon = url_con = (HttpURLConnection) url.openConnection();
+            headers.forEach((k, v) -> fcon.setRequestProperty(k, (String) v));
+            fcon.setRequestMethod("GET");
+            fcon.setDoOutput(true);
             byte[] b = params.toString().getBytes();
-            url_con.getOutputStream().write(b, 0, b.length);
-            url_con.getOutputStream().flush();
-            url_con.getOutputStream().close();
+            fcon.getOutputStream().write(b, 0, b.length);
+            fcon.getOutputStream().flush();
+            fcon.getOutputStream().close();
 
-            int status = url_con.getResponseCode();
+            int status = fcon.getResponseCode();
             BufferedInputStream in;
             if (status >= 400) {
-                in = new BufferedInputStream(url_con.getErrorStream());
+                in = new BufferedInputStream(fcon.getErrorStream());
             } else {
-                in = new BufferedInputStream(url_con.getInputStream());
+                in = new BufferedInputStream(fcon.getInputStream());
             }
 
             BufferedReader rd = new BufferedReader(new InputStreamReader(in, this.recvEncoding));
@@ -211,19 +215,20 @@ public class Curl {
             }
 
             URL url = new URL(queryUrl);
-            url_con = (HttpURLConnection) url.openConnection();
-            url_con.setRequestMethod("GET");
+            final HttpURLConnection fcon = url_con = (HttpURLConnection) url.openConnection();
+            headers.forEach((k, v) -> fcon.setRequestProperty(k, (String) v));
+            fcon.setRequestMethod("GET");
             System.setProperty("sun.net.client.defaultConnectTimeout", String.valueOf(this.connectTimeOut));// （单位：毫秒）jdk1.4换成这个,连接超时
             System.setProperty("sun.net.client.defaultReadTimeout", String.valueOf(this.readTimeOut)); // （单位：毫秒）jdk1.4换成这个,读操作超时
             // url_con.setConnectTimeout(5000);//（单位：毫秒）jdk
             // 1.5换成这个,连接超时
             // url_con.setReadTimeout(5000);//（单位：毫秒）jdk 1.5换成这个,读操作超时
-            url_con.setDoOutput(true);
+            fcon.setDoOutput(true);
             byte[] b = params.toString().getBytes();
-            url_con.getOutputStream().write(b, 0, b.length);
-            url_con.getOutputStream().flush();
-            url_con.getOutputStream().close();
-            InputStream in = url_con.getInputStream();
+            fcon.getOutputStream().write(b, 0, b.length);
+            fcon.getOutputStream().flush();
+            fcon.getOutputStream().close();
+            InputStream in = fcon.getInputStream();
             BufferedReader rd = new BufferedReader(new InputStreamReader(in, recvEncoding));
             String tempLine = rd.readLine();
             StringBuilder temp = new StringBuilder();
@@ -283,28 +288,29 @@ public class Curl {
             reqUrl = new String(reqUrl.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
 
             URL url = new URL(reqUrl);
-            url_con = (HttpURLConnection) url.openConnection();
-            url_con.setRequestMethod("POST");
+            final HttpURLConnection fcon = url_con = (HttpURLConnection) url.openConnection();
+            fcon.setRequestMethod("POST");
+            headers.forEach((k, v) -> fcon.setRequestProperty(k, (String) v));
             // System.setProperty("sun.net.client.defaultConnectTimeout",
             // String.valueOf(CURL.connectTimeOut));// （单位：毫秒）jdk1.4换成这个,连接超时
             // System.setProperty("sun.net.client.defaultReadTimeout",
             // String.valueOf(CURL.readTimeOut)); // （单位：毫秒）jdk1.4换成这个,读操作超时
-            url_con.setConnectTimeout(this.connectTimeOut);// （单位：毫秒）jdk
+            fcon.setConnectTimeout(this.connectTimeOut);// （单位：毫秒）jdk
             // 1.5换成这个,连接超时
-            url_con.setReadTimeout(this.readTimeOut);// （单位：毫秒）jdk 1.5换成这个,读操作超时
-            url_con.setDoOutput(true);
+            fcon.setReadTimeout(this.readTimeOut);// （单位：毫秒）jdk 1.5换成这个,读操作超时
+            fcon.setDoOutput(true);
 
             byte[] b = params.toString().getBytes();
-            url_con.getOutputStream().write(b, 0, b.length);
-            url_con.getOutputStream().flush();
-            url_con.getOutputStream().close();
+            fcon.getOutputStream().write(b, 0, b.length);
+            fcon.getOutputStream().flush();
+            fcon.getOutputStream().close();
 
-            int status = url_con.getResponseCode();
+            int status = fcon.getResponseCode();
             BufferedInputStream in;
             if (status >= 400) {
-                in = new BufferedInputStream(url_con.getErrorStream());
+                in = new BufferedInputStream(fcon.getErrorStream());
             } else {
-                in = new BufferedInputStream(url_con.getInputStream());
+                in = new BufferedInputStream(fcon.getInputStream());
             }
 
             BufferedReader rd = new BufferedReader(new InputStreamReader(in, recvEncoding));
@@ -330,6 +336,7 @@ public class Curl {
             CloseableHttpClient httpClient = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost(url);
             httpPost.addHeader("Content-Type", "application/json");
+            headers.forEach((k, v) -> httpPost.addHeader(k, (String) v));
             httpPost.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
             CloseableHttpResponse response = httpClient.execute(httpPost);
             HttpEntity entity = response.getEntity();
@@ -397,6 +404,15 @@ public class Curl {
     @Deprecated
     public Curl putParameter(String key, Object value) {
         return this.put(key, value);
+    }
+
+    public Map<String, Object> getHeaders() {
+        return headers;
+    }
+
+    public Curl putHeader(String key, Object value) {
+        this.headers.put(key, value);
+        return this;
     }
 
 }
