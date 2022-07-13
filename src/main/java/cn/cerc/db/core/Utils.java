@@ -16,6 +16,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -527,6 +528,32 @@ public class Utils {
             items.add(recordAsObject(rs, clazz));
         }
         return items;
+    }
+
+    /**
+     * 对集合按照指定长度分段，每一个段为单独的集合，返回这个集合的列表
+     *
+     * @param <T>        集合元素类型
+     * @param collection 集合
+     * @param size       每个段的长度
+     * @return 分段列表
+     */
+    public static <T> List<List<T>> splitCollection(Collection<T> collection, int size) {
+        final List<List<T>> result = new ArrayList<>();
+        if (collection == null || collection.isEmpty()) {
+            return result;
+        }
+
+        ArrayList<T> subList = new ArrayList<>(size);
+        for (T t : collection) {
+            if (subList.size() >= size) {
+                result.add(subList);
+                subList = new ArrayList<>(size);
+            }
+            subList.add(t);
+        }
+        result.add(subList);
+        return result;
     }
 
     /**
