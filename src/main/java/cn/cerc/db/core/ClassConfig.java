@@ -28,7 +28,8 @@ public class ClassConfig implements IConfig {
         Path localFile = Paths.get(System.getProperty("user.home"), "summer-application.properties");
         try {
             if (Files.exists(localFile)) {
-                localConfig.load(Files.newInputStream(localFile));
+                InputStream input = Files.newInputStream(localFile);
+                localConfig.load(new InputStreamReader(input, StandardCharsets.UTF_8));
                 log.info("{} is loaded.", localFile);
             } else {
                 log.warn("{} doesn't exist.", localFile);
