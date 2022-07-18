@@ -31,6 +31,10 @@ public class SumRecord extends DataRow {
     }
 
     public SumRecord run() {
+        return run(false);
+    }
+
+    public SumRecord run(boolean rewrite) {
         for (DataRow rs : dataSet()) {
             for (String field : this.fields.keySet()) {
                 Double value = fields.get(field);
@@ -41,6 +45,12 @@ public class SumRecord extends DataRow {
         for (String field : this.fields.keySet()) {
             Double value = fields.get(field);
             this.setValue(field, value);
+        }
+        if (rewrite) {
+            DataSet dataSet = this.dataSet();
+            dataSet.append();
+            for (String field : this.fields.keySet())
+                dataSet.setValue(field, this.getValue(field));
         }
         return this;
     }
