@@ -36,8 +36,8 @@ public class QueueServer implements IConnection {
 
     // 默认不可见时间
     private static int visibilityTimeout = 50;
-    private static MNSClient client;
-    private static CloudAccount account;
+    private MNSClient client;
+    private CloudAccount account;
     private IConfig config;
 
     public QueueServer() {
@@ -62,15 +62,11 @@ public class QueueServer implements IConnection {
             if (password == null)
                 throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeySecret));
 
-            if (account == null) {
+            if (account == null)
                 account = new CloudAccount(accessId, password, endpoint);
-            }
         }
-
-        if (client == null) {
+        if (client == null)
             client = account.getMNSClient();
-        }
-
         return client;
     }
 

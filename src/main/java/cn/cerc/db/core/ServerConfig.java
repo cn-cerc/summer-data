@@ -59,7 +59,6 @@ public enum ServerConfig implements IConfig {
     /**
      * 读取配置，请改为使用 ClassConfig
      */
-    @Deprecated
     @Override
     public String getProperty(String key, String def) {
         return config.getString(key, def);
