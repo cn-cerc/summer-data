@@ -8,6 +8,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,30 +35,36 @@ public abstract class IKafkaClient implements AutoCloseable {
 
         client = new KafkaConsumer<String, String>(prop);
         client.subscribe(Collections.singleton(topic()));
-        new Thread(() -> startListen()).start();
+        startListen();
     }
 
     public void startListen() {
         log.info("bootstrapServer {} topic {} consumerGroup {} start listening", bootstrapServer(), topic(),
                 consumerGroup());
-        while (true) {
-            ConsumerRecords<String, String> records = client.poll(Duration.ZERO);
-            for (ConsumerRecord<String, String> record : records) {
-                try {
-                    process(record.value());
-                } catch (Exception e) {
-                    e.printStackTrace();
+        new Thread(() -> {
+            while (true) {
+                ConsumerRecords<String, String> records = client.poll(Duration.ZERO);
+                for (ConsumerRecord<String, String> record : records) {
+                    try {
+                        process(record.value());
+                    } catch (WakeupException e) {
+                        break;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    client.commitSync();
                 }
-                client.commitSync();
             }
-        }
+        }).start();
     }
 
     protected abstract void process(String record);
 
     @Override
     public void close() throws Exception {
-        if (client != null)
+        if (client != null) {
+            client.wakeup();
             client.close();
+        }
     }
 }
