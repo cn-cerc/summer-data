@@ -43,18 +43,21 @@ public abstract class IKafkaClient implements AutoCloseable {
                 consumerGroup());
         new Thread(() -> {
             while (true) {
-                ConsumerRecords<String, String> records = client.poll(Duration.ZERO);
-                for (ConsumerRecord<String, String> record : records) {
-                    try {
-                        process(record.value());
-                    } catch (WakeupException e) {
-                        break;
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                try {
+                    ConsumerRecords<String, String> records = client.poll(Duration.ZERO);
+                    for (ConsumerRecord<String, String> record : records) {
+                        try {
+                            process(record.value());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        client.commitSync();
                     }
-                    client.commitSync();
+                } catch (WakeupException e) {
+                    break;
                 }
             }
+            client.close();
         }).start();
     }
 
@@ -64,7 +67,6 @@ public abstract class IKafkaClient implements AutoCloseable {
     public void close() throws Exception {
         if (client != null) {
             client.wakeup();
-            client.close();
         }
     }
 }
