@@ -47,7 +47,7 @@ public abstract class IKafkaClient implements AutoCloseable {
                     ConsumerRecords<String, String> records = client.poll(Duration.ZERO);
                     for (ConsumerRecord<String, String> record : records) {
                         try {
-                            process(record.value());
+                            process(record.key(), record.value(), record);
                         } catch (Exception e) {
                             log.error("消息消费失败 {} {}", record.topic(), record.value());
                             // TODO: 后期做消费补偿机制
@@ -64,7 +64,14 @@ public abstract class IKafkaClient implements AutoCloseable {
         }).start();
     }
 
-    protected abstract void process(String record);
+    /**
+     * 处理消息
+     * 
+     * @param key     用作区分同个topic下不同的业务类型
+     * @param message 消息体
+     * @param meta    元数据
+     */
+    protected abstract void process(String key, String message, ConsumerRecord<String, String> meta);
 
     @Override
     public void close() throws Exception {
