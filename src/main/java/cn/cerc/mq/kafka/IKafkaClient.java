@@ -53,7 +53,7 @@ public abstract class IKafkaClient implements AutoCloseable {
         }
     }
 
-    public abstract void process(String record);
+    protected abstract void process(String record);
 
     @Override
     public void close() throws Exception {
