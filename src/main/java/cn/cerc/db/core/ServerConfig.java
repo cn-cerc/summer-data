@@ -41,7 +41,7 @@ public enum ServerConfig implements IConfig {
     }
 
     // alpha环境
-    public static boolean isServerAplha() {
+    public static boolean isServerAlpha() {
         return "alpha".equals(config.getString("version", "develop"));
     }
 
@@ -51,7 +51,7 @@ public enum ServerConfig implements IConfig {
             return false;
         if (isServerBeta())
             return false;
-        if (isServerAplha())
+        if (isServerAlpha())
             return false;
         return true;
     }
