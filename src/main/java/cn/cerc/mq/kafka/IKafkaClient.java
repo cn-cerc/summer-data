@@ -13,29 +13,57 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.cerc.db.core.ServerConfig;
+
+/**
+ * kafka-client抽象类
+ * 
+ */
 public abstract class IKafkaClient implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(IKafkaClient.class);
 
+    /**
+     * kafka client
+     */
     private KafkaConsumer<String, String> client;
 
+    /**
+     * 订阅的主题
+     */
     public abstract String topic();
 
+    /**
+     * 消费组ID
+     */
     public abstract String consumerGroup();
 
-    public abstract String bootstrapServer();
+    /**
+     * kafka地址,读取配置文件 kafka.bootstrapServer,形如 192.168.1.1:9092
+     */
+    public String bootstrapServer() {
+        return ServerConfig.getInstance().getProperty("kafka.bootstrapServer");
+    }
+
+    /**
+     * 启用否
+     */
+    public boolean enabled() {
+        return ServerConfig.enableTaskService();
+    }
 
     public IKafkaClient() {
-        Properties prop = new Properties();
-        prop.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServer());
-        prop.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        prop.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        prop.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-        prop.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        prop.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroup());
-
-        client = new KafkaConsumer<String, String>(prop);
-        client.subscribe(Collections.singleton(topic()));
-        startListen();
+        if (enabled()) {
+            Properties prop = new Properties();
+            prop.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServer());
+            prop.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+            prop.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+            prop.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+            prop.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+            prop.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroup());
+            client = new KafkaConsumer<String, String>(prop);
+            client.subscribe(Collections.singleton(topic()));
+            startListen();
+        }
     }
 
     public void startListen() {
