@@ -49,7 +49,8 @@ public abstract class IKafkaClient implements AutoCloseable {
                         try {
                             process(record.value());
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            log.error("消息消费失败 {} {}", record.topic(), record.value());
+                            // TODO: 后期做消费补偿机制
                         }
                         client.commitSync();
                     }
@@ -57,6 +58,8 @@ public abstract class IKafkaClient implements AutoCloseable {
                     break;
                 }
             }
+            log.info("bootstrapServer {} topic {} consumerGroup {} end listening", bootstrapServer(), topic(),
+                    consumerGroup());
             client.close();
         }).start();
     }
