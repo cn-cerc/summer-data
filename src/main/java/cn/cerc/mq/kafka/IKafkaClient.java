@@ -34,6 +34,10 @@ public abstract class IKafkaClient implements AutoCloseable {
 
         client = new KafkaConsumer<String, String>(prop);
         client.subscribe(Collections.singleton(topic()));
+        new Thread(() -> startListen()).start();
+    }
+
+    public void startListen() {
         log.info("bootstrapServer {} topic {} consumerGroup {} start listening", bootstrapServer(), topic(),
                 consumerGroup());
         while (true) {
@@ -49,7 +53,7 @@ public abstract class IKafkaClient implements AutoCloseable {
         }
     }
 
-    protected abstract void process(String record);
+    public abstract void process(String record);
 
     @Override
     public void close() throws Exception {
