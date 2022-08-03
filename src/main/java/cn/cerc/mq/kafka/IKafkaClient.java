@@ -59,6 +59,7 @@ public abstract class IKafkaClient implements AutoCloseable {
             prop.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
             prop.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
             prop.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+            prop.put(ConsumerConfig.ALLOW_AUTO_CREATE_TOPICS_CONFIG, false);
             prop.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroup());
             client = new KafkaConsumer<String, String>(prop);
             client.subscribe(Collections.singleton(topic()));
