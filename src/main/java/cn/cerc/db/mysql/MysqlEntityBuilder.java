@@ -49,7 +49,7 @@ public class MysqlEntityBuilder {
             builder.append("@Setter\r\n");
             if (!Utils.isEmpty(tableComment))
                 builder.append(String.format("@Describe(name = \"%s\")\r\n", tableComment));
-            builder.append(String.format("public class %s extends AdoTable {\r\n\r\n", fileName));
+            builder.append(String.format("public class %s extends AdoTable {\r\n\r\n", clazz.getSimpleName()));
 
             MysqlQuery dsColumn = new MysqlQuery(handle);
             dsColumn.add("select column_name,data_type,column_type,extra,is_nullable,column_comment,");
