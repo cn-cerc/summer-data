@@ -100,7 +100,7 @@ public abstract class IKafkaClient implements AutoCloseable {
      * @param message 消息体
      * @param meta    元数据
      */
-    protected abstract void process(String key, String message, ConsumerRecord<String, String> meta);
+    protected abstract void process(String key, String message, ConsumerRecord<String, String> meta) throws Exception;
 
     @Override
     public void close() throws Exception {
