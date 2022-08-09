@@ -7,6 +7,7 @@ public interface ISession extends AutoCloseable {
     String EDITION = "edition";
     String CORP_NO = "corp_no";
     String USER_CODE = "user_code";
+    String USER_ID = "user_id";
     String USER_NAME = "user_name";
     String VERSION = "version";
 
