@@ -12,6 +12,8 @@ public class ProducerFactory {
         if (producers.get(topic) != null)
             return producers.get(topic);
         synchronized (producers) {
+            if (producers.get(topic) != null)
+                return producers.get(topic);
             IKafkaProducer producer = new IKafkaProducer() {
 
                 @Override
