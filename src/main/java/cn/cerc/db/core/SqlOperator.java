@@ -173,19 +173,19 @@ public class SqlOperator implements IHandle {
         }
 
         String lastCommand = null;
-        try (BuildStatement bs = new BuildStatement(connection)) {
-            bs.append("insert into ").append(this.table()).append(" (");
+        try (BuildStatement build = new BuildStatement(connection)) {
+            build.append("insert into ").append(this.table()).append(" (");
             int i = 0;
             for (String field : record.items().keySet()) {
                 FieldMeta meta = record.fields().get(field);
                 if (meta.storage() && !meta.autoincrement()) {
                     i++;
                     if (i > 1)
-                        bs.append(",");
-                    bs.append(field);
+                        build.append(",");
+                    build.append(field);
                 }
             }
-            bs.append(") values (");
+            build.append(") values (");
             i = 0;
             for (String field : record.items().keySet()) {
                 FieldMeta meta = record.fields().get(field);
@@ -193,21 +193,22 @@ public class SqlOperator implements IHandle {
                     if (!meta.autoincrement()) {
                         i++;
                         if (i > 1)
-                            bs.append(",");
-                        bs.append("?", record.getValue(meta.code()));
+                            build.append(",");
+                        build.append("?", record.getValue(meta.code()));
                     }
                 }
             }
-            bs.append(")");
+            build.append(")");
 
             if (i == 0)
                 throw new RuntimeException("not storage field update");
 
-            lastCommand = bs.getPrepareCommand();
-            log.debug(bs.getPrepareCommand());
-            PreparedStatement ps = bs.build();
+            lastCommand = build.getPrepareCommand();
+            log.debug(build.getPrepareCommand());
+            System.out.println(build.getPrepareCommand());
+            PreparedStatement ps = build.build();
             if (this.debug) {
-                log.info(bs.getPrepareCommand());
+                log.info(build.getPrepareCommand());
                 return false;
             }
 

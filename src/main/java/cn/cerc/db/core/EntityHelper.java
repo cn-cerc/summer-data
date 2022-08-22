@@ -70,16 +70,19 @@ public class EntityHelper<T> {
                     throw new RuntimeException("暂不支持多个Id字段");
                 this.idField = Optional.of(field);
             }
+
             // 查找version标识的字段
             if (version != null) {
                 if (versionField.isPresent())
                     throw new RuntimeException("暂不支持多个Version字段");
                 this.versionField = Optional.of(field);
             }
+
             // 加入字段列表
             String name = field.getName();
             if (column != null && !"".equals(column.name()))
                 name = column.name();
+
             fields.put(name, field);
         }
     }
