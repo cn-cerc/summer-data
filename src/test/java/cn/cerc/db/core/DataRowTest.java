@@ -5,8 +5,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import java.util.Map;
-
 public class DataRowTest {
 
     @Test
@@ -162,7 +160,6 @@ public class DataRowTest {
     public void test_of_1() {
         DataRow dataRow = DataRow.of("a", "1", "b", "2");
         System.out.println(dataRow.json());
-
     }
 
     @Test
