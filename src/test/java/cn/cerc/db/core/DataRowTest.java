@@ -5,6 +5,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import java.util.Map;
+
 public class DataRowTest {
 
     @Test
@@ -155,4 +157,30 @@ public class DataRowTest {
 //        1193.75 + 1162.89 = 2356.64
         System.out.println(row.getDouble("a") + row.getDouble("b"));// 2356.6400000000003
     }
+
+    @Test
+    public void test_of_1() {
+        DataRow dataRow = DataRow.of("a", "1", "b", "2");
+        System.out.println(dataRow.json());
+
+    }
+
+    @Test
+    public void test_of_2() {
+        DataRow dataRow = DataRow.of("a", "1", "b", "2", "c");
+        System.out.println(dataRow.json());
+    }
+
+    @Test
+    public void test_of_3() {
+        DataRow dataRow = DataRow.of("a", "1", "b", null);
+        System.out.println(dataRow.json());
+    }
+
+    @Test
+    public void test_of_4() {
+        DataRow dataRow = DataRow.of("a", "1", "", null);
+        System.out.println(dataRow.json());
+    }
+
 }

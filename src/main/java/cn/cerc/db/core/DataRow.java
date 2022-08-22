@@ -55,6 +55,24 @@ public class DataRow implements Serializable, IRecord {
         return this.state;
     }
 
+    public static DataRow of(String... args) {
+        if (args.length % 2 != 0)
+            throw new RuntimeException("dataRow 传入参数数量必须为偶数");
+
+        DataRow dataRow = new DataRow();
+        for (int i = 0; i + 2 <= args.length; i = i + 2) {
+            String field = args[i];
+            if (Utils.isEmpty(field))
+                throw new RuntimeException("field 字段不允许为空");
+
+            String value = args[i + 1];
+            if (Utils.isEmpty(value))
+                value = "";
+            dataRow.setValue(field, value);
+        }
+        return dataRow;
+    }
+
     @Deprecated
     public final DataRowState getState() {
         return this.state();
