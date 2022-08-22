@@ -180,4 +180,10 @@ public class DataRowTest {
         System.out.println(dataRow.json());
     }
 
+    @Test
+    public void test_of_5() {
+        DataRow dataRow = DataRow.of();
+        System.out.println(dataRow.json());
+    }
+
 }
