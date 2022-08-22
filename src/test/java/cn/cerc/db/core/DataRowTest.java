@@ -183,7 +183,7 @@ public class DataRowTest {
     @Test
     public void test_of_5() {
         DataRow dataRow = DataRow.of();
-        System.out.println(dataRow.json());
+        assertEquals("{}", dataRow.json());
     }
 
 }
