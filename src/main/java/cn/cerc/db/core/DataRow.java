@@ -55,6 +55,9 @@ public class DataRow implements Serializable, IRecord {
         return this.state;
     }
 
+    /**
+     * 替换掉 Map.of 的传值方式，根据字段参数直接生成 DataRow
+     */
     public static DataRow of(String... args) {
         if (args.length % 2 != 0)
             throw new RuntimeException("dataRow 传入参数数量必须为偶数");
