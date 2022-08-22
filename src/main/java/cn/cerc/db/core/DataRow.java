@@ -55,6 +55,27 @@ public class DataRow implements Serializable, IRecord {
         return this.state;
     }
 
+    /**
+     * 替换掉 Map.of 的传值方式，根据字段参数直接生成 DataRow
+     */
+    public static DataRow of(Object... args) {
+        if (args.length % 2 != 0)
+            throw new RuntimeException("dataRow 传入参数数量必须为偶数");
+
+        DataRow dataRow = new DataRow();
+        for (int i = 0; i + 2 <= args.length; i = i + 2) {
+            String field = (String) args[i];
+            if (Utils.isEmpty(field))
+                throw new RuntimeException("field 字段不允许为空");
+
+            Object value = args[i + 1];
+            if (value == null)
+                value = "";
+            dataRow.setValue(field, value);
+        }
+        return dataRow;
+    }
+
     @Deprecated
     public final DataRowState getState() {
         return this.state();
