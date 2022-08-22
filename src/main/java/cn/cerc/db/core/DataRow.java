@@ -58,18 +58,18 @@ public class DataRow implements Serializable, IRecord {
     /**
      * 替换掉 Map.of 的传值方式，根据字段参数直接生成 DataRow
      */
-    public static DataRow of(String... args) {
+    public static DataRow of(Object... args) {
         if (args.length % 2 != 0)
             throw new RuntimeException("dataRow 传入参数数量必须为偶数");
 
         DataRow dataRow = new DataRow();
         for (int i = 0; i + 2 <= args.length; i = i + 2) {
-            String field = args[i];
+            String field = (String) args[i];
             if (Utils.isEmpty(field))
                 throw new RuntimeException("field 字段不允许为空");
 
-            String value = args[i + 1];
-            if (Utils.isEmpty(value))
+            Object value = args[i + 1];
+            if (value == null)
                 value = "";
             dataRow.setValue(field, value);
         }

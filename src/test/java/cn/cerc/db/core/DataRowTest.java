@@ -158,20 +158,21 @@ public class DataRowTest {
 
     @Test
     public void test_of_1() {
-        DataRow dataRow = DataRow.of("a", "1", "b", "2");
+        DataRow dataRow = DataRow.of("a", "1", "b", 2);
         System.out.println(dataRow.json());
     }
 
     @Test
     public void test_of_2() {
-        DataRow dataRow = DataRow.of("a", "1", "b", "2", "c");
+        DataRow dataRow = DataRow.of("a", "1", "b", 2, "c");
         System.out.println(dataRow.json());
     }
 
     @Test
     public void test_of_3() {
         DataRow dataRow = DataRow.of("a", "1", "b", null);
-        System.out.println(dataRow.json());
+        assertEquals("""
+                {"a":"1","b":""}""", dataRow.json());
     }
 
     @Test
