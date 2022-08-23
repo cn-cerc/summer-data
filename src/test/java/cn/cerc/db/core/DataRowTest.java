@@ -164,11 +164,11 @@ public class DataRowTest {
                 {"a":"1","b":2}""", dataRow.json());
     }
 
-    @Test
+    @Test(expected=RuntimeException.class)
     public void test_of_2() {
         DataRow dataRow = DataRow.of("a", "1", "b", 2, "c");
         assertNotEquals("""
-                {"a":"1","b":2}""", dataRow.json());
+                {"a":"1","b":"2"}""", dataRow.json());
     }
 
     @Test
@@ -178,10 +178,10 @@ public class DataRowTest {
                 {"a":"1","b":""}""", dataRow.json());
     }
 
-    @Test
+    @Test(expected=RuntimeException.class)
     public void test_of_4() {
         DataRow dataRow = DataRow.of("a", "1", "", null);
-        assertNotEquals("""
+        assertEquals("""
                 {"a":"1","":""}""", dataRow.json());
     }
 
