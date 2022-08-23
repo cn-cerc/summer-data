@@ -4,9 +4,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class DataRowTest {
+
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
 
     @Test
     public void test_create() {
@@ -164,8 +169,9 @@ public class DataRowTest {
                 {"a":"1","b":2}""", dataRow.json());
     }
 
-    @Test(expected=RuntimeException.class)
+    @Test
     public void test_of_2() {
+        exception.expect(RuntimeException.class);
         DataRow dataRow = DataRow.of("a", "1", "b", 2, "c");
         assertNotEquals("""
                 {"a":"1","b":"2"}""", dataRow.json());
@@ -178,8 +184,9 @@ public class DataRowTest {
                 {"a":"1","b":""}""", dataRow.json());
     }
 
-    @Test(expected=RuntimeException.class)
+    @Test
     public void test_of_4() {
+        exception.expect(RuntimeException.class);
         DataRow dataRow = DataRow.of("a", "1", "", null);
         assertEquals("""
                 {"a":"1","":""}""", dataRow.json());
