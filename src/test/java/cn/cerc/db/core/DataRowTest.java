@@ -1,6 +1,7 @@
 package cn.cerc.db.core;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -159,13 +160,13 @@ public class DataRowTest {
     @Test
     public void test_of_1() {
         DataRow dataRow = DataRow.of("a", "1", "b", 2);
-        System.out.println(dataRow.json());
+        assertEquals("""
+                {"a":"1","b":2}""", dataRow.json());
     }
 
     @Test
     public void test_of_2() {
-        DataRow dataRow = DataRow.of("a", "1", "b", 2, "c");
-        System.out.println(dataRow.json());
+        assertThrows(RuntimeException.class, () -> DataRow.of("a", "1", "b", 2, "c"));
     }
 
     @Test
@@ -177,8 +178,7 @@ public class DataRowTest {
 
     @Test
     public void test_of_4() {
-        DataRow dataRow = DataRow.of("a", "1", "", null);
-        System.out.println(dataRow.json());
+        assertThrows(RuntimeException.class, ()-> DataRow.of("a", "1", "", null));
     }
 
     @Test
