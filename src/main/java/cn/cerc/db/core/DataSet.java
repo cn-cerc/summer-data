@@ -340,12 +340,14 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     // 排序
-    public void setSort(String... fields) {
+    public DataSet setSort(String... fields) {
         Collections.sort(this.getRecords(), new RecordComparator(fields));
+        return this;
     }
 
-    public void setSort(Comparator<DataRow> func) {
+    public DataSet setSort(Comparator<DataRow> func) {
         Collections.sort(this.getRecords(), func);
+        return this;
     }
 
     @Deprecated
