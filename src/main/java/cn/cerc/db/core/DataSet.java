@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -825,6 +826,12 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         }
         records.clear();
         target.last();
+    }
+
+    public LinkedHashMap<String, String> toMap(String keyField, String valueField) {
+        LinkedHashMap<String, String> items = new LinkedHashMap<>();
+        this.forEach(item -> items.put(item.getString(keyField), item.getString(valueField)));
+        return items;
     }
 
     public static void main(String[] args) throws InterruptedException {
