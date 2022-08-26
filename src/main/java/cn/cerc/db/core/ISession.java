@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public interface ISession extends AutoCloseable {
+    String INDUSTRY ="industry";// 行业
     String EDITION = "edition";
     String CORP_NO = "corp_no";
     String USER_CODE = "user_code";
@@ -39,6 +40,10 @@ public interface ISession extends AutoCloseable {
         return (String) getProperty(EDITION);
     }
 
+    default String getIndustry() {
+        return (String)getProperty(INDUSTRY);
+    }
+    
     default String getCorpNo() {
         return (String) getProperty(CORP_NO);
     }
