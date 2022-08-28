@@ -25,7 +25,7 @@ public class YamlConfig implements IConfig {
 
         // 加载项目文件配置
         String appFile = "/application.yaml";
-        InputStream input = ClassConfig.class.getResourceAsStream(appFile);
+        InputStream input = YamlConfig.class.getResourceAsStream(appFile);
         if (input != null) {
             configMap.putAll(yaml.loadAs(input, Map.class));
             log.info("{} is loaded.", appFile);
