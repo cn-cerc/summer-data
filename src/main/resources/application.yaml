@@ -1,0 +1,16 @@
+app:
+    service:
+        path: service-fpl
+        token: 0f1e29918bce4b9faef5000e2cca853e
+
+images:
+    index:
+        top: index-top.png
+        logo: index-log.png
+
+blackList:
+    - 183.8.87.106
+    - 183.8.87.125
+    - 183.8.87.151
+    - 183.8.87.141
+    - 183.8.87.102
