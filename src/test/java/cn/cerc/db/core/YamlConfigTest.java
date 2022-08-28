@@ -13,8 +13,10 @@ public class YamlConfigTest {
 
     @Test
     public void test_1() {
-        String str = new YamlConfig().getProperty("app.service.path", "");
-        assertEquals("service-fpl", str);
+        String path = new YamlConfig().getProperty("app.service.path", "");
+        String token = new YamlConfig().getProperty("app.service.token", "");
+        assertEquals("service-fpl", path);
+        assertEquals("0f1e29918bce4b9faef5000e2cca853e", token);
     }
 
     @Test
@@ -28,7 +30,7 @@ public class YamlConfigTest {
         Map<String, Object> map = new HashMap<>();
         map.put("path", "service-fpl");
         map.put("token", "0f1e29918bce4b9faef5000e2cca853e");
-        Map<String, Object> result = new YamlConfig().getConfigDef("app.service", new HashMap<String, Object>());
+        Map<String, Object> result = new YamlConfig().getConfigDef("app.service", Map.of());
         assertEquals(map, result);
     }
 
@@ -40,7 +42,7 @@ public class YamlConfigTest {
         list.add("183.8.87.151");
         list.add("183.8.87.141");
         list.add("183.8.87.102");
-        List<String> result = new YamlConfig().getConfigDef("blackList", new ArrayList<String>());
+        List<String> result = new YamlConfig().getConfigDef("blackList", List.of());
         assertEquals(list, result);
     }
 
