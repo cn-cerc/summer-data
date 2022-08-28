@@ -13,8 +13,9 @@ public class YamlConfigTest {
 
     @Test
     public void test_1() {
-        String path = new YamlConfig().getProperty("app.service.path", "");
-        String token = new YamlConfig().getProperty("app.service.token", "");
+        YamlConfig config = new YamlConfig();
+        String path = config.getProperty("app.service.path", "");
+        String token = config.getProperty("app.service.token", "");
         assertEquals("service-fpl", path);
         assertEquals("0f1e29918bce4b9faef5000e2cca853e", token);
     }
