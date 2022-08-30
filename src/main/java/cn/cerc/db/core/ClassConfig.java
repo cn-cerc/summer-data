@@ -58,21 +58,19 @@ public class ClassConfig implements IConfig {
     public ClassConfig() {
         super();
         classPath = null;
-        config = new Properties(applicationConfig);
-        localConfig.forEach((k, v) -> {
-            config.put(k, v);
-        });
+        config = new Properties();
+        config.putAll(applicationConfig);
+        config.putAll(localConfig);
     }
 
     public ClassConfig(Class<?> owner, String packageName) {
         super();
         this.classPath = owner.getName();
+        config = new Properties();
 
         if (packageName == null) {
-            config = new Properties(applicationConfig);
-            localConfig.forEach((k, v) -> {
-                config.put(k, v);
-            });
+            config.putAll(applicationConfig);
+            config.putAll(localConfig);
             return;
         }
 
@@ -96,16 +94,9 @@ public class ClassConfig implements IConfig {
                 packageConfig = buffer.get(packageName);
             }
         }
-
-        Properties parentConfig = new Properties(packageConfig);
-        applicationConfig.forEach((k, v) -> {
-            parentConfig.put(k, v);
-        });
-        config = new Properties(parentConfig);
-        localConfig.forEach((k, v) -> {
-            config.put(k, v);
-        });
-        return;
+        config.putAll(packageConfig);
+        config.putAll(applicationConfig);
+        config.putAll(localConfig);
     }
 
     /**
