@@ -2,6 +2,8 @@ package cn.cerc.db.core;
 
 import cn.cerc.db.SummerDB;
 
+import java.util.Properties;
+
 public enum ServerConfig implements IConfig {
 
     INSTANCE;
@@ -62,6 +64,10 @@ public enum ServerConfig implements IConfig {
     @Override
     public String getProperty(String key, String def) {
         return config.getString(key, def);
+    }
+
+    public Properties loadAll() {
+        return config.getProperties();
     }
 
     /**
