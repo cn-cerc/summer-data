@@ -1,5 +1,15 @@
 package cn.cerc.db.core;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializer;
+import com.google.gson.internal.LinkedTreeMap;
+import com.google.gson.reflect.TypeToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -11,18 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-
-import javax.persistence.Column;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializer;
-import com.google.gson.internal.LinkedTreeMap;
-import com.google.gson.reflect.TypeToken;
 
 public class DataRow implements Serializable, IRecord {
     private static final Logger log = LoggerFactory.getLogger(DataRow.class);
@@ -447,8 +445,9 @@ public class DataRow implements Serializable, IRecord {
         if (this.fields().size() > items.size()) {
             log.warn("database fields.size > entity properties.size");
         } else if (this.fields().size() < items.size()) {
-            String fmt = "database fields.size %d < entity properties.size %d";
-            throw new RuntimeException(String.format(fmt, this.fields().size(), items.size()));
+            throw new RuntimeException(
+                    String.format("database fields.size %d < %s properties.size %d ", this.fields().size(),
+                            entity.getClass().getName(), items.size()));
         }
 
         // 查找并赋值
@@ -477,8 +476,9 @@ public class DataRow implements Serializable, IRecord {
                     variant.setData(value).writeToEntity(entity, field);
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 e.printStackTrace();
-                throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
-                        value.getClass().getName(), field.getType().getName()));
+                throw new RuntimeException(
+                        String.format("field %s error: %s as %s", field.getName(), value.getClass().getName(),
+                                field.getType().getName()));
             }
         }
     }
