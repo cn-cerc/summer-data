@@ -160,8 +160,7 @@ public class DataRowTest {
     @Test
     public void test_of_1() {
         DataRow dataRow = DataRow.of("a", "1", "b", 2);
-        assertEquals("""
-                {"a":"1","b":2}""", dataRow.json());
+        assertEquals("{\"a\":\"1\",\"b\":2}", dataRow.json());
     }
 
     @Test
@@ -172,8 +171,7 @@ public class DataRowTest {
     @Test
     public void test_of_3() {
         DataRow dataRow = DataRow.of("a", "1", "b", null);
-        assertEquals("""
-                {"a":"1","b":""}""", dataRow.json());
+        assertEquals("{\"a\":\"1\",\"b\":\"\"}", dataRow.json());
     }
 
     @Test
