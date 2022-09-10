@@ -6,6 +6,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import cn.cerc.db.Alias;
+
 public class DataRowTest {
 
     @Test
@@ -176,7 +178,7 @@ public class DataRowTest {
 
     @Test
     public void test_of_4() {
-        assertThrows(RuntimeException.class, ()-> DataRow.of("a", "1", "", null));
+        assertThrows(RuntimeException.class, () -> DataRow.of("a", "1", "", null));
     }
 
     @Test
@@ -185,4 +187,16 @@ public class DataRowTest {
         assertEquals("{}", dataRow.json());
     }
 
+    public record User1(@Alias("code_") Variant code, @Alias("name_") String name, boolean enabled) {
+    }
+
+    @Test
+    public void test_of_asRecord() {
+        DataRow row = DataRow.of("code_", "001", "name_", "jason", "enabled", "true");
+        User1 user = row.asRecord(User1.class);
+        assertEquals("001", user.code.getString());
+        assertEquals(1, user.code.getInt());
+        assertEquals("jason", user.name);
+        assertEquals(true, user.enabled);
+    }
 }

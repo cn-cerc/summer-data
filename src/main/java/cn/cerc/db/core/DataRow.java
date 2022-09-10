@@ -576,4 +576,43 @@ public class DataRow implements Serializable, IRecord {
         return this;
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> T asRecord(Class<T> clazz) {
+        if (!clazz.isRecord())
+            throw new RuntimeException("only support record class");
+
+        Constructor<?> constructor = clazz.getConstructors()[0];
+        Object[] initArgs = new Object[constructor.getParameterCount()];
+        int i = 0;
+        for (Parameter item : constructor.getParameters()) {
+            String field = item.getName();
+            Alias alias = item.getAnnotation(Alias.class);
+            if (alias != null && alias.value().length() > 0)
+                field = alias.value();
+            if (item.getType() == Variant.class)
+                initArgs[i++] = new Variant(this.getValue(field)).setTag(field);
+            else if (item.getType() == String.class)
+                initArgs[i++] = this.getString(field);
+            else if (item.getType() == boolean.class || item.getType() == Boolean.class)
+                initArgs[i++] = this.getBoolean(field);
+            else if (item.getType() == int.class || item.getType() == Integer.class)
+                initArgs[i++] = this.getInt(field);
+            else if (item.getType() == double.class || item.getType() == Double.class)
+                initArgs[i++] = this.getDouble(field);
+            else if (item.getType() == long.class || item.getType() == Long.class)
+                initArgs[i++] = this.getLong(field);
+            else if (item.getType() == Datetime.class)
+                initArgs[i++] = this.getDatetime(field);
+            else
+                initArgs[i++] = this.getValue(field);
+        }
+        try {
+            return (T) constructor.newInstance(initArgs);
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
 }
