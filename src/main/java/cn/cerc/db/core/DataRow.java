@@ -613,9 +613,9 @@ public class DataRow implements Serializable, IRecord {
 
     }
 
-    public <T> T asRecord(Class<?> clazz) {
+    public Object asRecord(Class<?> clazz) {
         if (clazz.isInterface())
-            return (T) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class<?>[] { clazz },
+            return Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class<?>[]{clazz},
                     new RecordProxy(this));
         else
             throw new RuntimeException("only support record and interface");
