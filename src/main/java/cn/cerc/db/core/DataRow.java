@@ -625,7 +625,7 @@ public class DataRow implements Serializable, IRecord {
             throw new RuntimeException("only support record and interface");
     }
 
-    public static void main(String[] args) {
-
+    public DataField bind(String field) {
+        return new DataField(this, field);
     }
 }

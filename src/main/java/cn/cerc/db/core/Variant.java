@@ -8,9 +8,9 @@ import java.util.Date;
 import com.google.gson.Gson;
 
 public class Variant {
-    private Object data;
+    private Object value;
+    private String key;
     private transient boolean modified;
-    private String tag;
 
     public Variant() {
         super();
@@ -22,28 +22,28 @@ public class Variant {
     }
 
     public final String tag() {
-        return this.tag;
+        return this.key;
     }
 
-    public final Object data() {
-        return this.data;
+    public Object data() {
+        return this.value;
     }
 
     public Variant setData(Object data) {
-        if (this.data == data)
+        if (this.value == data)
             return this;
-        if (this.data == null && data != null)
+        if (this.value == null && data != null)
             modified = true;
-        else if (this.data != null && data == null)
+        else if (this.value != null && data == null)
             modified = true;
-        else if (!this.data.equals(data))
+        else if (!this.value.equals(data))
             modified = true;
-        this.data = data;
+        this.value = data;
         return this;
     }
 
     public final Variant setTag(String tag) {
-        this.tag = tag;
+        this.key = tag;
         return this;
     }
 
