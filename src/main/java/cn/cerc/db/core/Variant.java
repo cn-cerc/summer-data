@@ -352,7 +352,7 @@ public class Variant {
         }
     }
 
-    public final boolean has() {
+    public final boolean hasValue() {
         if (dataRow != null)
             return dataRow.has(key);
         else
