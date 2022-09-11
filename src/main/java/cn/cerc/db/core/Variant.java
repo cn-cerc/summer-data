@@ -82,7 +82,7 @@ public class Variant {
     }
 
     public final String getString() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return "";
         } else if (value instanceof String) {
@@ -102,7 +102,7 @@ public class Variant {
     }
 
     public final boolean getBoolean() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return false;
         } else if (value instanceof Boolean) {
@@ -120,7 +120,7 @@ public class Variant {
     }
 
     public final int getInt() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -159,7 +159,7 @@ public class Variant {
     }
 
     public final long getLong() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -195,7 +195,7 @@ public class Variant {
     }
 
     public final float getFloat() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -227,7 +227,7 @@ public class Variant {
     }
 
     public final double getDouble() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -253,7 +253,7 @@ public class Variant {
     }
 
     public final BigInteger getBigInteger() {
-        Object value = this.data();
+        Object value = this.value();
         if (value instanceof BigInteger) {
             return (BigInteger) value;
         } else
@@ -261,7 +261,7 @@ public class Variant {
     }
 
     public final BigDecimal getBigDecimal() {
-        Object value = this.data();
+        Object value = this.value();
         if (value instanceof BigDecimal)
             return (BigDecimal) value;
         else
@@ -269,7 +269,7 @@ public class Variant {
     }
 
     public final Datetime getDatetime() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return Datetime.zero();
         } else if (value instanceof Datetime) {
@@ -343,13 +343,20 @@ public class Variant {
         else if (field.getType().isEnum())
             field.set(entity, this.getEnum((Class<Enum<?>>) field.getType()));
         else {
-            if (this.data() != null)
+            if (this.value() != null)
                 throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
-                        this.data().getClass().getName(), field.getType().getName()));
+                        this.value().getClass().getName(), field.getType().getName()));
             else
                 throw new RuntimeException(
                         String.format("field %s error: %s to null", field.getName(), field.getType().getName()));
         }
+    }
+
+    public final boolean has() {
+        if (dataRow != null)
+            return dataRow.has(key);
+        else
+            return !"".equals(getString());
     }
 
     public static void main(String[] args) {
