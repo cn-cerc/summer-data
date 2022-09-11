@@ -592,6 +592,8 @@ public class DataRow implements Serializable, IRecord {
             Alias alias = method.getAnnotation(Alias.class);
             if (alias != null && alias.value().length() > 0)
                 field = alias.value();
+            if (dataRow.fields().get(field) == null)
+                throw new RuntimeException("not find field: " + field);
             if (method.getReturnType() == Variant.class)
                 result = dataRow.bind(field);
             else if (method.getReturnType() == String.class)
