@@ -581,10 +581,10 @@ public class DataRow implements Serializable, IRecord {
         return this;
     }
 
-    public class RecordImpl implements InvocationHandler {
+    public class RecordProxy implements InvocationHandler {
         private DataRow dataRow;
 
-        public RecordImpl(DataRow dataRow) {
+        public RecordProxy(DataRow dataRow) {
             this.dataRow = dataRow;
         }
 
@@ -619,9 +619,8 @@ public class DataRow implements Serializable, IRecord {
     @SuppressWarnings("unchecked")
     public <T> T asRecord(Class<T> clazz) {
         if (clazz.isInterface()) {
-            T result = (T) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[] { clazz },
-                    new RecordImpl(this));
-            return result;
+            return (T) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[] { clazz },
+                    new RecordProxy(this));
 //        } else if (clazz.isRecord()) {
 //            Constructor<?> constructor = clazz.getConstructors()[0];
 //            Object[] initArgs = new Object[constructor.getParameterCount()];
