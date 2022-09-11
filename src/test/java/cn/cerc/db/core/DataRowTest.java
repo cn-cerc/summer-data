@@ -220,4 +220,19 @@ public class DataRowTest {
         assertEquals(true, user.enabled());
     }
 
+    @Test
+    public void test_bind() {
+        DataRow row = DataRow.of("code", "001");
+
+        Variant code = row.bind("code");
+        assertEquals(1, code.getInt());
+
+        // 连动更新
+        code.setValue("002");
+        assertEquals("002", row.getString("code"));
+
+        row.setValue("code", "003");
+        assertEquals("003", code.getString());
+        assertEquals(3, code.getInt());
+    }
 }
