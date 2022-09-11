@@ -198,6 +198,9 @@ public class DataRowTest {
         assertEquals(1, user.code().getInt());
         assertEquals("jason", user.name());
         assertEquals(true, user.enabled());
+        // 注意：使用record模式，不会产生绑定效果
+        row.setValue("code_", "002");
+        assertEquals(1, user.code().getInt());
     }
 
     public interface TestUser2 {
@@ -218,6 +221,11 @@ public class DataRowTest {
         assertEquals(1, user.code().getInt());
         assertEquals("jason", user.name());
         assertEquals(true, user.enabled());
+        // 注意：使用interface模式，会产生绑定效果
+        row.setValue("code_", "002");
+        assertEquals(2, user.code().getInt());
+        user.code().setValue("003");
+        assertEquals("003", row.getString("code_"));
     }
 
     @Test
