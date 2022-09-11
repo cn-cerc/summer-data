@@ -187,16 +187,37 @@ public class DataRowTest {
         assertEquals("{}", dataRow.json());
     }
 
-    public record User1(@Alias("code_") Variant code, @Alias("name_") String name, boolean enabled) {
+    public record TestUser1(@Alias("code_") Variant code, @Alias("name_") String name, boolean enabled) {
     }
 
     @Test
-    public void test_of_asRecord() {
+    public void test_of_asRecord1() {
         DataRow row = DataRow.of("code_", "001", "name_", "jason", "enabled", "true");
-        User1 user = row.asRecord(User1.class);
-        assertEquals("001", user.code.getString());
-        assertEquals(1, user.code.getInt());
-        assertEquals("jason", user.name);
-        assertEquals(true, user.enabled);
+        TestUser1 user = row.asRecord(TestUser1.class);
+        assertEquals("001", user.code().getString());
+        assertEquals(1, user.code().getInt());
+        assertEquals("jason", user.name());
+        assertEquals(true, user.enabled());
     }
+
+    public interface TestUser2 {
+        @Alias("code_")
+        Variant code();
+
+        @Alias("name_")
+        String name();
+
+        boolean enabled();
+    }
+
+    @Test
+    public void test_of_asRecord2() {
+        DataRow row = DataRow.of("code_", "001", "name_", "jason", "enabled", "true");
+        TestUser2 user = row.asRecord(TestUser2.class);
+        assertEquals("001", user.code().getString());
+        assertEquals(1, user.code().getInt());
+        assertEquals("jason", user.name());
+        assertEquals(true, user.enabled());
+    }
+
 }
