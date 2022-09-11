@@ -8,10 +8,10 @@ import java.util.Date;
 import com.google.gson.Gson;
 
 public class Variant {
-    private Object value;
-    private String key;
-    private transient boolean modified;
     private DataRow dataRow;
+    private String key;
+    private Object value;
+    private transient boolean modified;
 
     public Variant() {
         super();
