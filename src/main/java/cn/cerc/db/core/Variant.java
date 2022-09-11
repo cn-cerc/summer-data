@@ -8,9 +8,10 @@ import java.util.Date;
 import com.google.gson.Gson;
 
 public class Variant {
-    private Object data;
+    private DataRow dataRow;
+    private String key;
+    private Object value;
     private transient boolean modified;
-    private String tag;
 
     public Variant() {
         super();
@@ -18,32 +19,65 @@ public class Variant {
 
     public Variant(Object data) {
         super();
-        this.setData(data);
+        this.setValue(data);
     }
 
+    public Variant(DataRow dataRow, String field) {
+        super();
+        this.dataRow = dataRow;
+        this.key = field;
+    }
+
+    @Deprecated
     public final String tag() {
-        return this.tag;
+        return this.key();
     }
 
+    @Deprecated
     public final Object data() {
-        return this.data;
+        return this.value();
     }
 
-    public Variant setData(Object data) {
-        if (this.data == data)
+    public final String key() {
+        return this.key;
+    }
+
+    public Object value() {
+        return dataRow != null ? dataRow.getValue(key) : value;
+    }
+
+    @Deprecated
+    public final Variant setData(Object data) {
+        return this.setValue(data);
+    }
+
+    public Variant setValue(Object value) {
+        if (dataRow != null) {
+            dataRow.setValue(key, value);
+            modified = true;
             return this;
-        if (this.data == null && data != null)
+        }
+        if (this.value == value)
+            return this;
+        if (this.value == null && value != null)
             modified = true;
-        else if (this.data != null && data == null)
+        else if (this.value != null && value == null)
             modified = true;
-        else if (!this.data.equals(data))
+        else if (!this.value.equals(value))
             modified = true;
-        this.data = data;
+        this.value = value;
         return this;
     }
 
+    @Deprecated
     public final Variant setTag(String tag) {
-        this.tag = tag;
+        return setKey(tag);
+    }
+
+    public final Variant setKey(String key) {
+        if (this.dataRow != null)
+            throw new RuntimeException("dataRow not is null, key is readOnly");
+        this.key = key;
         return this;
     }
 
@@ -276,6 +310,10 @@ public class Variant {
         return modified;
     }
 
+    protected void setModified(boolean modified) {
+        this.modified = modified;
+    }
+
     @SuppressWarnings("unchecked")
     public <T> void writeToEntity(T entity, Field field) throws IllegalAccessException {
         if ("boolean".equals(field.getType().getName()))
@@ -317,9 +355,9 @@ public class Variant {
     public static void main(String[] args) {
         System.out.println(new Variant());
         System.out.println(new Variant("202109"));
-        System.out.println(new Variant("202109").setTag("date"));
+        System.out.println(new Variant("202109").setKey("date"));
 
-        Variant kv = new Variant("3").setTag("id");
+        Variant kv = new Variant("3").setKey("id");
         System.out.println(kv.tag());
     }
 
