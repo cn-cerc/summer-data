@@ -353,9 +353,9 @@ public class Variant {
     public static void main(String[] args) {
         System.out.println(new Variant());
         System.out.println(new Variant("202109"));
-        System.out.println(new Variant("202109").setTag("date"));
+        System.out.println(new Variant("202109").setKey("date"));
 
-        Variant kv = new Variant("3").setTag("id");
+        Variant kv = new Variant("3").setKey("id");
         System.out.println(kv.tag());
     }
 
