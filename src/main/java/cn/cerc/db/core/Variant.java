@@ -75,6 +75,8 @@ public class Variant {
     }
 
     public final Variant setKey(String key) {
+        if (this.dataRow != null)
+            throw new RuntimeException("dataRow not is null, key is readOnly");
         this.key = key;
         return this;
     }
