@@ -1,10 +1,7 @@
 package cn.cerc.db.core;
 
 import java.io.Serializable;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Parameter;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -27,8 +24,6 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializer;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
-
-import cn.cerc.db.Alias;
 
 public class DataRow implements Serializable, IRecord {
     private static final Logger log = LoggerFactory.getLogger(DataRow.class);
@@ -588,39 +583,39 @@ public class DataRow implements Serializable, IRecord {
             T result = (T) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[] { clazz },
                     new RecordImpl(this));
             return result;
-        } else if (clazz.isRecord()) {
-            Constructor<?> constructor = clazz.getConstructors()[0];
-            Object[] initArgs = new Object[constructor.getParameterCount()];
-            int i = 0;
-            for (Parameter item : constructor.getParameters()) {
-                String field = item.getName();
-                Alias alias = item.getAnnotation(Alias.class);
-                if (alias != null && alias.value().length() > 0)
-                    field = alias.value();
-                if (item.getType() == Variant.class)
-                    initArgs[i++] = new Variant(this.getValue(field)).setKey(field);
-                else if (item.getType() == String.class)
-                    initArgs[i++] = this.getString(field);
-                else if (item.getType() == boolean.class || item.getType() == Boolean.class)
-                    initArgs[i++] = this.getBoolean(field);
-                else if (item.getType() == int.class || item.getType() == Integer.class)
-                    initArgs[i++] = this.getInt(field);
-                else if (item.getType() == double.class || item.getType() == Double.class)
-                    initArgs[i++] = this.getDouble(field);
-                else if (item.getType() == long.class || item.getType() == Long.class)
-                    initArgs[i++] = this.getLong(field);
-                else if (item.getType() == Datetime.class)
-                    initArgs[i++] = this.getDatetime(field);
-                else
-                    initArgs[i++] = this.getValue(field);
-            }
-            try {
-                return (T) constructor.newInstance(initArgs);
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                    | InvocationTargetException e) {
-                e.printStackTrace();
-                throw new RuntimeException(e.getMessage());
-            }
+//        } else if (clazz.isRecord()) {
+//            Constructor<?> constructor = clazz.getConstructors()[0];
+//            Object[] initArgs = new Object[constructor.getParameterCount()];
+//            int i = 0;
+//            for (Parameter item : constructor.getParameters()) {
+//                String field = item.getName();
+//                Alias alias = item.getAnnotation(Alias.class);
+//                if (alias != null && alias.value().length() > 0)
+//                    field = alias.value();
+//                if (item.getType() == Variant.class)
+//                    initArgs[i++] = new Variant(this.getValue(field)).setKey(field);
+//                else if (item.getType() == String.class)
+//                    initArgs[i++] = this.getString(field);
+//                else if (item.getType() == boolean.class || item.getType() == Boolean.class)
+//                    initArgs[i++] = this.getBoolean(field);
+//                else if (item.getType() == int.class || item.getType() == Integer.class)
+//                    initArgs[i++] = this.getInt(field);
+//                else if (item.getType() == double.class || item.getType() == Double.class)
+//                    initArgs[i++] = this.getDouble(field);
+//                else if (item.getType() == long.class || item.getType() == Long.class)
+//                    initArgs[i++] = this.getLong(field);
+//                else if (item.getType() == Datetime.class)
+//                    initArgs[i++] = this.getDatetime(field);
+//                else
+//                    initArgs[i++] = this.getValue(field);
+//            }
+//            try {
+//                return (T) constructor.newInstance(initArgs);
+//            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+//                    | InvocationTargetException e) {
+//                e.printStackTrace();
+//                throw new RuntimeException(e.getMessage());
+//            }
         } else
             throw new RuntimeException("only support record and interface");
     }

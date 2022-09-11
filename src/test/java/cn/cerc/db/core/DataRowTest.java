@@ -187,21 +187,21 @@ public class DataRowTest {
         assertEquals("{}", dataRow.json());
     }
 
-    public record TestUser1(@Alias("code_") Variant code, @Alias("name_") String name, boolean enabled) {
-    }
-
-    @Test
-    public void test_of_asRecord1() {
-        DataRow row = DataRow.of("code_", "001", "name_", "jason", "enabled", "true");
-        TestUser1 user = row.asRecord(TestUser1.class);
-        assertEquals("001", user.code().getString());
-        assertEquals(1, user.code().getInt());
-        assertEquals("jason", user.name());
-        assertEquals(true, user.enabled());
-        // 注意：使用record模式，不会产生绑定效果
-        row.setValue("code_", "002");
-        assertEquals(1, user.code().getInt());
-    }
+//    public record TestUser1(@Alias("code_") Variant code, @Alias("name_") String name, boolean enabled) {
+//    }
+//
+//    @Test
+//    public void test_of_asRecord1() {
+//        DataRow row = DataRow.of("code_", "001", "name_", "jason", "enabled", "true");
+//        TestUser1 user = row.asRecord(TestUser1.class);
+//        assertEquals("001", user.code().getString());
+//        assertEquals(1, user.code().getInt());
+//        assertEquals("jason", user.name());
+//        assertEquals(true, user.enabled());
+//        // 注意：使用record模式，不会产生绑定效果
+//        row.setValue("code_", "002");
+//        assertEquals(1, user.code().getInt());
+//    }
 
     public interface TestUser2 {
         @Alias("code_")
