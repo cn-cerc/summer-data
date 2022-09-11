@@ -276,6 +276,10 @@ public class Variant {
         return modified;
     }
 
+    protected void setModified(boolean modified) {
+        this.modified = modified;
+    }
+
     @SuppressWarnings("unchecked")
     public <T> void writeToEntity(T entity, Field field) throws IllegalAccessException {
         if ("boolean".equals(field.getType().getName()))

@@ -18,6 +18,7 @@ public class DataField extends Variant {
     @Override
     public DataField setData(Object data) {
         dataRow.setValue(field, data);
+        this.setModified(true);
         return this;
     }
 
