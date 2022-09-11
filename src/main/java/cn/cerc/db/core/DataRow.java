@@ -1,5 +1,16 @@
 package cn.cerc.db.core;
 
+import cn.cerc.db.Alias;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializer;
+import com.google.gson.internal.LinkedTreeMap;
+import com.google.gson.reflect.TypeToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -14,20 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-
-import javax.persistence.Column;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializer;
-import com.google.gson.internal.LinkedTreeMap;
-import com.google.gson.reflect.TypeToken;
-
-import cn.cerc.db.Alias;
 
 public class DataRow implements Serializable, IRecord {
     private static final Logger log = LoggerFactory.getLogger(DataRow.class);
@@ -616,45 +613,11 @@ public class DataRow implements Serializable, IRecord {
 
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T asRecord(Class<T> clazz) {
-        if (clazz.isInterface()) {
-            return (T) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[] { clazz },
+    public <T> T asRecord(Class<?> clazz) {
+        if (clazz.isInterface())
+            return (T) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class<?>[] { clazz },
                     new RecordProxy(this));
-//        } else if (clazz.isRecord()) {
-//            Constructor<?> constructor = clazz.getConstructors()[0];
-//            Object[] initArgs = new Object[constructor.getParameterCount()];
-//            int i = 0;
-//            for (Parameter item : constructor.getParameters()) {
-//                String field = item.getName();
-//                Alias alias = item.getAnnotation(Alias.class);
-//                if (alias != null && alias.value().length() > 0)
-//                    field = alias.value();
-//                if (item.getType() == Variant.class)
-//                    initArgs[i++] = new Variant(this.getValue(field)).setKey(field);
-//                else if (item.getType() == String.class)
-//                    initArgs[i++] = this.getString(field);
-//                else if (item.getType() == boolean.class || item.getType() == Boolean.class)
-//                    initArgs[i++] = this.getBoolean(field);
-//                else if (item.getType() == int.class || item.getType() == Integer.class)
-//                    initArgs[i++] = this.getInt(field);
-//                else if (item.getType() == double.class || item.getType() == Double.class)
-//                    initArgs[i++] = this.getDouble(field);
-//                else if (item.getType() == long.class || item.getType() == Long.class)
-//                    initArgs[i++] = this.getLong(field);
-//                else if (item.getType() == Datetime.class)
-//                    initArgs[i++] = this.getDatetime(field);
-//                else
-//                    initArgs[i++] = this.getValue(field);
-//            }
-//            try {
-//                return (T) constructor.newInstance(initArgs);
-//            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-//                    | InvocationTargetException e) {
-//                e.printStackTrace();
-//                throw new RuntimeException(e.getMessage());
-//            }
-        } else
+        else
             throw new RuntimeException("only support record and interface");
     }
 

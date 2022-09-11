@@ -6,8 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import cn.cerc.db.Alias;
-
 public class DataRowTest {
 
     @Test
@@ -204,11 +202,9 @@ public class DataRowTest {
 //    }
 
     public interface TestUser2 {
-        @Alias("code_")
-        Variant code();
+        Variant code_();
 
-        @Alias("name_")
-        String name();
+        String name_();
 
         boolean enabled();
     }
@@ -216,15 +212,16 @@ public class DataRowTest {
     @Test
     public void test_of_asRecord2() {
         DataRow row = DataRow.of("code_", "001", "name_", "jason", "enabled", "true");
-        TestUser2 user = row.asRecord(TestUser2.class);
-        assertEquals("001", user.code().getString());
-        assertEquals(1, user.code().getInt());
-        assertEquals("jason", user.name());
+        TestUser2 user = (TestUser2) row.asRecord(TestUser2.class);
+        assertEquals("001", user.code_().getString());
+        assertEquals(1, user.code_().getInt());
+        assertEquals("jason", user.name_());
         assertTrue(user.enabled());
+
         // 注意：使用interface模式，会产生绑定效果
         row.setValue("code_", "002");
-        assertEquals(2, user.code().getInt());
-        user.code().setValue("003");
+        assertEquals(2, user.code_().getInt());
+        user.code_().setValue("003");
         assertEquals("003", row.getString("code_"));
     }
 
