@@ -9,7 +9,7 @@ import com.google.gson.Gson;
 
 public class Variant {
     private DataRow dataRow;
-    private String key;
+    private String field;
     private Object value;
     private transient boolean modified;
 
@@ -17,20 +17,20 @@ public class Variant {
         super();
     }
 
-    public Variant(Object data) {
+    public Variant(Object value) {
         super();
-        this.setValue(data);
+        this.setValue(value);
     }
 
     public Variant(DataRow dataRow, String field) {
         super();
         this.dataRow = dataRow;
-        this.key = field;
+        this.field = field;
     }
 
     @Deprecated
     public final String tag() {
-        return this.key();
+        return this.field();
     }
 
     @Deprecated
@@ -38,12 +38,12 @@ public class Variant {
         return this.value();
     }
 
-    public final String key() {
-        return this.key;
+    public final String field() {
+        return this.field;
     }
 
     public Object value() {
-        return dataRow != null ? dataRow.getValue(key) : value;
+        return dataRow != null ? dataRow.getValue(field) : value;
     }
 
     @Deprecated
@@ -53,7 +53,7 @@ public class Variant {
 
     public Variant setValue(Object value) {
         if (dataRow != null) {
-            dataRow.setValue(key, value);
+            dataRow.setValue(field, value);
             modified = true;
             return this;
         }
@@ -77,7 +77,7 @@ public class Variant {
     public final Variant setKey(String key) {
         if (this.dataRow != null)
             throw new RuntimeException("dataRow not is null, key is readOnly");
-        this.key = key;
+        this.field = key;
         return this;
     }
 
@@ -291,10 +291,9 @@ public class Variant {
         return this.getDatetime().toFastTime();
     }
 
-    @SuppressWarnings("rawtypes")
-    public Enum<?> getEnum(Class<? extends Enum> clazz) {
+    public Enum<?> getEnum(Class<? extends Enum<?>> clazz) {
         int tmp = getInt();
-        Enum[] list = clazz.getEnumConstants();
+        Enum<?>[] list = clazz.getEnumConstants();
         if (tmp >= 0 && tmp < list.length)
             return list[tmp];
         else
@@ -354,7 +353,7 @@ public class Variant {
 
     public final boolean hasValue() {
         if (dataRow != null)
-            return dataRow.has(key);
+            return dataRow.has(field);
         else
             return !"".equals(getString());
     }
@@ -365,7 +364,7 @@ public class Variant {
         System.out.println(new Variant("202109").setKey("date"));
 
         Variant kv = new Variant("3").setKey("id");
-        System.out.println(kv.tag());
+        System.out.println(kv.field());
     }
 
 }
