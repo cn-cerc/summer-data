@@ -476,11 +476,11 @@ public class DataRow implements Serializable, IRecord {
                     if (column == null || column.nullable()) {
                         field.set(entity, null);
                     } else
-                        variant.setData(null).writeToEntity(entity, field);
+                        variant.setValue(null).writeToEntity(entity, field);
                 } else if (field.getType().equals(value.getClass()))
                     field.set(entity, value);
                 else
-                    variant.setData(value).writeToEntity(entity, field);
+                    variant.setValue(value).writeToEntity(entity, field);
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 e.printStackTrace();
                 throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
@@ -598,7 +598,7 @@ public class DataRow implements Serializable, IRecord {
                 if (alias != null && alias.value().length() > 0)
                     field = alias.value();
                 if (item.getType() == Variant.class)
-                    initArgs[i++] = new Variant(this.getValue(field)).setTag(field);
+                    initArgs[i++] = new Variant(this.getValue(field)).setKey(field);
                 else if (item.getType() == String.class)
                     initArgs[i++] = this.getString(field);
                 else if (item.getType() == boolean.class || item.getType() == Boolean.class)
@@ -625,7 +625,7 @@ public class DataRow implements Serializable, IRecord {
             throw new RuntimeException("only support record and interface");
     }
 
-    public DataField bind(String field) {
-        return new DataField(this, field);
+    public Variant bind(String field) {
+        return new Variant(this, field);
     }
 }

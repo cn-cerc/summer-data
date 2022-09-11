@@ -10,11 +10,11 @@ public class DataFieldTest {
     public void test() {
         DataRow row = DataRow.of("code", "001");
 
-        DataField code = row.bind("code");
+        Variant code = row.bind("code");
         assertEquals(1, code.getInt());
 
         // 连动更新
-        code.setData("002");
+        code.setValue("002");
         assertEquals("002", row.getString("code"));
 
         row.setValue("code", "003");

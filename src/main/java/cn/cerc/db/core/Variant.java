@@ -11,6 +11,7 @@ public class Variant {
     private Object value;
     private String key;
     private transient boolean modified;
+    private DataRow dataRow;
 
     public Variant() {
         super();
@@ -18,32 +19,63 @@ public class Variant {
 
     public Variant(Object data) {
         super();
-        this.setData(data);
+        this.setValue(data);
     }
 
+    public Variant(DataRow dataRow, String field) {
+        super();
+        this.dataRow = dataRow;
+        this.key = field;
+    }
+
+    @Deprecated
     public final String tag() {
+        return this.key();
+    }
+
+    @Deprecated
+    public final Object data() {
+        return this.value();
+    }
+
+    public final String key() {
         return this.key;
     }
 
-    public Object data() {
-        return this.value;
+    public Object value() {
+        return dataRow != null ? dataRow.getValue(key) : value;
     }
 
-    public Variant setData(Object data) {
-        if (this.value == data)
+    @Deprecated
+    public final Variant setData(Object data) {
+        return this.setValue(data);
+    }
+
+    public Variant setValue(Object value) {
+        if (dataRow != null) {
+            dataRow.setValue(key, value);
+            modified = true;
             return this;
-        if (this.value == null && data != null)
+        }
+        if (this.value == value)
+            return this;
+        if (this.value == null && value != null)
             modified = true;
-        else if (this.value != null && data == null)
+        else if (this.value != null && value == null)
             modified = true;
-        else if (!this.value.equals(data))
+        else if (!this.value.equals(value))
             modified = true;
-        this.value = data;
+        this.value = value;
         return this;
     }
 
+    @Deprecated
     public final Variant setTag(String tag) {
-        this.key = tag;
+        return setKey(tag);
+    }
+
+    public final Variant setKey(String key) {
+        this.key = key;
         return this;
     }
 

@@ -21,7 +21,7 @@ public class RecordImpl implements InvocationHandler {
         if (alias != null && alias.value().length() > 0)
             field = alias.value();
         if (method.getReturnType() == Variant.class)
-            result = new Variant(dataRow.getValue(field)).setTag(field);
+            result = new Variant(dataRow.getValue(field)).setKey(field);
         else if (method.getReturnType() == String.class)
             result = dataRow.getString(field);
         else if (method.getReturnType() == boolean.class || method.getReturnType() == Boolean.class)
