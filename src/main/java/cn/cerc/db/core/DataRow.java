@@ -205,7 +205,12 @@ public class DataRow implements Serializable, IRecord {
         return delta();
     }
 
+    @Deprecated
     public Object getOldField(String field) {
+        return this.getOldValue(field);
+    }
+
+    public Object getOldValue(String field) {
         if (field == null || "".equals(field))
             throw new RuntimeException("field is null!");
         if (this.history != null)
