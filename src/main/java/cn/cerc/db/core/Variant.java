@@ -8,9 +8,10 @@ import java.util.Date;
 import com.google.gson.Gson;
 
 public class Variant {
-    private Object data;
+    private DataRow dataRow;
+    private String key;
+    private Object value;
     private transient boolean modified;
-    private String tag;
 
     public Variant() {
         super();
@@ -18,37 +19,70 @@ public class Variant {
 
     public Variant(Object data) {
         super();
-        this.setData(data);
+        this.setValue(data);
     }
 
+    public Variant(DataRow dataRow, String field) {
+        super();
+        this.dataRow = dataRow;
+        this.key = field;
+    }
+
+    @Deprecated
     public final String tag() {
-        return this.tag;
+        return this.key();
     }
 
+    @Deprecated
     public final Object data() {
-        return this.data;
+        return this.value();
     }
 
-    public Variant setData(Object data) {
-        if (this.data == data)
+    public final String key() {
+        return this.key;
+    }
+
+    public Object value() {
+        return dataRow != null ? dataRow.getValue(key) : value;
+    }
+
+    @Deprecated
+    public final Variant setData(Object data) {
+        return this.setValue(data);
+    }
+
+    public Variant setValue(Object value) {
+        if (dataRow != null) {
+            dataRow.setValue(key, value);
+            modified = true;
             return this;
-        if (this.data == null && data != null)
+        }
+        if (this.value == value)
+            return this;
+        if (this.value == null && value != null)
             modified = true;
-        else if (this.data != null && data == null)
+        else if (this.value != null && value == null)
             modified = true;
-        else if (!this.data.equals(data))
+        else if (!this.value.equals(value))
             modified = true;
-        this.data = data;
+        this.value = value;
         return this;
     }
 
+    @Deprecated
     public final Variant setTag(String tag) {
-        this.tag = tag;
+        return setKey(tag);
+    }
+
+    public final Variant setKey(String key) {
+        if (this.dataRow != null)
+            throw new RuntimeException("dataRow not is null, key is readOnly");
+        this.key = key;
         return this;
     }
 
     public final String getString() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return "";
         } else if (value instanceof String) {
@@ -68,7 +102,7 @@ public class Variant {
     }
 
     public final boolean getBoolean() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return false;
         } else if (value instanceof Boolean) {
@@ -86,7 +120,7 @@ public class Variant {
     }
 
     public final int getInt() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -125,7 +159,7 @@ public class Variant {
     }
 
     public final long getLong() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -161,7 +195,7 @@ public class Variant {
     }
 
     public final float getFloat() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -193,7 +227,7 @@ public class Variant {
     }
 
     public final double getDouble() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -219,7 +253,7 @@ public class Variant {
     }
 
     public final BigInteger getBigInteger() {
-        Object value = this.data();
+        Object value = this.value();
         if (value instanceof BigInteger) {
             return (BigInteger) value;
         } else
@@ -227,7 +261,7 @@ public class Variant {
     }
 
     public final BigDecimal getBigDecimal() {
-        Object value = this.data();
+        Object value = this.value();
         if (value instanceof BigDecimal)
             return (BigDecimal) value;
         else
@@ -235,7 +269,7 @@ public class Variant {
     }
 
     public final Datetime getDatetime() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return Datetime.zero();
         } else if (value instanceof Datetime) {
@@ -276,6 +310,10 @@ public class Variant {
         return modified;
     }
 
+    protected void setModified(boolean modified) {
+        this.modified = modified;
+    }
+
     @SuppressWarnings("unchecked")
     public <T> void writeToEntity(T entity, Field field) throws IllegalAccessException {
         if ("boolean".equals(field.getType().getName()))
@@ -305,21 +343,28 @@ public class Variant {
         else if (field.getType().isEnum())
             field.set(entity, this.getEnum((Class<Enum<?>>) field.getType()));
         else {
-            if (this.data() != null)
+            if (this.value() != null)
                 throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
-                        this.data().getClass().getName(), field.getType().getName()));
+                        this.value().getClass().getName(), field.getType().getName()));
             else
                 throw new RuntimeException(
                         String.format("field %s error: %s to null", field.getName(), field.getType().getName()));
         }
     }
 
+    public final boolean hasValue() {
+        if (dataRow != null)
+            return dataRow.has(key);
+        else
+            return !"".equals(getString());
+    }
+
     public static void main(String[] args) {
         System.out.println(new Variant());
         System.out.println(new Variant("202109"));
-        System.out.println(new Variant("202109").setTag("date"));
+        System.out.println(new Variant("202109").setKey("date"));
 
-        Variant kv = new Variant("3").setTag("id");
+        Variant kv = new Variant("3").setKey("id");
         System.out.println(kv.tag());
     }
 

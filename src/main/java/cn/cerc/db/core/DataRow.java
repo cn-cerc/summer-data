@@ -1,17 +1,10 @@
 package cn.cerc.db.core;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializer;
-import com.google.gson.internal.LinkedTreeMap;
-import com.google.gson.reflect.TypeToken;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.persistence.Column;
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
@@ -21,6 +14,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+
+import javax.persistence.Column;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializer;
+import com.google.gson.internal.LinkedTreeMap;
+import com.google.gson.reflect.TypeToken;
+
+import cn.cerc.db.Alias;
 
 public class DataRow implements Serializable, IRecord {
     private static final Logger log = LoggerFactory.getLogger(DataRow.class);
@@ -198,7 +205,12 @@ public class DataRow implements Serializable, IRecord {
         return delta();
     }
 
+    @Deprecated
     public Object getOldField(String field) {
+        return this.getOldValue(field);
+    }
+
+    public Object getOldValue(String field) {
         if (field == null || "".equals(field))
             throw new RuntimeException("field is null!");
         if (this.history != null)
@@ -445,9 +457,8 @@ public class DataRow implements Serializable, IRecord {
         if (this.fields().size() > items.size()) {
             log.warn("database fields.size > entity properties.size");
         } else if (this.fields().size() < items.size()) {
-            throw new RuntimeException(
-                    String.format("database fields.size %d < %s properties.size %d ", this.fields().size(),
-                            entity.getClass().getName(), items.size()));
+            throw new RuntimeException(String.format("database fields.size %d < %s properties.size %d ",
+                    this.fields().size(), entity.getClass().getName(), items.size()));
         }
 
         // 查找并赋值
@@ -469,16 +480,15 @@ public class DataRow implements Serializable, IRecord {
                     if (column == null || column.nullable()) {
                         field.set(entity, null);
                     } else
-                        variant.setData(null).writeToEntity(entity, field);
+                        variant.setValue(null).writeToEntity(entity, field);
                 } else if (field.getType().equals(value.getClass()))
                     field.set(entity, value);
                 else
-                    variant.setData(value).writeToEntity(entity, field);
+                    variant.setValue(value).writeToEntity(entity, field);
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 e.printStackTrace();
-                throw new RuntimeException(
-                        String.format("field %s error: %s as %s", field.getName(), value.getClass().getName(),
-                                field.getType().getName()));
+                throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
+                        value.getClass().getName(), field.getType().getName()));
             }
         }
     }
@@ -576,4 +586,86 @@ public class DataRow implements Serializable, IRecord {
         return this;
     }
 
+    public static class RecordProxy implements InvocationHandler {
+        private final DataRow dataRow;
+
+        public RecordProxy(DataRow dataRow) {
+            this.dataRow = dataRow;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            Object result;
+            String field = method.getName();
+            Alias alias = method.getAnnotation(Alias.class);
+            if (alias != null && alias.value().length() > 0)
+                field = alias.value();
+            if (dataRow.fields().get(field) == null)
+                throw new RuntimeException("not find field: " + field);
+            if (method.getReturnType() == Variant.class)
+                result = dataRow.bind(field);
+            else if (method.getReturnType() == String.class)
+                result = dataRow.getString(field);
+            else if (method.getReturnType() == boolean.class || method.getReturnType() == Boolean.class)
+                result = dataRow.getBoolean(field);
+            else if (method.getReturnType() == int.class || method.getReturnType() == Integer.class)
+                result = dataRow.getInt(field);
+            else if (method.getReturnType() == double.class || method.getReturnType() == Double.class)
+                result = dataRow.getDouble(field);
+            else if (method.getReturnType() == long.class || method.getReturnType() == Long.class)
+                result = dataRow.getLong(field);
+            else if (method.getReturnType() == Datetime.class)
+                result = dataRow.getDatetime(field);
+            else
+                result = dataRow.getValue(field);
+            return result;
+        }
+
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T asRecord(Class<T> clazz) {
+        if (clazz.isInterface()) {
+            return (T) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[] { clazz },
+                    new RecordProxy(this));
+//        } else if (clazz.isRecord()) {
+//            Constructor<?> constructor = clazz.getConstructors()[0];
+//            Object[] initArgs = new Object[constructor.getParameterCount()];
+//            int i = 0;
+//            for (Parameter item : constructor.getParameters()) {
+//                String field = item.getName();
+//                Alias alias = item.getAnnotation(Alias.class);
+//                if (alias != null && alias.value().length() > 0)
+//                    field = alias.value();
+//                if (item.getType() == Variant.class)
+//                    initArgs[i++] = new Variant(this.getValue(field)).setKey(field);
+//                else if (item.getType() == String.class)
+//                    initArgs[i++] = this.getString(field);
+//                else if (item.getType() == boolean.class || item.getType() == Boolean.class)
+//                    initArgs[i++] = this.getBoolean(field);
+//                else if (item.getType() == int.class || item.getType() == Integer.class)
+//                    initArgs[i++] = this.getInt(field);
+//                else if (item.getType() == double.class || item.getType() == Double.class)
+//                    initArgs[i++] = this.getDouble(field);
+//                else if (item.getType() == long.class || item.getType() == Long.class)
+//                    initArgs[i++] = this.getLong(field);
+//                else if (item.getType() == Datetime.class)
+//                    initArgs[i++] = this.getDatetime(field);
+//                else
+//                    initArgs[i++] = this.getValue(field);
+//            }
+//            try {
+//                return (T) constructor.newInstance(initArgs);
+//            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+//                    | InvocationTargetException e) {
+//                e.printStackTrace();
+//                throw new RuntimeException(e.getMessage());
+//            }
+        } else
+            throw new RuntimeException("only support record and interface");
+    }
+
+    public Variant bind(String field) {
+        return new Variant(this, field);
+    }
 }
