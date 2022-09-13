@@ -455,7 +455,7 @@ public class DataRow implements Serializable, IRecord {
         EntityHelper<? extends EntityImpl> helper = EntityHelper.create(entity.getClass());
         Map<String, Field> items = helper.fields();
         if (this.fields().size() > items.size()) {
-            log.warn("database fields.size > entity properties.size");
+            log.warn("database {} fields.size > entity properties.size", entity.getClass().getSimpleName());
         } else if (this.fields().size() < items.size()) {
             throw new RuntimeException(String.format("database fields.size %d < %s properties.size %d ",
                     this.fields().size(), entity.getClass().getName(), items.size()));
