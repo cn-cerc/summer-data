@@ -118,7 +118,7 @@ public class DataRowTest {
         row.setValue("Code_", "c");
         row.setValue("Code_", "d");
         assertEquals(row.delta().size(), 1);
-        assertTrue(row.getOldField("Code_") == val);
+        assertTrue(row.getOldValue("Code_") == val);
     }
 
     @Test
