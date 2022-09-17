@@ -19,8 +19,8 @@ public class DynamicColumns {
         this.keyField = keyField;
     }
 
-    public FieldMeta addColumn(String fieldName, String fieldValue) {
-        FieldMeta column = dataSet.fields().add("F" + (columns.size() + 1)).setName(fieldName).setRemark(fieldValue);
+    public FieldMeta addColumn(String columnKey, String columnName) {
+        FieldMeta column = dataSet.fields().add("F" + (columns.size() + 1)).setName(columnName).setRemark(columnKey);
         columns.add(column);
         return column;
     }
@@ -64,9 +64,9 @@ public class DynamicColumns {
 
         DynamicColumns sheet = new DynamicColumns(ds, "code");
         // 定义横向表的列值、标题
-        sheet.addColumn("8月份", "202208");
-        sheet.addColumn("9月份", "202209");
-        sheet.addColumn("10月份", "202210");
+        sheet.addColumn("202208", "8月份");
+        sheet.addColumn("202209", "9月份");
+        sheet.addColumn("202210", "10月份");
 
         // 根据数据表给相应的列赋值
         for (DataRow row : src1) {
@@ -85,6 +85,10 @@ public class DynamicColumns {
             if (cell.dataRow().state() == DataRowState.Insert)
                 cell.dataRow().setValue("name", "这是新的用户");
         }
+
+        // 检查自定义列
+        for (FieldMeta meta : sheet.columns())
+            System.out.println(meta.code() + ":" + meta.name() + ":" + meta.remark());
 
         // 检查合并结果
         System.out.println(ds);
