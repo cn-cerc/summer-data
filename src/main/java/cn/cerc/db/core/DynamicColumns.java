@@ -44,6 +44,10 @@ public class DynamicColumns {
         return dataSet.current().bind(column.code());
     }
 
+    public List<FieldMeta> columns() {
+        return columns;
+    }
+
     public static void main(String[] args) {
         // 主数据表
         DataSet ds = new DataSet();
@@ -81,8 +85,8 @@ public class DynamicColumns {
             if (cell.dataRow().state() == DataRowState.Insert)
                 cell.dataRow().setValue("name", "这是新的用户");
         }
-        
-        // 执行合并并输出
+
+        // 检查合并结果
         System.out.println(ds);
     }
 }
