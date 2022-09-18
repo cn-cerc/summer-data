@@ -376,14 +376,18 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
     }
 
     /**
-     * @return 返回本周的第一天 注意一周是从周一开始
+     * TODO 暂仅支持每周以周一为开始
+     * 
+     * @return 返回本周的第一天
      */
     public Datetime toWeekBof() {
         return this.inc(DateType.Day, 1 - this.asLocalDateTime().getDayOfWeek().getValue());
     }
 
     /**
-     * @return 返回本周的最后一天 注意一周是从周一开始
+     * TODO 暂仅支持每周以周一为开始
+     * 
+     * @return 返回本周的最后一天
      */
     public Datetime toWeekEof() {
         return this.inc(DateType.Day, 7 - this.asLocalDateTime().getDayOfWeek().getValue());
