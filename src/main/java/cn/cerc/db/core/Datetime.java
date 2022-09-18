@@ -375,6 +375,24 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
         return new Datetime(ldt.atZone(LocalZone).toInstant().toEpochMilli()).toDayEnd();
     }
 
+    /**
+     * TODO 暂仅支持每周以周一为开始
+     * 
+     * @return 返回本周的第一天
+     */
+    public Datetime toWeekBof() {
+        return this.inc(DateType.Day, 1 - this.asLocalDateTime().getDayOfWeek().getValue());
+    }
+
+    /**
+     * TODO 暂仅支持每周以周一为开始
+     * 
+     * @return 返回本周的最后一天
+     */
+    public Datetime toWeekEof() {
+        return this.inc(DateType.Day, 7 - this.asLocalDateTime().getDayOfWeek().getValue());
+    }
+
     public boolean isOptions(EnumSet<DateType> target) {
         if (options.size() != target.size())
             return false;
