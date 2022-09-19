@@ -359,6 +359,10 @@ public class Variant {
             return !"".equals(getString());
     }
 
+    public final DataRow dataRow() {
+        return this.dataRow;
+    }
+
     public static void main(String[] args) {
         System.out.println(new Variant());
         System.out.println(new Variant("202109"));

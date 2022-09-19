@@ -30,7 +30,6 @@ public class MysqlEntityBuilder {
         while (query.fetch()) {
             String tableName = query.getString("table_name");
             String tableComment = query.getString("table_comment");
-            String fileName = tableName.substring(0, 1).toUpperCase() + tableName.substring(1);
 
             StringBuilder builder = new StringBuilder();
             builder.append(String.format("package %s;\r\n\r\n", clazz.getPackageName()));
@@ -49,7 +48,7 @@ public class MysqlEntityBuilder {
             builder.append("@Setter\r\n");
             if (!Utils.isEmpty(tableComment))
                 builder.append(String.format("@Describe(name = \"%s\")\r\n", tableComment));
-            builder.append(String.format("public class %s extends AdoTable {\r\n\r\n", clazz.getSimpleName()));
+            builder.append(String.format("public class %s extends CustomEntity {\r\n\r\n", clazz.getSimpleName()));
 
             MysqlQuery dsColumn = new MysqlQuery(handle);
             dsColumn.add("select column_name,data_type,column_type,extra,is_nullable,column_comment,");
