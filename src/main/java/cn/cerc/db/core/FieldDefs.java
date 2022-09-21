@@ -24,6 +24,10 @@ import cn.cerc.db.core.FieldMeta.FieldKind;
 public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     private static final long serialVersionUID = 7478897050846245325L;
     private HashSet<FieldMeta> items = new LinkedHashSet<>();
+    // 主体字段
+    private HashSet<FieldMeta> mainBoyds = new LinkedHashSet<>();
+    // 需要审计的字段
+    private HashSet<FieldMeta> audits = new LinkedHashSet<>();
 
     public FieldDefs() {
         super();
@@ -178,6 +182,19 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
             meta.setUpdatable(column.updatable());
             meta.setNullable(column.nullable());
         }
+
+        MainBody mainBody = field.getDeclaredAnnotation(MainBody.class);
+        if (mainBody != null) {
+            meta.setMainBody(true);
+            this.mainBoyds.add(meta);
+        }
+
+        Audit audit = field.getDeclaredAnnotation(Audit.class);
+        if (audit != null) {
+            meta.setAudit(true);
+            this.audits.add(meta);
+        }
+
         Id id = field.getDeclaredAnnotation(Id.class);
         if (id != null) {
             meta.setIdentification(true);
@@ -227,6 +244,14 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
 
     public String json() {
         return new Gson().toJson(items);
+    }
+
+    public HashSet<FieldMeta> getMainBoyds() {
+        return mainBoyds;
+    }
+
+    public HashSet<FieldMeta> getAudits() {
+        return audits;
     }
 
 }

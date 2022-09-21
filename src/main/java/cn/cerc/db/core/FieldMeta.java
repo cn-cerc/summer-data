@@ -25,6 +25,10 @@ public final class FieldMeta implements Serializable {
     private boolean updatable = true;
     // 是否允许为空
     private boolean nullable = true;
+    // 是否为主体字段
+    private boolean isMainBody = false;
+    // 是否开启审计
+    private boolean isAudit = false;
     // UI取值事件
     private GetTextEvent onGetTextEvent;
     private SetTextEvent onSetTextEvent;
@@ -261,6 +265,22 @@ public final class FieldMeta implements Serializable {
 
     public String json() {
         return new Gson().toJson(this);
+    }
+
+    public boolean isMainBody() {
+        return isMainBody;
+    }
+
+    public void setMainBody(boolean isMainBody) {
+        this.isMainBody = isMainBody;
+    }
+
+    public boolean isAudit() {
+        return isAudit;
+    }
+
+    public void setAudit(boolean isAudit) {
+        this.isAudit = isAudit;
     }
 
 }
