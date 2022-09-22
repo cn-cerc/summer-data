@@ -212,4 +212,11 @@ public class DatetimeTest {
         assertEquals("AAA", item.getString("String"));
         assertEquals(jsonStr, item.toString());
     }
+//
+//    @Test
+//    public void test_toWeekBof() {
+//        String text = "2021-01-02 23:59:02";
+//        assertEquals("2021-01-01", new Datetime(text).toWeekBof().toString());
+//    }
+
 }
