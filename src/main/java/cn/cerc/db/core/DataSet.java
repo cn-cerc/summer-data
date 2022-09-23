@@ -59,6 +59,31 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         super();
     }
 
+    /**
+     * 根据字段参数直接生成 DataSet
+     */
+    public static DataSet of(Object... args) {
+        if (args.length % 2 != 0)
+            throw new RuntimeException("DataSet 传入参数数量必须为偶数");
+
+        DataSet dataSet = new DataSet();
+        if (args.length == 0)
+            return dataSet;
+
+        dataSet.append();
+        for (int i = 0; i + 2 <= args.length; i = i + 2) {
+            String field = (String) args[i];
+            if (Utils.isEmpty(field))
+                throw new RuntimeException("field 字段不允许为空");
+
+            Object value = args[i + 1];
+            if (value == null)
+                value = "";
+            dataSet.setValue(field, value);
+        }
+        return dataSet;
+    }
+
     @Nullable
     @Override
     public DataRow createDataRow() {

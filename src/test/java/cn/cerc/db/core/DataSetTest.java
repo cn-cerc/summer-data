@@ -1,5 +1,7 @@
 package cn.cerc.db.core;
 
+import static org.junit.Assert.assertThrows;
+
 import org.junit.Test;
 
 import junit.framework.TestCase;
@@ -139,6 +141,36 @@ public class DataSetTest extends TestCase {
         assertEquals("1", dataSet.head().getString("Discount_"));
         assertTrue(dataSet.head().getValue("Discount_") instanceof Integer);
         assertEquals(1, dataSet.head().getInt("Discount_"));
+    }
+
+    @Test
+    public void test_of_1() {
+        DataSet dataSet = DataSet.of("a", "1", "b", 2);
+        assertEquals("""
+                {"body":[["a","b"],["1",2]]}""", dataSet.json());
+    }
+
+    @Test
+    public void test_of_2() {
+        assertThrows(RuntimeException.class, () -> DataSet.of("a", "1", "b", 2, "c"));
+    }
+
+    @Test
+    public void test_of_3() {
+        DataSet dataSet = DataSet.of("a", "1", "b", null);
+        assertEquals("""
+                {"body":[["a","b"],["1",""]]}""", dataSet.json());
+    }
+
+    @Test
+    public void test_of_4() {
+        assertThrows(RuntimeException.class, () -> DataSet.of("a", "1", "", null));
+    }
+
+    @Test
+    public void test_of_5() {
+        DataSet dataSet = DataSet.of();
+        assertEquals("{}", dataSet.json());
     }
 
 }
