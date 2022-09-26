@@ -164,10 +164,6 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return this;
     }
 
-    /**
-     * @param field
-     * @param meta
-     */
     private void readEntityField(Field field, FieldMeta meta) {
         Describe describe = field.getDeclaredAnnotation(Describe.class);
         if (describe != null) {
