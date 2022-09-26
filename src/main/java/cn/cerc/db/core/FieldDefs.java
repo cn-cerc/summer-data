@@ -244,12 +244,4 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return new Gson().toJson(items);
     }
 
-    public FieldMeta[] getHeadFields() {
-        return null;
-    }
-
-    public FieldMeta[] getBodyFields() {
-        return null;
-    }
-
 }
