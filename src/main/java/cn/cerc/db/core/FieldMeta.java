@@ -25,14 +25,15 @@ public final class FieldMeta implements Serializable {
     private boolean updatable = true;
     // 是否允许为空
     private boolean nullable = true;
+    // 字段是否标识history
+    private History history = null;
+
     // UI取值事件
     private GetTextEvent onGetTextEvent;
     private SetTextEvent onSetTextEvent;
 
     public enum FieldKind {
-        Memory,
-        Storage,
-        Calculated;
+        Memory, Storage, Calculated;
     }
 
     public FieldMeta(String code) {
@@ -261,6 +262,15 @@ public final class FieldMeta implements Serializable {
 
     public String json() {
         return new Gson().toJson(this);
+    }
+
+    public History history() {
+        return history;
+    }
+
+    public FieldMeta setHistory(History history) {
+        this.history = history;
+        return this;
     }
 
 }
