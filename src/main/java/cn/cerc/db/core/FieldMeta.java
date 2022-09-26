@@ -25,23 +25,15 @@ public final class FieldMeta implements Serializable {
     private boolean updatable = true;
     // 是否允许为空
     private boolean nullable = true;
-    // 字段是否为主体字段
-    private boolean masterField = false;
-    // 执行删除需要记录的字段
-    private boolean deleteField = false;
-    // 执行添加需要记录的字段
-    private boolean insertField = false;
-    // 执行修改需要记录的字段
-    private boolean updateField = false;
+    // 字段是否标识history
+    private History history = null;
 
     // UI取值事件
     private GetTextEvent onGetTextEvent;
     private SetTextEvent onSetTextEvent;
 
     public enum FieldKind {
-        Memory,
-        Storage,
-        Calculated;
+        Memory, Storage, Calculated;
     }
 
     public FieldMeta(String code) {
@@ -272,36 +264,13 @@ public final class FieldMeta implements Serializable {
         return new Gson().toJson(this);
     }
 
-    public boolean isMasterField() {
-        return masterField;
+    public History history() {
+        return history;
     }
 
-    public void setMasterField(boolean masterField) {
-        this.masterField = masterField;
-    }
-
-    public boolean isDeleteField() {
-        return deleteField;
-    }
-
-    public void setDeleteField(boolean deleteField) {
-        this.deleteField = deleteField;
-    }
-
-    public boolean isInsertField() {
-        return insertField;
-    }
-
-    public void setInsertField(boolean insertField) {
-        this.insertField = insertField;
-    }
-
-    public boolean isUpdateField() {
-        return updateField;
-    }
-
-    public void setUpdateField(boolean updateField) {
-        this.updateField = updateField;
+    public FieldMeta setHistory(History history) {
+        this.history = history;
+        return this;
     }
 
 }

@@ -179,15 +179,7 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
             meta.setNullable(column.nullable());
         }
 
-        History history = field.getDeclaredAnnotation(History.class);
-        if (history != null) {
-            meta.setMasterField(history.master());
-            if (!history.master()) {
-                meta.setUpdateField(history.update());
-                meta.setInsertField(history.insert());
-                meta.setDeleteField(history.delete());
-            }
-        }
+        meta.setHistory(field.getDeclaredAnnotation(History.class));
 
         Id id = field.getDeclaredAnnotation(Id.class);
         if (id != null) {
