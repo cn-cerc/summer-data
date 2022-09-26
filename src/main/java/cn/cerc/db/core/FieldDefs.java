@@ -24,10 +24,6 @@ import cn.cerc.db.core.FieldMeta.FieldKind;
 public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     private static final long serialVersionUID = 7478897050846245325L;
     private HashSet<FieldMeta> items = new LinkedHashSet<>();
-    // 主体字段
-    private HashSet<FieldMeta> mainBoyds = new LinkedHashSet<>();
-    // 需要审计的字段
-    private HashSet<FieldMeta> audits = new LinkedHashSet<>();
 
     public FieldDefs() {
         super();
@@ -168,6 +164,10 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return this;
     }
 
+    /**
+     * @param field
+     * @param meta
+     */
     private void readEntityField(Field field, FieldMeta meta) {
         Describe describe = field.getDeclaredAnnotation(Describe.class);
         if (describe != null) {
@@ -183,16 +183,14 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
             meta.setNullable(column.nullable());
         }
 
-        MainBody mainBody = field.getDeclaredAnnotation(MainBody.class);
-        if (mainBody != null) {
-            meta.setMainBody(true);
-            this.mainBoyds.add(meta);
-        }
-
-        Audit audit = field.getDeclaredAnnotation(Audit.class);
-        if (audit != null) {
-            meta.setAudit(true);
-            this.audits.add(meta);
+        History history = field.getDeclaredAnnotation(History.class);
+        if (history != null) {
+            meta.setMasterField(history.master());
+            if (!history.master()) {
+                meta.setUpdateField(history.update());
+                meta.setInsertField(history.insert());
+                meta.setDeleteField(history.delete());
+            }
         }
 
         Id id = field.getDeclaredAnnotation(Id.class);
@@ -246,12 +244,12 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return new Gson().toJson(items);
     }
 
-    public HashSet<FieldMeta> getMainBoyds() {
-        return mainBoyds;
+    public FieldMeta[] getHeadFields() {
+        return null;
     }
 
-    public HashSet<FieldMeta> getAudits() {
-        return audits;
+    public FieldMeta[] getBodyFields() {
+        return null;
     }
 
 }
