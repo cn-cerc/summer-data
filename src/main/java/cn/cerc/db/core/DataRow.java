@@ -665,7 +665,7 @@ public class DataRow implements Serializable, IRecord {
             throw new RuntimeException("only support record and interface");
     }
 
-    public Variant bind(String field) {
-        return new Variant(this, field);
+    public DataField bind(String field) {
+        return new DataField(this, field);
     }
 }

@@ -5,10 +5,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 
-import com.google.gson.Gson;
-
 public class Variant {
-    private DataRow dataRow;
     private String key;
     private Object value;
     private transient boolean modified;
@@ -20,12 +17,6 @@ public class Variant {
     public Variant(Object data) {
         super();
         this.setValue(data);
-    }
-
-    public Variant(DataRow dataRow, String field) {
-        super();
-        this.dataRow = dataRow;
-        this.key = field;
     }
 
     @Deprecated
@@ -43,7 +34,7 @@ public class Variant {
     }
 
     public Object value() {
-        return dataRow != null ? dataRow.getValue(key) : value;
+        return value;
     }
 
     @Deprecated
@@ -52,11 +43,6 @@ public class Variant {
     }
 
     public Variant setValue(Object value) {
-        if (dataRow != null) {
-            dataRow.setValue(key, value);
-            modified = true;
-            return this;
-        }
         if (this.value == value)
             return this;
         if (this.value == null && value != null)
@@ -74,9 +60,7 @@ public class Variant {
         return setKey(tag);
     }
 
-    public final Variant setKey(String key) {
-        if (this.dataRow != null)
-            throw new RuntimeException("dataRow not is null, key is readOnly");
+    public Variant setKey(String key) {
         this.key = key;
         return this;
     }
@@ -303,7 +287,7 @@ public class Variant {
 
     @Override
     public final String toString() {
-        return new Gson().toJson(this);
+        return String.format("{\"key\":\"%s\",\"value\":\"%s\"}", this.key, this.value());
     }
 
     public boolean isModified() {
@@ -352,24 +336,21 @@ public class Variant {
         }
     }
 
-    public final boolean hasValue() {
-        if (dataRow != null)
-            return dataRow.has(key);
-        else
-            return !"".equals(getString());
-    }
-
-    public final DataRow dataRow() {
-        return this.dataRow;
+    public boolean hasValue() {
+        return !"".equals(getString());
     }
 
     public static void main(String[] args) {
-        System.out.println(new Variant());
-        System.out.println(new Variant("202109"));
-        System.out.println(new Variant("202109").setKey("date"));
-
-        Variant kv = new Variant("3").setKey("id");
-        System.out.println(kv.tag());
+        DataSet ds = new DataSet();
+        ds.append().setValue("code", 1);
+        ds.append().setValue("code", 2);
+        var code1 = ds.bind("code");
+        var code2 = ds.current().bind("code");
+        System.out.println(code1);
+        System.out.println(code2);
+        ds.first();
+        System.out.println(code1);
+        System.out.println(code2);
     }
 
 }
