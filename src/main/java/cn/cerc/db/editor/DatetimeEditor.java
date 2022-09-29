@@ -2,11 +2,10 @@ package cn.cerc.db.editor;
 
 import java.util.EnumSet;
 
-import cn.cerc.db.core.DataRow;
-import cn.cerc.db.core.FieldMeta;
+import cn.cerc.db.core.DataField;
 import cn.cerc.db.core.Datetime.DateType;
 
-public class DatetimeEditor implements GetSetTextEvent {
+public class DatetimeEditor implements OnGetSetText {
     private EnumSet<DateType> options;
 
     public DatetimeEditor(EnumSet<DateType> options) {
@@ -15,8 +14,8 @@ public class DatetimeEditor implements GetSetTextEvent {
     }
 
     @Override
-    public String getText(DataRow record, FieldMeta meta) {
-        return record.getDatetime(meta.code()).setOptions(options).toString();
+    public String getText(DataField data) {
+        return data.getDatetime().setOptions(options).toString();
     }
 
     @Override

@@ -1,6 +1,6 @@
 package cn.cerc.db.editor;
 
-public interface SetTextEvent {
+public interface OnSetText {
 
     Object setText(String text);
 

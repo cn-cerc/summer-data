@@ -30,7 +30,7 @@ public class QueueServer implements IConnection {
     public static final String AccountEndpoint = "mns.accountendpoint";
     public static final String AccessKeyId = "mns.accesskeyid";
     public static final String AccessKeySecret = "mns.accesskeysecret";
-    public static final String SecurityToken = "mns.securitytoken";
+//    public static final String SecurityToken = "mns.securitytoken";
     // IHandle中识别码
     public static final String SessionId = "aliyunQueueSession";
 

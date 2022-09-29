@@ -1,33 +1,33 @@
 package cn.cerc.db.core;
 
 public class DataField extends Variant {
-    private DataRow dataRow;
+    private DataRow source;
 
-    public DataField(DataRow dataRow, String field) {
+    public DataField(DataRow source, String field) {
         super();
-        this.dataRow = dataRow;
+        this.source = source;
         this.setKey(field);
     }
 
-    public DataRow dataRow() {
-        return this.dataRow;
+    public DataRow source() {
+        return this.source;
     }
 
     @Override
     public Object value() {
-        return dataRow.getValue(key());
+        return source.getValue(key());
     }
 
     @Override
     public DataField setValue(Object value) {
-        dataRow.setValue(key(), value);
+        source.setValue(key(), value);
         setModified(true);
         return this;
     }
 
     @Override
     public boolean hasValue() {
-        return dataRow.has(key());
+        return source.has(key());
     }
 
 }

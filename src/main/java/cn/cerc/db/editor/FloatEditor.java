@@ -3,10 +3,9 @@ package cn.cerc.db.editor;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
-import cn.cerc.db.core.DataRow;
-import cn.cerc.db.core.FieldMeta;
+import cn.cerc.db.core.DataField;
 
-public class FloatEditor implements GetSetTextEvent {
+public class FloatEditor implements OnGetSetText {
     private String pattern;
     private int decimal;
 
@@ -20,12 +19,12 @@ public class FloatEditor implements GetSetTextEvent {
     }
 
     @Override
-    public String getText(DataRow record, FieldMeta meta) {
+    public String getText(DataField data) {
         StringBuffer fmt = new StringBuffer("0.");
         for (int i = 0; i < this.decimal; i++)
             fmt.append(this.pattern);
         DecimalFormat df = new DecimalFormat(fmt.toString());
-        double value = record.getDouble(meta.code());
+        double value = data.getDouble();
         return df.format(new BigDecimal(Double.toString(value)));
     }
 

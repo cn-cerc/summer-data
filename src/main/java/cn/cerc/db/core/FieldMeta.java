@@ -4,9 +4,9 @@ import java.io.Serializable;
 
 import com.google.gson.Gson;
 
-import cn.cerc.db.editor.GetSetTextEvent;
-import cn.cerc.db.editor.GetTextEvent;
-import cn.cerc.db.editor.SetTextEvent;
+import cn.cerc.db.editor.OnGetSetText;
+import cn.cerc.db.editor.OnGetText;
+import cn.cerc.db.editor.OnSetText;
 
 public final class FieldMeta implements Serializable {
     private static final long serialVersionUID = -6898050783447062943L;
@@ -29,8 +29,8 @@ public final class FieldMeta implements Serializable {
     private History history = null;
 
     // UI取值事件
-    private GetTextEvent onGetTextEvent;
-    private SetTextEvent onSetTextEvent;
+    private OnGetText onGetTextEvent;
+    private OnSetText onSetTextEvent;
 
     public enum FieldKind {
         Memory, Storage, Calculated;
@@ -233,20 +233,20 @@ public final class FieldMeta implements Serializable {
         return false;
     }
 
-    public FieldMeta onGetText(GetTextEvent getTextEvent) {
+    public FieldMeta onGetText(OnGetText getTextEvent) {
         this.onGetTextEvent = getTextEvent;
         return this;
     }
 
-    public FieldMeta onSetText(SetTextEvent setTextEvent) {
+    public FieldMeta onSetText(OnSetText setTextEvent) {
         this.onSetTextEvent = setTextEvent;
         return this;
     }
 
-    public String getText(DataRow record) {
+    public String getText(DataRow row) {
         if (onGetTextEvent == null)
-            return record.getString(code);
-        return onGetTextEvent.getText(record, this);
+            return row.getString(code);
+        return onGetTextEvent.getText(new DataField(row, code));
     }
 
     public Object setText(String value) {
@@ -255,7 +255,7 @@ public final class FieldMeta implements Serializable {
         return onSetTextEvent.setText(value);
     }
 
-    public void onGetSetText(GetSetTextEvent getsetTextEvent) {
+    public void onGetSetText(OnGetSetText getsetTextEvent) {
         this.onGetText(getsetTextEvent);
         this.onSetText(getsetTextEvent);
     }

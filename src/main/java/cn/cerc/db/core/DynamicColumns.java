@@ -73,8 +73,8 @@ public class DynamicColumns {
             DataField cell = sheet.getCell(row.getString("pcode"), row.getString("mount"));
             if (cell != null) {
                 cell.setValue(row.getString("amount"));
-                if (cell.dataRow().state() == DataRowState.Insert)
-                    cell.dataRow().setValue("name", "未知");
+                if (cell.source().state() == DataRowState.Insert)
+                    cell.source().setValue("name", "未知");
             }
         }
 
@@ -82,8 +82,8 @@ public class DynamicColumns {
         DataField cell = sheet.getCell("a5", "202208");
         if (cell != null) {
             cell.setValue(1000);
-            if (cell.dataRow().state() == DataRowState.Insert)
-                cell.dataRow().setValue("name", "这是新的用户");
+            if (cell.source().state() == DataRowState.Insert)
+                cell.source().setValue("name", "这是新的用户");
         }
 
         // 检查自定义列
