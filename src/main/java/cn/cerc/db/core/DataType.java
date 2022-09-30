@@ -135,7 +135,12 @@ public final class DataType {
         return this;
     }
 
+    @Deprecated
     public DataType readClass(Class<?> clazz) {
+        return setClass(clazz);
+    }
+    
+    public DataType setClass(Class<?> clazz) {
         if (boolean.class == clazz || Boolean.class == clazz)
             this.updateType("b", 0);
         else if (int.class == clazz || Integer.class == clazz)
@@ -184,7 +189,7 @@ public final class DataType {
                     this.decimal = dec;
             }
         } else
-            this.readClass(data.getClass());
+            this.setClass(data.getClass());
 
         return this;
     }

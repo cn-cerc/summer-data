@@ -201,7 +201,7 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
             else
                 meta.dataType().setValue("n1");
         } else {
-            meta.dataType().readClass(field.getType());
+            meta.dataType().setClass(field.getType());
             if ("s".equals(meta.dataType().value()) || "o".equals(meta.dataType().value()))
                 meta.dataType().setLength(column.length());
         }

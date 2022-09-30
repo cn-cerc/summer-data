@@ -83,7 +83,7 @@ public class FieldMetaTest {
     @Test
     public void test_clone() {
         FieldMeta type1 = new FieldMeta("code");
-        type1.dataType().readClass(String.class);
+        type1.dataType().setClass(String.class);
         type1.setRemark("abc");
         FieldMeta type2 = type1.clone();
         Gson gson = new Gson();
