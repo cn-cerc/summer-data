@@ -246,7 +246,7 @@ public final class FieldMeta implements Serializable {
     public String getText(DataRow row) {
         if (onGetTextEvent == null)
             return row.getString(code);
-        return onGetTextEvent.getText(new DataField(row, code));
+        return onGetTextEvent.getText(new DataCell(row, code));
     }
 
     public Object setText(String value) {

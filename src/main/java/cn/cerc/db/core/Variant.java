@@ -344,7 +344,7 @@ public class Variant {
         DataSet ds = new DataSet();
         ds.append().setValue("code", 1);
         ds.append().setValue("code", 2);
-        var code1 = ds.bind("code");
+        var code1 = ds.bindColumn("code");
         var code2 = ds.current().bind("code");
         System.out.println(code1);
         System.out.println(code2);

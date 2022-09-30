@@ -1,6 +1,6 @@
 package cn.cerc.db.editor;
 
-import cn.cerc.db.core.DataField;
+import cn.cerc.db.core.DataCell;
 
 public class BooleanEditor implements OnGetSetText {
     private final String trueText;
@@ -13,7 +13,7 @@ public class BooleanEditor implements OnGetSetText {
     }
 
     @Override
-    public String getText(DataField data) {
+    public String getText(DataCell data) {
         return data.getBoolean() ? trueText : falseText;
     }
 

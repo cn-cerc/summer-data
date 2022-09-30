@@ -2,7 +2,7 @@ package cn.cerc.db.editor;
 
 import java.util.EnumSet;
 
-import cn.cerc.db.core.DataField;
+import cn.cerc.db.core.DataCell;
 import cn.cerc.db.core.Datetime.DateType;
 
 public class DatetimeEditor implements OnGetSetText {
@@ -14,7 +14,7 @@ public class DatetimeEditor implements OnGetSetText {
     }
 
     @Override
-    public String getText(DataField data) {
+    public String getText(DataCell data) {
         return data.getDatetime().setOptions(options).toString();
     }
 

@@ -860,7 +860,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         System.out.println("并行处理方式，耗时：" + (System.currentTimeMillis() - start));
     }
 
-    public DataColumn bind(String fieldCode) {
+    public DataColumn bindColumn(String fieldCode) {
         return new DataColumn(this, fieldCode);
     }
 

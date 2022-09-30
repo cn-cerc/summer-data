@@ -3,7 +3,7 @@ package cn.cerc.db.editor;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
-import cn.cerc.db.core.DataField;
+import cn.cerc.db.core.DataCell;
 
 public class FloatEditor implements OnGetSetText {
     private String pattern;
@@ -19,7 +19,7 @@ public class FloatEditor implements OnGetSetText {
     }
 
     @Override
-    public String getText(DataField data) {
+    public String getText(DataCell data) {
         StringBuffer fmt = new StringBuffer("0.");
         for (int i = 0; i < this.decimal; i++)
             fmt.append(this.pattern);

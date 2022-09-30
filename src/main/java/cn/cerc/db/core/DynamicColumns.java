@@ -34,7 +34,7 @@ public class DynamicColumns {
         return null;
     }
 
-    public DataField getCell(String rowKey, String columnKey) {
+    public DataCell getCell(String rowKey, String columnKey) {
         FieldMeta column = findColumn(columnKey);
         if (column == null)
             return null;
@@ -70,7 +70,7 @@ public class DynamicColumns {
 
         // 根据数据表给相应的列赋值
         for (DataRow row : src1) {
-            DataField cell = sheet.getCell(row.getString("pcode"), row.getString("mount"));
+            DataCell cell = sheet.getCell(row.getString("pcode"), row.getString("mount"));
             if (cell != null) {
                 cell.setValue(row.getString("amount"));
                 if (cell.source().state() == DataRowState.Insert)
@@ -79,7 +79,7 @@ public class DynamicColumns {
         }
 
         // 手动赋值
-        DataField cell = sheet.getCell("a5", "202208");
+        DataCell cell = sheet.getCell("a5", "202208");
         if (cell != null) {
             cell.setValue(1000);
             if (cell.source().state() == DataRowState.Insert)

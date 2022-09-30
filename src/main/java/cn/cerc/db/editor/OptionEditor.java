@@ -3,7 +3,7 @@ package cn.cerc.db.editor;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.cerc.db.core.DataField;
+import cn.cerc.db.core.DataCell;
 
 public class OptionEditor implements OnGetSetText {
     private List<String> items = new ArrayList<>();
@@ -15,7 +15,7 @@ public class OptionEditor implements OnGetSetText {
     }
 
     @Override
-    public String getText(DataField data) {
+    public String getText(DataCell data) {
         int index = data.getInt();
         return items.get(index);
     }

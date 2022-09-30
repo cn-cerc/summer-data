@@ -1,9 +1,9 @@
 package cn.cerc.db.core;
 
-public class DataField extends Variant {
+public class DataCell extends Variant {
     private DataRow source;
 
-    public DataField(DataRow source, String field) {
+    public DataCell(DataRow source, String field) {
         super();
         this.source = source;
         this.setKey(field);
@@ -19,7 +19,7 @@ public class DataField extends Variant {
     }
 
     @Override
-    public DataField setValue(Object value) {
+    public DataCell setValue(Object value) {
         source.setValue(key(), value);
         setModified(true);
         return this;
