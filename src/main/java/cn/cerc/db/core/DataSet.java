@@ -230,12 +230,6 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     }
 
     @Override
-    @Deprecated
-    public final DataRow getCurrent() {
-        return current();
-    }
-
-    @Override
     public DataRow current() {
         return (eof() || bof()) ? null : records.get(recNo - 1);
     }
@@ -653,13 +647,8 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this;
     }
 
-    public boolean readonly() {
-        return readonly;
-    }
-
-    @Deprecated
     @Override
-    public boolean isReadonly() {
+    public boolean readonly() {
         return readonly;
     }
 
@@ -834,6 +823,15 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return items;
     }
 
+    public DataColumn bindColumn(String fieldCode) {
+        return new DataColumn(this, fieldCode);
+    }
+
+    @Override
+    public DataSet dataSet() {
+        return this;
+    }
+
     public static void main(String[] args) throws InterruptedException {
         DataSet ds = new DataSet();
         for (int i = 0; i < 1000; i++)
@@ -859,9 +857,4 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         }).allMatch(item -> true);
         System.out.println("并行处理方式，耗时：" + (System.currentTimeMillis() - start));
     }
-
-    public DataColumn bindColumn(String fieldCode) {
-        return new DataColumn(this, fieldCode);
-    }
-
 }
