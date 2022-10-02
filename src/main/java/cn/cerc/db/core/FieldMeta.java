@@ -29,8 +29,8 @@ public final class FieldMeta implements Serializable {
     private History history = null;
 
     // UI取值事件
-    private OnGetText onGetTextEvent;
-    private OnSetText onSetTextEvent;
+    private OnGetText onGetText;
+    private OnSetText onSetText;
 
     public enum FieldKind {
         Memory, Storage, Calculated;
@@ -65,8 +65,8 @@ public final class FieldMeta implements Serializable {
         result.autoincrement = this.autoincrement;
         result.insertable = this.insertable;
         result.updatable = this.updatable;
-        result.onGetTextEvent = this.onGetTextEvent;
-        result.onSetTextEvent = this.onSetTextEvent;
+        result.onGetText = this.onGetText;
+        result.onSetText = this.onSetText;
         return result;
     }
 
@@ -233,26 +233,34 @@ public final class FieldMeta implements Serializable {
         return false;
     }
 
-    public FieldMeta onGetText(OnGetText getTextEvent) {
-        this.onGetTextEvent = getTextEvent;
+    public FieldMeta onGetText(OnGetText onGetText) {
+        this.onGetText = onGetText;
         return this;
     }
 
-    public FieldMeta onSetText(OnSetText setTextEvent) {
-        this.onSetTextEvent = setTextEvent;
+    public OnGetText onGetText() {
+        return this.onGetText;
+    }
+
+    public FieldMeta onSetText(OnSetText onSetText) {
+        this.onSetText = onSetText;
         return this;
+    }
+
+    public OnSetText onSetText() {
+        return this.onSetText;
     }
 
     public String getText(DataRow row) {
-        if (onGetTextEvent == null)
+        if (onGetText == null)
             return row.getString(code);
-        return onGetTextEvent.getText(new DataCell(row, code));
+        return onGetText.getText(new DataCell(row, code));
     }
 
     public Object setText(String value) {
-        if (onSetTextEvent == null)
+        if (onSetText == null)
             return value;
-        return onSetTextEvent.setText(value);
+        return onSetText.setText(value);
     }
 
     public void onGetSetText(OnGetSetText getsetTextEvent) {

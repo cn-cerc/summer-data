@@ -9,5 +9,7 @@ public interface DataSource {
         return current();
     }
 
-    boolean isReadonly();
+    default boolean isReadonly() {
+        return current().readonly();
+    }
 }
