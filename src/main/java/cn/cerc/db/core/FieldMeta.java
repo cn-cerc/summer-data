@@ -14,6 +14,7 @@ public final class FieldMeta implements Serializable {
     private String name;
     private DataType dataType;
     private String remark;
+    private int width = 0; // 建议显示宽度
     private FieldKind kind = FieldKind.Memory;
     // 唯一标识
     private boolean identification = false;
@@ -61,6 +62,7 @@ public final class FieldMeta implements Serializable {
             result.dataType = this.dataType.clone();
         result.kind = this.kind;
         result.remark = this.remark;
+        result.width = this.width;
         result.identification = this.identification;
         result.autoincrement = this.autoincrement;
         result.insertable = this.insertable;
@@ -74,19 +76,19 @@ public final class FieldMeta implements Serializable {
         return code;
     }
 
-    @Deprecated
-    public final String getCode() {
-        return code();
-    }
+//    @Deprecated
+//    public final String getCode() {
+//        return code();
+//    }
 
     public final String name() {
         return name;
     }
 
-    @Deprecated
-    public final String getName() {
-        return name();
-    }
+//    @Deprecated
+//    public final String getName() {
+//        return name();
+//    }
 
     public final FieldMeta setName(String name) {
         this.name = name;
@@ -97,10 +99,10 @@ public final class FieldMeta implements Serializable {
         return dataType().value();
     }
 
-    @Deprecated
-    public final void setType(Class<?> clazz) {
-        dataType().readClass(clazz);
-    }
+//    @Deprecated
+//    public final void setType(Class<?> clazz) {
+//        dataType().readClass(clazz);
+//    }
 
     public final DataType dataType() {
         if (this.dataType == null)
@@ -128,10 +130,10 @@ public final class FieldMeta implements Serializable {
         return this;
     }
 
-    @Deprecated
-    public final boolean isUpdateKey() {
-        return identification();
-    }
+//    @Deprecated
+//    public final boolean isUpdateKey() {
+//        return identification();
+//    }
 
     public final String remark() {
         return remark;
@@ -142,10 +144,10 @@ public final class FieldMeta implements Serializable {
         return this;
     }
 
-    @Deprecated
-    public final FieldMeta setUpdateKey(boolean uid) {
-        return this.setIdentification(uid);
-    }
+//    @Deprecated
+//    public final FieldMeta setUpdateKey(boolean uid) {
+//        return this.setIdentification(uid);
+//    }
 
     public final boolean identification() {
         return identification;
@@ -281,4 +283,12 @@ public final class FieldMeta implements Serializable {
         return this;
     }
 
+    public int width() {
+        return this.width;
+    }
+    
+    public FieldMeta setWidth(int width) {
+        this.width = width;
+        return this;
+    }
 }
