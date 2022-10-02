@@ -235,6 +235,10 @@ public class DataRow implements Serializable, IRecord {
     public FieldDefs fields() {
         return fields;
     }
+    
+    public FieldMeta fields(String fieldCode) {
+        return fields.get(fieldCode);
+    }
 
 //    @Deprecated
 //    public final FieldDefs getFieldDefs() {
