@@ -19,15 +19,15 @@ public class Variant {
         this.setValue(data);
     }
 
-    @Deprecated
-    public final String tag() {
-        return this.key();
-    }
+//    @Deprecated
+//    public final String tag() {
+//        return this.key();
+//    }
 
-    @Deprecated
-    public final Object data() {
-        return this.value();
-    }
+//    @Deprecated
+//    public final Object data() {
+//        return this.value();
+//    }
 
     public final String key() {
         return this.key;
@@ -37,10 +37,10 @@ public class Variant {
         return value;
     }
 
-    @Deprecated
-    public final Variant setData(Object data) {
-        return this.setValue(data);
-    }
+//    @Deprecated
+//    public final Variant setData(Object data) {
+//        return this.setValue(data);
+//    }
 
     public Variant setValue(Object value) {
         if (this.value == value)
@@ -55,10 +55,10 @@ public class Variant {
         return this;
     }
 
-    @Deprecated
-    public final Variant setTag(String tag) {
-        return setKey(tag);
-    }
+//    @Deprecated
+//    public final Variant setTag(String tag) {
+//        return setKey(tag);
+//    }
 
     public Variant setKey(String key) {
         this.key = key;
@@ -276,7 +276,7 @@ public class Variant {
     }
 
     @SuppressWarnings("rawtypes")
-    public Enum<?> getEnum(Class<? extends Enum> clazz) {
+    public final Enum<?> getEnum(Class<? extends Enum> clazz) {
         int tmp = getInt();
         Enum[] list = clazz.getEnumConstants();
         if (tmp >= 0 && tmp < list.length)
@@ -290,11 +290,11 @@ public class Variant {
         return String.format("{\"key\":\"%s\",\"value\":\"%s\"}", this.key, this.value());
     }
 
-    public boolean isModified() {
+    public final boolean isModified() {
         return modified;
     }
 
-    protected void setModified(boolean modified) {
+    protected final void setModified(boolean modified) {
         this.modified = modified;
     }
 
