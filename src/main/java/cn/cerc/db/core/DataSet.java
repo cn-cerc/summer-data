@@ -243,19 +243,19 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return records;
     }
 
-    @Deprecated
-    public final List<DataRow> getRecords() {
-        return records();
-    }
+//    @Deprecated
+//    public final List<DataRow> getRecords() {
+//        return records();
+//    }
 
     public int recNo() {
         return recNo;
     }
 
-    @Deprecated
-    public final int getRecNo() {
-        return recNo();
-    }
+//    @Deprecated
+//    public final int getRecNo() {
+//        return recNo();
+//    }
 
     public DataSet setRecNo(int recNo) {
         if (recNo > this.records.size()) {
@@ -277,10 +277,10 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this.fields;
     }
 
-    @Deprecated
-    public final FieldDefs getFieldDefs() {
-        return fields();
-    }
+//    @Deprecated
+//    public final FieldDefs getFieldDefs() {
+//        return fields();
+//    }
 
     // 仅用于查找一次时，调用此函数，速度最快
     public boolean locateOnlyOne(String fields, Object... values) {
@@ -336,24 +336,24 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
 
     // 排序
     public DataSet setSort(String... fields) {
-        Collections.sort(this.getRecords(), new RecordComparator(fields));
+        Collections.sort(this.records(), new RecordComparator(fields));
         return this;
     }
 
     public DataSet setSort(Comparator<DataRow> func) {
-        Collections.sort(this.getRecords(), func);
+        Collections.sort(this.records(), func);
         return this;
     }
 
-    @Deprecated
-    public final TDate getDate(String field) {
-        return this.current().getDate(field);
-    }
+//    @Deprecated
+//    public final TDate getDate(String field) {
+//        return this.current().getDate(field);
+//    }
 
-    @Deprecated
-    public final TDateTime getDateTime(String field) {
-        return this.current().getDateTime(field);
-    }
+//    @Deprecated
+//    public final TDateTime getDateTime(String field) {
+//        return this.current().getDateTime(field);
+//    }
 
     @Override
     public DataSet setValue(String field, Object value) {
@@ -363,10 +363,10 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this;
     }
 
-    @Deprecated
-    public DataSet setNull(String field) {
-        return setValue(field, null);
-    }
+//    @Deprecated
+//    public DataSet setNull(String field) {
+//        return setValue(field, null);
+//    }
 
     public boolean fetch() {
         boolean result = false;
@@ -567,33 +567,33 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         }
     }
 
-    @Deprecated
-    public final void close() {
-        clear();
-    }
+//    @Deprecated
+//    public final void close() {
+//        clear();
+//    }
 
     public final DataRow head() {
         return head;
     }
 
-    @Deprecated
-    public final DataRow getHead() {
-        return head();
-    }
+//    @Deprecated
+//    public final DataRow getHead() {
+//        return head();
+//    }
 
     @Override
     public final String toString() {
-        return toJson();
+        return json();
     }
 
     public String json() {
         return new DataSetGson<>(this).encode();
     }
 
-    @Deprecated
-    public final String toJson() {
-        return json();
-    }
+//    @Deprecated
+//    public final String toJson() {
+//        return json();
+//    }
 
     public DataSet setJson(String json) {
         this.clear();
@@ -603,10 +603,10 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this;
     }
 
-    @Deprecated
-    public final DataSet fromJson(String json) {
-        return setJson(json);
-    }
+//    @Deprecated
+//    public final DataSet fromJson(String json) {
+//        return setJson(json);
+//    }
 
     /**
      * @param source      要复制的数据源
@@ -662,10 +662,10 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return state;
     }
 
-    @Deprecated
-    public final int getState() {
-        return state();
-    }
+//    @Deprecated
+//    public final int getState() {
+//        return state();
+//    }
 
     public DataSet setState(int state) {
         this.state = state;
@@ -676,10 +676,10 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return message;
     }
 
-    @Deprecated
-    public final String getMessage() {
-        return message();
-    }
+//    @Deprecated
+//    public final String getMessage() {
+//        return message();
+//    }
 
     public DataSet setMessage(String message) {
         this.message = message;
@@ -694,10 +694,10 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         this.storage = storage;
     }
 
-    @Deprecated
-    public final boolean isStorage() {
-        return storage();
-    }
+//    @Deprecated
+//    public final boolean isStorage() {
+//        return storage();
+//    }
 
     protected boolean isBatchSave() {
         return batchSave;
@@ -733,20 +733,20 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return meta;
     }
 
-    @Deprecated
-    public final boolean metaInfo() {
-        return meta();
-    }
+//    @Deprecated
+//    public final boolean metaInfo() {
+//        return meta();
+//    }
 
-    @Deprecated
-    public final boolean isMetaInfo() {
-        return metaInfo();
-    }
+//    @Deprecated
+//    public final boolean isMetaInfo() {
+//        return metaInfo();
+//    }
 
-    @Deprecated
-    public final DataSet setMetaInfo(boolean value) {
-        return this.setMeta(value);
-    }
+//    @Deprecated
+//    public final DataSet setMetaInfo(boolean value) {
+//        return this.setMeta(value);
+//    }
 
     public final DataSet setMeta(boolean value) {
         this.meta = value;
@@ -767,15 +767,15 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return garbage;
     }
 
-    @Deprecated
-    protected final List<DataRow> getDelList() {
-        return garbage();
-    }
+//    @Deprecated
+//    protected final List<DataRow> getDelList() {
+//        return garbage();
+//    }
 
-    @Deprecated
-    public final boolean curd() {
-        return crud();
-    }
+//    @Deprecated
+//    public final boolean curd() {
+//        return crud();
+//    }
 
     public boolean crud() {
         return crud;
