@@ -276,6 +276,10 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     public FieldDefs fields() {
         return this.fields;
     }
+    
+    public FieldMeta fields(String fieldCode) {
+        return this.fields.get(fieldCode);
+    }
 
 //    @Deprecated
 //    public final FieldDefs getFieldDefs() {
