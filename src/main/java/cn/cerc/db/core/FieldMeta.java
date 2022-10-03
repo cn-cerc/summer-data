@@ -14,7 +14,6 @@ public final class FieldMeta implements Serializable {
     private String name;
     private DataType dataType;
     private String remark;
-    private int width = 0; // 建议显示宽度
     private FieldKind kind = FieldKind.Memory;
     // 唯一标识
     private boolean identification = false;
@@ -62,7 +61,6 @@ public final class FieldMeta implements Serializable {
             result.dataType = this.dataType.clone();
         result.kind = this.kind;
         result.remark = this.remark;
-        result.width = this.width;
         result.identification = this.identification;
         result.autoincrement = this.autoincrement;
         result.insertable = this.insertable;
@@ -280,15 +278,6 @@ public final class FieldMeta implements Serializable {
 
     public FieldMeta setHistory(History history) {
         this.history = history;
-        return this;
-    }
-
-    public int width() {
-        return this.width;
-    }
-    
-    public FieldMeta setWidth(int width) {
-        this.width = width;
         return this;
     }
 }
