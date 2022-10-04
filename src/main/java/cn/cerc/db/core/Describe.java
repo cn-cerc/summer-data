@@ -24,4 +24,7 @@ public @interface Describe {
 
     // 建议显示宽度
     int width() default 0;
+
+    // 在增加记录时，是否为必填栏位
+    boolean required() default false;
 }

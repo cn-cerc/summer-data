@@ -38,6 +38,8 @@ public final class FieldMeta implements Serializable {
     private History history = null;
     // 建议显示宽度
     private int width = 0;
+    // 在增加记录时，是否为必填栏位
+    private boolean required = false;
 
     // UI取值事件
     private OnGetText onGetText;
@@ -302,6 +304,15 @@ public final class FieldMeta implements Serializable {
         return this;
     }
 
+    public boolean required() {
+        return this.required;
+    }
+
+    public FieldMeta setRequired(boolean required) {
+        this.required = required;
+        return this;
+    }
+
     /**
      * 从Entity类读取属到到当前FieldMeta
      * 
@@ -328,6 +339,7 @@ public final class FieldMeta implements Serializable {
             if (!"".equals(describe.remark()))
                 this.setRemark(describe.remark());
             this.setWidth(describe.width());
+            this.setRequired(describe.required());
         }
         Column column = field.getDeclaredAnnotation(Column.class);
         if (column != null) {
