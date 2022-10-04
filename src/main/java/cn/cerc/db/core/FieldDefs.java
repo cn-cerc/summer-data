@@ -171,6 +171,7 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
                 meta.setName(describe.name());
             if (!"".equals(describe.remark()))
                 meta.setRemark(describe.remark());
+            meta.setWidth(describe.width());
         }
         Column column = field.getDeclaredAnnotation(Column.class);
         if (column != null) {

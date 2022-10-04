@@ -27,6 +27,8 @@ public final class FieldMeta implements Serializable {
     private boolean nullable = true;
     // 字段是否标识history
     private History history = null;
+    // 建议显示宽度
+    private int width = 0;
 
     // UI取值事件
     private OnGetText onGetText;
@@ -67,6 +69,7 @@ public final class FieldMeta implements Serializable {
         result.updatable = this.updatable;
         result.onGetText = this.onGetText;
         result.onSetText = this.onSetText;
+        result.width = this.width;
         return result;
     }
 
@@ -278,6 +281,15 @@ public final class FieldMeta implements Serializable {
 
     public FieldMeta setHistory(History history) {
         this.history = history;
+        return this;
+    }
+
+    public int width() {
+        return this.width;
+    }
+
+    public FieldMeta setWidth(int width) {
+        this.width = width;
         return this;
     }
 }

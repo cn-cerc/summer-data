@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 public @interface Describe {
 
-    // 名称
+    // 字段标准
     String name();
 
     // 备注
@@ -22,4 +22,6 @@ public @interface Describe {
     // 默认值
     String def() default "";
 
+    // 建议显示宽度
+    int width() default 0;
 }
