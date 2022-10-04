@@ -322,6 +322,10 @@ public class Variant {
             field.set(entity, Double.valueOf(this.getDouble()));
         else if (field.getType() == Datetime.class)
             field.set(entity, this.getDatetime());
+        else if (field.getType() == FastDate.class)
+            field.set(entity, this.getFastDate());
+        else if (field.getType() == FastTime.class)
+            field.set(entity, this.getFastTime());
         else if (field.getType() == String.class)
             field.set(entity, this.getString());
         else if (field.getType().isEnum())

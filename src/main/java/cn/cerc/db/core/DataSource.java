@@ -9,13 +9,17 @@ public interface DataSource {
         return null;
     }
 
+    default DataRow dataRow() {
+        return null;
+    }
+
     /**
      * 
      * @return 返回dataRow，若dataSet()不为空，则为dataSet.current()
      */
     default DataRow current() {
         var dataSet = dataSet();
-        return dataSet != null ? dataSet.current() : null;
+        return dataSet != null ? dataSet.current() : dataRow();
     }
 
     /**

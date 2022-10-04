@@ -387,7 +387,6 @@ public class Utils {
     }
 
     // 转成指定类型的对象
-    @SuppressWarnings("deprecation")
     public static <T> T recordAsObject(DataRow record, Class<T> clazz) {
         T obj;
         try {
