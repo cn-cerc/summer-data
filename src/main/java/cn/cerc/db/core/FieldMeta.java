@@ -1,6 +1,15 @@
 package cn.cerc.db.core;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
+
+import javax.persistence.Column;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Version;
 
 import com.google.gson.Gson;
 
@@ -117,7 +126,7 @@ public final class FieldMeta implements Serializable {
 
     public final FieldMeta setKind(FieldKind value) {
         if (value == null)
-            throw new RuntimeException("fieldKind is null!");
+            throw new RuntimeException("value is null!");
         if (kind != value) {
             this.kind = value;
             if (value == FieldKind.Storage) {
@@ -292,4 +301,70 @@ public final class FieldMeta implements Serializable {
         this.width = width;
         return this;
     }
+
+    /**
+     * 从Entity类读取属到到当前FieldMeta
+     * 
+     * @param entityClass Entity 对象
+     * @return 若读取成功，返回true
+     */
+    public boolean readEntity(Class<?> entityClass) {
+        boolean result = false;
+        for (Field field : entityClass.getDeclaredFields()) {
+            if (field.getName().equals(this.code)) {
+                readEntityField(field);
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    public void readEntityField(Field field) {
+        Describe describe = field.getDeclaredAnnotation(Describe.class);
+        if (describe != null) {
+            if (!"".equals(describe.name()))
+                this.setName(describe.name());
+            if (!"".equals(describe.remark()))
+                this.setRemark(describe.remark());
+            this.setWidth(describe.width());
+        }
+        Column column = field.getDeclaredAnnotation(Column.class);
+        if (column != null) {
+            this.setInsertable(column.insertable());
+            this.setUpdatable(column.updatable());
+            this.setNullable(column.nullable());
+        }
+
+        this.setHistory(field.getDeclaredAnnotation(History.class));
+
+        Id id = field.getDeclaredAnnotation(Id.class);
+        if (id != null) {
+            this.setIdentification(true);
+            this.setNullable(false);
+        }
+        GeneratedValue gv = field.getDeclaredAnnotation(GeneratedValue.class);
+        if (gv != null) {
+            if (gv.strategy() != GenerationType.AUTO)
+                throw new RuntimeException("strategy only support auto");
+            this.setAutoincrement(true);
+            this.setInsertable(false);
+            this.setUpdatable(false);
+        }
+        if (field.getType().isEnum()) {
+            Enumerated enumerated = field.getDeclaredAnnotation(Enumerated.class);
+            if ((enumerated != null) && (enumerated.value() == EnumType.STRING))
+                this.dataType().setValue("s" + column.length());
+            else
+                this.dataType().setValue("n1");
+        } else {
+            this.dataType().setClass(field.getType());
+            if ("s".equals(this.dataType().value()) || "o".equals(this.dataType().value()))
+                this.dataType().setLength(column.length());
+        }
+        Version version = field.getDeclaredAnnotation(Version.class);
+        if (version != null)
+            this.setNullable(false);
+    }
+
 }

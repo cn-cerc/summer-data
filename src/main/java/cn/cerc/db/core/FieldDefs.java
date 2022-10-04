@@ -10,12 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import javax.persistence.Column;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Version;
 
 import com.google.gson.Gson;
 
@@ -40,7 +35,7 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
             if (field.getDeclaredAnnotation(Id.class) != null || field.getDeclaredAnnotation(Column.class) != null) {
                 String fieldCode = field.getName();
                 FieldMeta meta = this.add(fieldCode, FieldKind.Storage);
-                readEntityField(field, meta);
+                meta.readEntityField(field);
             }
         }
     }
@@ -159,56 +154,9 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
                 continue;
             FieldMeta meta = this.get(field.getName());
             if (meta != null)
-                readEntityField(field, meta);
+                meta.readEntityField(field);
         }
         return this;
-    }
-
-    private void readEntityField(Field field, FieldMeta meta) {
-        Describe describe = field.getDeclaredAnnotation(Describe.class);
-        if (describe != null) {
-            if (!"".equals(describe.name()))
-                meta.setName(describe.name());
-            if (!"".equals(describe.remark()))
-                meta.setRemark(describe.remark());
-            meta.setWidth(describe.width());
-        }
-        Column column = field.getDeclaredAnnotation(Column.class);
-        if (column != null) {
-            meta.setInsertable(column.insertable());
-            meta.setUpdatable(column.updatable());
-            meta.setNullable(column.nullable());
-        }
-
-        meta.setHistory(field.getDeclaredAnnotation(History.class));
-
-        Id id = field.getDeclaredAnnotation(Id.class);
-        if (id != null) {
-            meta.setIdentification(true);
-            meta.setNullable(false);
-        }
-        GeneratedValue gv = field.getDeclaredAnnotation(GeneratedValue.class);
-        if (gv != null) {
-            if (gv.strategy() != GenerationType.AUTO)
-                throw new RuntimeException("strategy only support auto");
-            meta.setAutoincrement(true);
-            meta.setInsertable(false);
-            meta.setUpdatable(false);
-        }
-        if (field.getType().isEnum()) {
-            Enumerated enumerated = field.getDeclaredAnnotation(Enumerated.class);
-            if ((enumerated != null) && (enumerated.value() == EnumType.STRING))
-                meta.dataType().setValue("s" + column.length());
-            else
-                meta.dataType().setValue("n1");
-        } else {
-            meta.dataType().setClass(field.getType());
-            if ("s".equals(meta.dataType().value()) || "o".equals(meta.dataType().value()))
-                meta.dataType().setLength(column.length());
-        }
-        Version version = field.getDeclaredAnnotation(Version.class);
-        if (version != null)
-            meta.setNullable(false);
     }
 
     public final FieldMeta getByAutoincrement() {
