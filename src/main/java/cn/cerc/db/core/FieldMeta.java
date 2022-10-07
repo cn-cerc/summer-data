@@ -36,14 +36,8 @@ public final class FieldMeta implements Serializable {
     private boolean nullable = true;
     // 字段是否标识history
     private History history = null;
-    // 建议显示宽度
-    private int width = 0;
-    // 在增加记录时，是否为必填栏位
-    private boolean required = false;
-    // 开窗选择JavaScript函数代码
-    private String dialog;
     // 界面显示相关附加讯息
-    Describe describe;
+    private Describe describe;
 
     // UI取值事件
     private OnGetText onGetText;
@@ -84,9 +78,7 @@ public final class FieldMeta implements Serializable {
         result.updatable = this.updatable;
         result.onGetText = this.onGetText;
         result.onSetText = this.onSetText;
-        result.width = this.width;
-        result.required = this.required;
-        result.dialog = this.dialog;
+        result.describe = this.describe;
         return result;
     }
 
