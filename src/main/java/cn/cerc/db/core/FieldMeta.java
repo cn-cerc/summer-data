@@ -40,6 +40,8 @@ public final class FieldMeta implements Serializable {
     private int width = 0;
     // 在增加记录时，是否为必填栏位
     private boolean required = false;
+    // 开窗选择JavaScript函数代码
+    private String dialog;
 
     // UI取值事件
     private OnGetText onGetText;
@@ -81,6 +83,8 @@ public final class FieldMeta implements Serializable {
         result.onGetText = this.onGetText;
         result.onSetText = this.onSetText;
         result.width = this.width;
+        result.required = this.required;
+        result.dialog = this.dialog;
         return result;
     }
 
@@ -313,6 +317,15 @@ public final class FieldMeta implements Serializable {
         return this;
     }
 
+    public String dialog() {
+        return dialog;
+    }
+
+    public FieldMeta setDialog(String dialog) {
+        this.dialog = dialog;
+        return this;
+    }
+
     /**
      * 从Entity类读取属到到当前FieldMeta
      * 
@@ -340,6 +353,7 @@ public final class FieldMeta implements Serializable {
                 this.setRemark(describe.remark());
             this.setWidth(describe.width());
             this.setRequired(describe.required());
+            this.setDialog(describe.dialog());
         }
         Column column = field.getDeclaredAnnotation(Column.class);
         if (column != null) {

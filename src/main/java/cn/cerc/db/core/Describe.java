@@ -27,4 +27,7 @@ public @interface Describe {
 
     // 在增加记录时，是否为必填栏位
     boolean required() default false;
+
+    // 开窗选择JavaScript函数代码
+    String dialog() default "";
 }
