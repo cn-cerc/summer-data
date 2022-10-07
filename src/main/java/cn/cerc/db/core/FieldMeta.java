@@ -42,6 +42,8 @@ public final class FieldMeta implements Serializable {
     private boolean required = false;
     // 开窗选择JavaScript函数代码
     private String dialog;
+    // 界面显示相关附加讯息
+    Describe describe;
 
     // UI取值事件
     private OnGetText onGetText;
@@ -299,30 +301,12 @@ public final class FieldMeta implements Serializable {
         return this;
     }
 
-    public int width() {
-        return this.width;
+    public Describe describe() {
+        return describe;
     }
 
-    public FieldMeta setWidth(int width) {
-        this.width = width;
-        return this;
-    }
-
-    public boolean required() {
-        return this.required;
-    }
-
-    public FieldMeta setRequired(boolean required) {
-        this.required = required;
-        return this;
-    }
-
-    public String dialog() {
-        return dialog;
-    }
-
-    public FieldMeta setDialog(String dialog) {
-        this.dialog = dialog;
+    public FieldMeta setDescribe(Describe describe) {
+        this.describe = describe;
         return this;
     }
 
@@ -351,9 +335,7 @@ public final class FieldMeta implements Serializable {
                 this.setName(describe.name());
             if (!"".equals(describe.remark()))
                 this.setRemark(describe.remark());
-            this.setWidth(describe.width());
-            this.setRequired(describe.required());
-            this.setDialog(describe.dialog());
+            this.describe = describe;
         }
         Column column = field.getDeclaredAnnotation(Column.class);
         if (column != null) {
