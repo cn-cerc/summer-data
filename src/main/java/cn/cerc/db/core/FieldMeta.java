@@ -78,6 +78,7 @@ public final class FieldMeta implements Serializable {
         result.updatable = this.updatable;
         result.onGetText = this.onGetText;
         result.onSetText = this.onSetText;
+        result.history = this.history;
         result.describe = this.describe;
         return result;
     }
