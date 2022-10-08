@@ -135,10 +135,10 @@ public final class DataType {
         return this;
     }
 
-    @Deprecated
-    public DataType readClass(Class<?> clazz) {
-        return setClass(clazz);
-    }
+//    @Deprecated
+//    public DataType readClass(Class<?> clazz) {
+//        return setClass(clazz);
+//    }
     
     public DataType setClass(Class<?> clazz) {
         if (boolean.class == clazz || Boolean.class == clazz)

@@ -54,10 +54,10 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return result;
     }
 
-    @Deprecated
-    public List<String> getFields() {
-        return names();
-    }
+//    @Deprecated
+//    public List<String> getFields() {
+//        return names();
+//    }
 
     public FieldMeta add(String fieldCode) {
         FieldMeta item = new FieldMeta(fieldCode);
@@ -97,10 +97,10 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         items.remove(field);
     }
 
-    @Deprecated
-    public void delete(String fieldCode) {
-        remove(fieldCode);
-    }
+//    @Deprecated
+//    public void delete(String fieldCode) {
+//        remove(fieldCode);
+//    }
 
     public FieldMeta get(String fieldCode) {
         for (FieldMeta meta : items) {
@@ -121,15 +121,15 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return null;
     }
 
-    @Deprecated
-    public final FieldMeta getItems(int index) {
-        return get(index);
-    }
+//    @Deprecated
+//    public final FieldMeta getItems(int index) {
+//        return get(index);
+//    }
 
-    @Deprecated
-    public FieldMeta getItem(String fieldCode) {
-        return get(fieldCode);
-    }
+//    @Deprecated
+//    public FieldMeta getItem(String fieldCode) {
+//        return get(fieldCode);
+//    }
 
     @Override
     public String toString() {

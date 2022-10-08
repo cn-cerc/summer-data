@@ -608,29 +608,29 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
         return source.containsAll(target);
     }
 
-    @Deprecated
-    public Datetime incDay(int offset) {
-        return inc(DateType.Day, offset);
-    }
-
-    @Deprecated
-    public int getDay() {
-        return get(DateType.Day);
-    }
-
-    @Deprecated
-    public int compareDay(Datetime target) {
-        return this.subtract(DateType.Day, target);
-    }
-
-    @Deprecated
-    public Datetime incMonth(int offset) {
-        return inc(DateType.Month, offset);
-    }
-
-    @Deprecated
-    public int compareMonth(Datetime target) {
-        return this.subtract(DateType.Month, target);
-    }
+//    @Deprecated
+//    public Datetime incDay(int offset) {
+//        return inc(DateType.Day, offset);
+//    }
+//
+//    @Deprecated
+//    public int getDay() {
+//        return get(DateType.Day);
+//    }
+//
+//    @Deprecated
+//    public int compareDay(Datetime target) {
+//        return this.subtract(DateType.Day, target);
+//    }
+//
+//    @Deprecated
+//    public Datetime incMonth(int offset) {
+//        return inc(DateType.Month, offset);
+//    }
+//
+//    @Deprecated
+//    public int compareMonth(Datetime target) {
+//        return this.subtract(DateType.Month, target);
+//    }
 
 }

@@ -728,10 +728,10 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return search;
     }
 
-    @Deprecated
-    public final SearchDataSet getSearch() {
-        return search;
-    }
+//    @Deprecated
+//    public final SearchDataSet getSearch() {
+//        return search;
+//    }
 
     public boolean meta() {
         return meta;
@@ -785,11 +785,11 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return crud;
     }
 
-    @Deprecated
-    public final DataSet setCurd(boolean value) {
-        crud = value;
-        return this;
-    }
+//    @Deprecated
+//    public final DataSet setCurd(boolean value) {
+//        crud = value;
+//        return this;
+//    }
 
     public DataSet setCrud(boolean value) {
         crud = value;
