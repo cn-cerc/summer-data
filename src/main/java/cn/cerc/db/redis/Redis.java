@@ -6,18 +6,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import redis.clients.jedis.JedisPubSub;
 
 public class Redis implements AutoCloseable {
+    private static final Logger log = LoggerFactory.getLogger(Redis.class);
 
     private redis.clients.jedis.Jedis jedis;
 
     public Redis() {
         this.jedis = JedisFactory.getJedis();
+        if (jedis == null)
+            log.warn("redis server 没有启动或无法连接");
     }
 
     public Redis(String configId) {
         this.jedis = JedisFactory.getJedis(configId);
+        if (jedis == null)
+            log.warn("redis server 没有启动或无法连接");
     }
 
     @Override
