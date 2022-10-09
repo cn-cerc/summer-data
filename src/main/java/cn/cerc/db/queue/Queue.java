@@ -78,6 +78,10 @@ public class Queue implements AsyncCallback<List<Message>>, AutoCloseable {
         server = null;
     }
 
+    public CloudQueue client() {
+        return this.client;
+    }
+
     public static void main(String[] args) {
         Queue queue = new Queue("test");
 //        for (int i = 1; i < 4; i++)
