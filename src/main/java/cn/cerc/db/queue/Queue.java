@@ -14,9 +14,16 @@ public class Queue implements AutoCloseable {
     private CloudQueue queue;
 
     public Queue(String queueId) {
+        this(queueId, true);
+    }
+
+    public Queue(String queueId, boolean autoCreate) {
         super();
         this.server = new QueueServer();
-        this.queue = server.createQueue(queueId);
+        if (autoCreate)
+            this.queue = server.createQueue(queueId);
+        else
+            this.queue = server.openQueue(queueId);
     }
 
     public Message read() {
