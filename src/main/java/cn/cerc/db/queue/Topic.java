@@ -11,14 +11,12 @@ import com.aliyun.mns.client.CloudTopic;
 import com.aliyun.mns.client.MNSClient;
 import com.aliyun.mns.common.ClientException;
 import com.aliyun.mns.common.ServiceException;
-import com.aliyun.mns.model.Base64TopicMessage;
 import com.aliyun.mns.model.PagingListResult;
 import com.aliyun.mns.model.QueueMeta;
+import com.aliyun.mns.model.RawTopicMessage;
 import com.aliyun.mns.model.SubscriptionMeta;
 import com.aliyun.mns.model.TopicMessage;
 import com.aliyun.mns.model.TopicMeta;
-
-import cn.cerc.db.queue.QueueServer;
 
 public class Topic implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(Topic.class);
@@ -110,7 +108,7 @@ public class Topic implements AutoCloseable {
      * @return null 为成功，否则为失败
      */
     public String publish(String message) {
-        Base64TopicMessage msg = new Base64TopicMessage();
+        RawTopicMessage msg = new RawTopicMessage();
         msg.setMessageBody(message);
         String body = msg.getMessageBody();
         if (body == null || body.trim().length() == 0)
@@ -142,4 +140,16 @@ public class Topic implements AutoCloseable {
         }
     }
 
+    public CloudTopic topic() {
+        return this.topic;
+    }
+
+    public static void main(String[] args) {
+        try (Topic topic = new Topic("test-topic")) {
+            topic.addSubscribe("test1");
+            topic.addSubscribe("test2");
+            topic.publish("hello，中国!");
+        }
+
+    }
 }
