@@ -36,8 +36,8 @@ public class QueueServer implements IConnection {
 
     // 默认不可见时间
     private static int visibilityTimeout = 50;
-    private MNSClient client;
-    private CloudAccount account;
+    private static MNSClient client;
+    private static CloudAccount account;
     private IConfig config;
 
     public QueueServer() {
@@ -45,7 +45,7 @@ public class QueueServer implements IConnection {
     }
 
     @Override
-    public MNSClient getClient() {
+    public synchronized MNSClient getClient() {
         if (client != null && client.isOpen())
             return client;
 
