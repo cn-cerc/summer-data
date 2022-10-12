@@ -38,14 +38,13 @@ public class QueueServer implements IConnection {
     private static int visibilityTimeout = 50;
     private static MNSClient client;
     private static CloudAccount account;
-    private IConfig config;
+    private static final IConfig config;
 
-    public QueueServer() {
+    static {
         config = ServerConfig.getInstance();
     }
 
-    @Override
-    public synchronized MNSClient getClient() {
+    public static synchronized MNSClient getMNSClient() {
         if (client != null && client.isOpen())
             return client;
 
@@ -68,6 +67,22 @@ public class QueueServer implements IConnection {
         if (client == null)
             client = account.getMNSClient();
         return client;
+
+    }
+
+    @Override
+    public MNSClient getClient() {
+        return getMNSClient();
+    }
+
+    /**
+     * 可改使用静态函数 getQueue
+     * 
+     * @param queueCode
+     * @return CloudQueue
+     */
+    public CloudQueue openQueue(String queueCode) {
+        return getQueue(queueCode);
     }
 
     /**
@@ -76,8 +91,8 @@ public class QueueServer implements IConnection {
      * @param queueCode 队列代码
      * @return value 返回具体的消息队列
      */
-    public CloudQueue openQueue(String queueCode) {
-        return getClient().getQueueRef(queueCode);
+    public static CloudQueue getQueue(String queueCode) {
+        return getMNSClient().getQueueRef(queueCode);
     }
 
     /**

@@ -15,7 +15,7 @@ import org.xml.sax.SAXException;
 
 import com.aliyun.mns.model.Message;
 
-public abstract class AbstractTopicQueue extends AbstractQueue {
+public abstract class AbstractTopicQueue extends AbstractDataRowQueue {
 
     @Override
     protected String getMessageBody(Message msg) {

@@ -27,7 +27,7 @@ public class Topic implements AutoCloseable {
 
     public Topic(String topicName) {
         super();
-        client = new QueueServer().getClient();
+        client = QueueServer.getMNSClient();
         this.topicName = topicName;
 //        this.topic = client.getTopicRef(topicName);
         TopicMeta meta = new TopicMeta();
