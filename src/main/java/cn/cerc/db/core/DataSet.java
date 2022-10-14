@@ -82,20 +82,26 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this;
     }
 
-    @Deprecated
-    public final DataSet append(int index) {
+    // 在指定的位置插入记录，位置编号从0开始
+    public final DataSet insert(int site) {
         if (this.readonly)
             throw new UnsupportedOperationException("DataSet is readonly");
         DataRow record = new DataRow(this).setState(DataRowState.Insert);
-        if (index == -1 || index == records.size()) {
+        if (site == -1 || site == records.size()) {
             this.records.add(record);
             recNo = records.size();
         } else {
-            this.records.add(index, record);
-            recNo = index + 1;
+            this.records.add(site, record);
+            recNo = site + 1;
         }
         doAppend(record);
         return this;
+    }
+
+    // 增加到指定的位置，请改使用insert
+    @Deprecated
+    public final DataSet append(int site) {
+        return this.insert(site);
     }
 
     public DataSet edit() {
@@ -276,7 +282,7 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     public FieldDefs fields() {
         return this.fields;
     }
-    
+
     public FieldMeta fields(String fieldCode) {
         return this.fields.get(fieldCode);
     }
