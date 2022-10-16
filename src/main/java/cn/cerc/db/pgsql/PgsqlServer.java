@@ -48,7 +48,7 @@ public class PgsqlServer implements ISqlServer, AutoCloseable {
         if (connection != null)
             return connection;
 
-        String dbname = config.getProperty(PgsqlServer.PGSQL_DATABASE, "testdb");
+        String dbname = config.getProperty(PgsqlServer.PGSQL_DATABASE, "postgres");
         String username = config.getProperty(PgsqlServer.PGSQL_USERNAME);
         String password = config.getProperty(PgsqlServer.PGSQL_PASSWORD);
         try {
@@ -60,12 +60,12 @@ public class PgsqlServer implements ISqlServer, AutoCloseable {
         }
         String url = String.format("jdbc:postgresql://%s/%s", this.getHost(), dbname);
         try {
-//            log.info("{}, {}, {}", url, username, password);
+            log.info("{}, {}, {}", url, username, password);
             connection = DriverManager.getConnection(url, username, password);
             return connection;
         } catch (SQLException e1) {
             log.error(e1.getMessage());
-//            e1.printStackTrace();
+            e1.printStackTrace();
             return null;
         }
     }
