@@ -4,13 +4,17 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISqlServer;
 import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.mssql.MssqlQuery;
 
 public class PgsqlServer implements ISqlServer, AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(PgsqlServer.class);
@@ -26,11 +30,14 @@ public class PgsqlServer implements ISqlServer, AutoCloseable {
     public static final String PGSQL_PASSWORD = "pgsql.password";
     // 线程池最大联接数
     public static final String MaxConnections = "pgsql.connections.max";
+    // ISession 中识别码
+    public static final String SessionId = "pgsqlSession";
 
 //    private String driver = "org.postgresql.Driver";
     private static ServerConfig config;
     private static String pqsql_host;
     private Connection connection;
+    private List<String> tables;
 
     static {
         config = ServerConfig.getInstance();
@@ -107,4 +114,22 @@ public class PgsqlServer implements ISqlServer, AutoCloseable {
             pg.execute("select * from table1");
         }
     }
+
+    /**
+     * 
+     * @param handle handle
+     * @return 取得数据库中所有的表名
+     */
+    public final List<String> tables(IHandle handle) {
+        if (tables != null)
+            return tables;
+        tables = new ArrayList<>();
+        MssqlQuery query = new MssqlQuery(handle);
+        query.add("select name from sys.tables where type='U'");
+        query.open();
+        while (query.fetch())
+            tables.add(query.getString("name"));
+        return tables;
+    }
+
 }
