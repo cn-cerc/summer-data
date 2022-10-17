@@ -4,7 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public interface ISession extends AutoCloseable {
-    String INDUSTRY ="industry";// 行业
+    String INDUSTRY = "industry";// 行业
     String EDITION = "edition";
     String CORP_NO = "corp_no";
     String USER_CODE = "user_code";
@@ -41,9 +41,9 @@ public interface ISession extends AutoCloseable {
     }
 
     default String getIndustry() {
-        return (String)getProperty(INDUSTRY);
+        return (String) getProperty(INDUSTRY);
     }
-    
+
     default String getCorpNo() {
         return (String) getProperty(CORP_NO);
     }
@@ -73,7 +73,9 @@ public interface ISession extends AutoCloseable {
     }
 
     // 返回当前是否为已登入状态
-    boolean logon();
+    default boolean logon() {
+        return false;
+    }
 
     // 关闭开启的资源
     @Override
@@ -84,14 +86,21 @@ public interface ISession extends AutoCloseable {
      * 
      * @return 返回当前用户已取得的授权码清单，若返回null则表示不判断，返回空字符串则等于Permission.USERS
      */
-    String getPermissions();
+    default String getPermissions() {
+        return null;
+    }
 
-    HttpServletRequest getRequest();
+    default HttpServletRequest getRequest() {
+        return null;
+    }
 
-    void setRequest(HttpServletRequest request);
+    default void setRequest(HttpServletRequest request) {
+    }
 
-    HttpServletResponse getResponse();
+    default HttpServletResponse getResponse() {
+        return null;
+    }
 
-    void setResponse(HttpServletResponse response);
-
+    default void setResponse(HttpServletResponse response) {
+    }
 }
