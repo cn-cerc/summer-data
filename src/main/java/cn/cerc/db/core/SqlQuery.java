@@ -2,6 +2,7 @@ package cn.cerc.db.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.persistence.Table;
 
@@ -12,6 +13,7 @@ import cn.cerc.db.mssql.MssqlServer;
 import cn.cerc.db.mysql.MysqlServer;
 import cn.cerc.db.mysql.MysqlServerMaster;
 import cn.cerc.db.mysql.MysqlServerSlave;
+import cn.cerc.db.pgsql.PgsqlServer;
 import cn.cerc.db.sqlite.SqliteServer;
 
 public class SqlQuery extends DataSet implements IHandle {
@@ -199,7 +201,8 @@ public class SqlQuery extends DataSet implements IHandle {
      * @return 返回 ConnectionClient 接口对象
      */
     private final ServerClient getConnectionClient() {
-        return (ServerClient) server().getClient();
+        ISqlServer server = Objects.requireNonNull(server());
+        return (ServerClient) server.getClient();
     }
 
     public final SqlOperator operator() {
@@ -366,6 +369,11 @@ public class SqlQuery extends DataSet implements IHandle {
         case Sqlite: {
             if (server == null)
                 server = new SqliteServer();
+            return server;
+        }
+        case Pgsql: {
+            if (server == null)
+                server = (PgsqlServer) getSession().getProperty(PgsqlServer.SessionId);
             return server;
         }
         default:

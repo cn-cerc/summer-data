@@ -109,12 +109,6 @@ public class PgsqlServer implements ISqlServer, AutoCloseable {
         return pqsql_host;
     }
 
-    public static void main(String[] args) {
-        try (PgsqlServer pg = new PgsqlServer()) {
-            pg.execute("select * from table1");
-        }
-    }
-
     /**
      * 
      * @param handle handle
@@ -132,4 +126,9 @@ public class PgsqlServer implements ISqlServer, AutoCloseable {
         return tables;
     }
 
+    public static void main(String[] args) {
+        try (PgsqlServer pg = new PgsqlServer()) {
+            pg.execute("select * from table1");
+        }
+    }
 }

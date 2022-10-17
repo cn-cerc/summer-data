@@ -14,7 +14,7 @@ public class PgsqlQuery extends SqlQuery implements IHandle {
     }
 
     public PgsqlQuery(IHandle handle) {
-        super(handle, SqlServerType.Mssql);
+        super(handle, SqlServerType.Pgsql);
     }
 
     @Override
