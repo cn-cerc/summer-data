@@ -23,6 +23,7 @@ import cn.cerc.db.mysql.BuildStatement;
 import cn.cerc.db.mysql.MysqlClient;
 import cn.cerc.db.mysql.MysqlDatabase;
 import cn.cerc.db.mysql.MysqlServerMaster;
+import cn.cerc.db.pgsql.PgsqlDatabase;
 import cn.cerc.db.sqlite.SqliteDatabase;
 
 public class SqlOperator implements IHandle {
@@ -51,6 +52,9 @@ public class SqlOperator implements IHandle {
             break;
         case Sqlite:
             this.setOid(SqliteDatabase.DefaultOID);
+            break;
+        case Pgsql:
+            this.setOid(PgsqlDatabase.DefaultOID);
             break;
         default:
             throw new SqlServerTypeException();
@@ -462,6 +466,9 @@ public class SqlOperator implements IHandle {
             break;
         case Sqlite:
             sql = "select last_insert_rowid() newid";
+            break;
+        case Pgsql:
+            sql = String.format("SELECT currval('%s_%s_seq')", this.table, this.oid);
             break;
         default:
             throw new SqlServerTypeException();
