@@ -467,6 +467,9 @@ public class SqlOperator implements IHandle {
         case Sqlite:
             sql = "select last_insert_rowid() newid";
             break;
+        case Pgsql:
+            sql = String.format("SELECT currval('%s_UID__seq')", this.table);
+            break;
         default:
             throw new SqlServerTypeException();
         }
