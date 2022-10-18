@@ -23,8 +23,7 @@ public class QueueQuery extends DataSet implements IHandle {
 
     private static final Logger log = LoggerFactory.getLogger(QueueQuery.class);
     private QueueOperator operator;
-    private String queueCode;
-    private QueueServer connection;
+    private String queueName;
     private CloudQueue queue;
     private String receiptHandle;
     private QueueMode queueMode = QueueMode.append;
@@ -35,15 +34,14 @@ public class QueueQuery extends DataSet implements IHandle {
     public QueueQuery(IHandle handle) {
         super();
         this.session = handle.getSession();
-        this.connection = (QueueServer) getSession().getProperty(QueueServer.SessionId);
     }
 
     public QueueQuery open() {
-        if (queueCode == null) {
-            queueCode = SqlText.findTableName(this.sql().text());
-            queue = connection.openQueue(queueCode);
+        if (queueName == null) {
+            queueName = SqlText.findTableName(this.sql().text());
+            queue = QueueServer.openQueue(queueName);
         }
-        if (null == queueCode || "".equals(queueCode)) {
+        if (null == queueName || "".equals(queueName)) {
             throw new RuntimeException("queueCode is null");
         }
         if (this.active) {
@@ -52,7 +50,7 @@ public class QueueQuery extends DataSet implements IHandle {
 
         // 当maximum设置为1时，读取消息
         if (this.queueMode == QueueMode.recevie) {
-            Message message = connection.receive(queue);
+            Message message = QueueServer.receive(queue);
             if (message != null) {
                 try {
                     this.setJson(message.getMessageBody());
@@ -70,7 +68,7 @@ public class QueueQuery extends DataSet implements IHandle {
         if (this.queueMode != QueueMode.append) {
             throw new RuntimeException(res.getString(1, "当前作业模式下，不允许保存"));
         }
-        connection.append(queue, json());
+        QueueServer.append(queue, json());
         log.debug("message save success");
     }
 
@@ -81,7 +79,7 @@ public class QueueQuery extends DataSet implements IHandle {
         if (receiptHandle == null) {
             return false;
         }
-        connection.delete(queue, receiptHandle);
+        QueueServer.delete(queue, receiptHandle);
         receiptHandle = null;
         return true;
     }
@@ -93,7 +91,7 @@ public class QueueQuery extends DataSet implements IHandle {
      * @return 返回创建的队列
      */
     public CloudQueue create(String queueCode) {
-        return connection.createQueue(queueCode);
+        return QueueServer.createQueue(queueCode);
     }
 
     // 判断消息队列是否存在

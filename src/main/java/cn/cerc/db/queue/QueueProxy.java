@@ -10,13 +10,11 @@ import com.aliyun.mns.model.Message;
 public class QueueProxy {
     private static final Logger log = LoggerFactory.getLogger(QueueProxy.class);
 
-    private QueueServer server;
     private CloudQueue queue;
 
     public QueueProxy(String queueId) {
         super();
-        this.server = new QueueServer();
-        this.queue = server.openQueue(queueId);
+        this.queue = QueueServer.openQueue(queueId);
     }
 
     public Message read() {
