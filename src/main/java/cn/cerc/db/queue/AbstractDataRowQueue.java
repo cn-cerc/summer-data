@@ -9,7 +9,7 @@ import cn.cerc.db.core.DataRow;
 import cn.cerc.db.core.DataSet;
 
 public abstract class AbstractDataRowQueue extends AbstractQueue {
-    private Map<DataRow, Message> items = new HashMap<>();
+    private transient Map<DataRow, Message> items = new HashMap<>();
 
     /**
      * 将dataRow发送到当前队列
