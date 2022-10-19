@@ -16,7 +16,7 @@ public abstract class AbstractDataRowQueue extends AbstractQueue {
      * 
      * @param dataRow
      */
-    public void write(DataRow dataRow) {
+    public void append(DataRow dataRow) {
         Message message = new Message();
         message.setMessageBody(dataRow.json());
         getQueue().putMessage(message);
@@ -27,7 +27,7 @@ public abstract class AbstractDataRowQueue extends AbstractQueue {
      * 
      * @return DataRow
      */
-    public DataRow read() {
+    public DataRow receive() {
         Message msg = this.popMessage();
         if (msg == null)
             return null;
@@ -56,7 +56,7 @@ public abstract class AbstractDataRowQueue extends AbstractQueue {
      * @param maximum 最多取出多少笔，必须大于0
      * @return DataSet
      */
-    public DataSet readBatch(int maximum) {
+    public DataSet receive(int maximum) {
         if (maximum <= 0)
             throw new RuntimeException("maximum 必须大于 0");
         DataSet dataSet = new DataSet();

@@ -22,7 +22,7 @@ public abstract class AbstractObjectQueue<T> extends AbstractQueue {
      * 
      * @param object
      */
-    public void write(T object) {
+    public void append(T object) {
         Message message = new Message();
         message.setMessageBody(new Gson().toJson(object));
         getQueue().putMessage(message);
@@ -33,7 +33,7 @@ public abstract class AbstractObjectQueue<T> extends AbstractQueue {
      * 
      * @return DataRow
      */
-    public T read() {
+    public T receive() {
         Message msg = this.popMessage();
         if (msg == null)
             return null;
@@ -70,7 +70,7 @@ public abstract class AbstractObjectQueue<T> extends AbstractQueue {
      * @param maximum 最多取出多少笔，必须大于0
      * @return DataSet
      */
-    public List<T> readBatch(int maximum) {
+    public List<T> receive(int maximum) {
         if (maximum <= 0)
             throw new RuntimeException("maximum 必须大于 0");
         List<T> list = new ArrayList<>();
