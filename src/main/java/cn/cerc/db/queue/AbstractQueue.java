@@ -1,5 +1,8 @@
 package cn.cerc.db.queue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +15,7 @@ import com.aliyun.mns.model.QueueMeta;
 
 public abstract class AbstractQueue implements QueueImpl {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
-    private static boolean created = false;
+    private static List<String> created = new ArrayList<>();
     private CloudQueue cloudQueue;
 
     @Override
@@ -27,7 +30,7 @@ public abstract class AbstractQueue implements QueueImpl {
 
     private synchronized static CloudQueue createQueue(AbstractQueue sender, String queueName) {
         MNSClient client = QueueServer.getMNSClient();
-        if (created) {
+        if (created.contains(queueName)) {
             log.debug("直接返回消息队列 {}", queueName);
             return client.getQueueRef(queueName);
         }
@@ -36,7 +39,7 @@ public abstract class AbstractQueue implements QueueImpl {
         if (list != null) {
             for (var item : list.getResult()) {
                 if (item.getQueueName().equals(queueName)) {
-                    created = true;
+                    created.add(queueName);
                     log.debug("查找并返回消息队列 {}", queueName);
                     return client.getQueueRef(queueName);
                 }
@@ -47,7 +50,7 @@ public abstract class AbstractQueue implements QueueImpl {
         meta.setQueueName(queueName);
         // 设置队列的属性
         sender.onCreateQueue(meta);
-        created = true;
+        created.add(queueName);
         log.debug("创建新的消息队列 {}", queueName);
         return client.createQueue(meta);
     }
