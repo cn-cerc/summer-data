@@ -79,9 +79,9 @@ public class Curl {
                 builder.append(i == 1 ? "?" : "&");
                 builder.append(key);
                 builder.append("=");
-                String value = parameters.get(key).toString();
+                Object value = parameters.get(key);
                 if (value != null) {
-                    builder.append(encodeUTF8(value));
+                    builder.append(encodeUTF8(value.toString()));
                 }
             }
             URL url = new URL(builder.toString());
