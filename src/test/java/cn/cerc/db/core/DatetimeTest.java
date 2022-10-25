@@ -1,6 +1,7 @@
 package cn.cerc.db.core;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.time.LocalDateTime;
@@ -175,7 +176,7 @@ public class DatetimeTest {
 
     @Test
     public void test_WeekBof3() {
-        assertEquals("2022-10-24 00:00:00", new Datetime("2022-10-24 01:00:00").toWeekBof().toDayStart().toString());
+        assertNotEquals("2022-10-24 00:00:00", new Datetime("2022-10-23 23:59:59").toWeekBof().toDayStart().toString());
     }
 
     @Test
@@ -201,7 +202,7 @@ public class DatetimeTest {
 
     @Test
     public void test_WeekEof3() {
-        assertEquals("2022-10-30 23:59:59", new Datetime("2022-10-24 01:00:00").toWeekEof().toDayEnd().toString());
+        assertNotEquals("2022-10-30 23:59:59", new Datetime("2022-10-23 23:59:59").toWeekEof().toDayEnd().toString());
     }
 
     @Test
