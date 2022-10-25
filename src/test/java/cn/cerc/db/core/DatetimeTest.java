@@ -165,28 +165,53 @@ public class DatetimeTest {
     @Test
     public void test_WeekBof1() {
         System.out.println(new Datetime("2022-10-24 00:00:01").toWeekBof().toDayStart().toString());
-        assertEquals("2022-10-24 00:00:00", new Datetime("2022-10-24 00:00:01").toWeekBof().toString());
+        assertEquals("2022-10-24 00:00:00", new Datetime("2022-10-24 00:00:01").toWeekBof().toDayStart().toString());
     }
 
     @Test
     public void test_WeekBof2() {
-        assertEquals("2022-10-24 00:00:00", new Datetime("2022-10-24 00:01:00").toWeekBof().toString());
+        assertEquals("2022-10-24 00:00:00", new Datetime("2022-10-24 00:01:00").toWeekBof().toDayStart().toString());
     }
 
     @Test
     public void test_WeekBof3() {
-        assertEquals("2022-10-24 00:00:00", new Datetime("2022-10-24 01:00:00").toWeekBof().toString());
+        assertEquals("2022-10-24 00:00:00", new Datetime("2022-10-24 01:00:00").toWeekBof().toDayStart().toString());
     }
 
     @Test
     public void test_WeekBof4() {
-        assertEquals("2022-10-24 00:00:00", new Datetime("2022-10-24 23:59:59").toWeekBof().toString());
+        assertEquals("2022-10-24 00:00:00", new Datetime("2022-10-24 23:59:59").toWeekBof().toDayStart().toString());
     }
 
     @Test
-    public void test_WeekEof() {
-        String text = "2021-01-02 23:59:02";
-        assertEquals("2021-01-31 23:59:59", new Datetime(text).toMonthEof().toString());
+    public void test_WeekBof5() {
+        assertEquals("2022-10-24 23:59:59", new Datetime("2022-10-24 23:59:59").toWeekBof().toDayEnd().toString());
+    }
+
+    @Test
+    public void test_WeekEof1() {
+        System.out.println(new Datetime("2022-10-24 00:00:01").toWeekBof().toDayStart().toString());
+        assertEquals("2022-10-30 23:59:59", new Datetime("2022-10-24 00:00:01").toWeekEof().toDayEnd().toString());
+    }
+
+    @Test
+    public void test_WeekEof2() {
+        assertEquals("2022-10-30 23:59:59", new Datetime("2022-10-24 00:01:00").toWeekEof().toDayEnd().toString());
+    }
+
+    @Test
+    public void test_WeekEof3() {
+        assertEquals("2022-10-30 23:59:59", new Datetime("2022-10-24 01:00:00").toWeekEof().toDayEnd().toString());
+    }
+
+    @Test
+    public void test_WeekEof4() {
+        assertEquals("2022-10-30 23:59:59", new Datetime("2022-10-24 23:59:59").toWeekEof().toDayEnd().toString());
+    }
+
+    @Test
+    public void test_WeekEof5() {
+        assertEquals("2022-10-30 00:00:00", new Datetime("2022-10-24 23:59:59").toWeekEof().toDayStart().toString());
     }
 
     @Test
