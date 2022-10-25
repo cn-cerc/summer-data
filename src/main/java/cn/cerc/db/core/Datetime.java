@@ -170,29 +170,29 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
             return 0;
 
         switch (dateType) {
-            case Year: {
-                return this.asLocalDateTime().getYear() - target.asLocalDateTime().getYear();
-            }
-            case Month: {
-                LocalDateTime self = this.asLocalDateTime();
-                LocalDateTime item = target.asLocalDateTime();
-                int year = (self.getYear() - item.getYear()) * 12;
-                return year + self.getMonthValue() - item.getMonthValue();
-            }
-            case Day: {
-                LocalDateTime self = this.asLocalDateTime();
-                LocalDateTime item = target.asLocalDateTime();
-                int year = (self.getYear() - item.getYear()) * 365;
-                return year + self.getDayOfYear() - item.getDayOfYear();
-            }
-            case Hour:
-                return (int) ((this.timestamp - target.timestamp) / 1000 / 60 / 60);
-            case Minute:
-                return (int) ((this.timestamp - target.timestamp) / 1000 / 60);
-            case Second:
-                return (int) ((this.timestamp - target.timestamp) / 1000);
-            default:
-                return 0;
+        case Year: {
+            return this.asLocalDateTime().getYear() - target.asLocalDateTime().getYear();
+        }
+        case Month: {
+            LocalDateTime self = this.asLocalDateTime();
+            LocalDateTime item = target.asLocalDateTime();
+            int year = (self.getYear() - item.getYear()) * 12;
+            return year + self.getMonthValue() - item.getMonthValue();
+        }
+        case Day: {
+            LocalDateTime self = this.asLocalDateTime();
+            LocalDateTime item = target.asLocalDateTime();
+            int year = (self.getYear() - item.getYear()) * 365;
+            return year + self.getDayOfYear() - item.getDayOfYear();
+        }
+        case Hour:
+            return (int) ((this.timestamp - target.timestamp) / 1000 / 60 / 60);
+        case Minute:
+            return (int) ((this.timestamp - target.timestamp) / 1000 / 60);
+        case Second:
+            return (int) ((this.timestamp - target.timestamp) / 1000);
+        default:
+            return 0;
         }
     }
 
@@ -206,26 +206,26 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
     public Datetime inc(DateType dateType, int offset) {
         LocalDateTime ldt = this.asLocalDateTime();
         switch (dateType) {
-            case Year:
-                ldt = ldt.plusYears(offset);
-                break;
-            case Month:
-                ldt = ldt.plusMonths(offset);
-                break;
-            case Day:
-                ldt = ldt.plusDays(offset);
-                break;
-            case Hour:
-                ldt = ldt.plusHours(offset);
-                break;
-            case Minute:
-                ldt = ldt.plusMinutes(offset);
-                break;
-            case Second:
-                ldt = ldt.plusSeconds(offset);
-                break;
-            default:
-                break;
+        case Year:
+            ldt = ldt.plusYears(offset);
+            break;
+        case Month:
+            ldt = ldt.plusMonths(offset);
+            break;
+        case Day:
+            ldt = ldt.plusDays(offset);
+            break;
+        case Hour:
+            ldt = ldt.plusHours(offset);
+            break;
+        case Minute:
+            ldt = ldt.plusMinutes(offset);
+            break;
+        case Second:
+            ldt = ldt.plusSeconds(offset);
+            break;
+        default:
+            break;
         }
         Datetime result = this.clone();
         result.setTimestamp(ldt.atZone(LocalZone).toInstant().toEpochMilli());
@@ -261,20 +261,20 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
     public final int get(DateType dateType) {
         LocalDateTime ldt = this.asLocalDateTime();
         switch (dateType) {
-            case Year:
-                return ldt.getYear();
-            case Month:
-                return ldt.getMonthValue();
-            case Day:
-                return ldt.getDayOfMonth();
-            case Hour:
-                return ldt.getHour();
-            case Minute:
-                return ldt.getMinute();
-            case Second:
-                return ldt.getSecond();
-            default:
-                return 0;
+        case Year:
+            return ldt.getYear();
+        case Month:
+            return ldt.getMonthValue();
+        case Day:
+            return ldt.getDayOfMonth();
+        case Hour:
+            return ldt.getHour();
+        case Minute:
+            return ldt.getMinute();
+        case Second:
+            return ldt.getSecond();
+        default:
+            return 0;
         }
     }
 
@@ -435,94 +435,94 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
                 throw new DateFormatErrorException(text);
         }
         switch (text.length()) {
-            case 4: {
-                this.setOptions(yyyyMMdd);
-                int year = Integer.valueOf(text);
-                return ldt.withYear(year == 0 ? 1 : year);
-            }
-            case 5: {
-                String[] items = text.split(":");
-                if (items.length != 2)
-                    throw new DateFormatErrorException(text);
+        case 4: {
+            this.setOptions(yyyyMMdd);
+            int year = Integer.valueOf(text);
+            return ldt.withYear(year == 0 ? 1 : year);
+        }
+        case 5: {
+            String[] items = text.split(":");
+            if (items.length != 2)
+                throw new DateFormatErrorException(text);
+            this.setOptions(HHmmss);
+            return ldt.withHour(Integer.valueOf(items[0])).withMinute(Integer.valueOf(items[1]));
+        }
+        case 6: {
+            this.setOptions(yyyyMMdd);
+            int year = Integer.valueOf(text.substring(0, 4));
+            int month = Integer.valueOf(text.substring(4, 6));
+            return ldt.withYear(year == 0 ? 1 : year).withMonth(month == 0 ? 1 : month);
+        }
+        case 8: {
+            String[] items = text.split(":");
+            if (items.length == 3) {
                 this.setOptions(HHmmss);
-                return ldt.withHour(Integer.valueOf(items[0])).withMinute(Integer.valueOf(items[1]));
-            }
-            case 6: {
+                return ldt.withHour(Integer.valueOf(text.substring(0, 2)))
+                        .withMinute(Integer.valueOf(text.substring(3, 5)))
+                        .withSecond(Integer.valueOf(text.substring(6, 8)));
+            } else {
                 this.setOptions(yyyyMMdd);
-                int year = Integer.valueOf(text.substring(0, 4));
-                int month = Integer.valueOf(text.substring(4, 6));
-                return ldt.withYear(year == 0 ? 1 : year).withMonth(month == 0 ? 1 : month);
+                return ldt.withYear(Integer.valueOf(text.substring(0, 4)))
+                        .withMonth(Integer.valueOf(text.substring(4, 6)))
+                        .withDayOfMonth(Integer.valueOf(text.substring(6, 8)));
             }
-            case 8: {
-                String[] items = text.split(":");
-                if (items.length == 3) {
-                    this.setOptions(HHmmss);
-                    return ldt.withHour(Integer.valueOf(text.substring(0, 2)))
-                            .withMinute(Integer.valueOf(text.substring(3, 5)))
-                            .withSecond(Integer.valueOf(text.substring(6, 8)));
-                } else {
-                    this.setOptions(yyyyMMdd);
-                    return ldt.withYear(Integer.valueOf(text.substring(0, 4)))
-                            .withMonth(Integer.valueOf(text.substring(4, 6)))
-                            .withDayOfMonth(Integer.valueOf(text.substring(6, 8)));
-                }
-            }
-            case 10: {
-                if (text.contains("-")) {
-                    this.setDateSeparator("-");
-                } else if (text.contains("/"))
-                    this.setDateSeparator("/");
-                else
-                    throw new DateFormatErrorException(text);
-                this.setOptions(yyyyMMdd);
-                int year = Integer.valueOf(text.substring(0, 4));
-                int month = Integer.valueOf(text.substring(5, 7));
-                int day = Integer.valueOf(text.substring(8, 10));
-                return ldt.withYear(year == 0 ? 1 : year)
-                        .withMonth(month == 0 ? 1 : month)
-                        .withDayOfMonth(day == 0 ? 1 : day);
-            }
-            case 16:
-            case 19: {
-                String date = text.substring(0, 10);
-                String time = text.substring(11, text.length());
-                String date_fmt = null;
-                if (date.contains("-")) {
-                    date_fmt = "yyyy-MM-dd";
-                    this.setDateSeparator("-");
-                } else if (date.contains("/")) {
-                    this.setDateSeparator("/");
-                    date_fmt = "yyyy/MM/dd";
-                } else
-                    throw new DateFormatErrorException(text);
+        }
+        case 10: {
+            if (text.contains("-")) {
+                this.setDateSeparator("-");
+            } else if (text.contains("/"))
+                this.setDateSeparator("/");
+            else
+                throw new DateFormatErrorException(text);
+            this.setOptions(yyyyMMdd);
+            int year = Integer.valueOf(text.substring(0, 4));
+            int month = Integer.valueOf(text.substring(5, 7));
+            int day = Integer.valueOf(text.substring(8, 10));
+            return ldt.withYear(year == 0 ? 1 : year)
+                    .withMonth(month == 0 ? 1 : month)
+                    .withDayOfMonth(day == 0 ? 1 : day);
+        }
+        case 16:
+        case 19: {
+            String date = text.substring(0, 10);
+            String time = text.substring(11, text.length());
+            String date_fmt = null;
+            if (date.contains("-")) {
+                date_fmt = "yyyy-MM-dd";
+                this.setDateSeparator("-");
+            } else if (date.contains("/")) {
+                this.setDateSeparator("/");
+                date_fmt = "yyyy/MM/dd";
+            } else
+                throw new DateFormatErrorException(text);
 
-                String time_fmt = null;
-                switch (time.split(":").length) {
-                    case 2: {
-                        this.setOptions(yyyyMMdd_HHmmss);
-                        time_fmt = "HH:mm";
-                        break;
-                    }
-                    case 3: {
-                        this.setOptions(yyyyMMdd_HHmmss);
-                        time_fmt = "HH:mm:ss";
-                        break;
-                    }
-                    default:
-                        throw new DateFormatErrorException(text);
-                }
-
-                String value = text;
-                // 防止年月日均为0
-                if ("0000-00-00".equals(text.substring(0, 10)))
-                    value = "0001-01-01" + text.substring(10, text.length());
-                else if ("0000/00/00".equals(text.substring(0, 10)))
-                    value = "0001/01/01" + text.substring(10, text.length());
-                DateTimeFormatter df = DateTimeFormatter.ofPattern(date_fmt + ' ' + time_fmt);
-                return LocalDateTime.parse(value, df);
+            String time_fmt = null;
+            switch (time.split(":").length) {
+            case 2: {
+                this.setOptions(yyyyMMdd_HHmmss);
+                time_fmt = "HH:mm";
+                break;
+            }
+            case 3: {
+                this.setOptions(yyyyMMdd_HHmmss);
+                time_fmt = "HH:mm:ss";
+                break;
             }
             default:
                 throw new DateFormatErrorException(text);
+            }
+
+            String value = text;
+            // 防止年月日均为0
+            if ("0000-00-00".equals(text.substring(0, 10)))
+                value = "0001-01-01" + text.substring(10, text.length());
+            else if ("0000/00/00".equals(text.substring(0, 10)))
+                value = "0001/01/01" + text.substring(10, text.length());
+            DateTimeFormatter df = DateTimeFormatter.ofPattern(date_fmt + ' ' + time_fmt);
+            return LocalDateTime.parse(value, df);
+        }
+        default:
+            throw new DateFormatErrorException(text);
         }
     }
 
@@ -577,16 +577,16 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
             return this;
         this.dateKind = dateKind;
         switch (dateKind) {
-            case OnlyDate: {
-                setOptions(yyyyMMdd);
-                return this;
-            }
-            case OnlyTime: {
-                setOptions(HHmmss);
-                return this;
-            }
-            default:
-                return this;
+        case OnlyDate: {
+            setOptions(yyyyMMdd);
+            return this;
+        }
+        case OnlyTime: {
+            setOptions(HHmmss);
+            return this;
+        }
+        default:
+            return this;
         }
     }
 
