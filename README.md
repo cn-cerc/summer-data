@@ -1,4 +1,4 @@
-# summer-model
+# summer-data
 
 提供了各类基础性配置、规范与工具。
 

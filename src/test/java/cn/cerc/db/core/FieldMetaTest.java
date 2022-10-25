@@ -16,11 +16,8 @@ public class FieldMetaTest {
     @Test
     public void test_getset_diy() {
         DataRow rs = new DataRow();
-        rs.fields().add("state").onGetText((record, meta) -> {
-            return record.getInt(meta.code()) == 0 ? "停用" : "启用";
-        }).onSetText(text -> {
-            return "启用".equals(text) ? 1 : 0;
-        });
+        rs.fields().add("state").onGetText(data -> data.getInt() == 0 ? "停用" : "启用")
+                .onSetText(text -> "启用".equals(text) ? 1 : 0);
 
         rs.setValue("state", 0);
         assertEquals("{\"state\":0}:停用", rs + ":" + rs.getText("state"));
@@ -86,7 +83,7 @@ public class FieldMetaTest {
     @Test
     public void test_clone() {
         FieldMeta type1 = new FieldMeta("code");
-        type1.dataType().readClass(String.class);
+        type1.dataType().setClass(String.class);
         type1.setRemark("abc");
         FieldMeta type2 = type1.clone();
         Gson gson = new Gson();

@@ -49,13 +49,13 @@ public interface IHandle {
         }
     }
 
-    @Deprecated
-    default void setProperty(String key, Object value) {
-        getSession().setProperty(key, value);
-    }
+//    @Deprecated
+//    default void setProperty(String key, Object value) {
+//        getSession().setProperty(key, value);
+//    }
 
-    @Deprecated
-    default void setHandle(IHandle handle) {
-        this.setSession(handle.getSession());
-    }
+//    @Deprecated
+//    default void setHandle(IHandle handle) {
+//        this.setSession(handle.getSession());
+//    }
 }

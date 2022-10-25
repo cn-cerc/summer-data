@@ -387,7 +387,6 @@ public class Utils {
     }
 
     // 转成指定类型的对象
-    @SuppressWarnings("deprecation")
     public static <T> T recordAsObject(DataRow record, Class<T> clazz) {
         T obj;
         try {
@@ -440,14 +439,14 @@ public class Utils {
                         boolean value = record.getBoolean(dbField);
                         Method set = clazz.getMethod("set" + field, boolean.class);
                         set.invoke(obj, value);
-                    } else if (method.getType().equals(TDate.class)) {
-                        TDate value = record.getDate(dbField);
-                        Method set = clazz.getMethod("set" + field, value.getClass());
-                        set.invoke(obj, value);
-                    } else if (method.getType().equals(TDateTime.class)) {
-                        TDateTime value = record.getDateTime(dbField);
-                        Method set = clazz.getMethod("set" + field, value.getClass());
-                        set.invoke(obj, value);
+//                    } else if (method.getType().equals(TDate.class)) {
+//                        TDate value = record.getDate(dbField);
+//                        Method set = clazz.getMethod("set" + field, value.getClass());
+//                        set.invoke(obj, value);
+//                    } else if (method.getType().equals(TDateTime.class)) {
+//                        TDateTime value = record.getDateTime(dbField);
+//                        Method set = clazz.getMethod("set" + field, value.getClass());
+//                        set.invoke(obj, value);
                     } else if (method.getType().equals(Datetime.class)) {
                         Datetime value = record.getDatetime(dbField);
                         Method set = clazz.getMethod("set" + field, value.getClass());

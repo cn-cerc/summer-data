@@ -36,6 +36,15 @@ public interface EntityImpl {
     }
 
     /**
+     * 更新记录时自动更新时间戳
+     * 
+     * @param handle IHandle
+     */
+    default HistoryLoggerImpl getHistoryLogger() {
+        return null;
+    }
+
+    /**
      * 输出时自动带出计算字段
      * 
      * @param DataRow    关连的数据源

@@ -30,22 +30,21 @@ public class QueueServer implements IConnection {
     public static final String AccountEndpoint = "mns.accountendpoint";
     public static final String AccessKeyId = "mns.accesskeyid";
     public static final String AccessKeySecret = "mns.accesskeysecret";
-    public static final String SecurityToken = "mns.securitytoken";
+//    public static final String SecurityToken = "mns.securitytoken";
     // IHandle中识别码
     public static final String SessionId = "aliyunQueueSession";
 
     // 默认不可见时间
     private static int visibilityTimeout = 50;
-    private MNSClient client;
-    private CloudAccount account;
-    private IConfig config;
+    private static MNSClient client;
+    private static CloudAccount account;
+    private static final IConfig config;
 
-    public QueueServer() {
+    static {
         config = ServerConfig.getInstance();
     }
 
-    @Override
-    public MNSClient getClient() {
+    public static synchronized MNSClient getMNSClient() {
         if (client != null && client.isOpen())
             return client;
 
@@ -68,6 +67,12 @@ public class QueueServer implements IConnection {
         if (client == null)
             client = account.getMNSClient();
         return client;
+
+    }
+
+    @Override
+    public MNSClient getClient() {
+        return getMNSClient();
     }
 
     /**
@@ -76,8 +81,8 @@ public class QueueServer implements IConnection {
      * @param queueCode 队列代码
      * @return value 返回具体的消息队列
      */
-    public CloudQueue openQueue(String queueCode) {
-        return getClient().getQueueRef(queueCode);
+    public static CloudQueue openQueue(String queueCode) {
+        return getMNSClient().getQueueRef(queueCode);
     }
 
     /**
@@ -86,7 +91,7 @@ public class QueueServer implements IConnection {
      * @param queueCode 队列代码
      * @return value 返回创建的队列
      */
-    public CloudQueue createQueue(String queueCode) {
+    public static CloudQueue createQueue(String queueCode) {
         QueueMeta meta = new QueueMeta();
         // 设置队列的名字
         meta.setQueueName(queueCode);
@@ -98,7 +103,7 @@ public class QueueServer implements IConnection {
         meta.setMessageRetentionPeriod(72000L);
         // 设置队列消息的不可见时间，即取出消息隐藏时长，单位是秒
         meta.setVisibilityTimeout(180L);
-        return getClient().createQueue(meta);
+        return getMNSClient().createQueue(meta);
     }
 
     /**
@@ -108,7 +113,7 @@ public class QueueServer implements IConnection {
      * @param content 消息内容
      * @return value 返回值，当前均为true
      */
-    public boolean append(CloudQueue queue, String content) throws ServiceException, ClientException {
+    public static boolean append(CloudQueue queue, String content) throws ServiceException, ClientException {
         Message message = new Message();
         message.setMessageBody(content);
         Message result = queue.putMessage(message);
@@ -121,7 +126,7 @@ public class QueueServer implements IConnection {
      * @param queue 消息队列
      * @return value 返回请求的删除，可为null
      */
-    public Message receive(CloudQueue queue) {
+    public static Message receive(CloudQueue queue) {
         Message message = null;
         try {
             message = queue.popMessage();
@@ -144,7 +149,7 @@ public class QueueServer implements IConnection {
      * @param queue         队列
      * @param receiptHandle 消息句柄
      */
-    public void delete(CloudQueue queue, String receiptHandle) {
+    public static void delete(CloudQueue queue, String receiptHandle) {
         queue.deleteMessage(receiptHandle);
     }
 
@@ -154,7 +159,7 @@ public class QueueServer implements IConnection {
      * @param queue 队列
      * @return value 返回取得的消息体
      */
-    public Message peek(CloudQueue queue) {
+    public static Message peek(CloudQueue queue) {
         return queue.peekMessage();
     }
 
@@ -164,7 +169,7 @@ public class QueueServer implements IConnection {
      * @param queue         队列
      * @param receiptHandle 消息句柄
      */
-    public void changeVisibility(CloudQueue queue, String receiptHandle) {
+    public static void changeVisibility(CloudQueue queue, String receiptHandle) {
         // 第一个参数为旧的ReceiptHandle值，第二个参数为新的不可见时间（VisibilityTimeout）
         String newReceiptHandle = queue.changeMessageVisibilityTimeout(receiptHandle, visibilityTimeout);
         log.debug("new receipt handle: " + newReceiptHandle);

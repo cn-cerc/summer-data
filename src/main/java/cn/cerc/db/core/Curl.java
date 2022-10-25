@@ -79,9 +79,9 @@ public class Curl {
                 builder.append(i == 1 ? "?" : "&");
                 builder.append(key);
                 builder.append("=");
-                String value = parameters.get(key).toString();
+                Object value = parameters.get(key);
                 if (value != null) {
-                    builder.append(encodeUTF8(value));
+                    builder.append(encodeUTF8(value.toString()));
                 }
             }
             URL url = new URL(builder.toString());
@@ -390,21 +390,21 @@ public class Curl {
         return responseContent;
     }
 
-    @Deprecated // 请改为 putParameter
-    public Curl addParameter(String key, Object value) {
-        this.parameters.put(key, value);
-        return this;
-    }
+//    @Deprecated // 请改为 putParameter
+//    public Curl addParameter(String key, Object value) {
+//        this.parameters.put(key, value);
+//        return this;
+//    }
 
     public Curl put(String key, Object value) {
         this.parameters.put(key, value);
         return this;
     }
 
-    @Deprecated
-    public Curl putParameter(String key, Object value) {
-        return this.put(key, value);
-    }
+//    @Deprecated
+//    public Curl putParameter(String key, Object value) {
+//        return this.put(key, value);
+//    }
 
     public Map<String, Object> getHeaders() {
         return headers;

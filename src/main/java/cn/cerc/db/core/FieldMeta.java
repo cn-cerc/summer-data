@@ -1,12 +1,21 @@
 package cn.cerc.db.core;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
+
+import javax.persistence.Column;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Version;
 
 import com.google.gson.Gson;
 
-import cn.cerc.db.editor.GetSetTextEvent;
-import cn.cerc.db.editor.GetTextEvent;
-import cn.cerc.db.editor.SetTextEvent;
+import cn.cerc.db.editor.OnGetSetText;
+import cn.cerc.db.editor.OnGetText;
+import cn.cerc.db.editor.OnSetText;
 
 public final class FieldMeta implements Serializable {
     private static final long serialVersionUID = -6898050783447062943L;
@@ -25,14 +34,17 @@ public final class FieldMeta implements Serializable {
     private boolean updatable = true;
     // 是否允许为空
     private boolean nullable = true;
+    // 字段是否标识history
+    private History history = null;
+    // 界面显示相关附加讯息
+    private Describe describe;
+
     // UI取值事件
-    private GetTextEvent onGetTextEvent;
-    private SetTextEvent onSetTextEvent;
+    private OnGetText onGetText;
+    private OnSetText onSetText;
 
     public enum FieldKind {
-        Memory,
-        Storage,
-        Calculated;
+        Memory, Storage, Calculated;
     }
 
     public FieldMeta(String code) {
@@ -64,8 +76,10 @@ public final class FieldMeta implements Serializable {
         result.autoincrement = this.autoincrement;
         result.insertable = this.insertable;
         result.updatable = this.updatable;
-        result.onGetTextEvent = this.onGetTextEvent;
-        result.onSetTextEvent = this.onSetTextEvent;
+        result.onGetText = this.onGetText;
+        result.onSetText = this.onSetText;
+        result.history = this.history;
+        result.describe = this.describe;
         return result;
     }
 
@@ -73,19 +87,19 @@ public final class FieldMeta implements Serializable {
         return code;
     }
 
-    @Deprecated
-    public final String getCode() {
-        return code();
-    }
+//    @Deprecated
+//    public final String getCode() {
+//        return code();
+//    }
 
     public final String name() {
         return name;
     }
 
-    @Deprecated
-    public final String getName() {
-        return name();
-    }
+//    @Deprecated
+//    public final String getName() {
+//        return name();
+//    }
 
     public final FieldMeta setName(String name) {
         this.name = name;
@@ -96,10 +110,10 @@ public final class FieldMeta implements Serializable {
         return dataType().value();
     }
 
-    @Deprecated
-    public final void setType(Class<?> clazz) {
-        dataType().readClass(clazz);
-    }
+//    @Deprecated
+//    public final void setType(Class<?> clazz) {
+//        dataType().readClass(clazz);
+//    }
 
     public final DataType dataType() {
         if (this.dataType == null)
@@ -113,7 +127,7 @@ public final class FieldMeta implements Serializable {
 
     public final FieldMeta setKind(FieldKind value) {
         if (value == null)
-            throw new RuntimeException("fieldKind is null!");
+            throw new RuntimeException("value is null!");
         if (kind != value) {
             this.kind = value;
             if (value == FieldKind.Storage) {
@@ -127,10 +141,10 @@ public final class FieldMeta implements Serializable {
         return this;
     }
 
-    @Deprecated
-    public final boolean isUpdateKey() {
-        return identification();
-    }
+//    @Deprecated
+//    public final boolean isUpdateKey() {
+//        return identification();
+//    }
 
     public final String remark() {
         return remark;
@@ -141,10 +155,10 @@ public final class FieldMeta implements Serializable {
         return this;
     }
 
-    @Deprecated
-    public final FieldMeta setUpdateKey(boolean uid) {
-        return this.setIdentification(uid);
-    }
+//    @Deprecated
+//    public final FieldMeta setUpdateKey(boolean uid) {
+//        return this.setIdentification(uid);
+//    }
 
     public final boolean identification() {
         return identification;
@@ -232,35 +246,126 @@ public final class FieldMeta implements Serializable {
         return false;
     }
 
-    public FieldMeta onGetText(GetTextEvent getTextEvent) {
-        this.onGetTextEvent = getTextEvent;
+    public FieldMeta onGetText(OnGetText onGetText) {
+        this.onGetText = onGetText;
         return this;
     }
 
-    public FieldMeta onSetText(SetTextEvent setTextEvent) {
-        this.onSetTextEvent = setTextEvent;
+    public OnGetText onGetText() {
+        return this.onGetText;
+    }
+
+    public FieldMeta onSetText(OnSetText onSetText) {
+        this.onSetText = onSetText;
         return this;
     }
 
-    public String getText(DataRow record) {
-        if (onGetTextEvent == null)
-            return record.getString(code);
-        return onGetTextEvent.getText(record, this);
+    public OnSetText onSetText() {
+        return this.onSetText;
+    }
+
+    public String getText(DataRow row) {
+        if (onGetText == null)
+            return row.getString(code);
+        return onGetText.getText(new DataCell(row, code));
     }
 
     public Object setText(String value) {
-        if (onSetTextEvent == null)
+        if (onSetText == null)
             return value;
-        return onSetTextEvent.setText(value);
+        return onSetText.setText(value);
     }
 
-    public void onGetSetText(GetSetTextEvent getsetTextEvent) {
+    public void onGetSetText(OnGetSetText getsetTextEvent) {
         this.onGetText(getsetTextEvent);
         this.onSetText(getsetTextEvent);
     }
 
     public String json() {
         return new Gson().toJson(this);
+    }
+
+    public History history() {
+        return history;
+    }
+
+    public FieldMeta setHistory(History history) {
+        this.history = history;
+        return this;
+    }
+
+    public Describe describe() {
+        return describe;
+    }
+
+    public FieldMeta setDescribe(Describe describe) {
+        this.describe = describe;
+        return this;
+    }
+
+    /**
+     * 从Entity类读取属到到当前FieldMeta
+     * 
+     * @param entityClass Entity 对象
+     * @return 若读取成功，返回true
+     */
+    public boolean readEntity(Class<?> entityClass) {
+        boolean result = false;
+        for (Field field : entityClass.getDeclaredFields()) {
+            if (field.getName().equals(this.code)) {
+                readEntityField(field);
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    public void readEntityField(Field field) {
+        Describe describe = field.getDeclaredAnnotation(Describe.class);
+        if (describe != null) {
+            if (!"".equals(describe.name()))
+                this.setName(describe.name());
+            if (!"".equals(describe.remark()))
+                this.setRemark(describe.remark());
+            this.describe = describe;
+        }
+        Column column = field.getDeclaredAnnotation(Column.class);
+        if (column != null) {
+            this.setInsertable(column.insertable());
+            this.setUpdatable(column.updatable());
+            this.setNullable(column.nullable());
+        }
+
+        this.setHistory(field.getDeclaredAnnotation(History.class));
+
+        Id id = field.getDeclaredAnnotation(Id.class);
+        if (id != null) {
+            this.setIdentification(true);
+            this.setNullable(false);
+        }
+        GeneratedValue gv = field.getDeclaredAnnotation(GeneratedValue.class);
+        if (gv != null) {
+            if (gv.strategy() != GenerationType.AUTO)
+                throw new RuntimeException("strategy only support auto");
+            this.setAutoincrement(true);
+            this.setInsertable(false);
+            this.setUpdatable(false);
+        }
+        if (field.getType().isEnum()) {
+            Enumerated enumerated = field.getDeclaredAnnotation(Enumerated.class);
+            if ((enumerated != null) && (enumerated.value() == EnumType.STRING))
+                this.dataType().setValue("s" + column.length());
+            else
+                this.dataType().setValue("n1");
+        } else {
+            this.dataType().setClass(field.getType());
+            if ("s".equals(this.dataType().value()) || "o".equals(this.dataType().value()))
+                this.dataType().setLength(column.length());
+        }
+        Version version = field.getDeclaredAnnotation(Version.class);
+        if (version != null)
+            this.setNullable(false);
     }
 
 }

@@ -111,6 +111,12 @@ public class OssConnection implements IConnection {
         return file.exists() && metadata.getContentLength() == file.length();
     }
 
+    // 下载文件
+    public InputStream download(String fileName) {
+        GetObjectRequest param = new GetObjectRequest(getBucket(), fileName);
+        return getClient().getObject(param).getObjectContent();
+    }
+
     // 删除文件
     public void delete(String fileName) {
         delete(getBucket(), fileName);

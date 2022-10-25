@@ -34,7 +34,7 @@ public class DynamicColumns {
         return null;
     }
 
-    public Variant getCell(String rowKey, String columnKey) {
+    public DataCell getCell(String rowKey, String columnKey) {
         FieldMeta column = findColumn(columnKey);
         if (column == null)
             return null;
@@ -70,20 +70,20 @@ public class DynamicColumns {
 
         // 根据数据表给相应的列赋值
         for (DataRow row : src1) {
-            Variant cell = sheet.getCell(row.getString("pcode"), row.getString("mount"));
+            DataCell cell = sheet.getCell(row.getString("pcode"), row.getString("mount"));
             if (cell != null) {
                 cell.setValue(row.getString("amount"));
-                if (cell.dataRow().state() == DataRowState.Insert)
-                    cell.dataRow().setValue("name", "未知");
+                if (cell.source().state() == DataRowState.Insert)
+                    cell.source().setValue("name", "未知");
             }
         }
 
         // 手动赋值
-        Variant cell = sheet.getCell("a5", "202208");
+        DataCell cell = sheet.getCell("a5", "202208");
         if (cell != null) {
             cell.setValue(1000);
-            if (cell.dataRow().state() == DataRowState.Insert)
-                cell.dataRow().setValue("name", "这是新的用户");
+            if (cell.source().state() == DataRowState.Insert)
+                cell.source().setValue("name", "这是新的用户");
         }
 
         // 检查自定义列

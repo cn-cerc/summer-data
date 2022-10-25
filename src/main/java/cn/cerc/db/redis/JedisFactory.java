@@ -72,6 +72,10 @@ public class JedisFactory {
         return create(configId).getResource();
     }
 
+    public static Redis getRedis(String configId) {
+        return new Redis(configId);
+    }
+
     /**
      * 返回默认RedisServer的Jedis
      * 
@@ -79,6 +83,10 @@ public class JedisFactory {
      */
     public static Jedis getJedis() {
         return create(null).getResource();
+    }
+
+    public static Redis getRedis() {
+        return new Redis();
     }
 
     private JedisFactory(String configId) {

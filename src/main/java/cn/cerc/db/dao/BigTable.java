@@ -152,23 +152,23 @@ public abstract class BigTable<T extends BigRecord> implements IHandle {
         return total;
     }
 
-    @Deprecated // 请改使用open(SqlText)
-    public int load(Object... keyValues) {
-        SqlText sql = new SqlText(clazz);
-        return loadRecords(sql.getWhereKeys(keyValues));
-    }
+//    @Deprecated // 请改使用open(SqlText)
+//    public int load(Object... keyValues) {
+//        SqlText sql = new SqlText(clazz);
+//        return loadRecords(sql.getWhereKeys(keyValues));
+//    }
 
-    @Deprecated // 请改使用open(SqlText)
-    public int loadWhere(String whereText) {
-        SqlText sql = new SqlText(clazz);
-        return loadRecords(sql.getWhere(whereText));
-    }
+//    @Deprecated // 请改使用open(SqlText)
+//    public int loadWhere(String whereText) {
+//        SqlText sql = new SqlText(clazz);
+//        return loadRecords(sql.getWhere(whereText));
+//    }
 
-    @Deprecated // 请改使用open(SqlText)
-    public int loadWhere(String format, Object... args) {
-        SqlText sql = new SqlText(clazz);
-        return loadRecords(sql.getWhere(String.format(format, args)));
-    }
+//    @Deprecated // 请改使用open(SqlText)
+//    public int loadWhere(String format, Object... args) {
+//        SqlText sql = new SqlText(clazz);
+//        return loadRecords(sql.getWhere(String.format(format, args)));
+//    }
 
     private int loadRecords(String sqlText) {
         int total = 0;

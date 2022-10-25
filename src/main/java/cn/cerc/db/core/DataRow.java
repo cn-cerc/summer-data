@@ -81,10 +81,10 @@ public class DataRow implements Serializable, IRecord {
         return dataRow;
     }
 
-    @Deprecated
-    public final DataRowState getState() {
-        return this.state();
-    }
+//    @Deprecated
+//    public final DataRowState getState() {
+//        return this.state();
+//    }
 
     public DataRow setState(DataRowState value) {
         if (this.readonly())
@@ -200,15 +200,15 @@ public class DataRow implements Serializable, IRecord {
         return delta;
     }
 
-    @Deprecated
-    public final Map<String, Object> getDelta() {
-        return delta();
-    }
+//    @Deprecated
+//    public final Map<String, Object> getDelta() {
+//        return delta();
+//    }
 
-    @Deprecated
-    public Object getOldField(String field) {
-        return this.getOldValue(field);
-    }
+//    @Deprecated
+//    public Object getOldField(String field) {
+//        return this.getOldValue(field);
+//    }
 
     public Object getOldValue(String field) {
         if (field == null || "".equals(field))
@@ -223,24 +223,27 @@ public class DataRow implements Serializable, IRecord {
         return items.size();
     }
 
-    @Deprecated
     public Map<String, Object> items() {
         return this.items;
     }
 
-    @Deprecated
-    public final Map<String, Object> getItems() {
-        return items();
-    }
+//    @Deprecated
+//    public final Map<String, Object> getItems() {
+//        return items();
+//    }
 
     public FieldDefs fields() {
         return fields;
     }
-
-    @Deprecated
-    public final FieldDefs getFieldDefs() {
-        return fields();
+    
+    public FieldMeta fields(String fieldCode) {
+        return fields.get(fieldCode);
     }
+
+//    @Deprecated
+//    public final FieldDefs getFieldDefs() {
+//        return fields();
+//    }
 
     public void copyValues(DataRow source) {
         this.copyValues(source, source.fields());
@@ -299,29 +302,29 @@ public class DataRow implements Serializable, IRecord {
         return gson.toJson(items);
     }
 
-    @Deprecated
-    public final void setJSON(Object jsonObj) {
-        if (!(jsonObj instanceof Map<?, ?>))
-            throw new RuntimeException("not support type：" + jsonObj.getClass().getName());
-        if (this.readonly())
-            throw new UnsupportedOperationException("DataRow is readonly");
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> head = (Map<String, Object>) jsonObj;
-        for (String field : head.keySet()) {
-            Object obj = head.get(field);
-            if (obj instanceof Double) {
-                double tmp = (double) obj;
-                if (tmp >= Integer.MIN_VALUE && tmp <= Integer.MAX_VALUE) {
-                    Integer val = (int) tmp;
-                    if (tmp == val) {
-                        obj = val;
-                    }
-                }
-            }
-            setValue(field, obj);
-        }
-    }
+//    @Deprecated
+//    public final void setJSON(Object jsonObj) {
+//        if (!(jsonObj instanceof Map<?, ?>))
+//            throw new RuntimeException("not support type：" + jsonObj.getClass().getName());
+//        if (this.readonly())
+//            throw new UnsupportedOperationException("DataRow is readonly");
+//
+//        @SuppressWarnings("unchecked")
+//        Map<String, Object> head = (Map<String, Object>) jsonObj;
+//        for (String field : head.keySet()) {
+//            Object obj = head.get(field);
+//            if (obj instanceof Double) {
+//                double tmp = (double) obj;
+//                if (tmp >= Integer.MIN_VALUE && tmp <= Integer.MAX_VALUE) {
+//                    Integer val = (int) tmp;
+//                    if (tmp == val) {
+//                        obj = val;
+//                    }
+//                }
+//            }
+//            setValue(field, obj);
+//        }
+//    }
 
     public DataRow setJson(String jsonStr) {
         this.clear();
@@ -348,21 +351,21 @@ public class DataRow implements Serializable, IRecord {
      * @param field 字段名
      * @return 返回安全的字符串
      */
-    @Deprecated
-    public final String getSafeString(String field) {
-        String value = getString(field);
-        return value == null ? "" : value.replaceAll("'", "''");
-    }
+//    @Deprecated
+//    public final String getSafeString(String field) {
+//        String value = getString(field);
+//        return value == null ? "" : value.replaceAll("'", "''");
+//    }
 
-    @Deprecated
-    public final TDate getDate(String field) {
-        return new TDate(this.getDateTime(field).getTimestamp());
-    }
+//    @Deprecated
+//    public final TDate getDate(String field) {
+//        return new TDate(this.getDateTime(field).getTimestamp());
+//    }
 
-    @Deprecated
-    public final TDateTime getDateTime(String field) {
-        return new TDateTime(getDatetime(field).getTimestamp());
-    }
+//    @Deprecated
+//    public final TDateTime getDateTime(String field) {
+//        return new TDateTime(getDatetime(field).getTimestamp());
+//    }
 
     public void clear() {
         if (this.readonly())
@@ -386,26 +389,26 @@ public class DataRow implements Serializable, IRecord {
         return fields.exists(field) && !"".equals(getString(field));
     }
 
-    @Deprecated
-    public final boolean hasValue(String field) {
-        return has(field);
-    }
+//    @Deprecated
+//    public final boolean hasValue(String field) {
+//        return has(field);
+//    }
 
     public DataSet dataSet() {
         return dataSet;
     }
 
-    @Deprecated
-    public final DataSet getDataSet() {
-        return dataSet();
-    }
+//    @Deprecated
+//    public final DataSet getDataSet() {
+//        return dataSet();
+//    }
 
-    @Deprecated
-    public final DataSet locate() {
-        int recNo = dataSet.getRecords().indexOf(this) + 1;
-        dataSet.setRecNo(recNo);
-        return dataSet;
-    }
+//    @Deprecated
+//    public final DataSet locate() {
+//        int recNo = dataSet.getRecords().indexOf(this) + 1;
+//        dataSet.setRecNo(recNo);
+//        return dataSet;
+//    }
 
     public boolean equalsValues(Map<String, Object> values) {
         for (String field : values.keySet()) {
@@ -430,10 +433,10 @@ public class DataRow implements Serializable, IRecord {
             fields.remove(field);
     }
 
-    @Deprecated
-    public final void delete(String field) {
-        remove(field);
-    }
+//    @Deprecated
+//    public final void delete(String field) {
+//        remove(field);
+//    }
 
     private void addField(String field) {
         if (field == null)
@@ -505,10 +508,10 @@ public class DataRow implements Serializable, IRecord {
         return this;
     }
 
-    @Deprecated
-    public final <T extends EntityImpl> T asObject(Class<T> clazz) {
-        return asEntity(clazz);
-    }
+//    @Deprecated
+//    public final <T extends EntityImpl> T asObject(Class<T> clazz) {
+//        return asEntity(clazz);
+//    }
 
     public String getText(String field) {
         FieldMeta meta = this.fields().get(field);
@@ -665,7 +668,7 @@ public class DataRow implements Serializable, IRecord {
             throw new RuntimeException("only support record and interface");
     }
 
-    public Variant bind(String field) {
-        return new Variant(this, field);
+    public DataCell bind(String field) {
+        return new DataCell(this, field);
     }
 }

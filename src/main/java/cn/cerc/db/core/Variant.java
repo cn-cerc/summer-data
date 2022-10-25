@@ -5,10 +5,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 
-import com.google.gson.Gson;
-
 public class Variant {
-    private DataRow dataRow;
     private String key;
     private Object value;
     private transient boolean modified;
@@ -22,41 +19,30 @@ public class Variant {
         this.setValue(data);
     }
 
-    public Variant(DataRow dataRow, String field) {
-        super();
-        this.dataRow = dataRow;
-        this.key = field;
-    }
+//    @Deprecated
+//    public final String tag() {
+//        return this.key();
+//    }
 
-    @Deprecated
-    public final String tag() {
-        return this.key();
-    }
-
-    @Deprecated
-    public final Object data() {
-        return this.value();
-    }
+//    @Deprecated
+//    public final Object data() {
+//        return this.value();
+//    }
 
     public final String key() {
         return this.key;
     }
 
     public Object value() {
-        return dataRow != null ? dataRow.getValue(key) : value;
+        return value;
     }
 
-    @Deprecated
-    public final Variant setData(Object data) {
-        return this.setValue(data);
-    }
+//    @Deprecated
+//    public final Variant setData(Object data) {
+//        return this.setValue(data);
+//    }
 
     public Variant setValue(Object value) {
-        if (dataRow != null) {
-            dataRow.setValue(key, value);
-            modified = true;
-            return this;
-        }
         if (this.value == value)
             return this;
         if (this.value == null && value != null)
@@ -69,14 +55,12 @@ public class Variant {
         return this;
     }
 
-    @Deprecated
-    public final Variant setTag(String tag) {
-        return setKey(tag);
-    }
+//    @Deprecated
+//    public final Variant setTag(String tag) {
+//        return setKey(tag);
+//    }
 
-    public final Variant setKey(String key) {
-        if (this.dataRow != null)
-            throw new RuntimeException("dataRow not is null, key is readOnly");
+    public Variant setKey(String key) {
         this.key = key;
         return this;
     }
@@ -292,7 +276,7 @@ public class Variant {
     }
 
     @SuppressWarnings("rawtypes")
-    public Enum<?> getEnum(Class<? extends Enum> clazz) {
+    public final Enum<?> getEnum(Class<? extends Enum> clazz) {
         int tmp = getInt();
         Enum[] list = clazz.getEnumConstants();
         if (tmp >= 0 && tmp < list.length)
@@ -303,14 +287,14 @@ public class Variant {
 
     @Override
     public final String toString() {
-        return new Gson().toJson(this);
+        return String.format("{\"key\":\"%s\",\"value\":\"%s\"}", this.key, this.value());
     }
 
-    public boolean isModified() {
+    public final boolean isModified() {
         return modified;
     }
 
-    protected void setModified(boolean modified) {
+    protected final void setModified(boolean modified) {
         this.modified = modified;
     }
 
@@ -338,6 +322,10 @@ public class Variant {
             field.set(entity, Double.valueOf(this.getDouble()));
         else if (field.getType() == Datetime.class)
             field.set(entity, this.getDatetime());
+        else if (field.getType() == FastDate.class)
+            field.set(entity, this.getFastDate());
+        else if (field.getType() == FastTime.class)
+            field.set(entity, this.getFastTime());
         else if (field.getType() == String.class)
             field.set(entity, this.getString());
         else if (field.getType().isEnum())
@@ -352,24 +340,21 @@ public class Variant {
         }
     }
 
-    public final boolean hasValue() {
-        if (dataRow != null)
-            return dataRow.has(key);
-        else
-            return !"".equals(getString());
-    }
-
-    public final DataRow dataRow() {
-        return this.dataRow;
+    public boolean hasValue() {
+        return !"".equals(getString());
     }
 
     public static void main(String[] args) {
-        System.out.println(new Variant());
-        System.out.println(new Variant("202109"));
-        System.out.println(new Variant("202109").setKey("date"));
-
-        Variant kv = new Variant("3").setKey("id");
-        System.out.println(kv.tag());
+        DataSet ds = new DataSet();
+        ds.append().setValue("code", 1);
+        ds.append().setValue("code", 2);
+        var code1 = ds.bindColumn("code");
+        var code2 = ds.current().bind("code");
+        System.out.println(code1);
+        System.out.println(code2);
+        ds.first();
+        System.out.println(code1);
+        System.out.println(code2);
     }
 
 }
