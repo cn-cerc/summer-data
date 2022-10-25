@@ -163,6 +163,33 @@ public class DatetimeTest {
     }
 
     @Test
+    public void test_WeekBof1() {
+        System.out.println(new Datetime("2022-10-24 00:00:01").toWeekBof().toDayStart().toString());
+        assertEquals("2022-10-24 00:00:00", new Datetime("2022-10-24 00:00:01").toWeekBof().toString());
+    }
+
+    @Test
+    public void test_WeekBof2() {
+        assertEquals("2022-10-24 00:00:00", new Datetime("2022-10-24 00:01:00").toWeekBof().toString());
+    }
+
+    @Test
+    public void test_WeekBof3() {
+        assertEquals("2022-10-24 00:00:00", new Datetime("2022-10-24 01:00:00").toWeekBof().toString());
+    }
+
+    @Test
+    public void test_WeekBof4() {
+        assertEquals("2022-10-24 00:00:00", new Datetime("2022-10-24 23:59:59").toWeekBof().toString());
+    }
+
+    @Test
+    public void test_WeekEof() {
+        String text = "2021-01-02 23:59:02";
+        assertEquals("2021-01-31 23:59:59", new Datetime(text).toMonthEof().toString());
+    }
+
+    @Test
     public void test_toStartOfDay() {
         String text = "2021-01-02 23:59:02";
         assertEquals("2021-01-02 00:00:00", new Datetime(text).toDayStart().toString());
@@ -212,11 +239,5 @@ public class DatetimeTest {
         assertEquals("AAA", item.getString("String"));
         assertEquals(jsonStr, item.toString());
     }
-//
-//    @Test
-//    public void test_toWeekBof() {
-//        String text = "2021-01-02 23:59:02";
-//        assertEquals("2021-01-01", new Datetime(text).toWeekBof().toString());
-//    }
 
 }
