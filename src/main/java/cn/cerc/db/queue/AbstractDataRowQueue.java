@@ -11,6 +11,11 @@ import cn.cerc.db.core.DataSet;
 public abstract class AbstractDataRowQueue extends AbstractQueue {
     private transient Map<DataRow, Message> items = new HashMap<>();
 
+    @Override
+    public String getQueueId() {
+        return this.getClass().getSimpleName();
+    }
+
     /**
      * 将dataRow发送到当前队列
      * 
