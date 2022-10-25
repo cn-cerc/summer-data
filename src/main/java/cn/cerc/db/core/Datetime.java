@@ -376,8 +376,6 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
     }
 
     /**
-     * TODO 暂仅支持每周以周一为开始
-     * 
      * @return 返回本周的第一天
      */
     public Datetime toWeekBof() {
@@ -385,8 +383,6 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
     }
 
     /**
-     * TODO 暂仅支持每周以周一为开始
-     * 
      * @return 返回本周的最后一天
      */
     public Datetime toWeekEof() {

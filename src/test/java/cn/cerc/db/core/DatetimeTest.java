@@ -165,7 +165,6 @@ public class DatetimeTest {
 
     @Test
     public void test_WeekBof1() {
-        System.out.println(new Datetime("2022-10-24 00:00:01").toWeekBof().toDayStart().toString());
         assertEquals("2022-10-24 00:00:00", new Datetime("2022-10-24 00:00:01").toWeekBof().toDayStart().toString());
     }
 
@@ -191,7 +190,6 @@ public class DatetimeTest {
 
     @Test
     public void test_WeekEof1() {
-        System.out.println(new Datetime("2022-10-24 00:00:01").toWeekBof().toDayStart().toString());
         assertEquals("2022-10-30 23:59:59", new Datetime("2022-10-24 00:00:01").toWeekEof().toDayEnd().toString());
     }
 
