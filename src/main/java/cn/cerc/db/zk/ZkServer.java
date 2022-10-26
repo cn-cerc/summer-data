@@ -2,6 +2,7 @@ package cn.cerc.db.zk;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -9,6 +10,7 @@ import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,11 +19,13 @@ public class ZkServer implements AutoCloseable, Watcher {
     private static final Logger log = LoggerFactory.getLogger(ZkServer.class);
     private ZooKeeper client;
     private transient boolean modified;
+    private CountDownLatch cdl = new CountDownLatch(1);
 
     public ZkServer() {
         try {
             this.client = new ZooKeeper("124.71.177.22:2181,", 15000, this);
-        } catch (IOException e) {
+            cdl.await(); // 等待zk联接成功
+        } catch (IOException | InterruptedException e) {
             log.error(e.getMessage());
             e.printStackTrace();
         }
@@ -33,7 +37,9 @@ public class ZkServer implements AutoCloseable, Watcher {
 
     @Override
     public void process(WatchedEvent event) {
-        log.info(event.getType().name());
+        if (event.getState() == KeeperState.SyncConnected) {
+            log.info("ZooKeeper 联接成功");
+        }
     }
 
     @Override
