@@ -13,6 +13,7 @@ import cn.cerc.db.core.DataRow;
 import cn.cerc.db.core.DataSet;
 
 public abstract class AbstractDataRowQueue extends AbstractQueue {
+
     private transient Map<DataRow, Message> items = new HashMap<>();
     private transient Map<DataRow, MessageView> rmqItems = new HashMap<>();
 
@@ -69,14 +70,18 @@ public abstract class AbstractDataRowQueue extends AbstractQueue {
             if (!items.containsKey(dataRow))
                 throw new RuntimeException("dataRow not find!");
             var message = items.get(dataRow);
-            if (message != null)
+            if (message != null) {
                 getQueue().deleteMessage(message.getReceiptHandle());
+                items.remove(dataRow);
+            }
         } else {
             if (!rmqItems.containsKey(dataRow))
                 throw new RuntimeException("dataRow not find!");
             var message = rmqItems.get(dataRow);
-            if (message != null)
+            if (message != null) {
                 rmqQueue.consumer().ack(message);
+                rmqItems.remove(dataRow);
+            }
         }
     }
 

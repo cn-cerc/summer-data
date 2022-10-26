@@ -33,6 +33,14 @@ public abstract class AbstractQueue implements QueueImpl {
         return cloudQueue;
     }
 
+    public AbstractQueue() {
+        try {
+            getRmqQueue();
+        } catch (Exception e) {
+            log.error(String.format("队列 %s 初始化失败", getQueueId()), e);
+        }
+    }
+
     @Override
     public RmqQueue getRmqQueue() throws Exception {
         if (this.rmqQueue == null)
