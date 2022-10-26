@@ -22,7 +22,7 @@ public class QueueProducer {
         this.producer = producer;
     }
 
-    public String append(String tag, String value) {
+    public String append(String value) {
         // 循环发送消息。
         Message msg = new Message(topic, tag, value.getBytes());
         // 设置代表消息的业务关键属性，请尽可能全局唯一。
@@ -61,7 +61,7 @@ public class QueueProducer {
 
     public static void main(String[] args) {
         QueueProducer producer = new QueueProducer().setTopic("TopicTestMQ").setTag("fpl");
-        var result = producer.append("fpl", "hello world");
+        var result = producer.append("hello world");
         producer.close();
         System.out.println("消息发送成功：" + result);
 
