@@ -38,6 +38,7 @@ public class QueueServer implements IConnection {
     private static int visibilityTimeout = 50;
     private static MNSClient client;
     private static CloudAccount account;
+    public static String endpoint;
     private static final IConfig config;
 
     static {
@@ -49,7 +50,7 @@ public class QueueServer implements IConnection {
             return client;
 
         if (account == null) {
-            String endpoint = config.getProperty(QueueServer.AccountEndpoint, null);
+             endpoint = config.getProperty(QueueServer.AccountEndpoint, null);
             String accessId = config.getProperty(QueueServer.AccessKeyId, null);
             String password = config.getProperty(QueueServer.AccessKeySecret, null);
             if (endpoint == null)

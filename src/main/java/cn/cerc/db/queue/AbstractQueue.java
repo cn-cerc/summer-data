@@ -48,6 +48,7 @@ public abstract class AbstractQueue implements QueueImpl {
             var topic = client.createTopic(topicMeta);
             for (var ver : vers) {
                 var meta = new SubscriptionMeta();
+                meta.setEndpoint(QueueServer.endpoint);
                 meta.setTopicName(topicName);
                 meta.setFilterTag(tag);
                 meta.setSubscriptionName(queueName + "-" + ver);
