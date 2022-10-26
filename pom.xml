@@ -182,8 +182,13 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.aliyun.openservices</groupId>
-            <artifactId>ons-client</artifactId>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-client-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>rocketmq20220801</artifactId>
+            <version>1.0.1</version>
         </dependency>
     </dependencies>
 </project>
