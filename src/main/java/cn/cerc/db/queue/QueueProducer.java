@@ -21,8 +21,9 @@ public class QueueProducer implements AutoCloseable {
         super();
         // 消息发送的目标Topic名称，需要提前在控制台创建，如果不创建直接使用会返回报错。
         ClientConfigurationBuilder builder = ClientConfiguration.newBuilder()
-                .setEndpoints(RocketMQ.endpoint)
-                .setCredentialProvider(new StaticSessionCredentialsProvider(RocketMQ.accessId, RocketMQ.password));
+                .setEndpoints(QueueServer.getRmqEndpoint())
+                .setCredentialProvider(new StaticSessionCredentialsProvider(QueueServer.getRmqAccessKeyId(),
+                        QueueServer.getRmqAccessSecret()));
         ClientConfiguration configuration = builder.build();
         Producer producer = provider.newProducerBuilder().setClientConfiguration(configuration).build();
         this.producer = producer;

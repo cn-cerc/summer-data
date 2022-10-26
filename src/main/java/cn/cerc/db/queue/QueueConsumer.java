@@ -25,11 +25,11 @@ public class QueueConsumer implements AutoCloseable {
     public QueueConsumer(String topic, String tag) throws ClientException {
         super();
         // Credential provider is optional for client configuration.
-        String accessKey = RocketMQ.accessId;
-        String secretKey = RocketMQ.password;
+        String accessKey = QueueServer.getRmqAccessKeyId();
+        String secretKey = QueueServer.getRmqAccessSecret();
         SessionCredentialsProvider sessionCredentialsProvider = new StaticSessionCredentialsProvider(accessKey,
                 secretKey);
-        String endpoints = RocketMQ.endpoint;
+        String endpoints = QueueServer.getRmqEndpoint();
         ClientConfiguration clientConfiguration = ClientConfiguration.newBuilder()
                 .setEndpoints(endpoints)
                 .setCredentialProvider(sessionCredentialsProvider)
