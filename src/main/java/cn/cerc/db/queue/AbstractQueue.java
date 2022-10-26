@@ -12,19 +12,45 @@ import com.aliyun.mns.common.ClientException;
 import com.aliyun.mns.model.Message;
 import com.aliyun.mns.model.PagingListResult;
 import com.aliyun.mns.model.QueueMeta;
+import com.aliyun.mns.model.RawTopicMessage;
+import com.aliyun.mns.model.SubscriptionMeta;
+import com.aliyun.mns.model.TopicMeta;
 
 public abstract class AbstractQueue implements QueueImpl {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
     private static List<String> created = new ArrayList<>();
     private CloudQueue cloudQueue;
+    private String tag;
+    private static final List<String> vers = List.of("csp", "fpl", "oem", "odm", "obm");
 
     @Override
     public abstract String getQueueId();
 
     @Override
     public CloudQueue getQueue() {
-        if (this.cloudQueue == null)
-            this.cloudQueue = createQueue(this, getQueueId());
+        if (this.cloudQueue == null) {
+            String queueName = this.getQueueId();
+            if (tag != null) {
+                if (tag != null)
+                    queueName += "-" + tag;
+                var topicName = queueName + "-topic";
+                MNSClient client = QueueServer.getMNSClient();
+                PagingListResult<TopicMeta> list = client.listTopic(queueName, "", 10);
+                if (list.getResult().size() == 0) {
+                    var topicMeta = new TopicMeta();
+                    topicMeta.setTopicName(topicName);
+                    var topic = client.createTopic(topicMeta);
+                    for (var ver : vers) {
+                        var meta = new SubscriptionMeta();
+                        meta.setTopicName(topicName);
+                        meta.setFilterTag(tag);
+                        meta.setSubscriptionName(queueName + "-" + ver);
+                        topic.subscribe(meta);
+                    }
+                }
+            }
+            this.cloudQueue = createQueue(this, queueName);
+        }
         return cloudQueue;
     }
 
@@ -87,5 +113,28 @@ public abstract class AbstractQueue implements QueueImpl {
             System.out.println("执行异常：" + e.getMessage());
         }
         return null;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    protected void send(String value) {
+        if (this.getTag() != null) {
+            String topicName = this.getQueueId() + "-topic";
+            MNSClient client = QueueServer.getMNSClient();
+            var topic = client.getTopicRef(topicName);
+            var msg = new RawTopicMessage();
+            msg.setMessageBody(value);
+            topic.publishMessage(msg);
+        } else {
+            Message message = new Message();
+            message.setMessageBody(value);
+            getQueue().putMessage(message);
+        }
     }
 }

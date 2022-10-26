@@ -17,9 +17,7 @@ public abstract class AbstractDataRowQueue extends AbstractQueue {
      * @param dataRow
      */
     public void append(DataRow dataRow) {
-        Message message = new Message();
-        message.setMessageBody(dataRow.json());
-        getQueue().putMessage(message);
+        super.send(dataRow.json());
     }
 
     /**

@@ -23,9 +23,7 @@ public abstract class AbstractObjectQueue<T> extends AbstractQueue {
      * @param object
      */
     public void append(T object) {
-        Message message = new Message();
-        message.setMessageBody(new Gson().toJson(object));
-        getQueue().putMessage(message);
+        super.send(new Gson().toJson(object));
     }
 
     /**

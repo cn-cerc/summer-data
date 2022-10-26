@@ -10,9 +10,7 @@ import cn.cerc.db.core.Variant;
 public abstract class AbstractVariantQueue extends AbstractQueue {
 
     public void append(String data) {
-        Message message = new Message();
-        message.setMessageBody(data);
-        getQueue().putMessage(message);
+        super.send(data);
     }
 
     public Variant receive() {
