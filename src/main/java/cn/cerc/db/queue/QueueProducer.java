@@ -13,23 +13,27 @@ import org.apache.rocketmq.client.apis.producer.SendReceipt;
 
 public class QueueProducer implements AutoCloseable {
     private static final ClientServiceProvider provider = ClientServiceProvider.loadService();
-    private String topic;
-    private String tag = "";
     private Producer producer;
 
-    public QueueProducer() throws ClientException {
+    public QueueProducer() {
         super();
         // 消息发送的目标Topic名称，需要提前在控制台创建，如果不创建直接使用会返回报错。
         ClientConfigurationBuilder builder = ClientConfiguration.newBuilder()
-                .setEndpoints(QueueServer.getRmqEndpoint())
-                .setCredentialProvider(new StaticSessionCredentialsProvider(QueueServer.getRmqAccessKeyId(),
-                        QueueServer.getRmqAccessSecret()));
+                .setEndpoints(QueueServer.getEndpoint())
+                .setCredentialProvider(new StaticSessionCredentialsProvider(QueueServer.getAccessKeyId(),
+                        QueueServer.getAccessSecret()));
         ClientConfiguration configuration = builder.build();
-        Producer producer = provider.newProducerBuilder().setClientConfiguration(configuration).build();
-        this.producer = producer;
+        Producer producer;
+        try {
+            producer = provider.newProducerBuilder().setClientConfiguration(configuration).build();
+            this.producer = producer;
+        } catch (ClientException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
-    public String append(String value) throws ClientException {
+    public String append(String topic, String tag, String value) throws ClientException {
 
         // 普通消息发送。
         Message message = provider.newMessageBuilder()
@@ -59,27 +63,9 @@ public class QueueProducer implements AutoCloseable {
         }
     }
 
-    public String getTopic() {
-        return topic;
-    }
-
-    public QueueProducer setTopic(String topic) {
-        this.topic = topic;
-        return this;
-    }
-
-    public String getTag() {
-        return tag;
-    }
-
-    public QueueProducer setTag(String tag) {
-        this.tag = tag;
-        return this;
-    }
-
     public static void main(String[] args) throws ClientException {
-        try (QueueProducer producer = new QueueProducer().setTopic("TopicTestMQ").setTag("fpl")) {
-            var result = producer.append("hello world");
+        try (QueueProducer producer = new QueueProducer()) {
+            var result = producer.append("TopicTestMQ", "fpl", "hello world");
             System.out.println("消息发送成功：" + result);
         }
     }

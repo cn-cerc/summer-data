@@ -7,56 +7,33 @@ import java.util.Map;
 import org.apache.rocketmq.client.apis.ClientException;
 import org.apache.rocketmq.client.apis.message.MessageView;
 
-import com.aliyun.mns.model.Message;
-
 import cn.cerc.db.core.DataRow;
 import cn.cerc.db.core.DataSet;
 
 public abstract class AbstractDataRowQueue extends AbstractQueue {
 
-    private transient Map<DataRow, Message> items = new HashMap<>();
-    private transient Map<DataRow, MessageView> rmqItems = new HashMap<>();
+    private transient Map<DataRow, MessageView> items = new HashMap<>();
 
     /**
-     * 将dataRow发送到当前队列
-     * 
-     * @param dataRow
-     * @throws ClientException
+     * 生产者投放消息
      */
-    public String append(DataRow dataRow) throws ClientException {
-        if (rmqQueue == null) {
-            Message message = new Message();
-            message.setMessageBody(dataRow.json());
-            return getQueue().putMessage(message).getMessageId();
-        } else {
-            return rmqQueue.producer().append(dataRow.json());
-        }
+    public String append(DataRow dataRow) {
+        return QueueServer.append(getTopic(), QueueConfig.tag, dataRow.json());
     }
 
     /**
-     * 取出一条消息，类型为 DataRow，若没有则返回为null
+     * 消费者消费消息
      * 
-     * @return DataRow
-     * @throws Exception
+     * 取出一条消息，类型为 DataRow，若没有则返回为null
      */
-    public DataRow receive() throws Exception {
-        if (rmqQueue == null) {
-            Message msg = this.popMessage();
-            if (msg == null)
-                return null;
-            DataRow result = new DataRow();
-            result.setJson(getMessageBody(msg));
-            items.put(result, msg);
-            return result;
-        } else {
-            MessageView msg = rmqQueue.consumer().recevie();
-            if (msg == null)
-                return null;
-            DataRow result = new DataRow();
-            result.setJson(StandardCharsets.UTF_8.decode(msg.getBody()).toString());
-            rmqItems.put(result, msg);
-            return result;
-        }
+    public DataRow receive() {
+        MessageView msg = consumer.recevie();
+        if (msg == null)
+            return null;
+        DataRow record = new DataRow();
+        record.setJson(StandardCharsets.UTF_8.decode(msg.getBody()).toString());
+        items.put(record, msg);
+        return record;
     }
 
     /**
@@ -66,22 +43,12 @@ public abstract class AbstractDataRowQueue extends AbstractQueue {
      * @throws ClientException
      */
     public void delete(DataRow dataRow) throws Exception {
-        if (rmqQueue == null) {
-            if (!items.containsKey(dataRow))
-                throw new RuntimeException("dataRow not find!");
-            var message = items.get(dataRow);
-            if (message != null) {
-                getQueue().deleteMessage(message.getReceiptHandle());
-                items.remove(dataRow);
-            }
-        } else {
-            if (!rmqItems.containsKey(dataRow))
-                throw new RuntimeException("dataRow not find!");
-            var message = rmqItems.get(dataRow);
-            if (message != null) {
-                rmqQueue.consumer().ack(message);
-                rmqItems.remove(dataRow);
-            }
+        if (!items.containsKey(dataRow))
+            throw new RuntimeException("dataRow not find!");
+        var message = items.get(dataRow);
+        if (message != null) {
+            consumer.delete(message);
+            items.remove(dataRow);
         }
     }
 
@@ -93,39 +60,21 @@ public abstract class AbstractDataRowQueue extends AbstractQueue {
      * @throws Exception
      */
     public DataSet receive(int maximum) throws Exception {
-        if (rmqQueue == null) {
-            if (maximum <= 0)
-                throw new RuntimeException("maximum 必须大于 0");
-            DataSet dataSet = new DataSet();
-            int total = 0;
-            Message msg = this.popMessage();
-            while (msg != null) {
-                total++;
-                var row = dataSet.append().current();
-                row.setJson(getMessageBody(msg));
-                items.put(row, msg);
-                if (total == maximum)
-                    break;
-                msg = this.popMessage();
-            }
-            return dataSet;
-        } else {
-            if (maximum <= 0)
-                throw new RuntimeException("maximum 必须大于 0");
-            DataSet dataSet = new DataSet();
-            int total = 0;
-            var msg = rmqQueue.consumer().recevie();
-            while (msg != null) {
-                total++;
-                var row = dataSet.append().current();
-                row.setJson(StandardCharsets.UTF_8.decode(msg.getBody()).toString());
-                rmqItems.put(row, msg);
-                if (total == maximum)
-                    break;
-                msg = rmqQueue.consumer().recevie();
-            }
-            return dataSet;
+        if (maximum <= 0)
+            throw new RuntimeException("maximum 必须大于 0");
+        DataSet dataSet = new DataSet();
+        int total = 0;
+        var msg = consumer.recevie();
+        while (msg != null) {
+            total++;
+            var row = dataSet.append().current();
+            row.setJson(StandardCharsets.UTF_8.decode(msg.getBody()).toString());
+            items.put(row, msg);
+            if (total == maximum)
+                break;
+            msg = consumer.recevie();
         }
+        return dataSet;
     }
 
 }

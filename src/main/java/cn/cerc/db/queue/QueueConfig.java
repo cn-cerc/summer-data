@@ -1,6 +1,7 @@
 package cn.cerc.db.queue;
 
 import cn.cerc.db.core.ClassConfig;
+import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
 
 /**
@@ -9,6 +10,15 @@ import cn.cerc.db.core.Utils;
 public class QueueConfig {
 
     private static final ClassConfig config = new ClassConfig(QueueConfig.class, null);
+
+    /**
+     * TODO 临时做法
+     * 
+     * 需要进一步改进
+     */
+    public final static String tag = String.format("%s%s",
+            ServerConfig.getInstance().getProperty("application.original"),
+            ServerConfig.getInstance().getProperty("version"));
 
     /**
      * 系统消息
