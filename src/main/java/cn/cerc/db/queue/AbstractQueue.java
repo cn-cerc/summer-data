@@ -14,6 +14,7 @@ import com.aliyun.mns.model.PagingListResult;
 import com.aliyun.mns.model.QueueMeta;
 import com.aliyun.mns.model.RawTopicMessage;
 import com.aliyun.mns.model.SubscriptionMeta;
+import com.aliyun.mns.model.SubscriptionMeta.NotifyContentFormat;
 import com.aliyun.mns.model.TopicMeta;
 
 public abstract class AbstractQueue implements QueueImpl {
@@ -48,9 +49,10 @@ public abstract class AbstractQueue implements QueueImpl {
             var topic = client.createTopic(topicMeta);
             for (var ver : vers) {
                 var meta = new SubscriptionMeta();
-                meta.setEndpoint(QueueServer.endpoint);
+                meta.setEndpoint(queueName + "-" + ver);
                 meta.setTopicName(topicName);
-                meta.setFilterTag(tag);
+                meta.setFilterTag(ver);
+                meta.setNotifyContentFormat(NotifyContentFormat.SIMPLIFIED);
                 meta.setSubscriptionName(queueName + "-" + ver);
                 topic.subscribe(meta);
             }
