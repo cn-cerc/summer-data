@@ -31,27 +31,29 @@ public abstract class AbstractQueue implements QueueImpl {
         if (this.cloudQueue == null) {
             String queueName = this.getQueueId();
             if (tag != null) {
-                if (tag != null)
-                    queueName += "-" + tag;
-                var topicName = queueName + "-topic";
-                MNSClient client = QueueServer.getMNSClient();
-                PagingListResult<TopicMeta> list = client.listTopic(queueName, "", 10);
-                if (list.getResult().size() == 0) {
-                    var topicMeta = new TopicMeta();
-                    topicMeta.setTopicName(topicName);
-                    var topic = client.createTopic(topicMeta);
-                    for (var ver : vers) {
-                        var meta = new SubscriptionMeta();
-                        meta.setTopicName(topicName);
-                        meta.setFilterTag(tag);
-                        meta.setSubscriptionName(queueName + "-" + ver);
-                        topic.subscribe(meta);
-                    }
-                }
+                createTopic(queueName, tag);
             }
             this.cloudQueue = createQueue(this, queueName);
         }
         return cloudQueue;
+    }
+
+    private synchronized static void createTopic(String queueName, String tag) {
+        String topicName = queueName + "-topic";
+        MNSClient client = QueueServer.getMNSClient();
+        PagingListResult<TopicMeta> list = client.listTopic(topicName, "", 10);
+        if (list == null || list.getResult().size() == 0) {
+            var topicMeta = new TopicMeta();
+            topicMeta.setTopicName(topicName);
+            var topic = client.createTopic(topicMeta);
+            for (var ver : vers) {
+                var meta = new SubscriptionMeta();
+                meta.setTopicName(topicName);
+                meta.setFilterTag(tag);
+                meta.setSubscriptionName(queueName + "-" + ver);
+                topic.subscribe(meta);
+            }
+        }
     }
 
     private synchronized static CloudQueue createQueue(AbstractQueue sender, String queueName) {
@@ -127,7 +129,9 @@ public abstract class AbstractQueue implements QueueImpl {
         if (this.getTag() != null) {
             String topicName = this.getQueueId() + "-topic";
             MNSClient client = QueueServer.getMNSClient();
+            createTopic(getQueueId(), this.tag);
             var topic = client.getTopicRef(topicName);
+            System.out.println(topic);
             var msg = new RawTopicMessage();
             msg.setMessageBody(value);
             topic.publishMessage(msg);
