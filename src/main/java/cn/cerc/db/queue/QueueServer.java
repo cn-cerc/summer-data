@@ -43,6 +43,7 @@ public class QueueServer implements IConnection {
     private static MNSClient client;
     private static CloudAccount account;
     private static final IConfig config;
+    private static com.aliyun.rocketmq20220801.Client rmqClient;
 
     static {
         config = ServerConfig.getInstance();
@@ -190,7 +191,9 @@ public class QueueServer implements IConnection {
         }
     }
 
-    public static com.aliyun.rocketmq20220801.Client getRmqClient() throws Exception {
+    public static synchronized com.aliyun.rocketmq20220801.Client getRmqClient() throws Exception {
+        if (rmqClient != null)
+            return rmqClient;
         String endpoint = config.getProperty(QueueServer.RMQAccountEndpoint, null);
         String accessId = config.getProperty(QueueServer.RMQAccessKeyId, null);
         String password = config.getProperty(QueueServer.RMQAccessKeySecret, null);
@@ -206,7 +209,8 @@ public class QueueServer implements IConnection {
                 .setAccessKeySecret(password);
         // 访问的域password
         config.endpoint = endpoint;
-        return new com.aliyun.rocketmq20220801.Client(config);
+        rmqClient = new com.aliyun.rocketmq20220801.Client(config);
+        return rmqClient;
     }
 
     public static String getRmqInstanceId() {
