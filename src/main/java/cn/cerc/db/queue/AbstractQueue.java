@@ -3,6 +3,7 @@ package cn.cerc.db.queue;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.rocketmq.client.java.message.MessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,15 +71,14 @@ public abstract class AbstractQueue implements QueueImpl {
         Client rmqClient = QueueServer.getRmqClient();
         if (created.contains(queueName)) {
             log.debug("直接返回消息队列 {}", queueName);
-            return null;
+            return new RmqQueue(queueName);
         }
         com.aliyun.rocketmq20220801.models.ListTopicsRequest listTopicRequest = new com.aliyun.rocketmq20220801.models.ListTopicsRequest();
-        com.aliyun.teautil.models.RuntimeOptions runtime = new com.aliyun.teautil.models.RuntimeOptions();
-        java.util.Map<String, String> headers = new java.util.HashMap<>();
         try {
+            listTopicRequest.setPageNumber(1);
+            listTopicRequest.setPageSize(100);
             // 复制代码运行请自行打印 API 的返回值
-            ListTopicsResponse topicsResponse = rmqClient.listTopicsWithOptions(QueueServer.getRmqInstanceId(),
-                    listTopicRequest, headers, runtime);
+            ListTopicsResponse topicsResponse = rmqClient.listTopics(QueueServer.getRmqInstanceId(), listTopicRequest);
             boolean exists = topicsResponse.getBody()
                     .getData()
                     .getList()
@@ -88,6 +88,7 @@ public abstract class AbstractQueue implements QueueImpl {
                 return new RmqQueue(queueName);
             } else {
                 com.aliyun.rocketmq20220801.models.CreateTopicRequest createTopicRequest = new com.aliyun.rocketmq20220801.models.CreateTopicRequest();
+                createTopicRequest.setMessageType(MessageType.NORMAL.name());
                 CreateTopicResponse createTopicResponse = rmqClient.createTopic(QueueServer.getRmqInstanceId(),
                         queueName, createTopicRequest);
                 if (createTopicResponse.getBody().getSuccess()) {

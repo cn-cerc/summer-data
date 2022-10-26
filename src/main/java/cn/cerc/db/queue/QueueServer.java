@@ -30,8 +30,8 @@ public class QueueServer implements IConnection {
     public static final String AccountEndpoint = "mns.accountendpoint";
     public static final String AccessKeyId = "mns.accesskeyid";
     public static final String AccessKeySecret = "mns.accesskeysecret";
-    public static final String RMQAccountEndpoint = "rmq.endpoint";
-    public static final String RMQInstanceId = "rmq.instanceId";
+    public static final String RMQAccountEndpoint = "rocketmq.endpoint";
+    public static final String RMQInstanceId = "rocketmq.instanceId";
     public static final String RMQAccessKeyId = "oss.accessKeyId";
     public static final String RMQAccessKeySecret = "oss.accessKeySecret";
 //    public static final String SecurityToken = "mns.securitytoken";

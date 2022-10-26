@@ -22,7 +22,7 @@ public abstract class AbstractDataRowQueue extends AbstractQueue {
      * @param dataRow
      * @throws ClientException
      */
-    public String append(DataRow dataRow) throws Exception {
+    public String append(DataRow dataRow) throws ClientException {
         if (rmqQueue == null) {
             Message message = new Message();
             message.setMessageBody(dataRow.json());
@@ -49,6 +49,8 @@ public abstract class AbstractDataRowQueue extends AbstractQueue {
             return result;
         } else {
             MessageView msg = rmqQueue.consumer().recevie();
+            if (msg == null)
+                return null;
             DataRow result = new DataRow();
             result.setJson(StandardCharsets.UTF_8.decode(msg.getBody()).toString());
             rmqItems.put(result, msg);

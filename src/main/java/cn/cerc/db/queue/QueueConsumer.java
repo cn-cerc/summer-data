@@ -75,7 +75,7 @@ public class QueueConsumer implements AutoCloseable {
      */
     public int recevie(QueueProcesser processer) throws ClientException {
 
-        final List<MessageView> messages = consumer.receive(16, Duration.ofSeconds(300));
+        final List<MessageView> messages = consumer.receive(16, Duration.ofSeconds(10));
         for (MessageView message : messages) {
             try {
                 if (processer.processMessage(StandardCharsets.UTF_8.decode(message.getBody()).toString()))
@@ -96,7 +96,7 @@ public class QueueConsumer implements AutoCloseable {
      */
     public MessageView recevie() throws ClientException {
 
-        final List<MessageView> messages = consumer.receive(1, Duration.ofSeconds(300));
+        final List<MessageView> messages = consumer.receive(1, Duration.ofSeconds(10));
         for (MessageView message : messages) {
             return message;
         }

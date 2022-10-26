@@ -6,7 +6,9 @@ import cn.cerc.db.core.ServerConfig;
 
 public class RmqQueue {
 
-    private final static String TAG = ServerConfig.getInstance().getProperty("version");
+    private final static String TAG = String.format("%s%s",
+            ServerConfig.getInstance().getProperty("application.original"),
+            ServerConfig.getInstance().getProperty("version"));
 
     private String topic;
 
