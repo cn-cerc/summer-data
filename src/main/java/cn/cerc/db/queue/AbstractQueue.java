@@ -132,7 +132,6 @@ public abstract class AbstractQueue implements QueueImpl {
             MNSClient client = QueueServer.getMNSClient();
             createTopic(getQueueId(), this.tag);
             var topic = client.getTopicRef(topicName);
-            System.out.println(topic);
             var msg = new RawTopicMessage();
             msg.setMessageBody(value);
             topic.publishMessage(msg);
