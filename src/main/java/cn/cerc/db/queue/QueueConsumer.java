@@ -1,32 +1,48 @@
 package cn.cerc.db.queue;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
 
-import com.aliyun.openservices.ons.api.Action;
-import com.aliyun.openservices.ons.api.ConsumeContext;
-import com.aliyun.openservices.ons.api.Consumer;
-import com.aliyun.openservices.ons.api.Message;
-import com.aliyun.openservices.ons.api.MessageListener;
-import com.aliyun.openservices.ons.api.ONSFactory;
-import com.aliyun.openservices.ons.api.PropertyKeyConst;
+import org.apache.rocketmq.client.apis.ClientConfiguration;
+import org.apache.rocketmq.client.apis.ClientException;
+import org.apache.rocketmq.client.apis.ClientServiceProvider;
+import org.apache.rocketmq.client.apis.SessionCredentialsProvider;
+import org.apache.rocketmq.client.apis.StaticSessionCredentialsProvider;
+import org.apache.rocketmq.client.apis.consumer.FilterExpression;
+import org.apache.rocketmq.client.apis.consumer.FilterExpressionType;
+import org.apache.rocketmq.client.apis.consumer.SimpleConsumer;
+import org.apache.rocketmq.client.apis.message.MessageView;
 
-public class QueueConsumer {
-    private Consumer consumer;
+public class QueueConsumer implements AutoCloseable {
+    private static final ClientServiceProvider provider = ClientServiceProvider.loadService();
     private String topic;
     private String tag = "*";
+    SimpleConsumer consumer;
 
-    public QueueConsumer() {
+    public QueueConsumer(String topic, String tag) throws ClientException {
         super();
-        var properties = RocketMQ.getProperties();
-        properties.put(PropertyKeyConst.GROUP_ID, "main");
-        consumer = ONSFactory.createConsumer(properties);
-        consumer.start();
-    }
-
-    public QueueConsumer(Consumer consumer) {
-        super();
+        // Credential provider is optional for client configuration.
+        String accessKey = RocketMQ.accessId;
+        String secretKey = RocketMQ.password;
+        SessionCredentialsProvider sessionCredentialsProvider = new StaticSessionCredentialsProvider(accessKey,
+                secretKey);
+        String endpoints = RocketMQ.endpoint;
+        ClientConfiguration clientConfiguration = ClientConfiguration.newBuilder()
+                .setEndpoints(endpoints)
+                .setCredentialProvider(sessionCredentialsProvider)
+                .build();
+        String consumerGroup = "main";
+        Duration awaitDuration = Duration.ofSeconds(1);
+        FilterExpression filterExpression = new FilterExpression(tag, FilterExpressionType.TAG);
+        SimpleConsumer consumer = provider.newSimpleConsumerBuilder()
+                .setClientConfiguration(clientConfiguration)
+                .setConsumerGroup(consumerGroup)
+                .setAwaitDuration(awaitDuration)
+                .setSubscriptionExpressions(Collections.singletonMap(topic, filterExpression))
+                .build();
         this.consumer = consumer;
     }
 
@@ -34,24 +50,18 @@ public class QueueConsumer {
         return topic;
     }
 
-    public QueueConsumer setTopic(String topic) {
-        this.topic = topic;
-        return this;
-    }
-
     public String getTag() {
         return tag;
     }
 
-    public QueueConsumer setTag(String tag) {
-        this.tag = tag;
-        return this;
-    }
-
+    @Override
     public void close() {
-        if (consumer != null) {
-            consumer.shutdown();
-            consumer = null;
+        try {
+            if (consumer != null)
+                consumer.close();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
@@ -60,38 +70,52 @@ public class QueueConsumer {
      * 
      * @param processer
      * @return 返回读取的笔数
+     * @throws ClientException
+     * @throws MQClientException
      */
-    public int recevie(QueueProcesser processer) {
-        AtomicInteger total = new AtomicInteger();
-        CountDownLatch cdl = new CountDownLatch(1);
-        // 若取2个tag，可这样使用：TagA||TagB
-        consumer.subscribe(topic, tag, new MessageListener() {
-            public Action consume(Message message, ConsumeContext context) {
-                cdl.countDown();
-                total.addAndGet(1);
-                return processer.processMessage(new String(message.getBody())) ? Action.CommitMessage
-                        : Action.ReconsumeLater;
+    public int recevie(QueueProcesser processer) throws ClientException {
+
+        final List<MessageView> messages = consumer.receive(16, Duration.ofSeconds(300));
+        for (MessageView message : messages) {
+            try {
+                if (processer.processMessage(StandardCharsets.UTF_8.decode(message.getBody()).toString()))
+                    consumer.ack(message);
+            } catch (Exception e) {
             }
-        });
-        consumer.start();
-        try {
-            cdl.await(30, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
-        return total.get();
+        return messages.size();
     }
 
-    public static void main(String[] args) {
+    /**
+     * 读取消息
+     * 
+     * @param processer
+     * @return 返回读取的笔数
+     * @throws ClientException
+     * @throws MQClientException
+     */
+    public MessageView recevie() throws ClientException {
+
+        final List<MessageView> messages = consumer.receive(1, Duration.ofSeconds(300));
+        for (MessageView message : messages) {
+            return message;
+        }
+        return null;
+    }
+
+    public void ack(MessageView msg) throws ClientException {
+        consumer.ack(msg);
+    }
+
+    public static void main(String[] args) throws ClientException {
+
         QueueProcesser processer = data -> {
             System.out.println("消息内容: " + data);
             return true;
         };
-
-        var consumer = new QueueConsumer().setTopic("TopicTestMQ").setTag("fpl");
-        var count = consumer.recevie(processer);
-        consumer.close();
-
-        System.out.println(String.format("有读到 %s 条消息", count));
+        try (var consumer1 = new QueueConsumer("TopicTestMQ", "fpl")) {
+            var count = consumer1.recevie(processer);
+            System.out.println(String.format("有读到 %s 条消息", count));
+        }
     }
 }

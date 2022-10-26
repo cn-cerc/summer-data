@@ -30,6 +30,10 @@ public class QueueServer implements IConnection {
     public static final String AccountEndpoint = "mns.accountendpoint";
     public static final String AccessKeyId = "mns.accesskeyid";
     public static final String AccessKeySecret = "mns.accesskeysecret";
+    public static final String RMQAccountEndpoint = "rmq.endpoint";
+    public static final String RMQInstanceId = "rmq.instanceId";
+    public static final String RMQAccessKeyId = "oss.accessKeyId";
+    public static final String RMQAccessKeySecret = "oss.accessKeySecret";
 //    public static final String SecurityToken = "mns.securitytoken";
     // IHandle中识别码
     public static final String SessionId = "aliyunQueueSession";
@@ -184,6 +188,32 @@ public class QueueServer implements IConnection {
             client.close();
             client = null;
         }
+    }
+
+    public static com.aliyun.rocketmq20220801.Client getRmqClient() throws Exception {
+        String endpoint = config.getProperty(QueueServer.RMQAccountEndpoint, null);
+        String accessId = config.getProperty(QueueServer.RMQAccessKeyId, null);
+        String password = config.getProperty(QueueServer.RMQAccessKeySecret, null);
+        if (endpoint == null)
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccountEndpoint));
+
+        if (accessId == null)
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccessKeyId));
+
+        if (password == null)
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccessKeySecret));
+        com.aliyun.teaopenapi.models.Config config = new com.aliyun.teaopenapi.models.Config().setAccessKeyId(accessId)
+                .setAccessKeySecret(password);
+        // 访问的域password
+        config.endpoint = endpoint;
+        return new com.aliyun.rocketmq20220801.Client(config);
+    }
+
+    public static String getRmqInstanceId() {
+        String instanceId = config.getProperty(QueueServer.RMQInstanceId, null);
+        if (instanceId == null)
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQInstanceId));
+        return instanceId;
     }
 
 }

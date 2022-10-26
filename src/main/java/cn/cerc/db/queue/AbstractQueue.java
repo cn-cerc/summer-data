@@ -12,11 +12,15 @@ import com.aliyun.mns.common.ClientException;
 import com.aliyun.mns.model.Message;
 import com.aliyun.mns.model.PagingListResult;
 import com.aliyun.mns.model.QueueMeta;
+import com.aliyun.rocketmq20220801.Client;
+import com.aliyun.rocketmq20220801.models.CreateTopicResponse;
+import com.aliyun.rocketmq20220801.models.ListTopicsResponse;
 
 public abstract class AbstractQueue implements QueueImpl {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
     private static List<String> created = new ArrayList<>();
     private CloudQueue cloudQueue;
+    protected RmqQueue rmqQueue;
 
     @Override
     public abstract String getQueueId();
@@ -26,6 +30,13 @@ public abstract class AbstractQueue implements QueueImpl {
         if (this.cloudQueue == null)
             this.cloudQueue = createQueue(this, getQueueId());
         return cloudQueue;
+    }
+
+    @Override
+    public RmqQueue getRmqQueue() throws Exception {
+        if (this.rmqQueue == null)
+            this.rmqQueue = createRmqQueue(this, getQueueId());
+        return rmqQueue;
     }
 
     private synchronized static CloudQueue createQueue(AbstractQueue sender, String queueName) {
@@ -53,6 +64,40 @@ public abstract class AbstractQueue implements QueueImpl {
         created.add(queueName);
         log.debug("创建新的消息队列 {}", queueName);
         return client.createQueue(meta);
+    }
+
+    private synchronized static RmqQueue createRmqQueue(AbstractQueue sender, String queueName) throws Exception {
+        Client rmqClient = QueueServer.getRmqClient();
+        if (created.contains(queueName)) {
+            log.debug("直接返回消息队列 {}", queueName);
+            return null;
+        }
+        com.aliyun.rocketmq20220801.models.ListTopicsRequest listTopicRequest = new com.aliyun.rocketmq20220801.models.ListTopicsRequest();
+        com.aliyun.teautil.models.RuntimeOptions runtime = new com.aliyun.teautil.models.RuntimeOptions();
+        java.util.Map<String, String> headers = new java.util.HashMap<>();
+        try {
+            // 复制代码运行请自行打印 API 的返回值
+            ListTopicsResponse topicsResponse = rmqClient.listTopicsWithOptions(QueueServer.getRmqInstanceId(),
+                    listTopicRequest, headers, runtime);
+            boolean exists = topicsResponse.getBody()
+                    .getData()
+                    .getList()
+                    .stream()
+                    .anyMatch(item -> queueName.equals(item.getTopicName()));
+            if (exists) {
+                return new RmqQueue(queueName);
+            } else {
+                com.aliyun.rocketmq20220801.models.CreateTopicRequest createTopicRequest = new com.aliyun.rocketmq20220801.models.CreateTopicRequest();
+                CreateTopicResponse createTopicResponse = rmqClient.createTopic(QueueServer.getRmqInstanceId(),
+                        queueName, createTopicRequest);
+                if (createTopicResponse.getBody().getSuccess()) {
+                    return new RmqQueue(queueName);
+                }
+                return null;
+            }
+        } catch (Exception _error) {
+            throw _error;
+        }
     }
 
     protected void onCreateQueue(QueueMeta meta) {
