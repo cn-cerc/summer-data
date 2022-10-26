@@ -39,7 +39,7 @@ public abstract class AbstractDataRowQueue extends AbstractQueue {
      * @return DataRow
      * @throws Exception
      */
-    public DataRow receive() throws Exception {
+    public DataRow receive() {
         if (rmqQueue == null) {
             Message msg = this.popMessage();
             if (msg == null)
@@ -49,12 +49,16 @@ public abstract class AbstractDataRowQueue extends AbstractQueue {
             items.put(result, msg);
             return result;
         } else {
-            MessageView msg = rmqQueue.consumer().recevie();
-            if (msg == null)
-                return null;
             DataRow result = new DataRow();
-            result.setJson(StandardCharsets.UTF_8.decode(msg.getBody()).toString());
-            rmqItems.put(result, msg);
+            try {
+                MessageView msg = rmqQueue.consumer().recevie();
+                if (msg == null)
+                    return null;
+                result.setJson(StandardCharsets.UTF_8.decode(msg.getBody()).toString());
+                rmqItems.put(result, msg);
+            } catch (ClientException e) {
+                e.printStackTrace();
+            }
             return result;
         }
     }
