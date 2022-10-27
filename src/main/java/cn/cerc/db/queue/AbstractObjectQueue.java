@@ -33,9 +33,8 @@ public abstract class AbstractObjectQueue<T> extends AbstractQueue {
      * 取出一条消息，类型为 DataRow，若没有则返回为null
      * 
      * @return DataRow
-     * @throws ClientException
      */
-    public T receive() throws ClientException {
+    public T receive() {
         MessageView msg = consumer.recevie();
         if (msg == null)
             return null;
@@ -55,9 +54,8 @@ public abstract class AbstractObjectQueue<T> extends AbstractQueue {
      * 删除一条消息，要删除的消息必须是被当前对象所取出来的
      * 
      * @param dataRow
-     * @throws ClientException
      */
-    public void delete(T object) throws ClientException {
+    public void delete(T object) {
         if (!items.containsKey(object))
             throw new RuntimeException("object not find!");
         var message = items.get(object);
@@ -71,10 +69,8 @@ public abstract class AbstractObjectQueue<T> extends AbstractQueue {
      * 一批取出多条消息，可通过dataSet.size()来判断实际取出了多少笔
      * 
      * @param maximum 最多取出多少笔，必须大于0
-     * @return DataSet
-     * @throws ClientException
      */
-    public List<T> receive(int maximum) throws ClientException {
+    public List<T> receive(int maximum) {
         if (maximum <= 0)
             throw new RuntimeException("maximum 必须大于 0");
 

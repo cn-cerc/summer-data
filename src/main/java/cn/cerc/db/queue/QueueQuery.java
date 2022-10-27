@@ -52,7 +52,7 @@ public class QueueQuery extends DataSet implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         if (consumer != null) {
             consumer.close();
         }

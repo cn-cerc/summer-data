@@ -19,7 +19,7 @@ public abstract class AbstractVariantQueue extends AbstractQueue {
         QueueServer.append(getTopic(), QueueConfig.tag, data);
     }
 
-    public Variant receive() throws ClientException {
+    public Variant receive() {
         var msg = consumer.recevie();
         if (msg == null)
             return null;
@@ -29,7 +29,7 @@ public abstract class AbstractVariantQueue extends AbstractQueue {
         return variant;
     }
 
-    public void delete(Variant variant) throws ClientException {
+    public void delete(Variant variant) {
         if (!rmqItems.containsKey(variant))
             throw new RuntimeException("variant not find!");
         var message = rmqItems.get(variant);
@@ -39,7 +39,7 @@ public abstract class AbstractVariantQueue extends AbstractQueue {
         }
     }
 
-    public List<Variant> receive(int maximum) throws ClientException {
+    public List<Variant> receive(int maximum) {
         if (maximum <= 0)
             throw new RuntimeException("maximum 必须大于 0");
 
