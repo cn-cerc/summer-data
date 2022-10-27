@@ -32,8 +32,6 @@ public class QueueServer {
     public static final String RMQEndpoint = "rocketmq.queue.endpoint";
     public static final String RMQAccessKeyId = "rocketmq.queue.accesskeyid";
     public static final String RMQAccessKeySecret = "rocketmq.queue.accesskeysecret";
-    public static final String RMQAccountAccessKeyId = "oss.accessKeyId";
-    public static final String RMQAccountAccessKeySecret = "oss.accessKeySecret";
 
     private static final IConfig config = ServerConfig.getInstance();
     private static volatile Client client;
@@ -99,15 +97,13 @@ public class QueueServer {
                     throw new RuntimeException(
                             String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccountEndpoint));
 
-                String accessId = config.getProperty(QueueServer.RMQAccountAccessKeyId, null);
+                String accessId = config.getProperty(QueueServer.AccessKeyId, null);
                 if (accessId == null)
-                    throw new RuntimeException(
-                            String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccountAccessKeyId));
+                    throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeyId));
 
-                String password = config.getProperty(QueueServer.RMQAccountAccessKeySecret, null);
+                String password = config.getProperty(QueueServer.AccessKeySecret, null);
                 if (password == null)
-                    throw new RuntimeException(
-                            String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccountAccessKeySecret));
+                    throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeySecret));
                 Config config = new Config().setAccessKeyId(accessId).setAccessKeySecret(password);
 
                 config.endpoint = endpoint;

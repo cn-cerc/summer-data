@@ -1,9 +1,12 @@
 package cn.cerc.db.queue;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.rocketmq.client.apis.ClientConfiguration;
 import org.apache.rocketmq.client.apis.ClientException;
@@ -17,24 +20,75 @@ import org.apache.rocketmq.client.apis.message.MessageView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.aliyun.rocketmq20220801.Client;
+import com.aliyun.rocketmq20220801.models.CreateConsumerGroupRequest;
+import com.aliyun.rocketmq20220801.models.CreateConsumerGroupRequest.CreateConsumerGroupRequestConsumeRetryPolicy;
+import com.aliyun.rocketmq20220801.models.CreateConsumerGroupResponse;
+import com.aliyun.rocketmq20220801.models.GetConsumerGroupResponse;
+import com.aliyun.rocketmq20220801.models.GetConsumerGroupResponseBody.GetConsumerGroupResponseBodyData;
+
 import cn.cerc.db.core.DataSet;
 
-public class QueueConsumer implements AutoCloseable {
+public class QueueConsumer {
     private static final Logger log = LoggerFactory.getLogger(DataSet.class);
     private static final ClientServiceProvider provider = ClientServiceProvider.loadService();
+    protected static final Map<String, SimpleConsumer> consumers = new HashMap<>();
     private String topic;
     private String tag;
     private SimpleConsumer consumer;
-    private static final String consumerGroup = "main";// 默认分组,强制要求
 
     public static QueueConsumer create(String topic, String tag) {
         return new QueueConsumer(topic, tag);
     }
 
+    public SimpleConsumer consumer() {
+        return consumer;
+    }
+
+    public void close() {
+        if (consumer != null) {
+            try {
+                consumer.close();
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+    }
+
     private QueueConsumer(String topic, String tag) {
         this.topic = topic;
         this.tag = tag;
-        log.error("{}, {}, {}", topic, tag, Thread.currentThread());
+
+        if (consumers.containsKey(topic)) {
+            this.consumer = consumers.get(topic);
+            return;
+        }
+
+        String consumerGroup = String.format("%s-%s-%s", "G", topic, tag);
+        Client client = QueueServer.getClient();
+        try {
+            GetConsumerGroupResponse response = client.getConsumerGroup(QueueServer.getInstanceId(), consumerGroup);
+            GetConsumerGroupResponseBodyData data = response.getBody().getData();
+            if (data == null || !"RUNNING".equals(data.getStatus())) {
+                CreateConsumerGroupRequest request = new CreateConsumerGroupRequest();
+                request.setDeliveryOrderType("Concurrently");
+                CreateConsumerGroupRequestConsumeRetryPolicy policy = new CreateConsumerGroupRequestConsumeRetryPolicy();
+                policy.setMaxRetryTimes(16);
+                policy.setRetryPolicy("FixedRetryPolicy");
+                request.setConsumeRetryPolicy(policy);
+                CreateConsumerGroupResponse createResponse = client.createConsumerGroup(QueueServer.getInstanceId(),
+                        consumerGroup, request);
+                if (!createResponse.getBody().getSuccess()) {
+                    log.error("创建消费组 {} 失败");
+                    return;
+                }
+            }
+        } catch (Exception e1) {
+            log.error(e1.getMessage(), e1);
+            return;
+        }
+
+        log.info("{}, {}, {} ,{} consumer is creating", topic, tag, consumerGroup, Thread.currentThread());
         String accessKey = QueueServer.getAccessKeyId();
         String secretKey = QueueServer.getAccessSecret();
         SessionCredentialsProvider sessionCredentialsProvider = new StaticSessionCredentialsProvider(accessKey,
@@ -57,8 +111,9 @@ public class QueueConsumer implements AutoCloseable {
                     .setSubscriptionExpressions(Collections.singletonMap(topic, filterExpression))
                     .build();
             this.consumer = consumer;
+            consumers.put(topic, this.consumer);
         } catch (ClientException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -68,16 +123,6 @@ public class QueueConsumer implements AutoCloseable {
 
     public String getTag() {
         return tag;
-    }
-
-    @Override
-    public void close() {
-        try {
-            if (consumer != null)
-                consumer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -90,7 +135,7 @@ public class QueueConsumer implements AutoCloseable {
                 return message;
             }
         } catch (ClientException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
         return null;
     }
@@ -104,8 +149,19 @@ public class QueueConsumer implements AutoCloseable {
         try {
             consumer.ack(message);
         } catch (ClientException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
+    }
+
+    public static void main(String[] args) {
+        QueueConsumer create = create("TopicTestMQ", "fpl");
+        MessageView receive = create.recevie();
+        while (receive != null) {
+            System.out.println(StandardCharsets.UTF_8.decode(receive.getBody()).toString());
+            create.delete(receive);
+            receive = create.recevie();
+        }
+        create.close();
     }
 
 }

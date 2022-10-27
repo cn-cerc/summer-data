@@ -8,7 +8,7 @@ import cn.cerc.db.core.DataSet;
 import cn.cerc.db.core.DataSetGson;
 import cn.cerc.db.core.Utils;
 
-public class QueueQuery extends DataSet implements AutoCloseable {
+public class QueueQuery extends DataSet {
     private static final long serialVersionUID = 7781788221337787366L;
 
     private transient QueueConsumer consumer;
@@ -22,12 +22,14 @@ public class QueueQuery extends DataSet implements AutoCloseable {
 
     public QueueQuery open() {
         this.message = consumer.recevie();
+        if (message == null)
+            return this;
         this.setJson(StandardCharsets.UTF_8.decode(message.getBody()).toString());
         return this;
     }
 
-    public void save(String json) {
-        QueueServer.append(this.topic, QueueConfig.tag, json);
+    public String save(String json) {
+        return QueueServer.append(this.topic, QueueConfig.tag, json);
     }
 
     /**
@@ -36,6 +38,10 @@ public class QueueQuery extends DataSet implements AutoCloseable {
     public boolean remove() {
         consumer.delete(message);
         return true;
+    }
+
+    public MessageView getMessage() {
+        return message;
     }
 
     @Override
@@ -49,13 +55,6 @@ public class QueueQuery extends DataSet implements AutoCloseable {
         if (!Utils.isEmpty(json))
             new DataSetGson<>(this).decode(json);
         return this;
-    }
-
-    @Override
-    public void close() {
-        if (consumer != null) {
-            consumer.close();
-        }
     }
 
 }

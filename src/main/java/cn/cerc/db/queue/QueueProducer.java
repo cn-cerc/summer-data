@@ -1,7 +1,5 @@
 package cn.cerc.db.queue;
 
-import java.io.IOException;
-
 import org.apache.rocketmq.client.apis.ClientConfiguration;
 import org.apache.rocketmq.client.apis.ClientConfigurationBuilder;
 import org.apache.rocketmq.client.apis.ClientException;
@@ -11,30 +9,31 @@ import org.apache.rocketmq.client.apis.message.Message;
 import org.apache.rocketmq.client.apis.producer.Producer;
 import org.apache.rocketmq.client.apis.producer.SendReceipt;
 
-public class QueueProducer implements AutoCloseable {
+import cn.cerc.db.core.Datetime;
+
+public class QueueProducer {
     private static final ClientServiceProvider provider = ClientServiceProvider.loadService();
-    private Producer producer;
+    private static volatile Producer producer;
 
     public QueueProducer() {
-        super();
-        // 消息发送的目标Topic名称，需要提前在控制台创建，如果不创建直接使用会返回报错。
-        ClientConfigurationBuilder builder = ClientConfiguration.newBuilder()
-                .setEndpoints(QueueServer.getEndpoint())
-                .setCredentialProvider(new StaticSessionCredentialsProvider(QueueServer.getAccessKeyId(),
-                        QueueServer.getAccessSecret()));
-        ClientConfiguration configuration = builder.build();
-        Producer producer;
-        try {
-            producer = provider.newProducerBuilder().setClientConfiguration(configuration).build();
-            this.producer = producer;
-        } catch (ClientException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        if (producer == null) {
+            synchronized (QueueProducer.class) {
+                // 消息发送的目标Topic名称，需要提前在控制台创建，如果不创建直接使用会返回报错。
+                ClientConfigurationBuilder builder = ClientConfiguration.newBuilder()
+                        .setEndpoints(QueueServer.getEndpoint())
+                        .setCredentialProvider(new StaticSessionCredentialsProvider(QueueServer.getAccessKeyId(),
+                                QueueServer.getAccessSecret()));
+                ClientConfiguration configuration = builder.build();
+                try {
+                    producer = provider.newProducerBuilder().setClientConfiguration(configuration).build();
+                } catch (ClientException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
     public String append(String topic, String tag, String value) throws ClientException {
-
         // 普通消息发送。
         Message message = provider.newMessageBuilder()
                 .setTopic(topic)
@@ -53,20 +52,12 @@ public class QueueProducer implements AutoCloseable {
         return null;
     }
 
-    @Override
-    public void close() {
-        try {
-            if (producer != null)
-                producer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static void main(String[] args) throws ClientException {
-        try (QueueProducer producer = new QueueProducer()) {
-            var result = producer.append("TopicTestMQ", "fpl", "hello world");
+        QueueProducer producer = new QueueProducer();
+        while (true) {
+            var result = producer.append("TopicTestMQ", "fpl", new Datetime().toString());
             System.out.println("消息发送成功：" + result);
         }
+
     }
 }

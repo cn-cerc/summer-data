@@ -16,7 +16,7 @@ public class QueueConfig {
      * 
      * 需要进一步改进
      */
-    public final static String tag = String.format("%s%s",
+    public final static String tag = String.format("%s-%s",
             ServerConfig.getInstance().getProperty("application.original"),
             ServerConfig.getInstance().getProperty("version"));
 
