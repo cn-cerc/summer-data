@@ -29,7 +29,6 @@ import cn.cerc.db.core.DataSet;
 
 public class QueueConsumer {
     private static final Logger log = LoggerFactory.getLogger(DataSet.class);
-    private static final ClientServiceProvider provider = ClientServiceProvider.loadService();
     private String topic;
     private String tag;
     private PushConsumer consumer;
@@ -96,6 +95,7 @@ public class QueueConsumer {
                 .setCredentialProvider(sessionCredentialsProvider)
                 .build();
 
+        ClientServiceProvider provider = ClientServiceProvider.loadService();
         FilterExpression filterExpression = new FilterExpression(tag, FilterExpressionType.TAG);
         try {
             PushConsumer consumer = provider.newPushConsumerBuilder()
@@ -106,7 +106,6 @@ public class QueueConsumer {
                             message -> callback.consume(StandardCharsets.UTF_8.decode(message.getBody()).toString())
                                     ? ConsumeResult.SUCCESS
                                     : ConsumeResult.FAILURE)
-//                    .setConsumptionThreadCount(1)
                     .build();
             this.consumer = consumer;
         } catch (Exception e) {
@@ -151,13 +150,23 @@ public class QueueConsumer {
         tags.add("c");
         tags.add("d");
         tags.add("e");
+        tags.add("f");
+        tags.add("g");
+        tags.add("h");
+        tags.add("i");
+        tags.add("j");
+        tags.add("k");
+        tags.add("l");
+        tags.add("m");
         QueueServer.createTopic("test");
 
         tags.forEach(tag -> {
-            create("test", tag, message -> {
-                System.out.println(tag + "---" + message);
-                return true;
-            });
+            new Thread(() -> {
+                create("test", tag, message -> {
+                    System.out.println(tag + "---" + message);
+                    return true;
+                });
+            }).start();
         });
 
 //        Client client = QueueServer.getClient();

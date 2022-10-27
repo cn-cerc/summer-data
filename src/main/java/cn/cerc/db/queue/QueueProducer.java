@@ -64,7 +64,7 @@ public class QueueProducer {
         tags.add("d");
         tags.add("e");
 
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 100; i++) {
             tags.forEach(tag -> {
                 try {
                     String result = producer.append("test", tag, new Datetime().toString());
