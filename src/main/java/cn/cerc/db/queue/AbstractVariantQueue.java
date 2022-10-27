@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.rocketmq.client.apis.ClientException;
 import org.apache.rocketmq.client.apis.message.MessageView;
 
 import cn.cerc.db.core.Variant;
@@ -15,7 +14,7 @@ public abstract class AbstractVariantQueue extends AbstractQueue {
 
     private transient Map<Variant, MessageView> rmqItems = new HashMap<>();
 
-    public void append(String data) throws ClientException {
+    public void append(String data) {
         QueueServer.append(getTopic(), QueueConfig.tag, data);
     }
 

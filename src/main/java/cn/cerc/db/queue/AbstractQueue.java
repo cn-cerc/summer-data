@@ -10,7 +10,6 @@ public abstract class AbstractQueue {
     public abstract String getTopic();
 
     public AbstractQueue() {
-        super();
         log.info("Queue {} {} is init ", this.getClass().getSimpleName(), getTopic());
         QueueServer.createTopic(this.getTopic());
         this.consumer = QueueConsumer.create(this.getTopic(), QueueConfig.tag);

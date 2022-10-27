@@ -34,7 +34,7 @@ public class QueueServer {
     public static final String RMQAccessKeySecret = "rocketmq.queue.accesskeysecret";
 
     private static final IConfig config = ServerConfig.getInstance();
-    private static volatile Client client;
+    private static final Client client = getRocketmqClient();
 
     private static final QueueProducer producer = new QueueProducer();
 
@@ -45,7 +45,6 @@ public class QueueServer {
     private static final List<String> queues = new ArrayList<>();
 
     public static void createTopic(String topic) {
-        Client client = QueueServer.getClient();
         if (queues.contains(topic))
             return;
 
@@ -88,33 +87,27 @@ public class QueueServer {
         return null;
     }
 
-    public static Client getClient() {
-        log.info("{} get mq client ", Thread.currentThread());
-        if (client == null) {
-            synchronized (QueueServer.class) {
-                String endpoint = config.getProperty(QueueServer.RMQAccountEndpoint, null);
-                if (endpoint == null)
-                    throw new RuntimeException(
-                            String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccountEndpoint));
+    public static Client getRocketmqClient() {
+        String endpoint = config.getProperty(QueueServer.RMQAccountEndpoint, null);
+        if (endpoint == null)
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccountEndpoint));
 
-                String accessId = config.getProperty(QueueServer.AccessKeyId, null);
-                if (accessId == null)
-                    throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeyId));
+        String accessId = config.getProperty(QueueServer.AccessKeyId, null);
+        if (accessId == null)
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeyId));
 
-                String password = config.getProperty(QueueServer.AccessKeySecret, null);
-                if (password == null)
-                    throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeySecret));
-                Config config = new Config().setAccessKeyId(accessId).setAccessKeySecret(password);
+        String password = config.getProperty(QueueServer.AccessKeySecret, null);
+        if (password == null)
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeySecret));
+        Config config = new Config().setAccessKeyId(accessId).setAccessKeySecret(password);
 
-                config.endpoint = endpoint;
-                try {
-                    client = new Client(config);
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
+        config.endpoint = endpoint;
+        try {
+            return new Client(config);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
-        return client;
+        return null;
     }
 
     public static String getInstanceId() {
@@ -143,6 +136,11 @@ public class QueueServer {
         if (accessKeySecret == null)
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccessKeySecret));
         return accessKeySecret;
+    }
+
+    public static Client getClient() {
+        log.info("{} get mq client ", Thread.currentThread());
+        return client;
     }
 
 }

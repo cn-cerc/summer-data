@@ -28,6 +28,10 @@ public class QueueQuery extends DataSet {
         return this;
     }
 
+    public boolean exists() {
+        return message != null;
+    }
+
     public String save(String json) {
         return QueueServer.append(this.topic, QueueConfig.tag, json);
     }
@@ -37,6 +41,7 @@ public class QueueQuery extends DataSet {
      */
     public boolean remove() {
         consumer.delete(message);
+        message = null;
         return true;
     }
 
