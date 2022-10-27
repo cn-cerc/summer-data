@@ -91,6 +91,7 @@ public class QueueServer {
     }
 
     public static Client getClient() {
+        log.info("{} get mq client ", Thread.currentThread());
         if (client == null) {
             synchronized (QueueServer.class) {
                 String endpoint = config.getProperty(QueueServer.RMQAccountEndpoint, null);

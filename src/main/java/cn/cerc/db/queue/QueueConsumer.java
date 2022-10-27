@@ -14,8 +14,13 @@ import org.apache.rocketmq.client.apis.consumer.FilterExpression;
 import org.apache.rocketmq.client.apis.consumer.FilterExpressionType;
 import org.apache.rocketmq.client.apis.consumer.SimpleConsumer;
 import org.apache.rocketmq.client.apis.message.MessageView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import cn.cerc.db.core.DataSet;
 
 public class QueueConsumer implements AutoCloseable {
+    private static final Logger log = LoggerFactory.getLogger(DataSet.class);
     private static final ClientServiceProvider provider = ClientServiceProvider.loadService();
     private String topic;
     private String tag;
@@ -26,7 +31,10 @@ public class QueueConsumer implements AutoCloseable {
         return new QueueConsumer(topic, tag);
     }
 
-    public QueueConsumer(String topic, String tag) {
+    private QueueConsumer(String topic, String tag) {
+        this.topic = topic;
+        this.tag = tag;
+        log.error("{}, {}, {}", topic, tag, Thread.currentThread());
         String accessKey = QueueServer.getAccessKeyId();
         String secretKey = QueueServer.getAccessSecret();
         SessionCredentialsProvider sessionCredentialsProvider = new StaticSessionCredentialsProvider(accessKey,
