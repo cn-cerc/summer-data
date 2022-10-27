@@ -1,5 +1,8 @@
 package cn.cerc.db.queue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.rocketmq.client.apis.ClientConfiguration;
 import org.apache.rocketmq.client.apis.ClientConfigurationBuilder;
 import org.apache.rocketmq.client.apis.ClientException;
@@ -54,9 +57,22 @@ public class QueueProducer {
 
     public static void main(String[] args) throws ClientException {
         QueueProducer producer = new QueueProducer();
-        while (true) {
-            var result = producer.append("TopicTestMQ", "fpl", new Datetime().toString());
-            System.out.println("消息发送成功：" + result);
+        List<String> tags = new ArrayList<>();
+        tags.add("a");
+        tags.add("b");
+        tags.add("c");
+        tags.add("d");
+        tags.add("e");
+
+        for (int i = 0; i < 10000; i++) {
+            tags.forEach(tag -> {
+                try {
+                    String result = producer.append("test", tag, new Datetime().toString());
+                    System.out.println("消息发送成功：" + result);
+                } catch (ClientException e) {
+                    e.printStackTrace();
+                }
+            });
         }
 
     }

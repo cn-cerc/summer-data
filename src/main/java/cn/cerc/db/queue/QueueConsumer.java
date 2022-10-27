@@ -2,20 +2,18 @@ package cn.cerc.db.queue;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.rocketmq.client.apis.ClientConfiguration;
-import org.apache.rocketmq.client.apis.ClientException;
 import org.apache.rocketmq.client.apis.ClientServiceProvider;
 import org.apache.rocketmq.client.apis.SessionCredentialsProvider;
 import org.apache.rocketmq.client.apis.StaticSessionCredentialsProvider;
+import org.apache.rocketmq.client.apis.consumer.ConsumeResult;
 import org.apache.rocketmq.client.apis.consumer.FilterExpression;
 import org.apache.rocketmq.client.apis.consumer.FilterExpressionType;
-import org.apache.rocketmq.client.apis.consumer.SimpleConsumer;
+import org.apache.rocketmq.client.apis.consumer.PushConsumer;
 import org.apache.rocketmq.client.apis.message.MessageView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,16 +30,19 @@ import cn.cerc.db.core.DataSet;
 public class QueueConsumer {
     private static final Logger log = LoggerFactory.getLogger(DataSet.class);
     private static final ClientServiceProvider provider = ClientServiceProvider.loadService();
-    protected static final Map<String, SimpleConsumer> consumers = new HashMap<>();
     private String topic;
     private String tag;
-    private SimpleConsumer consumer;
+    private PushConsumer consumer;
 
-    public static QueueConsumer create(String topic, String tag) {
-        return new QueueConsumer(topic, tag);
+    public interface OnMessageCallback {
+        boolean consume(String message);
     }
 
-    public SimpleConsumer consumer() {
+    public static QueueConsumer create(String topic, String tag, OnMessageCallback callback) {
+        return new QueueConsumer(topic, tag, callback);
+    }
+
+    public PushConsumer consumer() {
         return consumer;
     }
 
@@ -55,14 +56,9 @@ public class QueueConsumer {
         }
     }
 
-    private QueueConsumer(String topic, String tag) {
+    private QueueConsumer(String topic, String tag, OnMessageCallback callback) {
         this.topic = topic;
         this.tag = tag;
-
-        if (consumers.containsKey(topic)) {
-            this.consumer = consumers.get(topic);
-            return;
-        }
 
         String consumerGroup = String.format("%s-%s-%s", "G", topic, tag);
         Client client = QueueServer.getClient();
@@ -100,19 +96,20 @@ public class QueueConsumer {
                 .setCredentialProvider(sessionCredentialsProvider)
                 .build();
 
-        Duration awaitDuration = Duration.ofSeconds(1);
         FilterExpression filterExpression = new FilterExpression(tag, FilterExpressionType.TAG);
-        SimpleConsumer consumer;
         try {
-            consumer = provider.newSimpleConsumerBuilder()
+            PushConsumer consumer = provider.newPushConsumerBuilder()
                     .setClientConfiguration(clientConfiguration)
                     .setConsumerGroup(consumerGroup)
-                    .setAwaitDuration(awaitDuration)
                     .setSubscriptionExpressions(Collections.singletonMap(topic, filterExpression))
+                    .setMessageListener(
+                            message -> callback.consume(StandardCharsets.UTF_8.decode(message.getBody()).toString())
+                                    ? ConsumeResult.SUCCESS
+                                    : ConsumeResult.FAILURE)
+//                    .setConsumptionThreadCount(1)
                     .build();
             this.consumer = consumer;
-            consumers.put(topic, this.consumer);
-        } catch (ClientException e) {
+        } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
     }
@@ -129,14 +126,15 @@ public class QueueConsumer {
      * 读取消息
      */
     public MessageView recevie() {
-        try {
-            List<MessageView> messages = consumer.receive(1, Duration.ofMinutes(10));
-            for (MessageView message : messages) {
-                return message;
-            }
-        } catch (ClientException e) {
-            log.error(e.getMessage(), e);
-        }
+//        try {
+//            List<MessageView> messages = consumer.receive(1, Duration.ofMinutes(10));
+//            for (MessageView message : messages) {
+//                return message;
+//            }
+//        } catch (ClientException e) {
+//            log.error(e.getMessage(), e);
+//        }
+//        return null;
         return null;
     }
 
@@ -144,24 +142,49 @@ public class QueueConsumer {
      * 删除消息
      */
     public void delete(MessageView message) {
-        if (message == null)
-            return;
-        try {
-            consumer.ack(message);
-        } catch (ClientException e) {
-            log.error(e.getMessage(), e);
-        }
     }
 
-    public static void main(String[] args) {
-        QueueConsumer create = create("TopicTestMQ", "fpl");
-        MessageView receive = create.recevie();
-        while (receive != null) {
-            System.out.println(StandardCharsets.UTF_8.decode(receive.getBody()).toString());
-            create.delete(receive);
-            receive = create.recevie();
-        }
-        create.close();
+    public static void main(String[] args) throws Exception {
+        List<String> tags = new ArrayList<>();
+        tags.add("a");
+        tags.add("b");
+        tags.add("c");
+        tags.add("d");
+        tags.add("e");
+        QueueServer.createTopic("test");
+
+        tags.forEach(tag -> {
+            create("test", tag, message -> {
+                System.out.println(tag + "---" + message);
+                return true;
+            });
+        });
+
+//        Client client = QueueServer.getClient();
+//        ListTopicsRequest request = new ListTopicsRequest();
+//        request.setPageNumber(1);
+//        request.setPageSize(100);
+//        ListTopicsResponse response = client.listTopics(QueueServer.getInstanceId(), request);
+//        response.getBody().getData().getList().forEach(item -> {
+//            try {
+//                client.deleteTopic(QueueServer.getInstanceId(), item.getTopicName());
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        });
+
+//        Client client = QueueServer.getClient();
+//        ListConsumerGroupsRequest request = new ListConsumerGroupsRequest();
+//        request.setPageNumber(1);
+//        request.setPageSize(100);
+//        var response = client.listConsumerGroups(QueueServer.getInstanceId(), request);
+//        response.getBody().getData().getList().forEach(item -> {
+//            try {
+//                client.deleteConsumerGroup(QueueServer.getInstanceId(), item.getConsumerGroupId());
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        });
     }
 
 }

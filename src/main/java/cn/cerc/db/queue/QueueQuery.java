@@ -17,7 +17,7 @@ public class QueueQuery extends DataSet {
 
     public QueueQuery(String topic) {
         QueueServer.createTopic(topic);
-        consumer = QueueConsumer.create(topic, QueueConfig.tag);
+        consumer = QueueConsumer.create(topic, QueueConfig.tag, null);
     }
 
     public QueueQuery open() {

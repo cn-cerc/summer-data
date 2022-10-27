@@ -13,6 +13,7 @@ import com.aliyun.rocketmq20220801.models.CreateTopicRequest;
 import com.aliyun.rocketmq20220801.models.CreateTopicResponse;
 import com.aliyun.rocketmq20220801.models.ListTopicsRequest;
 import com.aliyun.rocketmq20220801.models.ListTopicsResponse;
+import com.aliyun.rocketmq20220801.models.ListTopicsResponseBody.ListTopicsResponseBodyDataList;
 import com.aliyun.teaopenapi.models.Config;
 
 import cn.cerc.db.SummerDB;
@@ -56,11 +57,12 @@ public class QueueServer {
             request.setPageSize(100);
 
             ListTopicsResponse response = client.listTopics(QueueServer.getInstanceId(), request);
-            boolean exists = response.getBody()
-                    .getData()
-                    .getList()
-                    .stream()
-                    .anyMatch(item -> topic.equals(item.getTopicName()));
+            List<ListTopicsResponseBodyDataList> list = response.getBody().getData().getList();
+            boolean exists = false;
+            if (list == null || list.size() == 0)
+                exists = false;
+            else
+                exists = list.stream().anyMatch(item -> topic.equals(item.getTopicName()));
             if (exists) {
                 queues.add(topic);
                 return;
@@ -71,6 +73,7 @@ public class QueueServer {
             CreateTopicResponse createResponse = client.createTopic(QueueServer.getInstanceId(), topic, createRequest);
             if (createResponse.getBody().getSuccess()) {
                 queues.add(topic);
+                log.info("current topic {}", queues.size());
                 return;
             }
         } catch (Exception e) {
