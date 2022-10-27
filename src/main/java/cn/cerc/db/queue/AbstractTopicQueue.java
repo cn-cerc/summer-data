@@ -17,6 +17,10 @@ import com.aliyun.mns.model.Message;
 
 public abstract class AbstractTopicQueue extends AbstractDataRowQueue {
 
+    public AbstractTopicQueue() throws Exception {
+        super();
+    }
+
     @Override
     protected String getMessageBody(Message msg) {
         var items = decode(msg.getMessageBodyAsRawString());

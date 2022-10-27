@@ -30,6 +30,13 @@ public class QueueServer implements IConnection {
     public static final String AccountEndpoint = "mns.accountendpoint";
     public static final String AccessKeyId = "mns.accesskeyid";
     public static final String AccessKeySecret = "mns.accesskeysecret";
+    public static final String RMQAccountEndpoint = "rocketmq.endpoint";
+    public static final String RMQInstanceId = "rocketmq.instanceId";
+    public static final String RMQEndpoint = "rocketmq.queue.endpoint";
+    public static final String RMQAccessKeyId = "rocketmq.queue.accesskeyid";
+    public static final String RMQAccessKeySecret = "rocketmq.queue.accesskeysecret";
+    public static final String RMQAccountAccessKeyId = "oss.accessKeyId";
+    public static final String RMQAccountAccessKeySecret = "oss.accessKeySecret";
 //    public static final String SecurityToken = "mns.securitytoken";
     // IHandle中识别码
     public static final String SessionId = "aliyunQueueSession";
@@ -39,6 +46,7 @@ public class QueueServer implements IConnection {
     private static MNSClient client;
     private static CloudAccount account;
     private static final IConfig config;
+    private static com.aliyun.rocketmq20220801.Client rmqClient;
 
     static {
         config = ServerConfig.getInstance();
@@ -184,6 +192,57 @@ public class QueueServer implements IConnection {
             client.close();
             client = null;
         }
+    }
+
+    public static synchronized com.aliyun.rocketmq20220801.Client getRmqClient() throws Exception {
+        if (rmqClient != null)
+            return rmqClient;
+        String endpoint = config.getProperty(QueueServer.RMQAccountEndpoint, null);
+        String accessId = config.getProperty(QueueServer.RMQAccountAccessKeyId, null);
+        String password = config.getProperty(QueueServer.RMQAccountAccessKeySecret, null);
+        if (endpoint == null)
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccountEndpoint));
+
+        if (accessId == null)
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccountAccessKeyId));
+
+        if (password == null)
+            throw new RuntimeException(
+                    String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccountAccessKeySecret));
+        com.aliyun.teaopenapi.models.Config config = new com.aliyun.teaopenapi.models.Config().setAccessKeyId(accessId)
+                .setAccessKeySecret(password);
+        // 访问的域password
+        config.endpoint = endpoint;
+        rmqClient = new com.aliyun.rocketmq20220801.Client(config);
+        return rmqClient;
+    }
+
+    public static String getRmqInstanceId() {
+        String instanceId = config.getProperty(QueueServer.RMQInstanceId, null);
+        if (instanceId == null)
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQInstanceId));
+        return instanceId;
+    }
+
+    public static String getRmqEndpoint() {
+        String endpoint = config.getProperty(QueueServer.RMQEndpoint, null);
+        if (endpoint == null)
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQEndpoint));
+        return endpoint;
+    }
+
+    public static String getRmqAccessKeyId() {
+        String accessKeyId = config.getProperty(QueueServer.RMQAccessKeyId, null);
+        if (accessKeyId == null)
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccessKeyId));
+        return accessKeyId;
+    }
+
+    public static String getRmqAccessSecret() {
+        String accessKeySecret = config.getProperty(QueueServer.RMQAccessKeySecret, null);
+        if (accessKeySecret == null)
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccessKeySecret));
+        return accessKeySecret;
     }
 
 }

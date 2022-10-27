@@ -8,4 +8,6 @@ public interface QueueImpl {
 
     CloudQueue getQueue();
 
+    RmqQueue getRmqQueue() throws Exception;
+
 }
