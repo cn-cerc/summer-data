@@ -22,6 +22,13 @@ public class QueueConfig {
 
 
     /**
+     * 系统消息
+     **/
+    public static  String getMessageQueue() {
+        return "message";
+    }
+
+    /**
      * 资料同步
      **/
     public static String getMaterialQueue() {
