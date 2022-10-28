@@ -1,6 +1,7 @@
 package cn.cerc.db.queue;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 import org.apache.rocketmq.client.apis.message.MessageView;
 
@@ -17,7 +18,7 @@ public class QueueQuery extends DataSet {
 
     public QueueQuery(String topic) {
         this.topic = topic;
-        QueueServer.createTopic(topic);
+        QueueServer.createTopic(topic,false);
         consumer = QueueConsumer.create(topic, QueueConfig.tag, null);
     }
 
@@ -34,7 +35,7 @@ public class QueueQuery extends DataSet {
     }
 
     public String save(String json) {
-        return QueueServer.append(this.topic, QueueConfig.tag, json);
+        return QueueServer.append(this.topic, QueueConfig.tag, json, Duration.ZERO);
     }
 
     /**

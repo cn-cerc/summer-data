@@ -169,7 +169,7 @@ public class QueueConsumer {
         tags.add("k");
         tags.add("l");
         tags.add("m");
-        QueueServer.createTopic("test");
+        QueueServer.createTopic("test",false);
 
         tags.forEach(tag -> {
             new Thread(() -> {
