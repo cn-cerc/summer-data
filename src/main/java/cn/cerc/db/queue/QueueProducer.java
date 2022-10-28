@@ -1,5 +1,6 @@
 package cn.cerc.db.queue;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,6 +69,16 @@ public class QueueProducer {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void close(){
+        if (producer!=null) {
+            try {
+                producer.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     public static void main(String[] args) throws ClientException {

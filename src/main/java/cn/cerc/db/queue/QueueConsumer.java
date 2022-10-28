@@ -42,6 +42,13 @@ public class QueueConsumer {
         boolean consume(String message);
     }
 
+    public static void closeAll() {
+        consumers.forEach((k, v) -> {
+            if (v != null)
+                v.close();
+        });
+    }
+
     public static QueueConsumer create(String topic, String tag, OnMessageCallback callback) {
         if (consumers.containsKey(String.format("%s-%s", topic, tag)))
             return consumers.get(String.format("%s-%s", topic, tag));
@@ -169,7 +176,7 @@ public class QueueConsumer {
         tags.add("k");
         tags.add("l");
         tags.add("m");
-        QueueServer.createTopic("test",false);
+        QueueServer.createTopic("test", false);
 
         tags.forEach(tag -> {
             new Thread(() -> {
