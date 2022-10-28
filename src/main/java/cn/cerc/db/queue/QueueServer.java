@@ -1,5 +1,6 @@
 package cn.cerc.db.queue;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +45,7 @@ public class QueueServer {
 
     private static final List<String> queues = new ArrayList<>();
 
-    public static void createTopic(String topic) {
+    public static void createTopic(String topic, boolean isDelayQueue) {
         if (queues.contains(topic))
             return;
 
@@ -68,7 +69,10 @@ public class QueueServer {
             }
 
             CreateTopicRequest createRequest = new CreateTopicRequest();
-            createRequest.setMessageType(MessageType.NORMAL.name());
+            if (!isDelayQueue)
+                createRequest.setMessageType(MessageType.NORMAL.name());
+            else
+                createRequest.setMessageType(apache.rocketmq.v2.MessageType.DELAY.name());
             CreateTopicResponse createResponse = getClient().createTopic(QueueServer.getInstanceId(), topic,
                     createRequest);
             if (createResponse.getBody().getSuccess()) {
@@ -81,9 +85,9 @@ public class QueueServer {
         }
     }
 
-    public static String append(String topic, String tag, String value) {
+    public static String append(String topic, String tag, String value, Duration delayTime) {
         try {
-            return producer.append(topic, tag, value);
+            return producer.append(topic, tag, value,delayTime);
         } catch (ClientException e) {
             e.printStackTrace();
         }

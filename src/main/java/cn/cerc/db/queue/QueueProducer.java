@@ -1,5 +1,6 @@
 package cn.cerc.db.queue;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,16 +37,29 @@ public class QueueProducer {
         }
     }
 
-    public String append(String topic, String tag, String value) throws ClientException {
+    public String append(String topic, String tag, String value, Duration delayTime) throws ClientException {
         // 普通消息发送
         ClientServiceProvider provider = ClientServiceProvider.loadService();
-        Message message = provider.newMessageBuilder()
-                .setTopic(topic)
-                // 设置消息Tag，用于消费端根据指定Tag过滤消息。
-                .setTag(tag)
-                // 消息体。
-                .setBody(value.getBytes())
-                .build();
+        Message message = null;
+        if (delayTime.getSeconds() > 0) {
+            message = provider.newMessageBuilder()
+                    .setTopic(topic)
+                    // 设置消息Tag，用于消费端根据指定Tag过滤消息。
+                    .setTag(tag)
+                    // 消息体。
+                    .setBody(value.getBytes())
+                    .setDeliveryTimestamp(System.currentTimeMillis() + delayTime.getSeconds() * 1000)
+                    .build();
+        } else {
+            message = provider.newMessageBuilder()
+                    .setTopic(topic)
+                    // 设置消息Tag，用于消费端根据指定Tag过滤消息。
+                    .setTag(tag)
+                    // 消息体。
+                    .setBody(value.getBytes())
+                    .build();
+        }
+
         try {
             // 发送消息，需要关注发送结果，并捕获失败等异常。
             SendReceipt sendReceipt = producer.send(message);
@@ -68,7 +82,7 @@ public class QueueProducer {
         for (int i = 0; i < 100; i++) {
             tags.forEach(tag -> {
                 try {
-                    String result = producer.append("test", tag, new Datetime().toString());
+                    String result = producer.append("test", tag, new Datetime().toString(), Duration.ZERO);
                     System.out.println("消息发送成功：" + result);
                 } catch (ClientException e) {
                     e.printStackTrace();

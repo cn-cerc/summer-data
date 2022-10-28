@@ -10,10 +10,9 @@ public abstract class AbstractObjectQueue<T> extends AbstractQueue {
      * 将dataRow发送到当前队列
      * 
      * @param object
-     * @throws ClientException
      */
     public void append(T object) {
-        QueueServer.append(getTopic(), QueueConfig.tag, new Gson().toJson(object));
+        QueueServer.append(getTopic(), QueueConfig.tag, new Gson().toJson(object),delayTime());
     }
 
 }
