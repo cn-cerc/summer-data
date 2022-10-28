@@ -1,29 +1,27 @@
 package cn.cerc.db.queue;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.rocketmq.client.apis.ClientException;
+import org.apache.rocketmq.client.java.message.MessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
-import com.aliyun.mns.client.CloudAccount;
-import com.aliyun.mns.client.CloudQueue;
-import com.aliyun.mns.client.MNSClient;
-import com.aliyun.mns.common.ClientException;
-import com.aliyun.mns.common.ServiceException;
-import com.aliyun.mns.model.Message;
-import com.aliyun.mns.model.QueueMeta;
+import com.aliyun.rocketmq20220801.Client;
+import com.aliyun.rocketmq20220801.models.CreateTopicRequest;
+import com.aliyun.rocketmq20220801.models.CreateTopicResponse;
+import com.aliyun.rocketmq20220801.models.ListTopicsRequest;
+import com.aliyun.rocketmq20220801.models.ListTopicsResponse;
+import com.aliyun.rocketmq20220801.models.ListTopicsResponseBody.ListTopicsResponseBodyDataList;
+import com.aliyun.teaopenapi.models.Config;
 
 import cn.cerc.db.SummerDB;
 import cn.cerc.db.core.ClassResource;
 import cn.cerc.db.core.IConfig;
-import cn.cerc.db.core.IConnection;
 import cn.cerc.db.core.ServerConfig;
-import cn.cerc.db.core.Utils;
 
-@Component
-@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class QueueServer implements IConnection {
+public class QueueServer {
     private static final ClassResource res = new ClassResource(QueueServer.class, SummerDB.ID);
     private static final Logger log = LoggerFactory.getLogger(QueueServer.class);
 
@@ -35,214 +33,117 @@ public class QueueServer implements IConnection {
     public static final String RMQEndpoint = "rocketmq.queue.endpoint";
     public static final String RMQAccessKeyId = "rocketmq.queue.accesskeyid";
     public static final String RMQAccessKeySecret = "rocketmq.queue.accesskeysecret";
-    public static final String RMQAccountAccessKeyId = "oss.accessKeyId";
-    public static final String RMQAccountAccessKeySecret = "oss.accessKeySecret";
-//    public static final String SecurityToken = "mns.securitytoken";
-    // IHandle中识别码
-    public static final String SessionId = "aliyunQueueSession";
 
-    // 默认不可见时间
-    private static int visibilityTimeout = 50;
-    private static MNSClient client;
-    private static CloudAccount account;
-    private static final IConfig config;
-    private static com.aliyun.rocketmq20220801.Client rmqClient;
+    private static final IConfig config = ServerConfig.getInstance();
 
-    static {
-        config = ServerConfig.getInstance();
+    private static final QueueProducer producer = new QueueProducer();
+
+    public static QueueProducer producer() {
+        return QueueServer.producer;
     }
 
-    public static synchronized MNSClient getMNSClient() {
-        if (client != null && client.isOpen())
-            return client;
+    private static final List<String> queues = new ArrayList<>();
 
-        if (account == null) {
-            String endpoint = config.getProperty(QueueServer.AccountEndpoint, null);
-            String accessId = config.getProperty(QueueServer.AccessKeyId, null);
-            String password = config.getProperty(QueueServer.AccessKeySecret, null);
-            if (endpoint == null)
-                throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccountEndpoint));
+    public static void createTopic(String topic) {
+        if (queues.contains(topic))
+            return;
 
-            if (accessId == null)
-                throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeyId));
-
-            if (password == null)
-                throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeySecret));
-
-            if (account == null)
-                account = new CloudAccount(accessId, password, endpoint);
-        }
-        if (client == null)
-            client = account.getMNSClient();
-        return client;
-
-    }
-
-    @Override
-    public MNSClient getClient() {
-        return getMNSClient();
-    }
-
-    /**
-     * 根据队列的URL创建CloudQueue对象，后于后续对改对象的创建、查询等
-     *
-     * @param queueCode 队列代码
-     * @return value 返回具体的消息队列
-     */
-    public static CloudQueue openQueue(String queueCode) {
-        return getMNSClient().getQueueRef(queueCode);
-    }
-
-    /**
-     * 创建队列
-     *
-     * @param queueCode 队列代码
-     * @return value 返回创建的队列
-     */
-    public static CloudQueue createQueue(String queueCode) {
-        QueueMeta meta = new QueueMeta();
-        // 设置队列的名字
-        meta.setQueueName(queueCode);
-        // 设置队列消息的长轮询等待时间，0为关闭长轮询
-        meta.setPollingWaitSeconds(0);
-        // 设置队列消息的最大长度，单位是byte
-        meta.setMaxMessageSize(65356L);
-        // 设置队列消息的最大长度，单位是byte
-        meta.setMessageRetentionPeriod(72000L);
-        // 设置队列消息的不可见时间，即取出消息隐藏时长，单位是秒
-        meta.setVisibilityTimeout(180L);
-        return getMNSClient().createQueue(meta);
-    }
-
-    /**
-     * 发送消息
-     *
-     * @param queue   消息队列
-     * @param content 消息内容
-     * @return value 返回值，当前均为true
-     */
-    public static boolean append(CloudQueue queue, String content) throws ServiceException, ClientException {
-        Message message = new Message();
-        message.setMessageBody(content);
-        Message result = queue.putMessage(message);
-        return !Utils.isEmpty(result.getMessageId());
-    }
-
-    /**
-     * 获取队列中的消息
-     *
-     * @param queue 消息队列
-     * @return value 返回请求的删除，可为null
-     */
-    public static Message receive(CloudQueue queue) {
-        Message message = null;
         try {
-            message = queue.popMessage();
-            if (message != null) {
-                log.debug("messageBody：{}", message.getMessageBodyAsString());
-                log.debug("messageId：{}", message.getMessageId());
-                log.debug("receiptHandle ：{}", message.getReceiptHandle());
-            } else {
-                log.debug("message  is null");
+            // TODO 临时先只加载100个，后需要改为全部加载
+            // 载入所有的topic
+            ListTopicsRequest request = new ListTopicsRequest();
+            request.setPageNumber(1);
+            request.setPageSize(100);
+
+            ListTopicsResponse response = getClient().listTopics(QueueServer.getInstanceId(), request);
+            List<ListTopicsResponseBodyDataList> list = response.getBody().getData().getList();
+            boolean exists = false;
+            if (list == null || list.size() == 0)
+                exists = false;
+            else
+                exists = list.stream().anyMatch(item -> topic.equals(item.getTopicName()));
+            if (exists) {
+                queues.add(topic);
+                return;
             }
-        } catch (ServiceException | ClientException e) {
-            log.debug(e.getMessage());
-        }
-        return message;
-    }
 
-    /**
-     * 删除消息
-     *
-     * @param queue         队列
-     * @param receiptHandle 消息句柄
-     */
-    public static void delete(CloudQueue queue, String receiptHandle) {
-        queue.deleteMessage(receiptHandle);
-    }
-
-    /**
-     * 查看队列消息
-     *
-     * @param queue 队列
-     * @return value 返回取得的消息体
-     */
-    public static Message peek(CloudQueue queue) {
-        return queue.peekMessage();
-    }
-
-    /**
-     * 延长消息不可见时间
-     *
-     * @param queue         队列
-     * @param receiptHandle 消息句柄
-     */
-    public static void changeVisibility(CloudQueue queue, String receiptHandle) {
-        // 第一个参数为旧的ReceiptHandle值，第二个参数为新的不可见时间（VisibilityTimeout）
-        String newReceiptHandle = queue.changeMessageVisibilityTimeout(receiptHandle, visibilityTimeout);
-        log.debug("new receipt handle: " + newReceiptHandle);
-    }
-
-    public IConfig getConfig() {
-        return config;
-    }
-
-    public void close() {
-        if (client != null) {
-            client.close();
-            client = null;
+            CreateTopicRequest createRequest = new CreateTopicRequest();
+            createRequest.setMessageType(MessageType.NORMAL.name());
+            CreateTopicResponse createResponse = getClient().createTopic(QueueServer.getInstanceId(), topic,
+                    createRequest);
+            if (createResponse.getBody().getSuccess()) {
+                queues.add(topic);
+                log.info("current topic {}", queues.size());
+                return;
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
     }
 
-    public static synchronized com.aliyun.rocketmq20220801.Client getRmqClient() throws Exception {
-        if (rmqClient != null)
-            return rmqClient;
+    public static String append(String topic, String tag, String value) {
+        try {
+            return producer.append(topic, tag, value);
+        } catch (ClientException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static Client getRocketmqClient() {
         String endpoint = config.getProperty(QueueServer.RMQAccountEndpoint, null);
-        String accessId = config.getProperty(QueueServer.RMQAccountAccessKeyId, null);
-        String password = config.getProperty(QueueServer.RMQAccountAccessKeySecret, null);
         if (endpoint == null)
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccountEndpoint));
 
+        String accessId = config.getProperty(QueueServer.AccessKeyId, null);
         if (accessId == null)
-            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccountAccessKeyId));
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeyId));
 
+        String password = config.getProperty(QueueServer.AccessKeySecret, null);
         if (password == null)
-            throw new RuntimeException(
-                    String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccountAccessKeySecret));
-        com.aliyun.teaopenapi.models.Config config = new com.aliyun.teaopenapi.models.Config().setAccessKeyId(accessId)
-                .setAccessKeySecret(password);
-        // 访问的域password
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeySecret));
+        Config config = new Config().setAccessKeyId(accessId).setAccessKeySecret(password);
+
         config.endpoint = endpoint;
-        rmqClient = new com.aliyun.rocketmq20220801.Client(config);
-        return rmqClient;
+        try {
+            return new Client(config);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return null;
     }
 
-    public static String getRmqInstanceId() {
+    public static String getInstanceId() {
         String instanceId = config.getProperty(QueueServer.RMQInstanceId, null);
         if (instanceId == null)
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQInstanceId));
         return instanceId;
     }
 
-    public static String getRmqEndpoint() {
+    public static String getEndpoint() {
         String endpoint = config.getProperty(QueueServer.RMQEndpoint, null);
         if (endpoint == null)
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQEndpoint));
         return endpoint;
     }
 
-    public static String getRmqAccessKeyId() {
+    public static String getAccessKeyId() {
         String accessKeyId = config.getProperty(QueueServer.RMQAccessKeyId, null);
         if (accessKeyId == null)
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccessKeyId));
         return accessKeyId;
     }
 
-    public static String getRmqAccessSecret() {
+    public static String getAccessSecret() {
         String accessKeySecret = config.getProperty(QueueServer.RMQAccessKeySecret, null);
         if (accessKeySecret == null)
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccessKeySecret));
         return accessKeySecret;
+    }
+
+    public static Client getClient() {
+        log.info("{} get mq client ", Thread.currentThread());
+        return getRocketmqClient();
     }
 
 }
