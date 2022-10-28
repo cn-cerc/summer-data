@@ -95,7 +95,7 @@ public class QueueConsumer {
                 .setCredentialProvider(sessionCredentialsProvider)
                 .build();
 
-        ClientServiceProvider provider = ClientServiceProvider.loadService();
+        final ClientServiceProvider provider = ClientServiceProvider.loadService();
         FilterExpression filterExpression = new FilterExpression(tag, FilterExpressionType.TAG);
         try {
             PushConsumer consumer = provider.newPushConsumerBuilder()

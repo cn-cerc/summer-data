@@ -15,7 +15,6 @@ import org.apache.rocketmq.client.apis.producer.SendReceipt;
 import cn.cerc.db.core.Datetime;
 
 public class QueueProducer {
-    private static final ClientServiceProvider provider = ClientServiceProvider.loadService();
     private static volatile Producer producer;
 
     public QueueProducer() {
@@ -28,6 +27,7 @@ public class QueueProducer {
                                 QueueServer.getAccessSecret()));
                 ClientConfiguration configuration = builder.build();
                 try {
+                    ClientServiceProvider provider = ClientServiceProvider.loadService();
                     producer = provider.newProducerBuilder().setClientConfiguration(configuration).build();
                 } catch (ClientException e) {
                     e.printStackTrace();
@@ -37,7 +37,8 @@ public class QueueProducer {
     }
 
     public String append(String topic, String tag, String value) throws ClientException {
-        // 普通消息发送。
+        // 普通消息发送
+        ClientServiceProvider provider = ClientServiceProvider.loadService();
         Message message = provider.newMessageBuilder()
                 .setTopic(topic)
                 // 设置消息Tag，用于消费端根据指定Tag过滤消息。

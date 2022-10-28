@@ -35,7 +35,6 @@ public class QueueServer {
     public static final String RMQAccessKeySecret = "rocketmq.queue.accesskeysecret";
 
     private static final IConfig config = ServerConfig.getInstance();
-    private static final Client client = getRocketmqClient();
 
     private static final QueueProducer producer = new QueueProducer();
 
@@ -56,7 +55,7 @@ public class QueueServer {
             request.setPageNumber(1);
             request.setPageSize(100);
 
-            ListTopicsResponse response = client.listTopics(QueueServer.getInstanceId(), request);
+            ListTopicsResponse response = getClient().listTopics(QueueServer.getInstanceId(), request);
             List<ListTopicsResponseBodyDataList> list = response.getBody().getData().getList();
             boolean exists = false;
             if (list == null || list.size() == 0)
@@ -70,7 +69,8 @@ public class QueueServer {
 
             CreateTopicRequest createRequest = new CreateTopicRequest();
             createRequest.setMessageType(MessageType.NORMAL.name());
-            CreateTopicResponse createResponse = client.createTopic(QueueServer.getInstanceId(), topic, createRequest);
+            CreateTopicResponse createResponse = getClient().createTopic(QueueServer.getInstanceId(), topic,
+                    createRequest);
             if (createResponse.getBody().getSuccess()) {
                 queues.add(topic);
                 log.info("current topic {}", queues.size());
@@ -143,7 +143,7 @@ public class QueueServer {
 
     public static Client getClient() {
         log.info("{} get mq client ", Thread.currentThread());
-        return client;
+        return getRocketmqClient();
     }
 
 }
