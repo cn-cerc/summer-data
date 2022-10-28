@@ -3,27 +3,24 @@ package cn.cerc.db.queue;
 import org.junit.Before;
 import org.junit.Test;
 
+import cn.cerc.db.core.DataSet;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
 import cn.cerc.db.core.StubSession;
 
 public class QueueQueryTest_append implements IHandle {
-    private QueueQuery dataSet;
+    private QueueQuery query;
     private ISession session;
 
     @Before
     public void setUp() {
         session = new StubSession();
-        dataSet = new QueueQuery(this);
+        query = new QueueQuery("test");
     }
 
     @Test
     public void test() {
-        // 增加模式
-        dataSet.setQueueMode(QueueMode.append);
-        dataSet.add("select * from test");
-        dataSet.open();
-        System.out.println(dataSet.getActive());
+        DataSet dataSet = new DataSet();
 
         // append head
         dataSet.head().setValue("queueHeadData1", "queueHeadData1");
@@ -39,7 +36,7 @@ public class QueueQueryTest_append implements IHandle {
         dataSet.setValue("queueBodyData4", "queueBodyData4");
         dataSet.setValue("queueBodyData5", "queueBodyData5");
 
-        dataSet.save();
+        query.save(dataSet.json());
     }
 
     @Override

@@ -40,10 +40,6 @@ public class StubSession implements ISession {
         if (MssqlServer.SessionId.equals(key)) {
             return mssql;
         }
-//        if (MongoConfig.SessionId.equals(key))
-//            return mgConn;
-        if (QueueServer.SessionId.equals(key))
-            return queConn;
         if (OssConnection.sessionId.equals(key))
             return ossConn;
         return null;
