@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.rocketmq.client.apis.ClientConfiguration;
 import org.apache.rocketmq.client.apis.ClientServiceProvider;
@@ -29,6 +31,8 @@ import cn.cerc.db.core.DataSet;
 
 public class QueueConsumer {
     private static final Logger log = LoggerFactory.getLogger(DataSet.class);
+    protected static final Map<String, QueueConsumer> consumers = new HashMap<>();
+
     private String topic;
     private String tag;
     private PushConsumer consumer;
@@ -38,7 +42,11 @@ public class QueueConsumer {
     }
 
     public static QueueConsumer create(String topic, String tag, OnMessageCallback callback) {
-        return new QueueConsumer(topic, tag, callback);
+        if (consumers.containsKey(String.format("%s-%s", topic, tag)))
+            return consumers.get(String.format("%s-%s", topic, tag));
+        QueueConsumer consumer2 = new QueueConsumer(topic, tag, callback);
+        consumers.put(String.format("%s-%s", topic, tag), consumer2);
+        return consumer2;
     }
 
     public PushConsumer consumer() {
