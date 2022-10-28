@@ -8,25 +8,20 @@ import cn.cerc.db.core.ISession;
 import cn.cerc.db.core.StubSession;
 
 public class QueueQueryTest_receive implements IHandle {
-    private QueueQuery dataSet;
+    private QueueQuery query;
     private ISession session;
 
     @Before
     public void setUp() {
         session = new StubSession();
-        dataSet = new QueueQuery(this);
+        query = new QueueQuery("test");
     }
 
     @Test
     public void test() {
-        dataSet.setQueueMode(QueueMode.recevie);
-        dataSet.add("select * from test");
-        dataSet.open();
-
-        System.out.println(dataSet.getActive());
-        System.out.println(dataSet.json());
+        System.out.println(query.open().json());
         // do something
-        dataSet.remove();
+        query.remove();
     }
 
     @Override
