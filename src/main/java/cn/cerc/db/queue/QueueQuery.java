@@ -16,6 +16,7 @@ public class QueueQuery extends DataSet {
     private transient String topic;
 
     public QueueQuery(String topic) {
+        this.topic = topic;
         QueueServer.createTopic(topic);
         consumer = QueueConsumer.create(topic, QueueConfig.tag, null);
     }
