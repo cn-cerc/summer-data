@@ -28,6 +28,7 @@ import com.aliyun.rocketmq20220801.models.GetConsumerGroupResponse;
 import com.aliyun.rocketmq20220801.models.GetConsumerGroupResponseBody.GetConsumerGroupResponseBodyData;
 
 import cn.cerc.db.core.DataSet;
+import cn.cerc.db.core.ServerConfig;
 
 public class QueueConsumer {
     private static final Logger log = LoggerFactory.getLogger(DataSet.class);
@@ -67,6 +68,8 @@ public class QueueConsumer {
         this.topic = topic;
         this.tag = tag;
 
+        if (!ServerConfig.enableTaskService())
+            return;
         String consumerGroup = String.format("%s-%s-%s", "G", topic, tag);
         Client client = QueueServer.getClient();
         try {
