@@ -4,7 +4,11 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.rocketmq.client.apis.ClientConfiguration;
+import org.apache.rocketmq.client.apis.ClientConfigurationBuilder;
 import org.apache.rocketmq.client.apis.ClientException;
+import org.apache.rocketmq.client.apis.ClientServiceProvider;
+import org.apache.rocketmq.client.apis.StaticSessionCredentialsProvider;
 import org.apache.rocketmq.client.java.message.MessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +48,8 @@ public class QueueServer {
     }
 
     private static final List<String> queues = new ArrayList<>();
+
+    private static ClientServiceProvider provider;
 
     public static void createTopic(String topic, boolean isDelayQueue) {
         if (queues.contains(topic))
@@ -87,7 +93,7 @@ public class QueueServer {
 
     public static String append(String topic, String tag, String value, Duration delayTime) {
         try {
-            return producer.append(topic, tag, value,delayTime);
+            return producer.append(topic, tag, value, delayTime);
         } catch (ClientException e) {
             e.printStackTrace();
         }
@@ -148,6 +154,22 @@ public class QueueServer {
     public static Client getClient() {
         log.info("{} get mq client ", Thread.currentThread());
         return getRocketmqClient();
+    }
+
+    public static synchronized ClientServiceProvider loadService() {
+        if (provider == null)
+            provider = ClientServiceProvider.loadService();
+        return provider;
+    }
+
+    public static ClientConfiguration getConfig() {
+        loadService();
+        var credentialsProvider = new StaticSessionCredentialsProvider(QueueServer.getAccessKeyId(),
+                QueueServer.getAccessSecret());
+        ClientConfigurationBuilder builder = ClientConfiguration.newBuilder()
+                .setEndpoints(QueueServer.getEndpoint())
+                .setCredentialProvider(credentialsProvider);
+        return builder.build();
     }
 
 }
