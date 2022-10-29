@@ -9,30 +9,51 @@ import cn.cerc.db.queue.QueueConsumer.OnMessageCallback;
 
 public abstract class AbstractQueue {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
+    private QueueConsumer consumer;
+    private long delayTime = 0L;
+    private String tag;
 
-    protected QueueConsumer consumer;
+    public AbstractQueue() {
+        super();
+        log.info("Queue {} {} is init ", this.getClass().getSimpleName(), getTopic());
+        this.tag = QueueConfig.tag;
+        //
+        QueueServer.createTopic(this.getTopic(), this.getDelayTime() > 0);
+        this.consumer = QueueConsumer.create(this.getTopic(), this.getTag(), onMessage());
+    }
 
     public abstract String getTopic();
 
     public abstract OnMessageCallback onMessage();
 
-    public Duration delayTime() {
-        return Duration.ZERO;
-    }
-
-    public AbstractQueue() {
-        log.info("Queue {} {} is init ", this.getClass().getSimpleName(), getTopic());
-        QueueServer.createTopic(this.getTopic(), delayTime().getSeconds() > 0);
-        QueueConsumer consumer = QueueConsumer.create(this.getTopic(), QueueConfig.tag, onMessage());
-        this.consumer = consumer;
-    }
-
     protected String sendMessage(String data) {
-        return QueueServer.append(getTopic(), getTag(), data, Duration.ofSeconds(0));
+        return QueueServer.append(getTopic(), getTag(), data, Duration.ofSeconds(this.delayTime));
+    }
+
+    public long getDelayTime() {
+        return this.delayTime;
+    }
+
+    public AbstractQueue setDelayTime(long delayTime) {
+        this.delayTime = delayTime;
+        return this;
+    }
+
+    public AbstractQueue setTag(String tag) {
+        this.tag = tag;
+        return this;
     }
 
     protected String getTag() {
-        return QueueConfig.tag;
+        return this.tag;
+    }
+
+    public QueueConsumer getConsumer() {
+        return consumer;
+    }
+
+    public void setConsumer(QueueConsumer consumer) {
+        this.consumer = consumer;
     }
 
 }
