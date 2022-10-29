@@ -18,8 +18,8 @@ public class QueueQuery extends DataSet {
 
     public QueueQuery(String topic) {
         this.topic = topic;
-        QueueServer.createTopic(topic,false);
-        consumer = QueueConsumer.create(topic, QueueConfig.tag, null);
+        QueueServer.createTopic(topic, false);
+        consumer = QueueConsumer.getConsumer(topic, QueueConfig.tag);
     }
 
     public QueueQuery open() {
@@ -35,7 +35,9 @@ public class QueueQuery extends DataSet {
     }
 
     public String save(String json) {
-        return QueueServer.append(this.topic, QueueConfig.tag, json, Duration.ZERO);
+        try (var queue = QueueProducer(this.topic, QueueConfig.tag)) {
+            return QueueServer.append(json, Duration.ZERO);
+        }
     }
 
     /**
