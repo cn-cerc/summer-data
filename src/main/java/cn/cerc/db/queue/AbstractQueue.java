@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.cerc.db.queue.QueueConsumer.OnMessageCallback;
 
-public abstract class AbstractQueue {
+public abstract class AbstractQueue implements OnMessageCallback {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
     private QueueConsumer consumer;
     private long delayTime = 0L;
@@ -19,12 +19,10 @@ public abstract class AbstractQueue {
         this.tag = QueueConfig.tag;
         //
         QueueServer.createTopic(this.getTopic(), this.getDelayTime() > 0);
-        this.consumer = QueueConsumer.create(this.getTopic(), this.getTag(), onMessage());
+        this.consumer = QueueConsumer.create(this.getTopic(), this.getTag(), this);
     }
 
     public abstract String getTopic();
-
-    public abstract OnMessageCallback onMessage();
 
     protected String sendMessage(String data) {
         return QueueServer.append(getTopic(), getTag(), data, Duration.ofSeconds(this.delayTime));

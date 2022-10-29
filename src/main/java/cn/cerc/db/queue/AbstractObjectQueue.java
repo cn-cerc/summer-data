@@ -15,4 +15,12 @@ public abstract class AbstractObjectQueue<T> extends AbstractQueue {
         super.sendMessage(new Gson().toJson(object));
     }
 
+    @Override
+    public boolean consume(String message) {
+        T entity = new Gson().fromJson(message, getClazz());
+        return this.execute(entity);
+    }
+
+    public abstract boolean execute(T entity);
+
 }

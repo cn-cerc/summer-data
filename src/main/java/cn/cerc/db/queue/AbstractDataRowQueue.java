@@ -11,4 +11,11 @@ public abstract class AbstractDataRowQueue extends AbstractQueue {
         return super.sendMessage(dataRow.json());
     }
 
+    @Override
+    public boolean consume(String message) {
+        return this.execute(new DataRow().setJson(message));
+    }
+
+    public abstract boolean execute(DataRow data);
+
 }
