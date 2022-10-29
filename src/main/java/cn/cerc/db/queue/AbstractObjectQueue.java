@@ -12,7 +12,7 @@ public abstract class AbstractObjectQueue<T> extends AbstractQueue {
      * @param object
      */
     public void append(T object) {
-        QueueServer.append(getTopic(), QueueConfig.tag, new Gson().toJson(object),delayTime());
+        super.sendMessage(new Gson().toJson(object));
     }
 
 }
