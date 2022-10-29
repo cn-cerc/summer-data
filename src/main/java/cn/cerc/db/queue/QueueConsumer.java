@@ -34,8 +34,8 @@ public class QueueConsumer {
     private static final Logger log = LoggerFactory.getLogger(DataSet.class);
     protected static final Map<String, QueueConsumer> consumers = new HashMap<>();
 
-    private String topic;
-    private String tag;
+    private final String topic;
+    private final String tag;
     private PushConsumer consumer;
 
     public interface OnMessageCallback {
@@ -92,7 +92,7 @@ public class QueueConsumer {
                 CreateConsumerGroupResponse createResponse = client.createConsumerGroup(QueueServer.getInstanceId(),
                         consumerGroup, request);
                 if (!createResponse.getBody().getSuccess()) {
-                    log.error("创建消费组 {} 失败");
+                    log.error("创建消费组 {} 失败",consumerGroup);
                     return;
                 }
             }
@@ -116,7 +116,7 @@ public class QueueConsumer {
         final ClientServiceProvider provider = ClientServiceProvider.loadService();
         FilterExpression filterExpression = new FilterExpression(tag, FilterExpressionType.TAG);
         try {
-            PushConsumer consumer = provider.newPushConsumerBuilder()
+            this.consumer = provider.newPushConsumerBuilder()
                     .setClientConfiguration(clientConfiguration)
                     .setConsumerGroup(consumerGroup)
                     .setSubscriptionExpressions(Collections.singletonMap(topic, filterExpression))
@@ -125,7 +125,6 @@ public class QueueConsumer {
                                     ? ConsumeResult.SUCCESS
                                     : ConsumeResult.FAILURE)
                     .build();
-            this.consumer = consumer;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
