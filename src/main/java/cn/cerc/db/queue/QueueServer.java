@@ -1,12 +1,10 @@
 package cn.cerc.db.queue;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.rocketmq.client.apis.ClientConfiguration;
 import org.apache.rocketmq.client.apis.ClientConfigurationBuilder;
-import org.apache.rocketmq.client.apis.ClientException;
 import org.apache.rocketmq.client.apis.ClientServiceProvider;
 import org.apache.rocketmq.client.apis.StaticSessionCredentialsProvider;
 import org.apache.rocketmq.client.java.message.MessageType;
@@ -40,12 +38,6 @@ public class QueueServer {
     public static final String RMQAccessKeySecret = "rocketmq.queue.accesskeysecret";
 
     private static final IConfig config = ServerConfig.getInstance();
-
-    private static final QueueProducer producer = new QueueProducer();
-
-    public static QueueProducer producer() {
-        return QueueServer.producer;
-    }
 
     private static final List<String> queues = new ArrayList<>();
 
@@ -89,15 +81,6 @@ public class QueueServer {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-    }
-
-    public static String append(String topic, String tag, String value, Duration delayTime) {
-        try {
-            return producer.append(topic, tag, value, delayTime);
-        } catch (ClientException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     public static Client getRocketmqClient() {
