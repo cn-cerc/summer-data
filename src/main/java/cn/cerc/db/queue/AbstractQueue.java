@@ -18,7 +18,7 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
 
     public AbstractQueue() {
         super();
-        log.info("{} {} is init ", this.getClass().getSimpleName(), getTopic());
+        log.debug("{} {} is init ", this.getClass().getSimpleName(), getTopic());
         // 检查消费主题、队列组是否有创建
         try (QueueConsumer temp = new QueueConsumer(this.getTopic(), getTag())) {
             temp.createQueueTopic(this.getDelayTime() > 0);
