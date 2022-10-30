@@ -22,22 +22,23 @@ import com.aliyun.teaopenapi.models.Config;
 import cn.cerc.db.SummerDB;
 import cn.cerc.db.core.ClassResource;
 import cn.cerc.db.core.IConfig;
-import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.zk.ZkConfig;
 
 public class QueueServer {
     private static final ClassResource res = new ClassResource(QueueServer.class, SummerDB.ID);
     private static final Logger log = LoggerFactory.getLogger(QueueServer.class);
 
-    public static final String AccountEndpoint = "mns.accountendpoint";
-    public static final String AccessKeyId = "mns.accesskeyid";
-    public static final String AccessKeySecret = "mns.accesskeysecret";
-    public static final String RMQAccountEndpoint = "rocketmq.endpoint";
-    public static final String RMQInstanceId = "rocketmq.instanceId";
-    public static final String RMQEndpoint = "rocketmq.queue.endpoint";
-    public static final String RMQAccessKeyId = "rocketmq.queue.accesskeyid";
-    public static final String RMQAccessKeySecret = "rocketmq.queue.accesskeysecret";
+//    public static final String AccountEndpoint = "mns.accountendpoint";
+//    public static final String AccessKeyId = "mns.accesskeyid";
+//    public static final String AccessKeySecret = "mns.accesskeysecret";
+    
+    public static final String RMQAccountEndpoint = "accountEndpoint";
+    public static final String RMQInstanceId = "instanceId";
+    public static final String RMQEndpoint = "endpoint";
+    public static final String RMQAccessKeyId = "accessKeyId";
+    public static final String RMQAccessKeySecret = "accessKeySecret";
 
-    private static final IConfig config = ServerConfig.getInstance();
+    private static final IConfig config = new ZkConfig("/rocketmq");
 
     private static final List<String> queues = new ArrayList<>();
 
@@ -88,11 +89,11 @@ public class QueueServer {
         if (endpoint == null)
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccountEndpoint));
 
-        String accessId = config.getProperty(QueueServer.AccessKeyId, null);
+        String accessId = config.getProperty(QueueServer.RMQAccessKeyId, null);
         if (accessId == null)
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeyId));
 
-        String password = config.getProperty(QueueServer.AccessKeySecret, null);
+        String password = config.getProperty(QueueServer.RMQAccessKeySecret, null);
         if (password == null)
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeySecret));
         Config config = new Config().setAccessKeyId(accessId).setAccessKeySecret(password);
