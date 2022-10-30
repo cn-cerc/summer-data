@@ -69,28 +69,4 @@ public class ZkConfig {
         return server.exists(createKey(path, ""));
     }
 
-    public static void main(String[] args) {
-        // 直接使用
-        System.out.println(server.exists("/java"));
-        System.out.println(server.exists("/java9"));
-        System.out.println(server.getValue("/java"));
-        //
-        ZkConfig conf = new ZkConfig("/mysql");
-        System.out.println(conf.exists());
-        // 赋值
-        conf.setValue("host", "127.0.01");
-        conf.setValue("port", "80");
-        // 取值
-        System.out.println(conf.getString("port", ""));
-        // 列出所有的子key
-        for (var item : conf.list()) {
-            System.out.println(item);
-        }
-        // 列出所有的子key与值
-        conf.map().forEach((key, value) -> {
-            System.out.println(String.format("key: %s, value=%s", key, value));
-        });
-        server.close();
-    }
-
 }

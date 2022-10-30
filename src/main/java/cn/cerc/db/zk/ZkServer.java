@@ -81,7 +81,15 @@ public class ZkServer implements AutoCloseable, Watcher {
      * @return 返回创建的节点名称
      */
     public String create(String path, String value) {
+        var site = path.lastIndexOf("/");
+        if (site > 0) {
+            var parent = path.substring(0, site);
+            if (!this.exists(parent))
+                this.create(parent, "");
+        }
+
         try {
+            log.info("create node: " + path);
             // 参数：1，节点路径； 2，要存储的数据； 3，节点的权限； 4，节点的类型
             return client.create(path, value.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
         } catch (KeeperException | InterruptedException e) {
@@ -188,5 +196,4 @@ public class ZkServer implements AutoCloseable, Watcher {
     public String getHost() {
         return host;
     }
-
 }
