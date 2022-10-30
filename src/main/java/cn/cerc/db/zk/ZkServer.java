@@ -50,9 +50,9 @@ public class ZkServer implements AutoCloseable, Watcher {
         if (event.getType() == EventType.None) {
             cdl.countDown();
             if (event.getState() == KeeperState.SyncConnected) {
-                log.info("ZooKeeper 联接成功");
+                log.info("ZooKeeper 成功联接到 " + this.getHost());
             } else if (event.getState() == KeeperState.Closed) {
-                log.info("ZooKeeper 关闭联接");
+                log.info("ZooKeeper 关闭联接 " + this.getHost());
             } else
                 System.out.println("未处理事件：" + event.getState().name());
         }
