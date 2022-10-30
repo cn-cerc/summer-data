@@ -10,9 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.cerc.db.core.ServerConfig;
-import cn.cerc.db.queue.QueueConsumer.OnMessageCallback;
 
-public abstract class AbstractQueue implements OnMessageCallback, ServletContextListener {
+public abstract class AbstractQueue implements OnStringMessage, ServletContextListener {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
     private QueueConsumer consumer;
     private long delayTime = 0L;

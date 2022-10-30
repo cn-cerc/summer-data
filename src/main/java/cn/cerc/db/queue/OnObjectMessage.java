@@ -1,5 +1,5 @@
 package cn.cerc.db.queue;
 
-public interface OnReceiveObject<T> {
+public interface OnObjectMessage<T> {
     boolean execute(T entity);
 }

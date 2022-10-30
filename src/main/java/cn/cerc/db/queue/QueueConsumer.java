@@ -39,10 +39,6 @@ public class QueueConsumer implements AutoCloseable {
     private PushConsumer consumer;
     private ClientServiceProvider provider;
 
-    public interface OnMessageCallback {
-        boolean consume(String message);
-    }
-
     public static synchronized QueueConsumer getConsumer(String topic, String tag) {
         String key = String.format("%s-%s", topic, tag);
         if (consumers.containsKey(key))
@@ -75,7 +71,7 @@ public class QueueConsumer implements AutoCloseable {
         QueueServer.createTopic(this.getTopic(), isDelayQueue);
     }
 
-    public void createQueueGroup(OnMessageCallback watcher) {
+    public void createQueueGroup(OnStringMessage watcher) {
         String groupId = this.getGroupId();
         Client client = QueueServer.getClient();
         try {
@@ -129,7 +125,7 @@ public class QueueConsumer implements AutoCloseable {
             return String.format("G-%s-%s", topic, tag);
     }
 
-    public synchronized boolean receive(OnMessageCallback pull) {
+    public synchronized boolean receive(OnStringMessage pull) {
         String consumerGroup = this.getGroupId();
         // 拉取时，等服务器多久
         Duration awaitDuration = Duration.ofSeconds(0L);
