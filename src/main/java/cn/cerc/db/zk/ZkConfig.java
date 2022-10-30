@@ -4,18 +4,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.cerc.db.core.Utils;
+
 public class ZkConfig {
-    private ZkServer server;
     private String path;
+    private static ZkServer server;
 
-    public ZkConfig(ZkServer server) {
-        this(server, "");
-    }
-
-    public ZkConfig(ZkServer server, String path) {
+    public ZkConfig(String path) {
         super();
-        this.server = server;
+        if (Utils.isEmpty(path))
+            throw new RuntimeException("path not is empty");
         this.path = path;
+        synchronized (ZkConfig.class) {
+            if (ZkConfig.server == null)
+                ZkConfig.server = new ZkServer();
+        }
     }
 
     public String path() {
@@ -63,13 +66,12 @@ public class ZkConfig {
     }
 
     public static void main(String[] args) {
-        ZkServer server = new ZkServer();
         // 直接使用
         System.out.println(server.exists("/java"));
         System.out.println(server.exists("/java9"));
         System.out.println(server.getValue("/java"));
         //
-        ZkConfig conf = new ZkConfig(server, "/mysql");
+        ZkConfig conf = new ZkConfig("/mysql");
         System.out.println(conf.exists());
         // 赋值
         conf.setValue("host", "127.0.01");
@@ -85,6 +87,11 @@ public class ZkConfig {
             System.out.println(String.format("key: %s, value=%s", key, value));
         });
         server.close();
+    }
+
+    public int getInt(String key, int def) {
+        var value = this.getString(key, null);
+        return value != null ? Integer.parseInt(value) : def;
     }
 
 }
