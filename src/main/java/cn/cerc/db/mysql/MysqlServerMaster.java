@@ -22,7 +22,7 @@ public class MysqlServerMaster extends MysqlServer {
     private static final ZkConfig config = new ZkConfig("/mysql");
 
     static {
-        if (config.bind(MysqlConfig.rds_MaxPoolSize, 0).getInt() > 0)
+        if (config.getInt(MysqlConfig.rds_MaxPoolSize, 0) > 0)
             dataSource = MysqlServer.createDataSource(config);
     }
 
@@ -34,9 +34,9 @@ public class MysqlServerMaster extends MysqlServer {
         try {
             // 不使用线程池直接创建
             if (getConnection() == null) {
-                var host = config.bind(MysqlConfig.rds_site).getString();
-                var database = config.bind(MysqlConfig.rds_database).getString();
-                var timezone = config.bind(MysqlConfig.rds_ServerTimezone).getString();
+                var host = config.getString(MysqlConfig.rds_site);
+                var database = config.getString(MysqlConfig.rds_database);
+                var timezone = config.getString(MysqlConfig.rds_ServerTimezone);
                 if (Utils.isEmpty(host) || Utils.isEmpty(database) || Utils.isEmpty(timezone))
                     throw new RuntimeException("mysql connection config is null");
                 var jdbcUrl = String.format(
@@ -44,8 +44,8 @@ public class MysqlServerMaster extends MysqlServer {
                         host, database, timezone);
 
                 Class.forName(MysqlConfig.JdbcDriver);
-                setConnection(DriverManager.getConnection(jdbcUrl, config.bind(MysqlConfig.rds_username).getString(),
-                        config.bind(MysqlConfig.rds_password).getString()));
+                setConnection(DriverManager.getConnection(jdbcUrl, config.getString(MysqlConfig.rds_username),
+                        config.getString(MysqlConfig.rds_password)));
             }
             return getConnection();
         } catch (SQLException e) {
@@ -62,12 +62,12 @@ public class MysqlServerMaster extends MysqlServer {
 
     @Override
     public String getHost() {
-        return config.bind(MysqlConfig.rds_site).getString();
+        return config.getString(MysqlConfig.rds_site);
     }
 
     @Override
     public String getDatabase() {
-        return config.bind(MysqlConfig.rds_database).getString();
+        return config.getString(MysqlConfig.rds_database);
     }
 
     public static void openPool() {

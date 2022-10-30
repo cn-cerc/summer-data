@@ -16,11 +16,11 @@ import org.springframework.stereotype.Component;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import com.mchange.v2.resourcepool.TimeoutException;
 
-import cn.cerc.db.core.IConfig;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISqlServer;
 import cn.cerc.db.core.ServerClient;
 import cn.cerc.db.core.Utils;
+import cn.cerc.db.zk.ZkConfig;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -71,7 +71,7 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
         this.tag = tag;
     }
 
-    protected static final ComboPooledDataSource createDataSource(IConfig config) {
+    protected static final ComboPooledDataSource createDataSource(ZkConfig config) {
         log.info("create pool to: " + config.getProperty(MysqlConfig.rds_site));
         // 使用线程池创建
         ComboPooledDataSource dataSource = new ComboPooledDataSource();
@@ -82,9 +82,9 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
             throw new RuntimeException(e);
         }
 
-        var host = config.bind(MysqlConfig.rds_site).getString();
-        var database = config.bind(MysqlConfig.rds_database).getString();
-        var timezone = config.bind(MysqlConfig.rds_ServerTimezone).getString();
+        var host = config.getString(MysqlConfig.rds_site);
+        var database = config.getString(MysqlConfig.rds_database);
+        var timezone = config.getString(MysqlConfig.rds_ServerTimezone);
         if (Utils.isEmpty(host) || Utils.isEmpty(database) || Utils.isEmpty(timezone))
             throw new RuntimeException("mysql connection config is null");
 
@@ -93,17 +93,17 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
                 host, database, timezone);
 
         dataSource.setJdbcUrl(jdbcUrl);
-        dataSource.setUser(config.bind(MysqlConfig.rds_username).getString());
-        dataSource.setPassword(config.bind(MysqlConfig.rds_password).getString());
+        dataSource.setUser(config.getString(MysqlConfig.rds_username));
+        dataSource.setPassword(config.getString(MysqlConfig.rds_password));
         // 连接池大小设置
-        dataSource.setMaxPoolSize(config.bind(MysqlConfig.rds_MaxPoolSize, 0).getInt());
-        dataSource.setMinPoolSize(config.bind(MysqlConfig.rds_MinPoolSize, 9).getInt());
-        dataSource.setInitialPoolSize(config.bind(MysqlConfig.rds_InitialPoolSize, 3).getInt());
+        dataSource.setMaxPoolSize(config.getInt(MysqlConfig.rds_MaxPoolSize, 0));
+        dataSource.setMinPoolSize(config.getInt(MysqlConfig.rds_MinPoolSize, 9));
+        dataSource.setInitialPoolSize(config.getInt(MysqlConfig.rds_InitialPoolSize, 3));
         // 连接池断开控制
-        dataSource.setCheckoutTimeout(config.bind(MysqlConfig.rds_CheckoutTimeout, 500).getInt()); // 单位毫秒
-        dataSource.setMaxIdleTime(config.bind(MysqlConfig.rds_MaxIdleTime, 7800).getInt()); // 空闲自动断开时间
+        dataSource.setCheckoutTimeout(config.getInt(MysqlConfig.rds_CheckoutTimeout, 500)); // 单位毫秒
+        dataSource.setMaxIdleTime(config.getInt(MysqlConfig.rds_MaxIdleTime, 7800)); // 空闲自动断开时间
         // 每隔多少时间（时间请小于 数据库的 timeout）,测试一下链接，防止失效，会损失小部分性能
-        dataSource.setIdleConnectionTestPeriod(config.bind(MysqlConfig.rds_IdleConnectionTestPeriod, 9).getInt()); // 单位秒
+        dataSource.setIdleConnectionTestPeriod(config.getInt(MysqlConfig.rds_IdleConnectionTestPeriod, 9)); // 单位秒
         dataSource.setTestConnectionOnCheckin(true);
         dataSource.setTestConnectionOnCheckout(false);
 

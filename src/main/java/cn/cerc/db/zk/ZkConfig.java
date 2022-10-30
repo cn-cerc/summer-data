@@ -34,9 +34,9 @@ public class ZkConfig implements IConfig {
             this.fixRedis();
         if ("/rocketMQ".equals(path) && !this.exists())
             this.fixRocketMQ();
-        if ("/mysql".equals(path) && !this.exists())
+        if ("/mysql".equals(path))
             this.fixMysqlMaster();
-        if ("/mysql/slave".equals(path) && !this.exists())
+        if ("/mysql/slave".equals(path))
             this.fixMysqlSlave();
 
     }
@@ -71,8 +71,17 @@ public class ZkConfig implements IConfig {
         return this.getProperty(key, def);
     }
 
+    public String getString(String key) {
+        return this.getProperty(key, "");
+    }
+
     public int getInt(String key, int def) {
         var result = this.getProperty(key, "" + def);
+        return Integer.parseInt(result);
+    }
+
+    public int getInt(String key) {
+        var result = this.getProperty(key, "0");
         return Integer.parseInt(result);
     }
 
@@ -148,7 +157,6 @@ public class ZkConfig implements IConfig {
     private void fixMysqlSlave() {
         log.warn("fixMysql: 自动结转旧的配置数据-从库");
         ZkConfig zkc = new ZkConfig("/mysql");
-
         setValue(MysqlConfig.rds_site, config.getProperty("rds.site.slave", zkc.getProperty(MysqlConfig.rds_site)));
         setValue(MysqlConfig.rds_database,
                 config.getProperty("rds.database.slave", zkc.getProperty(MysqlConfig.rds_database)));
