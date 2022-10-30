@@ -122,6 +122,8 @@ public class JedisFactory {
         }
 
         String password = config.getString("password" + extKey, null);
+        if ("".equals(password))
+            password = null;
         int timeout = config.getInt("timeout" + extKey, 10000);
 
         // 建立连接池
@@ -142,6 +144,7 @@ public class JedisFactory {
             return jedisPool.getResource();
         } catch (JedisConnectionException e) {
             if (error < 3) {
+                e.printStackTrace();
                 log.error("redis server {}:{} not run.", host, port);
                 error++;
             }
