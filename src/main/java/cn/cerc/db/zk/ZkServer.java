@@ -9,23 +9,31 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooDefs;
-import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.Watcher.Event.EventType;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
+import org.apache.zookeeper.ZooDefs;
+import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import cn.cerc.db.core.ServerConfig;
 
 public class ZkServer implements AutoCloseable, Watcher {
     private static final Logger log = LoggerFactory.getLogger(ZkServer.class);
     private CountDownLatch cdl;
     private ZooKeeper client;
+    private String host;
 
     public ZkServer() {
+        this.host = ServerConfig.getInstance().getProperty("zooKeeper.host");
+        if (host == null) {
+            log.error("严重错误：读取不到 zooKeeper.host 配置项！");
+            return;
+        }
         try {
             cdl = new CountDownLatch(1);
-            this.client = new ZooKeeper("124.71.177.22:2181,", 15000, this);
+            this.client = new ZooKeeper(host, 15000, this);
             cdl.await(); // 等待zk联接成功
         } catch (IOException | InterruptedException e) {
             log.error(e.getMessage());
@@ -173,6 +181,10 @@ public class ZkServer implements AutoCloseable, Watcher {
             e.printStackTrace();
         }
         return this;
+    }
+
+    public String getHost() {
+        return host;
     }
 
 }
