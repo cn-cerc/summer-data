@@ -135,7 +135,7 @@ public class QueueServer {
     }
 
     public static Client getClient() {
-        log.info("{} get mq client ", Thread.currentThread());
+        log.debug("{} get client from RocketMQ", Thread.currentThread());
         return getRocketmqClient();
     }
 
