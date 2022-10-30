@@ -33,13 +33,17 @@ public class ZkConfig {
             result = path + key;
         else
             result = path + "/" + key;
-        System.out.println("result key: " + result);
         return result;
     }
 
     public String getString(String key, String def) {
         var result = server.getValue(createKey(path, key));
         return result != null ? result : def;
+    }
+
+    public int getInt(String key, int def) {
+        var result = server.getValue(createKey(path, key));
+        return result != null ? Integer.parseInt(result) : def;
     }
 
     public void setValue(String key, String value) {
@@ -87,11 +91,6 @@ public class ZkConfig {
             System.out.println(String.format("key: %s, value=%s", key, value));
         });
         server.close();
-    }
-
-    public int getInt(String key, int def) {
-        var value = this.getString(key, null);
-        return value != null ? Integer.parseInt(value) : def;
     }
 
 }

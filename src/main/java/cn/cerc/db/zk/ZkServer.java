@@ -154,8 +154,10 @@ public class ZkServer implements AutoCloseable, Watcher {
             Stat stat = client.exists(node, false);
             if (stat != null)
                 return new String(client.getData(node, false, stat), "UTF-8");
-            else
+            else {
+                log.warn("node %s not find", node);
                 return null;
+            }
         } catch (KeeperException | InterruptedException | UnsupportedEncodingException e) {
             log.error(e.getMessage());
             e.printStackTrace();
