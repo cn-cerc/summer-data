@@ -131,6 +131,7 @@ public class ZkServer implements AutoCloseable, Watcher {
             Stat stat = client.exists(node, false);
             return stat != null;
         } catch (KeeperException | InterruptedException e) {
+            log.error("exists error, node=" + node);
             log.error(e.getMessage());
             e.printStackTrace();
             return false;
