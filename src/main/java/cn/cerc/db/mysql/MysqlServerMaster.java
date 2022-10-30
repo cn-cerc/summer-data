@@ -10,17 +10,19 @@ import org.springframework.stereotype.Component;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
+import cn.cerc.db.core.Utils;
+import cn.cerc.db.zk.ZkConfig;
+
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MysqlServerMaster extends MysqlServer {
     // IHandle中识别码
     public static final String SessionId = "sqlSession";
     private static ComboPooledDataSource dataSource;
-    private static final MysqlConfig config;
+    private static final ZkConfig config = new ZkConfig("/mysql");
 
     static {
-        config = new MysqlConfig();
-        if (config.getMaxPoolSize() > 0)
+        if (config.bind(MysqlConfig.rds_MaxPoolSize, 0).getInt() > 0)
             dataSource = MysqlServer.createDataSource(config);
     }
 
@@ -32,9 +34,18 @@ public class MysqlServerMaster extends MysqlServer {
         try {
             // 不使用线程池直接创建
             if (getConnection() == null) {
+                var host = config.bind(MysqlConfig.rds_site).getString();
+                var database = config.bind(MysqlConfig.rds_database).getString();
+                var timezone = config.bind(MysqlConfig.rds_ServerTimezone).getString();
+                if (Utils.isEmpty(host) || Utils.isEmpty(database) || Utils.isEmpty(timezone))
+                    throw new RuntimeException("mysql connection config is null");
+                var jdbcUrl = String.format(
+                        "jdbc:mysql://%s/%s?useSSL=false&autoReconnect=true&autoCommit=false&useUnicode=true&characterEncoding=utf8&serverTimezone=%s",
+                        host, database, timezone);
+
                 Class.forName(MysqlConfig.JdbcDriver);
-                setConnection(
-                        DriverManager.getConnection(config.getConnectUrl(), config.getUser(), config.getPassword()));
+                setConnection(DriverManager.getConnection(jdbcUrl, config.bind(MysqlConfig.rds_username).getString(),
+                        config.bind(MysqlConfig.rds_password).getString()));
             }
             return getConnection();
         } catch (SQLException e) {
@@ -51,12 +62,12 @@ public class MysqlServerMaster extends MysqlServer {
 
     @Override
     public String getHost() {
-        return config.getHost();
+        return config.bind(MysqlConfig.rds_site).getString();
     }
 
     @Override
     public String getDatabase() {
-        return config.getDatabase();
+        return config.bind(MysqlConfig.rds_database).getString();
     }
 
     public static void openPool() {
