@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
-import cn.cerc.db.core.ClassConfig;
+import cn.cerc.db.zk.ZkConfig;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -26,23 +26,24 @@ public class MysqlServerSlave extends MysqlServer {
     static {
         config = new MysqlConfig();
 
-        final String salve = ".slave";
-        final ClassConfig appConfig = MysqlConfig.appConfig;
+//        final String salve = ".slave";
+        final ZkConfig appConfig = new ZkConfig("/mysql/slave");
 
         // mysql 连接相关，在未设置时，将与master库相同
         final String server = config.getHost();
         final String database = config.getDatabase();
         final String user = config.getUser();
         final String password = config.getPassword();
-        config.setServer(appConfig.getString(MysqlConfig.rds_site + salve, server));
-        config.setDatabase(appConfig.getString(MysqlConfig.rds_database + salve, database));
-        config.setUser(appConfig.getString(MysqlConfig.rds_username + salve, user));
-        config.setPassword(appConfig.getString(MysqlConfig.rds_password + salve, password));
+        
+        config.setServer(appConfig.getString(MysqlConfig.rds_site, server));
+        config.setDatabase(appConfig.getString(MysqlConfig.rds_database, database));
+        config.setUser(appConfig.getString(MysqlConfig.rds_username, user));
+        config.setPassword(appConfig.getString(MysqlConfig.rds_password, password));
 
         // mysql 连接池相关
-        config.setMaxPoolSize(appConfig.getString(MysqlConfig.rds_MaxPoolSize + salve, "0"));
-        config.setMinPoolSize(appConfig.getString(MysqlConfig.rds_MinPoolSize + salve, "9"));
-        config.setInitialPoolSize(appConfig.getString(MysqlConfig.rds_InitialPoolSize + salve, "3"));
+        config.setMaxPoolSize(appConfig.getString(MysqlConfig.rds_MaxPoolSize, "0"));
+        config.setMinPoolSize(appConfig.getString(MysqlConfig.rds_MinPoolSize, "9"));
+        config.setInitialPoolSize(appConfig.getString(MysqlConfig.rds_InitialPoolSize, "3"));
 
         if (config.getMaxPoolSize() > 0)
             dataSource = MysqlServer.createDataSource(config);

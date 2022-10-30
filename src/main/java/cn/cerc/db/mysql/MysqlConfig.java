@@ -6,28 +6,29 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cn.cerc.db.core.ClassConfig;
+import cn.cerc.db.core.IConfig;
 import cn.cerc.db.core.Utils;
+import cn.cerc.db.zk.ZkConfig;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MysqlConfig {
+    private static final IConfig appConfig = new ZkConfig("/mysql");
     // mysql 连接参数：必须设置
-    public static final String rds_site = "rds.site";
-    public static final String rds_database = "rds.database";
-    public static final String rds_username = "rds.username";
-    public static final String rds_password = "rds.password";
+    public static final String rds_site = "site";
+    public static final String rds_database = "database";
+    public static final String rds_username = "username";
+    public static final String rds_password = "password";
     // mysql 连接参数：可选设置
-    private static final String rds_ServerTimezone = "rds.serverTimezone";
+    public static final String rds_ServerTimezone = "serverTimezone";
     // 连接池相关：必须设置
-    public static final String rds_MaxPoolSize = "rds.MaxPoolSize"; // default 0
-    public static final String rds_MinPoolSize = "rds.MinPoolSize"; // default 9
-    public static final String rds_InitialPoolSize = "rds.InitialPoolSize"; // default 3
+    public static final String rds_MaxPoolSize = "MaxPoolSize"; // default 0
+    public static final String rds_MinPoolSize = "MinPoolSize"; // default 9
+    public static final String rds_InitialPoolSize = "InitialPoolSize"; // default 3
     // 连接池相关：可选设置
-    private static final String rds_CheckoutTimeout = "rds.CheckoutTimeout"; // default 500ms
-    private static final String rds_MaxIdleTime = "rds.MaxIdleTime"; // default 7800s
-    private static final String rds_IdleConnectionTestPeriod = "rds.IdleConnectionTestPeriod"; // default 9s
-    public static final ClassConfig appConfig = new ClassConfig();
+    public static final String rds_CheckoutTimeout = "CheckoutTimeout"; // default 500ms
+    public static final String rds_MaxIdleTime = "MaxIdleTime"; // default 7800s
+    public static final String rds_IdleConnectionTestPeriod = "IdleConnectionTestPeriod"; // default 9s
     public static final String JdbcDriver;
     private Properties config;
 
@@ -37,7 +38,6 @@ public class MysqlConfig {
 
     public MysqlConfig() {
         super();
-        config = new Properties(appConfig.getProperties());
     }
 
     public String getHost() {
