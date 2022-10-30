@@ -1,18 +1,24 @@
 package cn.cerc.db.queue;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.rocketmq.client.apis.ClientConfiguration;
+import org.apache.rocketmq.client.apis.ClientException;
 import org.apache.rocketmq.client.apis.ClientServiceProvider;
 import org.apache.rocketmq.client.apis.consumer.ConsumeResult;
 import org.apache.rocketmq.client.apis.consumer.FilterExpression;
 import org.apache.rocketmq.client.apis.consumer.FilterExpressionType;
 import org.apache.rocketmq.client.apis.consumer.PushConsumer;
 import org.apache.rocketmq.client.apis.consumer.PushConsumerBuilder;
+import org.apache.rocketmq.client.apis.consumer.SimpleConsumer;
+import org.apache.rocketmq.client.apis.message.MessageView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,11 +41,6 @@ public class QueueConsumer implements AutoCloseable {
 
     public interface OnMessageCallback {
         boolean consume(String message);
-    }
-
-    public interface OnPullQueue extends OnMessageCallback {
-        void startPull();
-        void stopPull();
     }
 
     public static synchronized QueueConsumer getConsumer(String topic, String tag) {
@@ -126,6 +127,57 @@ public class QueueConsumer implements AutoCloseable {
             return String.format("G-%s", topic);
         else
             return String.format("G-%s-%s", topic, tag);
+    }
+
+    public synchronized boolean receive(OnMessageCallback pull) {
+        String consumerGroup = this.getGroupId();
+        // 拉取时，等服务器多久
+        Duration awaitDuration = Duration.ofSeconds(0L);
+        ClientConfiguration clientConfiguration = QueueServer.getConfig();
+        FilterExpression filterExpression = new FilterExpression(this.getTag(), FilterExpressionType.TAG);
+        final ClientServiceProvider provider = QueueServer.loadService();
+        SimpleConsumer consumer;
+        // Set message invisible duration after it is received.
+        Duration invisibleDuration = Duration.ofSeconds(10);
+        List<MessageView> messages;
+        try {
+            consumer = provider.newSimpleConsumerBuilder()
+                    .setClientConfiguration(clientConfiguration)
+                    .setConsumerGroup(consumerGroup)
+                    // set await duration for long-polling.
+                    .setAwaitDuration(awaitDuration)
+                    // Set the subscription for the consumer.
+                    .setSubscriptionExpressions(Collections.singletonMap(this.getTopic(), filterExpression))
+                    .build();
+            try {
+                messages = consumer.receive(1, invisibleDuration);
+                if (messages.size() == 0)
+                    return false;
+                for (MessageView message : messages) {
+                    try {
+                        Charset charset = Charset.forName("utf-8");
+                        String data = charset.decode(message.getBody()).toString();
+                        System.out.println("收到一条消息：" + data);
+                        if (pull.consume(data))
+                            consumer.ack(message);
+                    } catch (Throwable t) {
+                        log.error("Failed to acknowledge message, messageId={}", message.getMessageId(), t);
+                    }
+                }
+                return true;
+            } finally {
+                try {
+                    consumer.close();
+                } catch (IOException e) {
+                    log.error(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        } catch (ClientException e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public String getTopic() {

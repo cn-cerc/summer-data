@@ -20,8 +20,6 @@ public class QueueQueryTest_receive implements IHandle {
     @Test
     public void test() {
         System.out.println(query.open().json());
-        // do something
-        query.remove();
     }
 
     @Override

@@ -1,27 +1,16 @@
 package cn.cerc.db.queue;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
-import org.apache.rocketmq.client.apis.ClientConfiguration;
 import org.apache.rocketmq.client.apis.ClientException;
-import org.apache.rocketmq.client.apis.ClientServiceProvider;
-import org.apache.rocketmq.client.apis.consumer.FilterExpression;
-import org.apache.rocketmq.client.apis.consumer.FilterExpressionType;
-import org.apache.rocketmq.client.apis.consumer.SimpleConsumer;
-import org.apache.rocketmq.client.apis.message.MessageView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.queue.QueueConsumer.OnMessageCallback;
-import cn.cerc.db.queue.QueueConsumer.OnPullQueue;
 
 public abstract class AbstractQueue implements OnMessageCallback, ServletContextListener {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
@@ -97,45 +86,6 @@ public abstract class AbstractQueue implements OnMessageCallback, ServletContext
             return null;
         } finally {
             producer.close();
-        }
-    }
-
-    public synchronized void pullMessage(OnPullQueue pull, int maxMessageNum) throws ClientException, IOException {
-        String consumerGroup = this.getGroupId();
-        // 拉取时，等服务器多久
-        Duration awaitDuration = Duration.ofSeconds(0L);
-        ClientConfiguration clientConfiguration = QueueServer.getConfig();
-        FilterExpression filterExpression = new FilterExpression(this.getTag(), FilterExpressionType.TAG);
-        final ClientServiceProvider provider = QueueServer.loadService();
-        SimpleConsumer consumer = provider.newSimpleConsumerBuilder()
-                .setClientConfiguration(clientConfiguration)
-                .setConsumerGroup(consumerGroup)
-                // set await duration for long-polling.
-                .setAwaitDuration(awaitDuration)
-                // Set the subscription for the consumer.
-                .setSubscriptionExpressions(Collections.singletonMap(this.getTopic(), filterExpression))
-                .build();
-        // Set message invisible duration after it is received.
-        Duration invisibleDuration = Duration.ofSeconds(10);
-        final List<MessageView> messages = consumer.receive(maxMessageNum, invisibleDuration);
-        try {
-            if (messages.size() > 0) {
-                pull.startPull();
-                for (MessageView message : messages) {
-                    try {
-                        Charset charset = Charset.forName("utf-8");
-                        String data = charset.decode(message.getBody()).toString();
-                        System.out.println("收到一条消息：" + data);
-                        if (pull.consume(data))
-                            consumer.ack(message);
-                    } catch (Throwable t) {
-                        log.error("Failed to acknowledge message, messageId={}", message.getMessageId(), t);
-                    }
-                }
-                pull.stopPull();
-            }
-        } finally {
-            consumer.close();
         }
     }
 
