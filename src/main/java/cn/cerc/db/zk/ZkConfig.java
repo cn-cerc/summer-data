@@ -73,7 +73,7 @@ public class ZkConfig implements IConfig {
 
     public int getInt(String key, int def) {
         var result = this.getProperty(key, "" + def);
-        return result != null ? Integer.parseInt(result) : def;
+        return Integer.parseInt(result);
     }
 
     public void setValue(String key, String value) {
