@@ -4,9 +4,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.cerc.db.core.IConfig;
 import cn.cerc.db.core.Utils;
 
-public class ZkConfig {
+public class ZkConfig implements IConfig {
     private String path;
     private static ZkServer server;
 
@@ -36,9 +37,14 @@ public class ZkConfig {
         return result;
     }
 
-    public String getString(String key, String def) {
+    @Override
+    public String getProperty(String key, String def) {
         var result = server.getValue(createKey(path, key));
         return result != null ? result : def;
+    }
+
+    public String getString(String key, String def) {
+        return this.getProperty(key, def);
     }
 
     public int getInt(String key, int def) {
