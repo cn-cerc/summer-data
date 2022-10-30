@@ -29,8 +29,8 @@ public class QueueServer {
     private static final Logger log = LoggerFactory.getLogger(QueueServer.class);
 
 //    public static final String AccountEndpoint = "mns.accountendpoint";
-//    public static final String AccessKeyId = "mns.accesskeyid";
-//    public static final String AccessKeySecret = "mns.accesskeysecret";
+    public static final String AliyunAccessKeyId = "aliyunAccesskeyid";
+    public static final String AliyunAccessKeySecret = "aliyunAccesskeysecret";
     
     public static final String RMQAccountEndpoint = "accountEndpoint";
     public static final String RMQInstanceId = "instanceId";
@@ -38,7 +38,7 @@ public class QueueServer {
     public static final String RMQAccessKeyId = "accessKeyId";
     public static final String RMQAccessKeySecret = "accessKeySecret";
 
-    private static final IConfig config = new ZkConfig("/rocketmq");
+    private static final IConfig config = new ZkConfig("/rocketMQ");
 
     private static final List<String> queues = new ArrayList<>();
 
@@ -89,13 +89,13 @@ public class QueueServer {
         if (endpoint == null)
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccountEndpoint));
 
-        String accessId = config.getProperty(QueueServer.RMQAccessKeyId, null);
+        String accessId = config.getProperty(QueueServer.AliyunAccessKeyId, null);
         if (accessId == null)
-            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeyId));
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AliyunAccessKeyId));
 
-        String password = config.getProperty(QueueServer.RMQAccessKeySecret, null);
+        String password = config.getProperty(QueueServer.AliyunAccessKeySecret, null);
         if (password == null)
-            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeySecret));
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AliyunAccessKeySecret));
         Config config = new Config().setAccessKeyId(accessId).setAccessKeySecret(password);
 
         config.endpoint = endpoint;

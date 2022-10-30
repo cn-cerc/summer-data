@@ -108,6 +108,10 @@ public class ZkConfig implements IConfig {
      */
     private void fixRocketMQ() {
         log.warn("fixRocketMQ: 自动结转旧的配置数据");
+        //
+        setValue(QueueServer.AliyunAccessKeyId, config.getProperty("mns.accesskeyid", ""));
+        setValue(QueueServer.AliyunAccessKeySecret, config.getProperty("mns.accesskeysecret", ""));
+        //
         setValue(QueueServer.RMQAccountEndpoint, config.getProperty("rocketmq.endpoint", ""));
         setValue(QueueServer.RMQInstanceId, config.getProperty("rocketmq.instanceId", ""));
         setValue(QueueServer.RMQEndpoint, config.getProperty("rocketmq.queue.endpoint", ""));
