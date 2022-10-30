@@ -34,9 +34,9 @@ public class ZkConfig implements IConfig {
             this.fixRedis();
         if ("/rocketMQ".equals(path) && !this.exists())
             this.fixRocketMQ();
-        if ("/mysql".equals(path))
+        if ("/mysql".equals(path) && !this.exists())
             this.fixMysqlMaster();
-        if ("/mysql/slave".equals(path))
+        if ("/mysql/slave".equals(path) && !this.exists())
             this.fixMysqlSlave();
 
     }
