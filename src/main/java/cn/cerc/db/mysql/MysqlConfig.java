@@ -1,19 +1,18 @@
 package cn.cerc.db.mysql;
 
-import java.util.Properties;
-
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import cn.cerc.db.core.IConfig;
+import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
 import cn.cerc.db.zk.ZkConfig;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MysqlConfig {
-    private static final IConfig appConfig = new ZkConfig("/mysql");
+    private static final IConfig config = new ZkConfig("/mysql");
     // mysql 连接参数：必须设置
     public static final String rds_site = "site";
     public static final String rds_database = "database";
@@ -29,10 +28,11 @@ public class MysqlConfig {
     public static final String rds_CheckoutTimeout = "CheckoutTimeout"; // default 500ms
     public static final String rds_MaxIdleTime = "MaxIdleTime"; // default 7800s
     public static final String rds_IdleConnectionTestPeriod = "IdleConnectionTestPeriod"; // default 9s
+    // mysql驱动
     public static final String JdbcDriver;
-    private Properties config;
 
     static {
+        var appConfig = ServerConfig.getInstance();
         JdbcDriver = appConfig.getProperty("spring.datasource.driver-class-name", "com.mysql.cj.jdbc.Driver");
     }
 
@@ -113,44 +113,6 @@ public class MysqlConfig {
      */
     public int getIdleConnectionTestPeriod() {
         return Integer.parseInt(config.getProperty(rds_IdleConnectionTestPeriod, "9"));
-    }
-
-    // 以上为salve可自定义参数
-    public MysqlConfig setServer(String value) {
-        config.setProperty(rds_site, value);
-        return this;
-    }
-
-    public MysqlConfig setDatabase(String value) {
-        config.setProperty(rds_database, value);
-        return this;
-    }
-
-    public MysqlConfig setUser(String value) {
-        config.setProperty(rds_username, value);
-        return this;
-    }
-
-    public MysqlConfig setPassword(String value) {
-        config.setProperty(rds_password, value);
-        return this;
-    }
-
-    public MysqlConfig setServerTimezone(String value) {
-        config.setProperty(rds_ServerTimezone, value);
-        return this;
-    }
-
-    public void setMaxPoolSize(String value) {
-        config.setProperty(rds_MaxPoolSize, value);
-    }
-
-    public void setMinPoolSize(String value) {
-        config.setProperty(rds_MinPoolSize, value);
-    }
-
-    public void setInitialPoolSize(String value) {
-        config.setProperty(rds_InitialPoolSize, value);
     }
 
     public boolean isConfigNull() {
