@@ -37,13 +37,18 @@ public class QueueConsumer implements AutoCloseable {
         boolean consume(String message);
     }
 
-    public static QueueConsumer getConsumer(String topic, String tag) {
+    public interface OnPullQueue extends OnMessageCallback {
+        void startPull();
+        void stopPull();
+    }
+
+    public static synchronized QueueConsumer getConsumer(String topic, String tag) {
         String key = String.format("%s-%s", topic, tag);
         if (consumers.containsKey(key))
             return consumers.get(key);
-        QueueConsumer consumer2 = new QueueConsumer(topic, tag);
-        consumers.put(key, consumer2);
-        return consumer2;
+        QueueConsumer consumer = new QueueConsumer(topic, tag);
+        consumers.put(key, consumer);
+        return consumer;
     }
 
     public QueueConsumer(String topic, String tag) {
@@ -63,6 +68,10 @@ public class QueueConsumer implements AutoCloseable {
                 log.error(e.getMessage(), e);
             }
         }
+    }
+
+    public void createQueueTopic(boolean isDelayQueue) {
+        QueueServer.createTopic(this.getTopic(), isDelayQueue);
     }
 
     public void createQueueGroup(OnMessageCallback watcher) {

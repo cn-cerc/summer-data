@@ -6,6 +6,9 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
 import org.apache.rocketmq.client.apis.ClientConfiguration;
 import org.apache.rocketmq.client.apis.ClientException;
 import org.apache.rocketmq.client.apis.ClientServiceProvider;
@@ -16,16 +19,18 @@ import org.apache.rocketmq.client.apis.message.MessageView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.queue.QueueConsumer.OnMessageCallback;
+import cn.cerc.db.queue.QueueConsumer.OnPullQueue;
 
-public abstract class AbstractQueue implements OnMessageCallback {
+public abstract class AbstractQueue implements OnMessageCallback, ServletContextListener {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
     private QueueConsumer consumer;
     private long delayTime = 0L;
 
     public AbstractQueue() {
         super();
-        log.info("Queue {} {} is init ", this.getClass().getSimpleName(), getTopic());
+        log.info("{} {} is init ", this.getClass().getSimpleName(), getTopic());
         // 检查消费主题、队列组是否有创建
         try (QueueConsumer temp = new QueueConsumer(this.getTopic(), getTag())) {
             temp.createQueueTopic(this.getDelayTime() > 0);
@@ -51,12 +56,31 @@ public abstract class AbstractQueue implements OnMessageCallback {
         return this.delayTime;
     }
 
-    public void startPushService() {
-        this.consumer = QueueConsumer.getConsumer(this.getTopic(), this.getTag());
+    @Override
+    public void contextInitialized(ServletContextEvent sce) {
+        if (ServerConfig.enableTaskService()) {
+            this.startService();
+        } else {
+            log.info("当前主机有关闭消息队列服务");
+        }
     }
 
-    public void close() {
+    @Override
+    public void contextDestroyed(ServletContextEvent sce) {
+        this.stopService();
+    }
+
+    public void startService() {
+        if (consumer == null) {
+            log.info("{} 启动了消息推送服务", this.getTopic());
+            consumer = QueueConsumer.getConsumer(this.getTopic(), this.getTag());
+            consumer.createQueueGroup(this);
+        }
+    }
+
+    public void stopService() {
         if (consumer != null) {
+            log.info("{} 关闭了消息推送服务", this.getTopic());
             consumer.close();
             consumer = null;
         }
@@ -76,15 +100,15 @@ public abstract class AbstractQueue implements OnMessageCallback {
         }
     }
 
-    public void receiveMessage(int maxMessageNum) throws ClientException, IOException {
-        final ClientServiceProvider provider = QueueServer.loadService();
-        ClientConfiguration clientConfiguration = QueueServer.getConfig();
+    public synchronized void pullMessage(OnPullQueue pull, int maxMessageNum) throws ClientException, IOException {
         String consumerGroup = this.getGroupId();
-        Duration awaitDuration = Duration.ofSeconds(30);
+        // 拉取时，等服务器多久
+        Duration awaitDuration = Duration.ofSeconds(0L);
+        ClientConfiguration clientConfiguration = QueueServer.getConfig();
         FilterExpression filterExpression = new FilterExpression(this.getTag(), FilterExpressionType.TAG);
+        final ClientServiceProvider provider = QueueServer.loadService();
         SimpleConsumer consumer = provider.newSimpleConsumerBuilder()
                 .setClientConfiguration(clientConfiguration)
-                // Set the consumer group name.
                 .setConsumerGroup(consumerGroup)
                 // set await duration for long-polling.
                 .setAwaitDuration(awaitDuration)
@@ -94,17 +118,25 @@ public abstract class AbstractQueue implements OnMessageCallback {
         // Set message invisible duration after it is received.
         Duration invisibleDuration = Duration.ofSeconds(10);
         final List<MessageView> messages = consumer.receive(maxMessageNum, invisibleDuration);
-        for (MessageView message : messages) {
-            try {
-                Charset charset = Charset.forName("utf-8");
-                String data = charset.decode(message.getBody()).toString();
-                System.out.println("收到一条消息：" + data);
-                consumer.ack(message);
-            } catch (Throwable t) {
-                log.error("Failed to acknowledge message, messageId={}", message.getMessageId(), t);
+        try {
+            if (messages.size() > 0) {
+                pull.startPull();
+                for (MessageView message : messages) {
+                    try {
+                        Charset charset = Charset.forName("utf-8");
+                        String data = charset.decode(message.getBody()).toString();
+                        System.out.println("收到一条消息：" + data);
+                        if (pull.consume(data))
+                            consumer.ack(message);
+                    } catch (Throwable t) {
+                        log.error("Failed to acknowledge message, messageId={}", message.getMessageId(), t);
+                    }
+                }
+                pull.stopPull();
             }
+        } finally {
+            consumer.close();
         }
-        consumer.close();
     }
 
 }
