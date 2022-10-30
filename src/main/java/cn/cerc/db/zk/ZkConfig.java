@@ -59,7 +59,12 @@ public class ZkConfig implements IConfig {
     @Override
     public String getProperty(String key, String def) {
         var result = server.getValue(createKey(path, key));
-        return result != null ? result : def;
+        if (result != null) {
+            return result;
+        } else {
+            this.setValue(key, def);
+            return def;
+        }
     }
 
     public String getString(String key, String def) {
@@ -67,7 +72,7 @@ public class ZkConfig implements IConfig {
     }
 
     public int getInt(String key, int def) {
-        var result = server.getValue(createKey(path, key));
+        var result = this.getProperty(key, "" + def);
         return result != null ? Integer.parseInt(result) : def;
     }
 
