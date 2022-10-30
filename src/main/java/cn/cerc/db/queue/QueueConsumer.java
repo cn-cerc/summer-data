@@ -157,7 +157,6 @@ public class QueueConsumer implements AutoCloseable {
                     try {
                         Charset charset = Charset.forName("utf-8");
                         String data = charset.decode(message.getBody()).toString();
-                        System.out.println("收到一条消息：" + data);
                         if (pull.consume(data))
                             consumer.ack(message);
                     } catch (Throwable t) {
