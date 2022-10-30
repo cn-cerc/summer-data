@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
+import cn.cerc.db.core.Utils;
 import cn.cerc.db.zk.ZkConfig;
 
 @Component
@@ -21,31 +22,10 @@ public class MysqlServerSlave extends MysqlServer {
     public static final String SessionId = "slaveSqlSession";
     private static final Logger log = LoggerFactory.getLogger(MysqlServerSlave.class);
     private static ComboPooledDataSource dataSource;
-    private static final MysqlConfig config;
+    private static final ZkConfig config = new ZkConfig("/mysql/slave");
 
     static {
-        config = new MysqlConfig();
-
-//        final String salve = ".slave";
-        final ZkConfig appConfig = new ZkConfig("/mysql/slave");
-
-        // mysql 连接相关，在未设置时，将与master库相同
-        final String server = config.getHost();
-        final String database = config.getDatabase();
-        final String user = config.getUser();
-        final String password = config.getPassword();
-        
-        config.setServer(appConfig.getString(MysqlConfig.rds_site, server));
-        config.setDatabase(appConfig.getString(MysqlConfig.rds_database, database));
-        config.setUser(appConfig.getString(MysqlConfig.rds_username, user));
-        config.setPassword(appConfig.getString(MysqlConfig.rds_password, password));
-
-        // mysql 连接池相关
-        config.setMaxPoolSize(appConfig.getString(MysqlConfig.rds_MaxPoolSize, "0"));
-        config.setMinPoolSize(appConfig.getString(MysqlConfig.rds_MinPoolSize, "9"));
-        config.setInitialPoolSize(appConfig.getString(MysqlConfig.rds_InitialPoolSize, "3"));
-
-        if (config.getMaxPoolSize() > 0)
+        if (config.bind(MysqlConfig.rds_MaxPoolSize, 0).getInt() > 0)
             dataSource = MysqlServer.createDataSource(config);
     }
 
@@ -57,9 +37,18 @@ public class MysqlServerSlave extends MysqlServer {
         // 不使用线程池直接创建
         try {
             if (getConnection() == null) {
+                var host = config.bind(MysqlConfig.rds_site).getString();
+                var database = config.bind(MysqlConfig.rds_database).getString();
+                var timezone = config.bind(MysqlConfig.rds_ServerTimezone).getString();
+                if (Utils.isEmpty(host) || Utils.isEmpty(database) || Utils.isEmpty(timezone))
+                    throw new RuntimeException("mysql connection config is null");
+                var jdbcUrl = String.format(
+                        "jdbc:mysql://%s/%s?useSSL=false&autoReconnect=true&autoCommit=false&useUnicode=true&characterEncoding=utf8&serverTimezone=%s",
+                        host, database, timezone);
+
                 Class.forName(MysqlConfig.JdbcDriver);
-                setConnection(
-                        DriverManager.getConnection(config.getConnectUrl(), config.getUser(), config.getPassword()));
+                setConnection(DriverManager.getConnection(jdbcUrl, config.getProperty(MysqlConfig.rds_username),
+                        config.getProperty(MysqlConfig.rds_password)));
             }
             return getConnection();
         } catch (ClassNotFoundException e) {
@@ -78,12 +67,12 @@ public class MysqlServerSlave extends MysqlServer {
 
     @Override
     public String getHost() {
-        return config.getHost();
+        return config.getProperty(MysqlConfig.rds_site);
     }
 
     @Override
     public String getDatabase() {
-        return config.getDatabase();
+        return config.getProperty(MysqlConfig.rds_database);
     }
 
     public static void openPool() {
