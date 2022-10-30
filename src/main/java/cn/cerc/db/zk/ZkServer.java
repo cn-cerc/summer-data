@@ -26,9 +26,9 @@ public class ZkServer implements AutoCloseable, Watcher {
     private String host;
 
     public ZkServer() {
-        this.host = ServerConfig.getInstance().getProperty("zooKeeper.host");
+        this.host = ServerConfig.getInstance().getProperty("zookeeper.host");
         if (host == null) {
-            log.error("严重错误：读取不到 zooKeeper.host 配置项！");
+            log.error("严重错误：读取不到 zookeeper.host 配置项！");
             return;
         }
         try {
