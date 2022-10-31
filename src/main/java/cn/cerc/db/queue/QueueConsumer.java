@@ -34,7 +34,7 @@ import cn.cerc.db.core.ServerConfig;
 @Component
 public class QueueConsumer implements AutoCloseable, OnMessageRecevie {
     private static final Logger log = LoggerFactory.getLogger(QueueConsumer.class);
-    private static final Map<String, OnStringMessage> items = new HashMap<>();
+    private static final Map<String, OnStringMessage> items1 = new HashMap<>();
     private static final Map<String, FilterExpression> items2 = new HashMap<>();
     private PushConsumer pushConsumer;
     private SimpleConsumer pullConsumer;
@@ -70,8 +70,8 @@ public class QueueConsumer implements AutoCloseable, OnMessageRecevie {
 
     public void addConsumer(String topic, String tag, OnStringMessage event) {
         String key = topic + "-" + tag;
-        log.info("{} consumer is register: {}", key, Thread.currentThread());
-        items.put(key, event);
+        log.debug("{} consumer is register: {}", key, Thread.currentThread());
+        items1.put(key, event);
         items2.put(topic, new FilterExpression(tag, FilterExpressionType.TAG));
     }
 
@@ -81,7 +81,7 @@ public class QueueConsumer implements AutoCloseable, OnMessageRecevie {
         log.info("收到一条消息：{}", key);
 
         String data = StandardCharsets.UTF_8.decode(message.getBody()).toString();
-        var event = items.get(key);
+        var event = items1.get(key);
         if (event == null) {
             log.error("未注册消息对象{}, data:", key, data);
             return true;
@@ -100,7 +100,7 @@ public class QueueConsumer implements AutoCloseable, OnMessageRecevie {
             return;
         }
         log.info("注册的消息有：" + items2.size());
-        if (items.size() == 0)
+        if (items1.size() == 0)
             return;
         Client client = QueueServer.getClient();
         String groupId = getGroupId();
