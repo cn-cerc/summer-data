@@ -1,10 +1,14 @@
 package cn.cerc.db.queue;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.rocketmq.client.apis.ClientConfiguration;
+import org.apache.rocketmq.client.apis.ClientConfigurationBuilder;
 import org.apache.rocketmq.client.apis.ClientException;
+import org.apache.rocketmq.client.apis.ClientServiceProvider;
+import org.apache.rocketmq.client.apis.StaticSessionCredentialsProvider;
+import org.apache.rocketmq.client.apis.producer.Producer;
 import org.apache.rocketmq.client.java.message.MessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,30 +24,30 @@ import com.aliyun.teaopenapi.models.Config;
 import cn.cerc.db.SummerDB;
 import cn.cerc.db.core.ClassResource;
 import cn.cerc.db.core.IConfig;
-import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.zk.ZkConfig;
 
 public class QueueServer {
     private static final ClassResource res = new ClassResource(QueueServer.class, SummerDB.ID);
     private static final Logger log = LoggerFactory.getLogger(QueueServer.class);
 
-    public static final String AccountEndpoint = "mns.accountendpoint";
-    public static final String AccessKeyId = "mns.accesskeyid";
-    public static final String AccessKeySecret = "mns.accesskeysecret";
-    public static final String RMQAccountEndpoint = "rocketmq.endpoint";
-    public static final String RMQInstanceId = "rocketmq.instanceId";
-    public static final String RMQEndpoint = "rocketmq.queue.endpoint";
-    public static final String RMQAccessKeyId = "rocketmq.queue.accesskeyid";
-    public static final String RMQAccessKeySecret = "rocketmq.queue.accesskeysecret";
+//    public static final String AccountEndpoint = "mns.accountendpoint";
+    public static final String AliyunAccessKeyId = "aliyunAccesskeyid";
+    public static final String AliyunAccessKeySecret = "aliyunAccesskeysecret";
 
-    private static final IConfig config = ServerConfig.getInstance();
+    public static final String RMQAccountEndpoint = "accountEndpoint";
+    public static final String RMQInstanceId = "instanceId";
+    public static final String RMQEndpoint = "endpoint";
+    public static final String RMQAccessKeyId = "accessKeyId";
+    public static final String RMQAccessKeySecret = "accessKeySecret";
 
-    private static final QueueProducer producer = new QueueProducer();
-
-    public static QueueProducer producer() {
-        return QueueServer.producer;
-    }
+    private static final IConfig config = new ZkConfig("/rocketMQ");
 
     private static final List<String> queues = new ArrayList<>();
+
+    private static ClientServiceProvider provider;
+    private static Client client;
+    private static ClientConfiguration clientConfig;
+    private static Producer producer;
 
     public static void createTopic(String topic, boolean isDelayQueue) {
         if (queues.contains(topic))
@@ -68,6 +72,7 @@ public class QueueServer {
                 return;
             }
 
+            log.info("create topic request");
             CreateTopicRequest createRequest = new CreateTopicRequest();
             if (!isDelayQueue)
                 createRequest.setMessageType(MessageType.NORMAL.name());
@@ -85,36 +90,29 @@ public class QueueServer {
         }
     }
 
-    public static String append(String topic, String tag, String value, Duration delayTime) {
-        try {
-            return producer.append(topic, tag, value,delayTime);
-        } catch (ClientException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+    private static Client getRocketmqClient() {
+        if (client != null)
+            return client;
 
-    public static Client getRocketmqClient() {
         String endpoint = config.getProperty(QueueServer.RMQAccountEndpoint, null);
         if (endpoint == null)
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccountEndpoint));
 
-        String accessId = config.getProperty(QueueServer.AccessKeyId, null);
+        String accessId = config.getProperty(QueueServer.AliyunAccessKeyId, null);
         if (accessId == null)
-            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeyId));
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AliyunAccessKeyId));
 
-        String password = config.getProperty(QueueServer.AccessKeySecret, null);
+        String password = config.getProperty(QueueServer.AliyunAccessKeySecret, null);
         if (password == null)
-            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AccessKeySecret));
+            throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AliyunAccessKeySecret));
         Config config = new Config().setAccessKeyId(accessId).setAccessKeySecret(password);
-
         config.endpoint = endpoint;
         try {
-            return new Client(config);
+            client = new Client(config);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-        return null;
+        return client;
     }
 
     public static String getInstanceId() {
@@ -145,9 +143,42 @@ public class QueueServer {
         return accessKeySecret;
     }
 
-    public static Client getClient() {
-        log.info("{} get mq client ", Thread.currentThread());
+    public synchronized static Client getClient() {
+        log.debug("{} get client from RocketMQ", Thread.currentThread());
         return getRocketmqClient();
+    }
+
+    public static synchronized ClientServiceProvider loadService() {
+        if (provider == null)
+            return ClientServiceProvider.loadService();
+        return provider;
+    }
+
+    public synchronized static ClientConfiguration getConfig() {
+        if (clientConfig != null)
+            return clientConfig;
+        loadService();
+        var credentialsProvider = new StaticSessionCredentialsProvider(QueueServer.getAccessKeyId(),
+                QueueServer.getAccessSecret());
+        ClientConfigurationBuilder builder = ClientConfiguration.newBuilder()
+                .setEndpoints(QueueServer.getEndpoint())
+                .setCredentialProvider(credentialsProvider);
+        clientConfig = builder.build();
+        return clientConfig;
+    }
+
+    public synchronized static Producer getProducer() {
+        if (producer == null) {
+            var configuration = QueueServer.getConfig();
+            var provider = QueueServer.loadService();
+            try {
+                producer = provider.newProducerBuilder().setClientConfiguration(configuration).build();
+            } catch (ClientException e) {
+                log.error(e.getMessage());
+                e.printStackTrace();
+            }
+        }
+        return producer;
     }
 
 }

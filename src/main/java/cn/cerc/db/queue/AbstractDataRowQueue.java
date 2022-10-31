@@ -2,7 +2,7 @@ package cn.cerc.db.queue;
 
 import cn.cerc.db.core.DataRow;
 
-public abstract class AbstractDataRowQueue extends AbstractQueue {
+public abstract class AbstractDataRowQueue extends AbstractQueue implements OnMessageDataRow {
 
     /**
      * 生产者投放消息
@@ -16,6 +16,12 @@ public abstract class AbstractDataRowQueue extends AbstractQueue {
         return this.execute(new DataRow().setJson(message));
     }
 
+    @Override
     public abstract boolean execute(DataRow data);
+//
+//    public boolean receive(OnMessageDataRow event) {
+//        QueueConsumer consumer = new QueueConsumer();
+//        return consumer.receive("tempGroup", this.getTopic(), this.getTag(), data -> event.execute(new DataRow().setJson(data)));
+//    }
 
 }

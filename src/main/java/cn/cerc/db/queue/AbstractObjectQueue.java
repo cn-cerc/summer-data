@@ -2,7 +2,7 @@ package cn.cerc.db.queue;
 
 import com.google.gson.Gson;
 
-public abstract class AbstractObjectQueue<T> extends AbstractQueue {
+public abstract class AbstractObjectQueue<T> extends AbstractQueue implements OnObjectMessage<T> {
 
     public abstract Class<T> getClazz();
 
@@ -21,6 +21,11 @@ public abstract class AbstractObjectQueue<T> extends AbstractQueue {
         return this.execute(entity);
     }
 
+    @Override
     public abstract boolean execute(T entity);
-
+//
+//    public boolean receive(OnObjectMessage<T> event) {
+//        QueueConsumer consumer = QueueConsumer.getConsumer(this.getTopic(), this.getTag());
+//        return consumer.receive(message -> event.execute(new Gson().fromJson(message, getClazz())));
+//    }
 }

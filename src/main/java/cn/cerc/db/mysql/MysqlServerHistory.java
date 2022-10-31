@@ -13,7 +13,6 @@ public class MysqlServerHistory extends MysqlServer {
 
     public MysqlServerHistory(String database) {
         super();
-        config.setDatabase(database);
     }
 
     @Override

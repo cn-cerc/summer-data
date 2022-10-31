@@ -1,8 +1,8 @@
 package cn.cerc.db.core;
 
-import cn.cerc.db.SummerDB;
-
 import java.util.Properties;
+
+import cn.cerc.db.SummerDB;
 
 public enum ServerConfig implements IConfig {
 
@@ -21,8 +21,28 @@ public enum ServerConfig implements IConfig {
         return config.getBoolean("task.service", false);
     }
 
+    /**
+     * 
+     * @return 主机代码，全网络唯一
+     */
     public static String getAppName() {
         return config.getString("appName", "localhost");
+    }
+
+    /**
+     * 
+     * @return 产品代码
+     */
+    public static String getAppProduct() {
+        return config.getString("application.product", "summer");
+    }
+
+    /**
+     * 
+     * @return 产品版本：develop/beta/main
+     */
+    public static String getAppVersion() {
+        return config.getString("version", "develop");
     }
 
     public static boolean enableDocService() {

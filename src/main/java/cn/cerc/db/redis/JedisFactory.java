@@ -6,9 +6,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.cerc.db.SummerDB;
-import cn.cerc.db.core.ClassConfig;
 import cn.cerc.db.core.Utils;
+import cn.cerc.db.zk.ZkConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -16,7 +15,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class JedisFactory {
     private static final Logger log = LoggerFactory.getLogger(JedisFactory.class);
-    private static final ClassConfig config = new ClassConfig(JedisFactory.class, SummerDB.ID);
+    private static final ZkConfig config = new ZkConfig("/redis");
     private static final Map<String, JedisFactory> items = new HashMap<>();
 
     // 如果赋值为-1，则表示不限制；如果pool已经分配了maxActive个jedis实例，则此时pool的状态为exhausted(耗尽)。
@@ -109,12 +108,12 @@ public class JedisFactory {
 
         String extKey = "";
         if (configId == null) {
-            this.host = config.getString("redis.host", "127.0.0.1");
-            this.port = config.getInt("redis.port", 6379);
+            this.host = config.getString("host", "127.0.0.1");
+            this.port = config.getInt("port", 6379);
         } else {
             extKey = "." + configId;
-            this.host = config.getString("redis.host" + extKey, null);
-            this.port = config.getInt("redis.port" + extKey, 0);
+            this.host = config.getString("host" + extKey, null);
+            this.port = config.getInt("port" + extKey, 0);
         }
 
         if (Utils.isEmpty(host)) {
@@ -122,8 +121,10 @@ public class JedisFactory {
             return;
         }
 
-        String password = config.getString("redis.password" + extKey, null);
-        int timeout = config.getInt("redis.timeout" + extKey, 10000);
+        String password = config.getString("password" + extKey, null);
+        if ("".equals(password))
+            password = null;
+        int timeout = config.getInt("timeout" + extKey, 10000);
 
         // 建立连接池
         log.info("redis server {}:{} starting", host, port);
@@ -143,6 +144,7 @@ public class JedisFactory {
             return jedisPool.getResource();
         } catch (JedisConnectionException e) {
             if (error < 3) {
+                e.printStackTrace();
                 log.error("redis server {}:{} not run.", host, port);
                 error++;
             }
