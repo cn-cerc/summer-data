@@ -23,6 +23,7 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
     private static ZkConfig config;
     private QueueServiceEnum service;
     private long delayTime = 0L;
+    private boolean ready;
 
     public AbstractQueue() {
         super();
@@ -56,6 +57,7 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
+        this.ready = true;
         if (ServerConfig.enableTaskService()) {
             this.startService();
         } else {
@@ -65,6 +67,7 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
+        this.ready = false;
         this.stopService();
     }
 
@@ -174,7 +177,7 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
      */
     @Scheduled(initialDelay = 30000, fixedRate = 3000)
     public void defaultCheck() {
-        if (service == QueueServiceEnum.Redis)
+        if (ready && service == QueueServiceEnum.Redis)
             this.receiveMessage();
     }
 }
