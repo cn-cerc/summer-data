@@ -25,7 +25,8 @@ public class ZkConfig implements IConfig {
             throw new RuntimeException("path 不允许为空");
         if (path.endsWith("/"))
             throw new RuntimeException("path 不得以 / 结尾");
-        this.path = path;
+
+        this.path = String.format("/%s/%s%s", ServerConfig.getAppProduct(), ServerConfig.getAppVersion(), path);
         synchronized (ZkConfig.class) {
             if (ZkConfig.server == null)
                 ZkConfig.server = new ZkServer();
@@ -180,4 +181,13 @@ public class ZkConfig implements IConfig {
         setValue(MysqlConfig.rds_IdleConnectionTestPeriod, config.getProperty("rds.IdleConnectionTestPeriod.slave",
                 zkc.getProperty(MysqlConfig.rds_IdleConnectionTestPeriod)));
     }
+
+    public static void main(String[] args) {
+
+        var zkc1 = new ZkConfig("/diteng/alpha/mysql/salve");
+        var zkc2 = new ZkConfig("/diteng/beta/mysql/salve");
+        var zkc3 = new ZkConfig("/diteng/main/mysql/salve");
+        var zkc4 = new ZkConfig("/4plc/localhost/mysql/salve");
+    }
+
 }
