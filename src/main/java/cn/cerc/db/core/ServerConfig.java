@@ -45,6 +45,14 @@ public enum ServerConfig implements IConfig {
         return config.getString("version", "develop");
     }
 
+    /**
+     * 
+     * @return 产业：csp/obm/odm/oem/fpl
+     */
+    public static String getAppIndustry() {
+        return config.getString("application.original", "std");
+    }
+
     public static boolean enableDocService() {
         return config.getBoolean("docs.service", false);
     }
