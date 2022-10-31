@@ -69,7 +69,7 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
 
         try {
             ZkConfig host = new ZkConfig(String.format("/app/%s", ServerConfig.getAppName()));
-            var child = host.path("status");
+            String child = host.path("status");
             var stat = host.client().exists(child, this);
             if (stat == null) {
                 host.setValue("status", "running");
@@ -80,7 +80,9 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
                 }
             }
         } catch (KeeperException | InterruptedException e) {
+            log.error(e.getMessage());
             e.printStackTrace();
+            return;
         }
 
         config().setTempNode(this.getGroupId(), "running");
@@ -92,7 +94,7 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
     @Override
     public void process(WatchedEvent event) {
         if (event.getType() == Watcher.Event.EventType.DataWatchRemoved) {
-            log.info("主机被移除");
+            log.info("此主机运行状态被移除");
             this.stopService();
         }
     }

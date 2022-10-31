@@ -41,7 +41,6 @@ public class ZkConfig implements IConfig {
             this.fixMysqlMaster();
         if ("/mysql/slave".equals(path) && !this.exists())
             this.fixMysqlSlave();
-
     }
 
     public String path() {
@@ -101,10 +100,7 @@ public class ZkConfig implements IConfig {
     }
 
     public List<String> list() {
-        if ("".equals(path))
-            return server.getNodes("/");
-        else
-            return server.getNodes(path);
+        return server.getNodes(path);
     }
 
     public Map<String, String> map() {
@@ -203,5 +199,4 @@ public class ZkConfig implements IConfig {
     public ZooKeeper client() {
         return server.client();
     }
-
 }
