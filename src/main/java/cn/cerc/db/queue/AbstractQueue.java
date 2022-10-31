@@ -10,9 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.zk.ZkConfig;
 
 public abstract class AbstractQueue implements OnStringMessage, ServletContextListener {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
+    private static ZkConfig config;
     private QueueConsumer consumer;
     private long delayTime = 0L;
 
@@ -59,19 +61,29 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
     }
 
     public void startService() {
-        if (consumer == null) {
-            log.info("{} 启动了消息推送服务", this.getTopic());
-            consumer = QueueConsumer.getConsumer(this.getTopic(), this.getTag());
-            consumer.createQueueGroup(this);
-        }
+        if (consumer != null)
+            return;
+
+        if (config == null)
+            config = new ZkConfig(String.format("/app/%s/task", ServerConfig.getAppName()));
+        config.setTempNode(this.getGroupId(), "running");
+
+        log.info("{} 启动了消息推送服务", this.getTopic());
+        consumer = QueueConsumer.getConsumer(this.getTopic(), this.getTag());
+        consumer.createQueueGroup(this);
     }
 
     public void stopService() {
-        if (consumer != null) {
-            log.info("{} 关闭了消息推送服务", this.getTopic());
-            consumer.close();
-            consumer = null;
-        }
+        if (consumer == null)
+            return;
+
+        if (config == null)
+            config = new ZkConfig(String.format("/app/%s/task", ServerConfig.getAppName()));
+        config.delete(this.getGroupId());
+
+        log.info("{} 关闭了消息推送服务", this.getTopic());
+        consumer.close();
+        consumer = null;
     }
 
     protected String sendMessage(String data) {
@@ -87,5 +99,4 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
             producer.close();
         }
     }
-
 }

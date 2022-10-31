@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,7 +88,11 @@ public class ZkConfig implements IConfig {
     }
 
     public void setValue(String key, String value) {
-        server.setValue(createKey(path, key), value == null ? "" : value);
+        server.setValue(createKey(path, key), value == null ? "" : value, CreateMode.PERSISTENT);
+    }
+
+    public void setTempNode(String key, String value) {
+        server.setValue(createKey(path, key), value == null ? "" : value, CreateMode.EPHEMERAL);
     }
 
     public List<String> list() {
@@ -107,6 +112,10 @@ public class ZkConfig implements IConfig {
 
     public boolean exists() {
         return server.exists(path);
+    }
+
+    public void delete(String key) {
+        server.delete(createKey(path, key));
     }
 
     /**
