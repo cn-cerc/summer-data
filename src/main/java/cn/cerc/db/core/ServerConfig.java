@@ -3,6 +3,7 @@ package cn.cerc.db.core;
 import java.util.Properties;
 
 import cn.cerc.db.SummerDB;
+import cn.cerc.db.queue.QueueServiceEnum;
 
 public enum ServerConfig implements IConfig {
 
@@ -19,6 +20,18 @@ public enum ServerConfig implements IConfig {
 
     public static boolean enableTaskService() {
         return config.getBoolean("task.service", false);
+    }
+
+    /**
+     * 
+     * @return 返回消息服务的类型， Redis/RocketMQ
+     */
+    public static QueueServiceEnum getQueueService() {
+        var result = config.getString("queue.service", "Redis").toLowerCase();
+        if ("redis".equals(result))
+            return QueueServiceEnum.Redis;
+        else
+            return QueueServiceEnum.RocketMQ;
     }
 
     /**
@@ -107,4 +120,5 @@ public enum ServerConfig implements IConfig {
         }
         return debug == 1;
     }
+
 }

@@ -70,7 +70,7 @@ public class QueueConsumer implements AutoCloseable, OnMessageRecevie {
 
     public void addConsumer(String topic, String tag, OnStringMessage event) {
         String key = topic + "-" + tag;
-        log.debug("{} consumer is register: {}", key, Thread.currentThread());
+        log.debug("register consumer: {}", key);
         items1.put(key, event);
         items2.put(topic, new FilterExpression(tag, FilterExpressionType.TAG));
     }
@@ -91,7 +91,10 @@ public class QueueConsumer implements AutoCloseable, OnMessageRecevie {
 
     @Scheduled(initialDelay = 60000, fixedRate = 5000)
     public void startService() {
-        this.startPush();
+        if (items1.size() > 0) {
+            log.info("成功注册的推送消息数量：" + items2.size());
+            this.startPush();
+        }
     }
 
     public void startPush() {
@@ -99,7 +102,6 @@ public class QueueConsumer implements AutoCloseable, OnMessageRecevie {
 //            log.info("startPush 被执行");
             return;
         }
-        log.info("注册的消息有：" + items2.size());
         if (items1.size() == 0)
             return;
         Client client = QueueServer.getClient();

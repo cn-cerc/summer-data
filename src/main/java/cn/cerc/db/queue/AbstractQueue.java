@@ -11,21 +11,36 @@ import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.redis.Redis;
 import cn.cerc.db.zk.ZkConfig;
 
 public abstract class AbstractQueue implements OnStringMessage, ServletContextListener, Watcher {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
-    private static QueueConsumer consumer = QueueConsumer.getInstance();
+    private static QueueConsumer consumer;
     private static ZkConfig config;
+    private QueueServiceEnum service;
     private long delayTime = 0L;
 
     public AbstractQueue() {
         super();
-        log.debug("{} is init ", this.getClass().getSimpleName());
+        this.setService(ServerConfig.getQueueService());
         // 检查消费主题、队列组是否有创建
-        QueueServer.createTopic(this.getTopic(), this.getDelayTime() > 0);
+        switch (service) {
+        case Redis:
+            QueueServer.createTopic(this.getTopic(), this.getDelayTime() > 0);
+            break;
+        case RocketMQ:
+            synchronized (AbstractQueue.class) {
+                if (consumer == null)
+                    consumer = QueueConsumer.getInstance();
+            }
+            break;
+        default:
+            throw new RuntimeException("不支持的消息设备：" + service.name());
+        }
     }
 
     public abstract String getTopic();
@@ -54,6 +69,7 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
     }
 
     public void startService() {
+        // 通知ZooKeeper
         try {
             ZkConfig host = new ZkConfig(String.format("/app/%s", ServerConfig.getAppName()));
             String child = host.path("status");
@@ -71,10 +87,11 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
             e.printStackTrace();
             return;
         }
-
         config().setTempNode(this.getClass().getSimpleName(), "running");
+
         log.info("注册消息推送服务：{}", this.getTopic());
-        consumer.addConsumer(getTopic(), getTag(), this);
+        if (this.service == QueueServiceEnum.RocketMQ)
+            consumer.addConsumer(this.getTopic(), this.getTag(), this);
     }
 
     @Override
@@ -86,12 +103,16 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
     }
 
     public void stopService() {
-        if (consumer == null)
-            return;
-        config().delete(this.getClass().getSimpleName());
         log.info("{} 关闭了消息推送服务", this.getTopic());
-        consumer.close();
-        consumer = null;
+        config().delete(this.getClass().getSimpleName());
+        if (this.service == QueueServiceEnum.RocketMQ) {
+            synchronized (AbstractQueue.class) {
+                if (consumer != null) {
+                    consumer.close();
+                    consumer = null;
+                }
+            }
+        }
     }
 
     private ZkConfig config() {
@@ -100,15 +121,60 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
         return config;
     }
 
+    private String getId() {
+        return this.getTopic() + "-" + getTag();
+    }
+
     protected String sendMessage(String data) {
-        try {
-            var producer = new QueueProducer(getTopic(), getTag());
-            var messageId = producer.append(data, Duration.ofSeconds(this.delayTime));
-            return messageId;
-        } catch (ClientException e) {
-            log.error(e.getMessage());
-            e.printStackTrace();
+        switch (service) {
+        case Redis:
+            try (Redis redis = new Redis()) {
+                redis.lpush(this.getId(), data);
+                return "push redis ok";
+            }
+        case RocketMQ:
+            try {
+                var producer = new QueueProducer(getTopic(), getTag());
+                var messageId = producer.append(data, Duration.ofSeconds(this.delayTime));
+                return messageId;
+            } catch (ClientException e) {
+                log.error(e.getMessage());
+                e.printStackTrace();
+                return null;
+            }
+        default:
             return null;
         }
+    }
+
+    protected void receiveMessage() {
+        switch (service) {
+        case RocketMQ:
+            log.error("RocketMQ 不支持 receiveMessage");
+            break;
+        default:
+            try (Redis redis = new Redis()) {
+                var data = redis.rpop(this.getId());
+                if (data != null)
+                    this.consume(data);
+            }
+        }
+    }
+
+    protected QueueServiceEnum getService() {
+        return service;
+    }
+
+    public void setService(QueueServiceEnum service) {
+        this.service = service;
+    }
+
+    /**
+     * 默认3秒检测一次，若某个消息耗时过高，可将此函数覆盖为空函数
+     */
+    @Scheduled(initialDelay = 30000, fixedRate = 3000)
+    public void defaultCheck() {
+        if (service == QueueServiceEnum.Redis)
+            this.receiveMessage();
     }
 }
