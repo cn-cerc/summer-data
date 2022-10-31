@@ -28,7 +28,7 @@ public class ZkConfig implements IConfig {
         if (path.endsWith("/"))
             throw new RuntimeException("path 不得以 / 结尾");
 
-        this.path = String.format("/%s/%s/%s/%s", ServerConfig.getAppProduct(), ServerConfig.getAppIndustry(),
+        this.path = String.format("/%s/%s/%s%s", ServerConfig.getAppProduct(), ServerConfig.getAppIndustry(),
                 ServerConfig.getAppVersion(), path);
         synchronized (ZkConfig.class) {
             if (ZkConfig.server == null)
