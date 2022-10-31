@@ -182,12 +182,4 @@ public class ZkConfig implements IConfig {
                 zkc.getProperty(MysqlConfig.rds_IdleConnectionTestPeriod)));
     }
 
-    public static void main(String[] args) {
-
-        var zkc1 = new ZkConfig("/diteng/alpha/mysql/salve");
-        var zkc2 = new ZkConfig("/diteng/beta/mysql/salve");
-        var zkc3 = new ZkConfig("/diteng/main/mysql/salve");
-        var zkc4 = new ZkConfig("/4plc/localhost/mysql/salve");
-    }
-
 }
