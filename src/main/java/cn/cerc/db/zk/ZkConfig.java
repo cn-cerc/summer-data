@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -189,6 +190,10 @@ public class ZkConfig implements IConfig {
                 config.getProperty("rds.MaxIdleTime.slave", zkc.getProperty(MysqlConfig.rds_MaxIdleTime)));
         setValue(MysqlConfig.rds_IdleConnectionTestPeriod, config.getProperty("rds.IdleConnectionTestPeriod.slave",
                 zkc.getProperty(MysqlConfig.rds_IdleConnectionTestPeriod)));
+    }
+
+    public ZooKeeper client() {
+        return server.client();
     }
 
 }
