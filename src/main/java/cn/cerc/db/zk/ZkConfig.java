@@ -48,6 +48,10 @@ public class ZkConfig implements IConfig {
         return this.path;
     }
 
+    public String path(String key) {
+        return createKey(this.path, key);
+    }
+
     public static String createKey(String path, String key) {
         if (path == null || "".equals(path))
             path = "/";
@@ -61,7 +65,7 @@ public class ZkConfig implements IConfig {
 
     @Override
     public String getProperty(String key, String def) {
-        var result = server.getValue(createKey(path, key));
+        var result = server.getValue(path(key));
         if (result != null) {
             return result;
         } else {
@@ -89,11 +93,11 @@ public class ZkConfig implements IConfig {
     }
 
     public void setValue(String key, String value) {
-        server.setValue(createKey(path, key), value == null ? "" : value, CreateMode.PERSISTENT);
+        server.setValue(path(key), value == null ? "" : value, CreateMode.PERSISTENT);
     }
 
     public void setTempNode(String key, String value) {
-        server.setValue(createKey(path, key), value == null ? "" : value, CreateMode.EPHEMERAL);
+        server.setValue(path(key), value == null ? "" : value, CreateMode.EPHEMERAL);
     }
 
     public List<String> list() {
@@ -115,8 +119,12 @@ public class ZkConfig implements IConfig {
         return server.exists(path);
     }
 
+    public boolean exists(String key) {
+        return server.exists(path(key));
+    }
+
     public void delete(String key) {
-        server.delete(createKey(path, key));
+        server.delete(path(key));
     }
 
     /**

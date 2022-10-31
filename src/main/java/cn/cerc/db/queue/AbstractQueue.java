@@ -68,11 +68,12 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
             return;
 
         try {
-            ZkConfig status = new ZkConfig(String.format("/app/%s", ServerConfig.getAppName()));
-            var stat = status.client().exists(config.path() + "/status", this);
+            ZkConfig host = new ZkConfig(String.format("/app/%s", ServerConfig.getAppName()));
+            var child = host.path("status");
+            var stat = host.client().exists(child, this);
             if (stat == null) {
-                status.setValue("status", "running");
-                stat = status.client().exists(config.path() + "/status", this);
+                host.setValue("status", "running");
+                stat = host.client().exists(child, this);
                 if (stat == null) {
                     log.warn("配置有误，无法启动消息队列");
                     return;
@@ -83,7 +84,6 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
         }
 
         config().setTempNode(this.getGroupId(), "running");
-
         log.info("{} 启动了消息推送服务", this.getTopic());
         consumer = QueueConsumer.getConsumer(this.getTopic(), this.getTag());
         consumer.createQueueGroup(this);
