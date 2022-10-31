@@ -179,7 +179,8 @@ public class QueueConsumer implements AutoCloseable, OnMessageRecevie {
     }
 
     public String getGroupId() {
-        return String.format("%s-%s", ServerConfig.getAppProduct(), ServerConfig.getAppVersion());
+        return String.format("%s-%s-%s", ServerConfig.getAppProduct(), ServerConfig.getAppIndustry(),
+                ServerConfig.getAppVersion());
     }
 
 }
