@@ -21,10 +21,6 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
     private QueueServiceEnum service;
     private long delayTime = 0L;
 
-    public static void registerConsumer(QueueConsumer consumer) {
-        AbstractQueue.consumer = consumer;
-    }
-
     public AbstractQueue() {
         super();
         this.setService(ServerConfig.getQueueService());
@@ -51,7 +47,8 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
         return this.delayTime;
     }
 
-    public void startService() {
+    public void startService(QueueConsumer consumer) {
+        AbstractQueue.consumer = consumer;
         // 通知ZooKeeper
         try {
             ZkConfig host = new ZkConfig(String.format("/app/%s", ServerConfig.getAppName()));

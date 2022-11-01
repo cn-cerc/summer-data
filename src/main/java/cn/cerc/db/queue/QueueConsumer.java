@@ -91,10 +91,7 @@ public class QueueConsumer implements AutoCloseable, ApplicationListener<Context
         if (context.getParent() == null) {
             Map<String, AbstractQueue> queues = context.getBeansOfType(AbstractQueue.class);
             log.info("开始注册pushconsumer");
-            AbstractQueue.registerConsumer(this);
-            queues.forEach((name, queue) -> {
-                queue.startService();
-            });
+            queues.forEach((name, queue) -> queue.startService(this));
             startPush();
             log.info("成功注册的推送消息数量：" + queues.size());
         }
