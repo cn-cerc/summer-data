@@ -19,7 +19,9 @@ import org.apache.rocketmq.client.apis.consumer.SimpleConsumer;
 import org.apache.rocketmq.client.apis.message.MessageView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 import com.aliyun.rocketmq20220801.Client;
@@ -32,17 +34,12 @@ import com.aliyun.rocketmq20220801.models.GetConsumerGroupResponseBody.GetConsum
 import cn.cerc.db.core.ServerConfig;
 
 @Component
-public class QueueConsumer implements AutoCloseable, OnMessageRecevie {
+public class QueueConsumer implements AutoCloseable, ApplicationListener<ContextRefreshedEvent>, OnMessageRecevie {
     private static final Logger log = LoggerFactory.getLogger(QueueConsumer.class);
     private static final Map<String, OnStringMessage> items1 = new HashMap<>();
     private static final Map<String, FilterExpression> items2 = new HashMap<>();
     private PushConsumer pushConsumer;
     private SimpleConsumer pullConsumer;
-    private static final QueueConsumer INSTANCE = new QueueConsumer();
-
-    public static QueueConsumer getInstance() {
-        return INSTANCE;
-    }
 
     public QueueConsumer() {
         super();
@@ -79,7 +76,6 @@ public class QueueConsumer implements AutoCloseable, OnMessageRecevie {
     public boolean consume(MessageView message) {
         String key = message.getTopic() + "-" + message.getTag().orElse(null);
         log.info("收到一条消息：{}", key);
-
         String data = StandardCharsets.UTF_8.decode(message.getBody()).toString();
         var event = items1.get(key);
         if (event == null) {
@@ -89,11 +85,18 @@ public class QueueConsumer implements AutoCloseable, OnMessageRecevie {
         return event.consume(data);
     }
 
-    @Scheduled(initialDelay = 60000, fixedRate = 5000)
-    public void startService() {
-        if (items1.size() > 0) {
-            log.info("成功注册的推送消息数量：" + items2.size());
-            this.startPush();
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        ApplicationContext context = event.getApplicationContext();
+        if (context.getParent() == null) {
+            if (!ServerConfig.enableTaskService()) {
+                log.info("当前应用未启动消息服务与定时任务");
+                return;
+            }
+            Map<String, AbstractQueue> queues = context.getBeansOfType(AbstractQueue.class);
+            queues.forEach((name, queue) -> queue.startService(this));
+            startPush();
+            log.info("成功注册的推送消息数量：" + queues.size());
         }
     }
 
@@ -121,7 +124,7 @@ public class QueueConsumer implements AutoCloseable, OnMessageRecevie {
                 CreateConsumerGroupResponse createResponse = client.createConsumerGroup(QueueServer.getInstanceId(),
                         groupId, request);
                 if (!createResponse.getBody().getSuccess()) {
-                    log.error("创建消费组 {} 失败");
+                    log.error("创建消费组 {} 失败", groupId);
                     return;
                 }
             }

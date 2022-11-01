@@ -2,9 +2,6 @@ package cn.cerc.db.queue;
 
 import java.time.Duration;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-
 import org.apache.rocketmq.client.apis.ClientException;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -17,13 +14,12 @@ import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.redis.Redis;
 import cn.cerc.db.zk.ZkConfig;
 
-public abstract class AbstractQueue implements OnStringMessage, ServletContextListener, Watcher {
+public abstract class AbstractQueue implements OnStringMessage, Watcher {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
     private static QueueConsumer consumer;
     private static ZkConfig config;
     private QueueServiceEnum service;
     private long delayTime = 0L;
-    private boolean ready;
 
     public AbstractQueue() {
         super();
@@ -31,13 +27,11 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
         // 检查消费主题、队列组是否有创建
         switch (service) {
         case Redis:
-            QueueServer.createTopic(this.getTopic(), this.getDelayTime() > 0);
+            break;
+        case AliyunMNS:
             break;
         case RocketMQ:
-            synchronized (AbstractQueue.class) {
-                if (consumer == null)
-                    consumer = QueueConsumer.getInstance();
-            }
+            QueueServer.createTopic(this.getTopic(), this.getDelayTime() > 0);
             break;
         default:
             throw new RuntimeException("不支持的消息设备：" + service.name());
@@ -55,23 +49,8 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
         return this.delayTime;
     }
 
-    @Override
-    public void contextInitialized(ServletContextEvent sce) {
-        this.ready = true;
-        if (ServerConfig.enableTaskService()) {
-            this.startService();
-        } else {
-            log.info("当前主机没有开启消息队列服务：{}", this.getClass().getSimpleName());
-        }
-    }
-
-    @Override
-    public void contextDestroyed(ServletContextEvent sce) {
-        this.ready = false;
-        this.stopService();
-    }
-
-    public void startService() {
+    public void startService(QueueConsumer consumer) {
+        AbstractQueue.consumer = consumer;
         // 通知ZooKeeper
         try {
             ZkConfig host = new ZkConfig(String.format("/app/%s", ServerConfig.getAppName()));
@@ -92,7 +71,7 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
         }
         config().setTempNode(this.getClass().getSimpleName(), "running");
 
-        log.info("注册消息推送服务：{}", this.getTopic());
+        log.info("注册消息服务：{} from {}", this.getId(), this.service.name());
         if (this.service == QueueServiceEnum.RocketMQ)
             consumer.addConsumer(this.getTopic(), this.getTag(), this);
     }
@@ -135,10 +114,13 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
                 redis.lpush(this.getId(), data);
                 return "push redis ok";
             }
+        case AliyunMNS:
+            return MnsServer.getQueue(this.getId()).push(data);
         case RocketMQ:
             try {
                 var producer = new QueueProducer(getTopic(), getTag());
-                var messageId = producer.append(data, Duration.ofSeconds(this.delayTime));
+                var messageId = producer.append(data, Duration.ofSeconds(getDelayTime()));
+                log.info("发送消息成功  {} {} {}", getTopic(), getTag(), messageId);
                 return messageId;
             } catch (ClientException e) {
                 log.error(e.getMessage());
@@ -152,15 +134,18 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
 
     protected void receiveMessage() {
         switch (service) {
-        case RocketMQ:
-            log.error("RocketMQ 不支持 receiveMessage");
-            break;
-        default:
+        case Redis:
             try (Redis redis = new Redis()) {
                 var data = redis.rpop(this.getId());
                 if (data != null)
                     this.consume(data);
             }
+            break;
+        case AliyunMNS:
+            MnsServer.getQueue(getId()).pop(100, this);
+            break;
+        default:
+            log.error("receiveMessage 不支持: " + service.name());
         }
     }
 
@@ -177,7 +162,13 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
      */
     @Scheduled(initialDelay = 30000, fixedRate = 3000)
     public void defaultCheck() {
-        if (service == QueueServiceEnum.Redis && ServerConfig.enableTaskService())
-            this.receiveMessage();
+        if (ServerConfig.enableTaskService()) {
+            switch (service) {
+            case Redis, AliyunMNS:
+                this.receiveMessage();
+            default:
+                break;
+            }
+        }
     }
 }

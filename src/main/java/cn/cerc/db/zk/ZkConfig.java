@@ -13,6 +13,7 @@ import cn.cerc.db.core.IConfig;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
 import cn.cerc.db.mysql.MysqlConfig;
+import cn.cerc.db.queue.MnsServer;
 import cn.cerc.db.queue.QueueServer;
 
 public class ZkConfig implements IConfig {
@@ -36,6 +37,8 @@ public class ZkConfig implements IConfig {
         }
         if ("/redis".equals(path) && !this.exists())
             this.fixRedis();
+        if ("/aliyunMNS".equals(path) && !this.exists())
+            this.fixAliyunMNS();
         if ("/rocketMQ".equals(path) && !this.exists())
             this.fixRocketMQ();
         if ("/mysql".equals(path) && !this.exists())
@@ -135,6 +138,19 @@ public class ZkConfig implements IConfig {
         setValue("port", config.getProperty("redis.port", "6379"));
         setValue("password", config.getProperty("redis.password", ""));
         setValue("timeout", config.getProperty("redis.timeout", "10000"));
+    }
+
+    /**
+     * 用于结转旧的配置文件
+     * 
+     * @param config
+     */
+    private void fixAliyunMNS() {
+        log.warn("fixAliyunMNS: 自动结转旧的配置数据");
+        setValue(MnsServer.AccountEndpoint, config.getProperty("mns.accountendpoint"));
+        setValue(MnsServer.AccessKeyId, config.getProperty("mns.accesskeyid"));
+        setValue(MnsServer.AccessKeySecret, config.getProperty("mns.accesskeysecret"));
+        setValue(MnsServer.SecurityToken, config.getProperty("mns.securitytoken"));
     }
 
     /**
