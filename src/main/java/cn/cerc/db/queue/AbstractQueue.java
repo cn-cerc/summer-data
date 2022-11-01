@@ -33,6 +33,8 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
         case Redis:
             QueueServer.createTopic(this.getTopic(), this.getDelayTime() > 0);
             break;
+        case AliyunMNS:
+            break;
         case RocketMQ:
             synchronized (AbstractQueue.class) {
                 if (consumer == null)
@@ -92,7 +94,7 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
         }
         config().setTempNode(this.getClass().getSimpleName(), "running");
 
-        log.info("注册消息推送服务：{}", this.getTopic());
+        log.info("注册消息服务：{} from {}", this.getId(), this.service.name());
         if (this.service == QueueServiceEnum.RocketMQ)
             consumer.addConsumer(this.getTopic(), this.getTag(), this);
     }
@@ -135,6 +137,8 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
                 redis.lpush(this.getId(), data);
                 return "push redis ok";
             }
+        case AliyunMNS:
+            return MnsServer.getQueue(this.getId()).push(data);
         case RocketMQ:
             try {
                 var producer = new QueueProducer(getTopic(), getTag());
@@ -152,15 +156,18 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
 
     protected void receiveMessage() {
         switch (service) {
-        case RocketMQ:
-            log.error("RocketMQ 不支持 receiveMessage");
-            break;
-        default:
+        case Redis:
             try (Redis redis = new Redis()) {
                 var data = redis.rpop(this.getId());
                 if (data != null)
                     this.consume(data);
             }
+            break;
+        case AliyunMNS:
+            MnsServer.getQueue(getId()).pop(100, this);
+            break;
+        default:
+            log.error("receiveMessage 不支持: " + service.name());
         }
     }
 
@@ -177,7 +184,13 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
      */
     @Scheduled(initialDelay = 30000, fixedRate = 3000)
     public void defaultCheck() {
-        if (service == QueueServiceEnum.Redis && ServerConfig.enableTaskService())
-            this.receiveMessage();
+        if (ServerConfig.enableTaskService()) {
+            switch (service) {
+            case Redis, AliyunMNS:
+                this.receiveMessage();
+            default:
+                break;
+            }
+        }
     }
 }
