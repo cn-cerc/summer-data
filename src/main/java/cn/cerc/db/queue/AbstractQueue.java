@@ -177,7 +177,7 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
      */
     @Scheduled(initialDelay = 30000, fixedRate = 3000)
     public void defaultCheck() {
-        if (service == QueueServiceEnum.Redis)
+        if (service == QueueServiceEnum.Redis && ServerConfig.enableTaskService())
             this.receiveMessage();
     }
 }
