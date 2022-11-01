@@ -38,7 +38,7 @@ public class QueueQuery extends DataSet {
 
     public void save(String json) {
         try  {
-            var queue = new QueueProducer(this.topic, QueueConfig.tag);
+            var queue = new QueueProducer(this.topic, QueueConfig.tag());
             queue.append(json, Duration.ZERO);
         } catch (ClientException e) {
             log.error(e.getMessage());

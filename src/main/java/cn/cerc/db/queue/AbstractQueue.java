@@ -16,41 +16,52 @@ import cn.cerc.db.zk.ZkConfig;
 
 public abstract class AbstractQueue implements OnStringMessage, Watcher {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
-    private static QueueConsumer consumer;
     private static ZkConfig config;
     private QueueServiceEnum service;
+    private boolean initTopic;
     private long delayTime = 0L;
+    private String industry;
 
     public AbstractQueue() {
         super();
+        // 配置消息服务方式：redis/mns/rocketmq
         this.setService(ServerConfig.getQueueService());
-        // 检查消费主题、队列组是否有创建
-        switch (service) {
-        case Redis:
-            break;
-        case AliyunMNS:
-            break;
-        case RocketMQ:
-            QueueServer.createTopic(this.getTopic(), this.getDelayTime() > 0);
-            break;
-        default:
-            throw new RuntimeException("不支持的消息设备：" + service.name());
-        }
+        // 配置产业代码：csp/fpl/obm/oem/odm
+        this.setIndustry(ServerConfig.getAppIndustry());
     }
 
     public abstract String getTopic();
 
-    public String getTag() {
-        return QueueConfig.tag;
+    public final String getTag() {
+        return String.format("%s-%s", ServerConfig.getAppVersion(), getIndustry());
+    }
+
+    public final String getId() {
+        return this.getTopic() + "-" + getTag();
+    }
+
+    public String getIndustry() {
+        return industry;
+    }
+
+    public void setIndustry(String industry) {
+        this.industry = industry;
+    }
+
+    protected void setIndustryByCorpNo(String corpNo) {
+        throw new RuntimeException("从数据库取得相应的产业代码");
+    }
+
+    protected void setDelayTime(long delayTime) {
+        this.delayTime = delayTime;
     }
 
     // 创建延迟队列消息
-    public long getDelayTime() {
+    public final long getDelayTime() {
         return this.delayTime;
     }
 
     public void startService(QueueConsumer consumer) {
-        AbstractQueue.consumer = consumer;
         // 通知ZooKeeper
         try {
             ZkConfig host = new ZkConfig(String.format("/app/%s", ServerConfig.getAppName()));
@@ -72,8 +83,10 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
         config().setTempNode(this.getClass().getSimpleName(), "running");
 
         log.info("注册消息服务：{} from {}", this.getId(), this.service.name());
-        if (this.service == QueueServiceEnum.RocketMQ)
+        if (this.service == QueueServiceEnum.RocketMQ) {
+            initTopic();
             consumer.addConsumer(this.getTopic(), this.getTag(), this);
+        }
     }
 
     @Override
@@ -87,24 +100,12 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
     public void stopService() {
         log.info("{} 关闭了消息推送服务", this.getTopic());
         config().delete(this.getClass().getSimpleName());
-        if (this.service == QueueServiceEnum.RocketMQ) {
-            synchronized (AbstractQueue.class) {
-                if (consumer != null) {
-                    consumer.close();
-                    consumer = null;
-                }
-            }
-        }
     }
 
     private ZkConfig config() {
         if (config == null)
             config = new ZkConfig(String.format("/app/%s/task", ServerConfig.getAppName()));
         return config;
-    }
-
-    private String getId() {
-        return this.getTopic() + "-" + getTag();
     }
 
     protected String sendMessage(String data) {
@@ -117,6 +118,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
         case AliyunMNS:
             return MnsServer.getQueue(this.getId()).push(data);
         case RocketMQ:
+            this.initTopic();
             try {
                 var producer = new QueueProducer(getTopic(), getTag());
                 var messageId = producer.append(data, Duration.ofSeconds(getDelayTime()));
@@ -132,6 +134,13 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
         }
     }
 
+    private void initTopic() {
+        if (this.initTopic)
+            return;
+        QueueServer.createTopic(this.getTopic(), this.getDelayTime() > 0);
+        this.initTopic = true;
+    }
+
     protected void receiveMessage() {
         switch (service) {
         case Redis:
@@ -145,7 +154,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
             MnsServer.getQueue(getId()).pop(100, this);
             break;
         default:
-            log.error("receiveMessage 不支持: " + service.name());
+            log.error("{} 不支持消息拉取模式:", service.name());
         }
     }
 

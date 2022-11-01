@@ -49,7 +49,7 @@ public enum ServerConfig implements IConfig {
 
     /**
      * 
-     * @return 产品代码
+     * @return 产品代码, 如：diteng/4plc
      */
     public static String getAppProduct() {
         return config.getString("application.product", "summer");
