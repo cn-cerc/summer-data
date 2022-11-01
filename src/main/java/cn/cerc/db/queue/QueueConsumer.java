@@ -89,21 +89,16 @@ public class QueueConsumer implements AutoCloseable, ApplicationListener<Context
     public void onApplicationEvent(ContextRefreshedEvent event) {
         ApplicationContext context = event.getApplicationContext();
         if (context.getParent() == null) {
+            if (!ServerConfig.enableTaskService()) {
+                log.info("当前应用未启动消息服务与定时任务");
+                return;
+            }
             Map<String, AbstractQueue> queues = context.getBeansOfType(AbstractQueue.class);
-            log.info("开始注册pushconsumer");
             queues.forEach((name, queue) -> queue.startService(this));
             startPush();
             log.info("成功注册的推送消息数量：" + queues.size());
         }
     }
-
-//    @Scheduled(initialDelay = 60000, fixedRate = 5000)
-//    public void startService() {
-//        if (items1.size() > 0) {
-//            log.info("成功注册的推送消息数量：" + items2.size());
-//            this.startPush();
-//        }
-//    }
 
     public void startPush() {
         if (pushConsumer != null) {
