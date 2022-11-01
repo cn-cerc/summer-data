@@ -16,13 +16,13 @@ import cn.cerc.db.zk.ZkConfig;
 
 public abstract class AbstractQueue implements OnStringMessage, Watcher {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
-    private static QueueConsumer consumer;
     private static ZkConfig config;
     private QueueServiceEnum service;
     private long delayTime = 0L;
 
     public AbstractQueue() {
         super();
+        // 配置消息服务方式：redis/mns/rocketmq
         this.setService(ServerConfig.getQueueService());
         // 检查消费主题、队列组是否有创建
         switch (service) {
@@ -41,7 +41,11 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
     public abstract String getTopic();
 
     public String getTag() {
-        return QueueConfig.tag;
+        return QueueConfig.tag();
+    }
+
+    private String getId() {
+        return this.getTopic() + "-" + getTag();
     }
 
     // 创建延迟队列消息
@@ -50,7 +54,6 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
     }
 
     public void startService(QueueConsumer consumer) {
-        AbstractQueue.consumer = consumer;
         // 通知ZooKeeper
         try {
             ZkConfig host = new ZkConfig(String.format("/app/%s", ServerConfig.getAppName()));
@@ -87,24 +90,12 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
     public void stopService() {
         log.info("{} 关闭了消息推送服务", this.getTopic());
         config().delete(this.getClass().getSimpleName());
-        if (this.service == QueueServiceEnum.RocketMQ) {
-            synchronized (AbstractQueue.class) {
-                if (consumer != null) {
-                    consumer.close();
-                    consumer = null;
-                }
-            }
-        }
     }
 
     private ZkConfig config() {
         if (config == null)
             config = new ZkConfig(String.format("/app/%s/task", ServerConfig.getAppName()));
         return config;
-    }
-
-    private String getId() {
-        return this.getTopic() + "-" + getTag();
     }
 
     protected String sendMessage(String data) {
@@ -145,7 +136,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
             MnsServer.getQueue(getId()).pop(100, this);
             break;
         default:
-            log.error("receiveMessage 不支持: " + service.name());
+            log.error("{} 不支持消息拉取模式:", service.name());
         }
     }
 

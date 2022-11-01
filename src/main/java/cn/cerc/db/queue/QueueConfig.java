@@ -2,7 +2,6 @@ package cn.cerc.db.queue;
 
 import cn.cerc.db.core.ClassConfig;
 import cn.cerc.db.core.ServerConfig;
-import cn.cerc.db.core.Utils;
 
 /**
  * 阿里云消息队列
@@ -16,15 +15,14 @@ public class QueueConfig {
      *
      * 需要进一步改进
      */
-    public final static String tag = String.format("%s-%s",
-            ServerConfig.getInstance().getProperty("application.original"),
-            ServerConfig.getInstance().getProperty("version"));
-
+    public final static String tag() {
+        return String.format("%s-%s", ServerConfig.getAppIndustry(), ServerConfig.getAppVersion());
+    }
 
     /**
      * 系统消息
      **/
-    public static  String getMessageQueue() {
+    public static String getMessageQueue() {
         return "message";
     }
 

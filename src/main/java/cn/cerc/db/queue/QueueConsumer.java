@@ -21,6 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ApplicationContextEvent;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +36,7 @@ import com.aliyun.rocketmq20220801.models.GetConsumerGroupResponseBody.GetConsum
 import cn.cerc.db.core.ServerConfig;
 
 @Component
-public class QueueConsumer implements AutoCloseable, ApplicationListener<ContextRefreshedEvent>, OnMessageRecevie {
+public class QueueConsumer implements AutoCloseable, ApplicationListener<ApplicationContextEvent>, OnMessageRecevie {
     private static final Logger log = LoggerFactory.getLogger(QueueConsumer.class);
     private static final Map<String, OnStringMessage> items1 = new HashMap<>();
     private static final Map<String, FilterExpression> items2 = new HashMap<>();
@@ -86,17 +88,26 @@ public class QueueConsumer implements AutoCloseable, ApplicationListener<Context
     }
 
     @Override
-    public void onApplicationEvent(ContextRefreshedEvent event) {
-        ApplicationContext context = event.getApplicationContext();
-        if (context.getParent() == null) {
-            if (!ServerConfig.enableTaskService()) {
-                log.info("当前应用未启动消息服务与定时任务");
-                return;
+    public void onApplicationEvent(ApplicationContextEvent event) {
+        if (event instanceof ContextRefreshedEvent) {
+            ApplicationContext context = event.getApplicationContext();
+            if (context.getParent() == null) {
+                if (!ServerConfig.enableTaskService()) {
+                    log.info("当前应用未启动消息服务与定时任务");
+                    return;
+                }
+                Map<String, AbstractQueue> queues = context.getBeansOfType(AbstractQueue.class);
+                queues.forEach((name, queue) -> queue.startService(this));
+                startPush();
+                log.info("成功注册的推送消息数量：" + queues.size());
             }
-            Map<String, AbstractQueue> queues = context.getBeansOfType(AbstractQueue.class);
-            queues.forEach((name, queue) -> queue.startService(this));
-            startPush();
-            log.info("成功注册的推送消息数量：" + queues.size());
+        } else if (event instanceof ContextClosedEvent) {
+            ApplicationContext context = event.getApplicationContext();
+            if (context.getParent() == null) {
+                Map<String, AbstractQueue> queues = context.getBeansOfType(AbstractQueue.class);
+                queues.forEach((name, queue) -> queue.stopService());
+                log.info("关闭注册的推送消息数量：" + queues.size());
+            }
         }
     }
 
