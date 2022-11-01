@@ -157,7 +157,8 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
             break;
         default:
             try (Redis redis = new Redis()) {
-                var data = redis.rpop(this.getId());
+                String id = this.getId();
+                var data = redis.rpop(id);
                 if (data != null)
                     this.consume(data);
             }
@@ -177,7 +178,7 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
      */
     @Scheduled(initialDelay = 30000, fixedRate = 3000)
     public void defaultCheck() {
-        if (ready && service == QueueServiceEnum.Redis)
+        if (service == QueueServiceEnum.Redis)
             this.receiveMessage();
     }
 }
