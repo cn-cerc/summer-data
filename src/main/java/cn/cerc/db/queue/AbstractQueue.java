@@ -2,9 +2,6 @@ package cn.cerc.db.queue;
 
 import java.time.Duration;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-
 import org.apache.rocketmq.client.apis.ClientException;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -17,13 +14,16 @@ import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.redis.Redis;
 import cn.cerc.db.zk.ZkConfig;
 
-public abstract class AbstractQueue implements OnStringMessage, ServletContextListener, Watcher {
+public abstract class AbstractQueue implements OnStringMessage, Watcher {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
     private static QueueConsumer consumer;
     private static ZkConfig config;
     private QueueServiceEnum service;
     private long delayTime = 0L;
-    private boolean ready;
+
+    public static void registerConsumer(QueueConsumer consumer) {
+        AbstractQueue.consumer = consumer;
+    }
 
     public AbstractQueue() {
         super();
@@ -31,13 +31,9 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
         // 检查消费主题、队列组是否有创建
         switch (service) {
         case Redis:
-            QueueServer.createTopic(this.getTopic(), this.getDelayTime() > 0);
             break;
         case RocketMQ:
-            synchronized (AbstractQueue.class) {
-                if (consumer == null)
-                    consumer = QueueConsumer.getInstance();
-            }
+            QueueServer.createTopic(this.getTopic(), this.getDelayTime() > 0);
             break;
         default:
             throw new RuntimeException("不支持的消息设备：" + service.name());
@@ -53,22 +49,6 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
     // 创建延迟队列消息
     public long getDelayTime() {
         return this.delayTime;
-    }
-
-    @Override
-    public void contextInitialized(ServletContextEvent sce) {
-        this.ready = true;
-        if (ServerConfig.enableTaskService()) {
-            this.startService();
-        } else {
-            log.info("当前主机没有开启消息队列服务：{}", this.getClass().getSimpleName());
-        }
-    }
-
-    @Override
-    public void contextDestroyed(ServletContextEvent sce) {
-        this.ready = false;
-        this.stopService();
     }
 
     public void startService() {
@@ -138,7 +118,8 @@ public abstract class AbstractQueue implements OnStringMessage, ServletContextLi
         case RocketMQ:
             try {
                 var producer = new QueueProducer(getTopic(), getTag());
-                var messageId = producer.append(data, Duration.ofSeconds(this.delayTime));
+                var messageId = producer.append(data, Duration.ofSeconds(getDelayTime()));
+                log.info("发送消息成功  {} {} {}", getTopic(), getTag(), messageId);
                 return messageId;
             } catch (ClientException e) {
                 log.error(e.getMessage());
