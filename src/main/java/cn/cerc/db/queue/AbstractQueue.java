@@ -19,11 +19,14 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
     private static ZkConfig config;
     private QueueServiceEnum service;
     private long delayTime = 0L;
+    private String industry;
 
     public AbstractQueue() {
         super();
         // 配置消息服务方式：redis/mns/rocketmq
         this.setService(ServerConfig.getQueueService());
+        // 配置产业代码：csp/fpl/obm/oem/odm
+        this.setIndustry(ServerConfig.getAppIndustry());
         // 检查消费主题、队列组是否有创建
         switch (service) {
         case Redis:
@@ -40,12 +43,24 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
 
     public abstract String getTopic();
 
-    public String getTag() {
-        return QueueConfig.tag();
+    public final String getTag() {
+        return String.format("%s-%s", ServerConfig.getAppVersion(), getIndustry());
     }
 
-    private String getId() {
+    public final String getId() {
         return this.getTopic() + "-" + getTag();
+    }
+
+    public String getIndustry() {
+        return industry;
+    }
+
+    public void setIndustry(String industry) {
+        this.industry = industry;
+    }
+
+    protected void setIndustryByCorpNo(String corpNo) {
+        throw new RuntimeException("从数据库取得相应的产业代码");
     }
 
     // 创建延迟队列消息

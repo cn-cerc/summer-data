@@ -1,14 +1,11 @@
 package cn.cerc.db.queue;
 
-import cn.cerc.db.core.ClassConfig;
 import cn.cerc.db.core.ServerConfig;
 
 /**
  * 阿里云消息队列
  */
 public class QueueConfig {
-
-    private static final ClassConfig config = new ClassConfig(QueueConfig.class, null);
 
     /**
      * TODO 临时做法
