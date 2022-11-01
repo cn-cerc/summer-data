@@ -7,13 +7,8 @@ import cn.cerc.db.core.ServerConfig;
  */
 public class QueueConfig {
 
-    /**
-     * TODO 临时做法
-     *
-     * 需要进一步改进
-     */
     public final static String tag() {
-        return String.format("%s-%s", ServerConfig.getAppIndustry(), ServerConfig.getAppVersion());
+        return String.format("%s-%s", ServerConfig.getAppVersion(), ServerConfig.getAppIndustry());
     }
 
     /**
@@ -30,11 +25,11 @@ public class QueueConfig {
         return "material";
     }
 
-    /**
-     * 全文检索
-     */
-    public static String getElasticsearchQueue() {
-        return "elasticsearch";
-    }
+    //    /**
+//     * 全文检索
+//     */
+//    public static String getElasticsearchQueue() {
+//        return "elasticsearch";
+//    }
 
 }
