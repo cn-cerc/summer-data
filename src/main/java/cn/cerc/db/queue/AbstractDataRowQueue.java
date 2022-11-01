@@ -8,7 +8,21 @@ public abstract class AbstractDataRowQueue extends AbstractQueue implements OnMe
      * 生产者投放消息
      */
     public String append(DataRow dataRow) {
-        return super.sendMessage(dataRow.json());
+        return super.sendMessage(getTopic(), getTag(), dataRow.json());
+    }
+
+    /**
+     * 生产者投放消息
+     */
+    public String append(String tag, DataRow dataRow) {
+        return super.sendMessage(getTopic(), tag, dataRow.json());
+    }
+
+    /**
+     * 生产者投放消息
+     */
+    public String append(String topic, String tag, DataRow dataRow) {
+        return super.sendMessage(topic, tag, dataRow.json());
     }
 
     @Override

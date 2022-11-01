@@ -18,15 +18,11 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
     private static ZkConfig config;
     private QueueServiceEnum service;
-    private long delayTime = 0L;
-    private String industry;
 
     public AbstractQueue() {
         super();
         // 配置消息服务方式：redis/mns/rocketmq
         this.setService(ServerConfig.getQueueService());
-        // 配置产业代码：csp/fpl/obm/oem/odm
-        this.setIndustry(ServerConfig.getAppIndustry());
         // 检查消费主题、队列组是否有创建
         switch (service) {
         case Redis:
@@ -44,28 +40,16 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
     public abstract String getTopic();
 
     public final String getTag() {
-        return String.format("%s-%s", ServerConfig.getAppVersion(), getIndustry());
+        return QueueConfig.tag();
     }
 
     public final String getId() {
         return this.getTopic() + "-" + getTag();
     }
 
-    public String getIndustry() {
-        return industry;
-    }
-
-    public void setIndustry(String industry) {
-        this.industry = industry;
-    }
-
-    protected void setIndustryByCorpNo(String corpNo) {
-        throw new RuntimeException("从数据库取得相应的产业代码");
-    }
-
-    // 创建延迟队列消息
+    // 创建延迟队列消息 单位为秒
     public long getDelayTime() {
-        return this.delayTime;
+        return 0L;
     }
 
     public void startService(QueueConsumer consumer) {
@@ -113,7 +97,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
         return config;
     }
 
-    protected String sendMessage(String data) {
+    protected String sendMessage(String topic, String tag, String data) {
         switch (service) {
         case Redis:
             try (Redis redis = new Redis()) {
@@ -124,9 +108,9 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
             return MnsServer.getQueue(this.getId()).push(data);
         case RocketMQ:
             try {
-                var producer = new QueueProducer(getTopic(), getTag());
+                var producer = new QueueProducer(topic, tag);
                 var messageId = producer.append(data, Duration.ofSeconds(getDelayTime()));
-                log.info("发送消息成功  {} {} {}", getTopic(), getTag(), messageId);
+                log.info("Topic {} Tag {} 发送消息成功 {}", topic, tag, messageId);
                 return messageId;
             } catch (ClientException e) {
                 log.error(e.getMessage());
@@ -137,6 +121,31 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
             return null;
         }
     }
+//
+//    protected String sendMessage(String data) {
+//        switch (service) {
+//        case Redis:
+//            try (Redis redis = new Redis()) {
+//                redis.lpush(this.getId(), data);
+//                return "push redis ok";
+//            }
+//        case AliyunMNS:
+//            return MnsServer.getQueue(this.getId()).push(data);
+//        case RocketMQ:
+//            try {
+//                var producer = new QueueProducer(getTopic(), getTag());
+//                var messageId = producer.append(data, Duration.ofSeconds(getDelayTime()));
+//                log.info("Topic {} Tag {} 发送消息成功 {}", getTopic(), getTag(), messageId);
+//                return messageId;
+//            } catch (ClientException e) {
+//                log.error(e.getMessage());
+//                e.printStackTrace();
+//                return null;
+//            }
+//        default:
+//            return null;
+//        }
+//    }
 
     protected void receiveMessage() {
         switch (service) {

@@ -8,7 +8,7 @@ import cn.cerc.db.core.ServerConfig;
 public class QueueConfig {
 
     public final static String tag() {
-        return String.format("%s-%s", ServerConfig.getAppVersion(), ServerConfig.getAppIndustry());
+        return String.format("%s-%s", ServerConfig.getAppIndustry(), ServerConfig.getAppVersion());
     }
 
     /**
@@ -25,7 +25,7 @@ public class QueueConfig {
         return "material";
     }
 
-    //    /**
+    // /**
 //     * 全文检索
 //     */
 //    public static String getElasticsearchQueue() {

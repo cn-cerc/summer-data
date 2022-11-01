@@ -77,7 +77,8 @@ public class QueueConsumer implements AutoCloseable, ApplicationListener<Applica
     @Override
     public boolean consume(MessageView message) {
         String key = message.getTopic() + "-" + message.getTag().orElse(null);
-        log.info("收到一条消息：{}", key);
+        log.info("Topic {} Tag {} 收到一条消息：{}", message.getTopic(), message.getTag().get(),
+                message.getMessageId().toString());
         String data = StandardCharsets.UTF_8.decode(message.getBody()).toString();
         var event = items1.get(key);
         if (event == null) {
@@ -113,7 +114,6 @@ public class QueueConsumer implements AutoCloseable, ApplicationListener<Applica
 
     public void startPush() {
         if (pushConsumer != null) {
-//            log.info("startPush 被执行");
             return;
         }
         if (items1.size() == 0)
@@ -121,11 +121,11 @@ public class QueueConsumer implements AutoCloseable, ApplicationListener<Applica
         Client client = QueueServer.getClient();
         String groupId = getGroupId();
         try {
-            // 查找指定的主题组是否存在
+            // 查找指定的消费组是否存在
             GetConsumerGroupResponse response = client.getConsumerGroup(QueueServer.getInstanceId(), groupId);
             GetConsumerGroupResponseBodyData data = response.getBody().getData();
             if (data == null) {
-                // 创建主题组
+                // 创建消费组
                 CreateConsumerGroupRequest request = new CreateConsumerGroupRequest();
                 request.setDeliveryOrderType("Concurrently");
                 CreateConsumerGroupRequestConsumeRetryPolicy policy = new CreateConsumerGroupRequestConsumeRetryPolicy();
@@ -151,7 +151,6 @@ public class QueueConsumer implements AutoCloseable, ApplicationListener<Applica
             builder.setConsumerGroup(groupId);
             builder.setClientConfiguration(clientConfiguration);
             builder.setSubscriptionExpressions(items2);
-            builder.setConsumptionThreadCount(5);
             builder.setMessageListener(
                     message -> this.consume(message) ? ConsumeResult.SUCCESS : ConsumeResult.FAILURE);
             this.pushConsumer = builder.build();

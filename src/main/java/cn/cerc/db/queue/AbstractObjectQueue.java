@@ -12,7 +12,25 @@ public abstract class AbstractObjectQueue<T> extends AbstractQueue implements On
      * @param object
      */
     public void append(T object) {
-        super.sendMessage(new Gson().toJson(object));
+        super.sendMessage(getTopic(), getTag(), new Gson().toJson(object));
+    }
+
+    /**
+     * 将dataRow发送到当前队列
+     * 
+     * @param object
+     */
+    public void append(String tag, T object) {
+        super.sendMessage(getTopic(), tag, new Gson().toJson(object));
+    }
+
+    /**
+     * 将dataRow发送到当前队列
+     * 
+     * @param object
+     */
+    public void append(String topic, String tag, T object) {
+        super.sendMessage(topic, tag, new Gson().toJson(object));
     }
 
     @Override
