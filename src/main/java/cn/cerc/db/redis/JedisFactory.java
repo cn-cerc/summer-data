@@ -68,6 +68,7 @@ public class JedisFactory {
      * @return Jedis
      */
     public static Jedis getJedis(String configId) {
+        
         return create(configId).getResource();
     }
 
@@ -89,6 +90,20 @@ public class JedisFactory {
     }
 
     private JedisFactory(String configId) {
+        String extKey = "";
+        if (configId == null) {
+            this.host = config.getString("host");
+            this.port = config.getInt("port", 6379);
+        } else {
+            extKey = "." + configId;
+            this.host = config.getString("host" + extKey);
+            this.port = config.getInt("port" + extKey, 0);
+        }
+        if (Utils.isEmpty(this.host)) {
+            log.warn("当前项目没有配置redis.host，系统将运行于单机模式");
+            return;
+        }
+
         JedisPoolConfig poolConfig = new JedisPoolConfig();
         poolConfig.setMaxTotal(MAX_ACTIVE);
         poolConfig.setMaxIdle(MAX_IDLE);
@@ -105,16 +120,6 @@ public class JedisFactory {
         // 表示一个对象至少停留在idle状态的最短时间，然后才能被idle object
         // evitor扫描并驱逐；这一项只有在timeBetweenEvictionRunsMillis大于0时才有意义
         poolConfig.setMinEvictableIdleTimeMillis(60000);
-
-        String extKey = "";
-        if (configId == null) {
-            this.host = config.getString("host", "127.0.0.1");
-            this.port = config.getInt("port", 6379);
-        } else {
-            extKey = "." + configId;
-            this.host = config.getString("host" + extKey, null);
-            this.port = config.getInt("port" + extKey, 0);
-        }
 
         if (Utils.isEmpty(host)) {
             log.error("redis.host{} not config.", extKey);
@@ -144,8 +149,7 @@ public class JedisFactory {
             return jedisPool.getResource();
         } catch (JedisConnectionException e) {
             if (error < 3) {
-                e.printStackTrace();
-                log.error("redis server {}:{} not run.", host, port);
+                log.error("redis {}:{} 无法联接，原因：{}", this.host, this.port, e.getMessage());
                 error++;
             }
             return null;
