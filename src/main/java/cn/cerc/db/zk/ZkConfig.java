@@ -134,7 +134,7 @@ public class ZkConfig implements IConfig {
      */
     private void fixRedis() {
         log.warn("fixRedis: 自动结转旧的配置数据");
-        setValue("host", config.getProperty("redis.host", "127.0.0.1"));
+        setValue("host", config.getProperty("redis.host", ""));
         setValue("port", config.getProperty("redis.port", "6379"));
         setValue("password", config.getProperty("redis.password", ""));
         setValue("timeout", config.getProperty("redis.timeout", "10000"));
