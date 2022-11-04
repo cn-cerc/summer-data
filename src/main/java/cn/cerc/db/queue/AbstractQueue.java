@@ -110,7 +110,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
         return config;
     }
 
-    protected String sendMessage(String data) {
+    public String sendMessage(String data) {
         switch (service) {
         case Redis:
             try (Redis redis = new Redis()) {
