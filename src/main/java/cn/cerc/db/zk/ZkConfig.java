@@ -69,7 +69,7 @@ public class ZkConfig implements IConfig {
     @Override
     public String getProperty(String key, String def) {
         var result = server.getValue(path(key));
-        if (result != null) {
+        if (!Utils.isEmpty(result)) {
             return result;
         } else {
             this.setValue(key, def);
