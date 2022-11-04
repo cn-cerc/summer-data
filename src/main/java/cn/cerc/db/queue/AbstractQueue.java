@@ -30,7 +30,9 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
         this.setIndustry(ServerConfig.getAppIndustry());
     }
 
-    public abstract String getTopic();
+    public String getTopic() {
+        return this.getClass().getSimpleName();
+    }
 
     public final String getTag() {
         return String.format("%s-%s", ServerConfig.getAppVersion(), getIndustry());
@@ -172,7 +174,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
     @Scheduled(initialDelay = 30000, fixedRate = 3000)
     public void defaultCheck() {
         if (ServerConfig.enableTaskService()) {
-            switch (service) {
+            switch (this.getService()) {
             case Redis, AliyunMNS:
                 this.receiveMessage();
             default:
