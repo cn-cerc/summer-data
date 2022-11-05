@@ -14,16 +14,16 @@ public class QueueConfig {
     /**
      * 系统消息
      **/
-    public static String getMessageQueue() {
-        return "message";
-    }
+//    public static String getMessageQueue() {
+//        return "message";
+//    }
 
     /**
      * 资料同步
      **/
-    public static String getMaterialQueue() {
-        return "material";
-    }
+//    public static String getMaterialQueue() {
+//        return "material";
+//    }
 
     //    /**
 //     * 全文检索

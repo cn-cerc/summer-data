@@ -6,20 +6,19 @@ import javax.servlet.http.HttpServletResponse;
 import cn.cerc.db.mssql.MssqlServer;
 import cn.cerc.db.mysql.MysqlServerMaster;
 import cn.cerc.db.oss.OssConnection;
-import cn.cerc.db.queue.QueueServer;
 
 public class StubSession implements ISession {
     private MysqlServerMaster mysql;
     private MssqlServer mssql;
 //    private MongoConfig mgConn;
-    private QueueServer queConn;
+//    private QueueServer queConn;
     private OssConnection ossConn;
 
     public StubSession() {
         mysql = new MysqlServerMaster();
         mssql = new MssqlServer();
 //        mgConn = new MongoConfig();
-        queConn = new QueueServer();
+//        queConn = new QueueServer();
         ossConn = new OssConnection();
     }
 
