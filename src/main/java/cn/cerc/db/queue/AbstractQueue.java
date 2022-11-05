@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.redis.Redis;
 import cn.cerc.db.zk.ZkConfig;
@@ -50,7 +51,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
         this.industry = industry;
     }
 
-    protected void setIndustryByCorpNo(String corpNo) {
+    protected void setIndustryByCorpNo(IHandle handle, String corpNo) {
         throw new RuntimeException("从数据库取得相应的产业代码");
     }
 
@@ -110,7 +111,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
         return config;
     }
 
-    protected String sendMessage(String data) {
+    protected String push(String data) {
         switch (service) {
         case Redis:
             try (Redis redis = new Redis()) {
