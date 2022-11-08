@@ -112,11 +112,11 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
 
     protected static final Connection getPoolConnection(ComboPooledDataSource dataSource) {
         Connection connection = null;
-        log.error("jdbc url {}", dataSource.getJdbcUrl());
         try {
             connection = dataSource.getConnection();
             log.debug("dataSource connection count:" + dataSource.getNumConnections());
         } catch (SQLException e) {
+            log.error("jdbc url {}", dataSource.getJdbcUrl());
             if (e.getCause() instanceof InterruptedException)
                 log.error(e.getMessage(), e);
             else if (e.getCause() instanceof TimeoutException)
