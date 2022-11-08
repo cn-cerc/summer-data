@@ -228,17 +228,30 @@ public class Redis implements AutoCloseable {
         }
     }
 
-    public int setex(final String key, final int seconds, final String value) {
+    public long setnx(final String key, int seconds, final String value) {
         if (jedis != null)
-            return Integer.parseInt(jedis.setex(key, seconds, value));
+            return jedis.setnx(key, value);
         else {
             var item = this.get(key);
             if (item == null) {
-                items.put(key, new RedisData(key, value).setExpire(seconds));
-                return 1;
+                items.put(key, new RedisData(key, value));
+                jedis.expire(key, seconds);
+                return 1L;
             } else {
-                return 0;
+                return 0L;
             }
+        }
+    }
+
+    public void setex(final String key, final int seconds, final String value) {
+        if (jedis != null)
+            jedis.setex(key, seconds, value);
+        else {
+            var item = items.get(key);
+            if (item == null)
+                items.put(key, new RedisData(key, value).setExpire(seconds));
+            else
+                item.setValue(value).setExpire(seconds);
         }
     }
 
