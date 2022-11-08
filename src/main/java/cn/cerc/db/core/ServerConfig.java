@@ -69,7 +69,7 @@ public enum ServerConfig implements IConfig {
      */
     public static String getAppIndustry() {
         var result = config.getString("application.original", "csp").toLowerCase();
-        if ("center".equals(result) || "std".equals(result))
+        if ("center".equals(result))
             result = "csp";
         return result;
     }
