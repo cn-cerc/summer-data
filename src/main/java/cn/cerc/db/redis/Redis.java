@@ -228,33 +228,6 @@ public class Redis implements AutoCloseable {
         }
     }
 
-    public long setnx(final String key, int seconds, final String value) {
-        if (jedis != null)
-            return jedis.setnx(key, value);
-        else {
-            var item = this.get(key);
-            if (item == null) {
-                items.put(key, new RedisData(key, value));
-                jedis.expire(key, seconds);
-                return 1L;
-            } else {
-                return 0L;
-            }
-        }
-    }
-
-    public void setex(final String key, final int seconds, final String value) {
-        if (jedis != null)
-            jedis.setex(key, seconds, value);
-        else {
-            var item = items.get(key);
-            if (item == null)
-                items.put(key, new RedisData(key, value).setExpire(seconds));
-            else
-                item.setValue(value).setExpire(seconds);
-        }
-    }
-
     public long setnx(String key, String value) {
         if (jedis != null)
             return jedis.setnx(key, value);
@@ -265,6 +238,21 @@ public class Redis implements AutoCloseable {
                 return 1;
             } else
                 return 0;
+        }
+    }
+
+    /**
+     * 设置key和value，且一并设置过期时间
+     */
+    public void setex(final String key, final int seconds, final String value) {
+        if (jedis != null)
+            jedis.setex(key, seconds, value);
+        else {
+            var item = items.get(key);
+            if (item == null)
+                items.put(key, new RedisData(key, value).setExpire(seconds));
+            else
+                item.setValue(value).setExpire(seconds);
         }
     }
 
