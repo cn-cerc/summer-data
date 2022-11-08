@@ -216,4 +216,8 @@ public class ZkConfig implements IConfig {
     public ZooKeeper client() {
         return server.client();
     }
+
+    public ZkServer server() {
+        return this.server;
+    }
 }
