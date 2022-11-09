@@ -112,7 +112,7 @@ public class JedisFactory {
         poolConfig.setMinEvictableIdleTimeMillis(60000);
 
         if (Utils.isEmpty(host)) {
-            log.error("{}/host  not config.", config.getFullPath());
+            log.error("{}/host not config.", config.getFullPath());
             return;
         }
 
