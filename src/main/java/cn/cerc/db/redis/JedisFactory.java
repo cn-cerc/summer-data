@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.cerc.db.core.Utils;
-import cn.cerc.db.zk.ZkConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -15,9 +14,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class JedisFactory {
     private static final Logger log = LoggerFactory.getLogger(JedisFactory.class);
-    private static final ZkConfig config = new ZkConfig("/redis");
     private static final Map<String, JedisFactory> items = new HashMap<>();
-
     // 如果赋值为-1，则表示不限制；如果pool已经分配了maxActive个jedis实例，则此时pool的状态为exhausted(耗尽)。
     private static final int MAX_ACTIVE = 1024;
     // 控制一个pool最多有多少个状态为idle(空闲的)的jedis实例，默认值也是8。
@@ -68,7 +65,6 @@ public class JedisFactory {
      * @return Jedis
      */
     public static Jedis getJedis(String configId) {
-        
         return create(configId).getResource();
     }
 
@@ -90,15 +86,9 @@ public class JedisFactory {
     }
 
     private JedisFactory(String configId) {
-        String extKey = "";
-        if (configId == null) {
-            this.host = config.getString("host");
-            this.port = config.getInt("port", 6379);
-        } else {
-            extKey = "." + configId;
-            this.host = config.getString("host" + extKey);
-            this.port = config.getInt("port" + extKey, 0);
-        }
+        ZkRedisConfig config = new ZkRedisConfig(configId);
+        this.host = config.host();
+        this.port = config.port();
         if (Utils.isEmpty(this.host)) {
             log.warn("当前项目没有配置redis.host，系统将运行于单机模式");
             return;
@@ -122,14 +112,14 @@ public class JedisFactory {
         poolConfig.setMinEvictableIdleTimeMillis(60000);
 
         if (Utils.isEmpty(host)) {
-            log.error("redis.host{} not config.", extKey);
+            log.error("{}/host  not config.", config.getFullPath());
             return;
         }
 
-        String password = config.getString("password" + extKey, null);
+        String password = config.password();
         if ("".equals(password))
             password = null;
-        int timeout = config.getInt("timeout" + extKey, 10000);
+        int timeout = config.timeout();
 
         // 建立连接池
         log.info("redis server {}:{} starting", host, port);

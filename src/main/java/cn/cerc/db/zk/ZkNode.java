@@ -58,6 +58,16 @@ public class ZkNode implements Watcher {
         return getNodeValue(rootPath + "/" + key, def);
     }
 
+    public int getInt(String key, int def) {
+        String value = getNodeValue(rootPath + "/" + key, "" + def);
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            log.error(e.getMessage(), e);
+            return def;
+        }
+    }
+
     @Override
     public void process(WatchedEvent event) {
         var node = event.getPath();
@@ -78,5 +88,9 @@ public class ZkNode implements Watcher {
 
     public ZkServer server() {
         return server;
+    }
+
+    public String rootPath() {
+        return rootPath;
     }
 }
