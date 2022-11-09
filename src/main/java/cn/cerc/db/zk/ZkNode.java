@@ -15,7 +15,7 @@ import cn.cerc.db.core.ServerConfig;
 public class ZkNode implements Watcher {
     private static final Logger log = LoggerFactory.getLogger(ZkNode.class);
     private static final String rootPath;
-    private ConcurrentHashMap<String, String> items = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, String> items = new ConcurrentHashMap<>();
     private static final ZkServer server;
     private static ZkNode instance;
 
