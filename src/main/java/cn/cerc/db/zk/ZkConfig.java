@@ -31,7 +31,7 @@ public class ZkConfig implements IConfig {
 
         this.path = String.format("/%s/%s/%s%s", ServerConfig.getAppProduct(), ServerConfig.getAppVersion(),
                 ServerConfig.getAppIndustry(), path);
-        
+
         server = ZkNode.get().server();
         if ("/redis".equals(path) && !this.exists())
             this.fixRedis();

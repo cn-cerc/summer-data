@@ -33,7 +33,7 @@ public class ZkServer implements AutoCloseable, Watcher {
         }
         try {
             cdl = new CountDownLatch(1);
-            this.client = new ZooKeeper(host, 15000, this);
+            this.client = new ZooKeeper(host, 60000, this);
             cdl.await(); // 等待zk联接成功
         } catch (IOException | InterruptedException e) {
             log.error(e.getMessage());
