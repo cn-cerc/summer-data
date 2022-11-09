@@ -103,4 +103,8 @@ public interface ISession extends AutoCloseable {
 
     default void setResponse(HttpServletResponse response) {
     }
+
+    default void atSystemUser() {
+        throw new RuntimeException("not support atSystemUser");
+    }
 }
