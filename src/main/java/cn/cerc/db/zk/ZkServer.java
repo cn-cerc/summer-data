@@ -127,14 +127,18 @@ public class ZkServer implements AutoCloseable, Watcher {
      * @return 存在否
      */
     public boolean exists(String node) {
+        return this.watch(node, null) != null;
+    }
+
+    public Stat watch(String node, Watcher watcher) {
         try {
-            Stat stat = client.exists(node, false);
-            return stat != null;
+            if (watcher == null)
+                return client.exists(node, false);
+            else
+                return client.exists(node, watcher);
         } catch (KeeperException | InterruptedException e) {
-            log.error("exists error, node=" + node);
-            log.error(e.getMessage());
-            e.printStackTrace();
-            return false;
+            log.error(e.getMessage(), e);
+            return null;
         }
     }
 
@@ -197,4 +201,5 @@ public class ZkServer implements AutoCloseable, Watcher {
     public String getHost() {
         return host;
     }
+
 }

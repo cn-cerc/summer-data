@@ -19,7 +19,7 @@ import cn.cerc.db.queue.QueueServer;
 public class ZkConfig implements IConfig {
     private static final Logger log = LoggerFactory.getLogger(ZkConfig.class);
     private static final IConfig config = ServerConfig.getInstance();
-    private static ZkServer server;
+    private ZkServer server;
     private String path;
 
     public ZkConfig(String path) {
@@ -31,10 +31,8 @@ public class ZkConfig implements IConfig {
 
         this.path = String.format("/%s/%s/%s%s", ServerConfig.getAppProduct(), ServerConfig.getAppVersion(),
                 ServerConfig.getAppIndustry(), path);
-        synchronized (ZkConfig.class) {
-            if (ZkConfig.server == null)
-                ZkConfig.server = new ZkServer();
-        }
+        
+        server = ZkNode.get().server();
         if ("/redis".equals(path) && !this.exists())
             this.fixRedis();
         if ("/aliyunMNS".equals(path) && !this.exists())
@@ -217,7 +215,8 @@ public class ZkConfig implements IConfig {
         return server.client();
     }
 
+    @Deprecated
     public ZkServer server() {
-        return this.server;
+        return ZkNode.get().server();
     }
 }
