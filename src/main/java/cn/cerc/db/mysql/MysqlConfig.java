@@ -4,32 +4,15 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cn.cerc.db.core.IConfig;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
-import cn.cerc.db.zk.ZkConfig;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MysqlConfig {
-    private static final IConfig config = new ZkConfig("/mysql");
-    // mysql 连接参数：必须设置
-    public static final String rds_site = "site";
-    public static final String rds_database = "database";
-    public static final String rds_username = "username";
-    public static final String rds_password = "password";
-    // mysql 连接参数：可选设置
-    public static final String rds_ServerTimezone = "serverTimezone";
-    // 连接池相关：必须设置
-    public static final String rds_MaxPoolSize = "MaxPoolSize"; // default 0
-    public static final String rds_MinPoolSize = "MinPoolSize"; // default 9
-    public static final String rds_InitialPoolSize = "InitialPoolSize"; // default 3
-    // 连接池相关：可选设置
-    public static final String rds_CheckoutTimeout = "CheckoutTimeout"; // default 500ms
-    public static final String rds_MaxIdleTime = "MaxIdleTime"; // default 7800s
-    public static final String rds_IdleConnectionTestPeriod = "IdleConnectionTestPeriod"; // default 9s
     // mysql驱动
     public static final String JdbcDriver;
+    private ZkMysqlConfig config;
 
     static {
         var appConfig = ServerConfig.getInstance();
@@ -38,26 +21,27 @@ public class MysqlConfig {
 
     public MysqlConfig() {
         super();
+        config = new ZkMysqlConfig();
     }
 
     public String getHost() {
-        return config.getProperty(rds_site, "127.0.0.1:3306");
+        return config.site();
     }
 
     public String getDatabase() {
-        return config.getProperty(rds_database, "appdb");
+        return config.database();
     }
 
     public String getUser() {
-        return config.getProperty(rds_username, "appdb_user");
+        return config.username();
     }
 
     public String getPassword() {
-        return config.getProperty(rds_password, "appdb_password");
+        return config.password();
     }
 
     public String getServerTimezone() {
-        return config.getProperty(rds_ServerTimezone, "Asia/Shanghai");
+        return config.serverTimezone();
     }
 
     /**
@@ -66,7 +50,7 @@ public class MysqlConfig {
      * @return MaxPoolSize
      */
     public int getMaxPoolSize() {
-        return Integer.parseInt(config.getProperty(rds_MaxPoolSize, "0"));
+        return config.maxPoolSize();
     }
 
     /**
@@ -75,7 +59,7 @@ public class MysqlConfig {
      * @return MinPoolSize
      */
     public int getMinPoolSize() {
-        return Integer.parseInt(config.getProperty(rds_MinPoolSize, "9"));
+        return config.minPoolSize();
     }
 
     /**
@@ -84,7 +68,7 @@ public class MysqlConfig {
      * @return InitialPoolSize
      */
     public int getInitialPoolSize() {
-        return Integer.parseInt(config.getProperty(rds_InitialPoolSize, "3"));
+        return config.initialPoolSize();
     }
 
     /**
@@ -93,7 +77,7 @@ public class MysqlConfig {
      * @return CheckoutTimeout
      */
     public int getCheckoutTimeout() {
-        return Integer.parseInt(config.getProperty(rds_CheckoutTimeout, "500"));
+        return config.checkoutTimeout();
     }
 
     /**
@@ -103,7 +87,7 @@ public class MysqlConfig {
      * @return MaxIdleTime
      */
     public int getMaxIdleTime() {
-        return Integer.parseInt(config.getProperty(rds_MaxIdleTime, "7800"));
+        return config.maxIdleTime();
     }
 
     /**
@@ -112,7 +96,7 @@ public class MysqlConfig {
      * @return IdleConnectionTestPeriod
      */
     public int getIdleConnectionTestPeriod() {
-        return Integer.parseInt(config.getProperty(rds_IdleConnectionTestPeriod, "9"));
+        return config.idleConnectionTestPeriod();
     }
 
     public boolean isConfigNull() {
