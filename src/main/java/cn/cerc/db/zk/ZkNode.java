@@ -15,20 +15,19 @@ import cn.cerc.db.core.ServerConfig;
 public class ZkNode implements Watcher {
     private static final Logger log = LoggerFactory.getLogger(ZkNode.class);
     private static final String rootPath;
-    public static ZkServer server;
     private ConcurrentHashMap<String, String> items = new ConcurrentHashMap<>();
+    private static final ZkServer server;
     private static ZkNode instance;
 
     static {
+        server = new ZkServer();
         rootPath = String.format("/%s/%s/%s", ServerConfig.getAppProduct(), ServerConfig.getAppVersion(),
                 ServerConfig.getAppIndustry());
-        synchronized (ZkConfig.class) {
-            if (server == null)
-                server = new ZkServer();
-        }
     }
 
     public static ZkNode get() {
+        if (instance == null)
+            instance = new ZkNode();
         return instance;
     }
 
