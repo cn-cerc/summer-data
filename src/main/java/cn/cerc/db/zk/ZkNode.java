@@ -35,8 +35,7 @@ public class ZkNode implements Watcher {
         ZkNode.instance = this;
     }
 
-    public String getString(String key, String def) {
-        String node = rootPath + "/" + key;
+    public String getNodeValue(String node, String def) {
         if (items.containsKey(node))
             return items.get(node);
 
@@ -53,6 +52,10 @@ public class ZkNode implements Watcher {
             items.put(node, def);
             return def;
         }
+    }
+
+    public String getString(String key, String def) {
+        return getNodeValue(rootPath + "/" + key, def);
     }
 
     @Override
