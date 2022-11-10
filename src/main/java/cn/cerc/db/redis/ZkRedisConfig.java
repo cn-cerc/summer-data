@@ -17,15 +17,15 @@ public class ZkRedisConfig {
     }
 
     public String host() {
-        return node.getString(getNodePath("host"), "127.0.0.1");
+        return node.getString(key("host"), "127.0.0.1");
     }
 
     public int port() {
-        return node.getInt(getNodePath("port"), 6379);
+        return node.getInt(key("port"), 6379);
     }
 
     public String password() {
-        String value = node.getString(getNodePath("password"), "");
+        String value = node.getString(key("password"), "");
         if (Utils.isEmpty(value))
             return null;
         else
@@ -33,7 +33,7 @@ public class ZkRedisConfig {
     }
 
     public int timeout() {
-        return node.getInt("timeout", 10000);
+        return node.getInt(key("timeout"), 10000);
     }
 
     public String getFullPath() {
@@ -43,7 +43,7 @@ public class ZkRedisConfig {
             return String.format("%s/redis-%s", configId, ZkNode.get(), this.configId);
     }
 
-    private String getNodePath(String key) {
+    private String key(String key) {
         if (Utils.isEmpty(this.configId))
             return String.format("redis/%s", key);
         else

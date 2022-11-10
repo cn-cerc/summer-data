@@ -31,7 +31,7 @@ public class ZkConfig implements IConfig {
 
         this.path = String.format("/%s/%s/%s%s", ServerConfig.getAppProduct(), ServerConfig.getAppVersion(),
                 ServerConfig.getAppIndustry(), path);
-        
+
         server = ZkNode.get().server();
         if ("/redis".equals(path) && !this.exists())
             this.fixRedis();
@@ -66,13 +66,8 @@ public class ZkConfig implements IConfig {
 
     @Override
     public String getProperty(String key, String def) {
-        var result = server.getValue(path(key));
-        if (!Utils.isEmpty(result)) {
-            return result;
-        } else {
-            this.setValue(key, def);
-            return def;
-        }
+        String result = ZkNode.get().getNodeValue(path(key), def);
+        return Utils.isEmpty(result) ? def : result;
     }
 
     public String getString(String key, String def) {
