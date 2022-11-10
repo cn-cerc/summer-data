@@ -6,17 +6,13 @@ import java.util.Map;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooKeeper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import cn.cerc.db.core.IConfig;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
-import cn.cerc.db.queue.QueueServer;
 
 public class ZkConfig implements IConfig {
-    private static final Logger log = LoggerFactory.getLogger(ZkConfig.class);
-    private static final IConfig config = ServerConfig.getInstance();
+//    private static final Logger log = LoggerFactory.getLogger(ZkConfig.class);
     private ZkServer server;
     private String path;
 
@@ -31,8 +27,6 @@ public class ZkConfig implements IConfig {
                 ServerConfig.getAppIndustry(), path);
 
         server = ZkNode.get().server();
-        if ("/rocketMQ".equals(path) && !this.exists())
-            this.fixRocketMQ();
     }
 
     public String path() {
@@ -108,23 +102,6 @@ public class ZkConfig implements IConfig {
 
     public void delete(String key) {
         server.delete(path(key));
-    }
-
-    /**
-     * 用于结转旧的配置文件
-     * 
-     * @param config
-     */
-    private void fixRocketMQ() {
-        log.warn("fixRocketMQ: 自动结转旧的配置数据");
-        setValue(QueueServer.AliyunAccessKeyId, config.getProperty("mns.accesskeyid"));
-        setValue(QueueServer.AliyunAccessKeySecret, config.getProperty("mns.accesskeysecret"));
-        //
-        setValue(QueueServer.RMQAccountEndpoint, config.getProperty("rocketmq.endpoint"));
-        setValue(QueueServer.RMQInstanceId, config.getProperty("rocketmq.instanceId"));
-        setValue(QueueServer.RMQEndpoint, config.getProperty("rocketmq.queue.endpoint"));
-        setValue(QueueServer.RMQAccessKeyId, config.getProperty("rocketmq.queue.accesskeyid"));
-        setValue(QueueServer.RMQAccessKeySecret, config.getProperty("rocketmq.queue.accesskeysecret"));
     }
 
     public ZooKeeper client() {
