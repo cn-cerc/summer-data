@@ -12,7 +12,6 @@ import cn.cerc.db.core.Utils;
 public class MysqlEntityBuilder {
 
     private IHandle handle;
-    private static final MysqlConfig config = new MysqlConfig();
 
     public MysqlEntityBuilder(IHandle handle) {
         this.handle = handle;
@@ -22,9 +21,10 @@ public class MysqlEntityBuilder {
         if (Utils.isEmpty(table))
             throw new RuntimeException("database table can not be empty");
 
+        var config = ZkMysqlConfig.getMaster();
         MysqlQuery query = new MysqlQuery(handle);
         query.add("select table_name,table_comment from information_schema.tables");
-        query.addWhere().eq("table_schema", config.getDatabase()).eq("table_name", table).build();
+        query.addWhere().eq("table_schema", config.database()).eq("table_name", table).build();
         query.openReadonly();
 
         while (query.fetch()) {
@@ -53,7 +53,7 @@ public class MysqlEntityBuilder {
             MysqlQuery dsColumn = new MysqlQuery(handle);
             dsColumn.add("select column_name,data_type,column_type,extra,is_nullable,column_comment,");
             dsColumn.add("column_default from information_schema.columns");
-            dsColumn.add("where table_schema='%s' and table_name='%s'", config.getDatabase(), tableName);
+            dsColumn.add("where table_schema='%s' and table_name='%s'", config.database(), tableName);
             dsColumn.openReadonly();
             while (dsColumn.fetch()) {
                 String extra = dsColumn.getString("extra");
