@@ -39,7 +39,7 @@ public class MnsServer implements IConnection {
             return client;
 
         if (account == null)
-            account = new CloudAccount(MnsConfig.accessId(), MnsConfig.accessKey(), MnsConfig.accountEndpoint());
+            account = new CloudAccount(AliyunConfig.accessKeyId(), AliyunConfig.accessKeySecret(), AliyunConfig.accountEndpoint());
 
         if (client == null)
             client = account.getMNSClient();
