@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -50,8 +51,8 @@ public class ZkServer implements AutoCloseable, Watcher {
         try {
             cdl = new CountDownLatch(1);
             System.setProperty("zookeeper.sasl.client", "false");
-            this.client = new ZooKeeper(host, 60000, this);
-            cdl.await(); // 等待zk联接成功
+            this.client = new ZooKeeper(host, 50000, this);
+            cdl.await(60, TimeUnit.SECONDS); // 等待zk联接成功
         } catch (IOException | InterruptedException e) {
             log.error(e.getMessage(), e);
         }
