@@ -32,8 +32,6 @@ public class ZkConfig implements IConfig {
                 ServerConfig.getAppIndustry(), path);
 
         server = ZkNode.get().server();
-        if ("/redis".equals(path) && !this.exists())
-            this.fixRedis();
         if ("/aliyunMNS".equals(path) && !this.exists())
             this.fixAliyunMNS();
         if ("/rocketMQ".equals(path) && !this.exists())
@@ -113,19 +111,6 @@ public class ZkConfig implements IConfig {
 
     public void delete(String key) {
         server.delete(path(key));
-    }
-
-    /**
-     * 用于结转旧的配置文件
-     * 
-     * @param config
-     */
-    private void fixRedis() {
-        log.warn("fixRedis: 自动结转旧的配置数据");
-        setValue("host", config.getProperty("redis.host", ""));
-        setValue("port", config.getProperty("redis.port", "6379"));
-        setValue("password", config.getProperty("redis.password", ""));
-        setValue("timeout", config.getProperty("redis.timeout", "10000"));
     }
 
     /**
