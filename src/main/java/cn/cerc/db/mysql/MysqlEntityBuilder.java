@@ -21,7 +21,7 @@ public class MysqlEntityBuilder {
         if (Utils.isEmpty(table))
             throw new RuntimeException("database table can not be empty");
 
-        var config = ZkMysqlConfig.getMaster();
+        var config = MysqlConfig.getMaster();
         MysqlQuery query = new MysqlQuery(handle);
         query.add("select table_name,table_comment from information_schema.tables");
         query.addWhere().eq("table_schema", config.database()).eq("table_name", table).build();

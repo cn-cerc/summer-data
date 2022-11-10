@@ -16,7 +16,7 @@ public class MysqlServerMaster extends MysqlServer {
     private static ComboPooledDataSource dataSource;
 
     static {
-        ZkMysqlConfig config = ZkMysqlConfig.getMaster();
+        MysqlConfig config = MysqlConfig.getMaster();
         if (config.maxPoolSize() > 0)
             dataSource = config.createDataSource();
     }
@@ -28,7 +28,7 @@ public class MysqlServerMaster extends MysqlServer {
 
         // 不使用线程池直接创建
         if (getConnection() == null) 
-            setConnection(ZkMysqlConfig.getMaster().createConnection());
+            setConnection(MysqlConfig.getMaster().createConnection());
         return getConnection();
     }
 
@@ -39,12 +39,12 @@ public class MysqlServerMaster extends MysqlServer {
 
     @Override
     public String getHost() {
-        return ZkMysqlConfig.getMaster().site();
+        return MysqlConfig.getMaster().site();
     }
 
     @Override
     public String getDatabase() {
-        return ZkMysqlConfig.getMaster().database();
+        return MysqlConfig.getMaster().database();
     }
 
     public static void openPool() {

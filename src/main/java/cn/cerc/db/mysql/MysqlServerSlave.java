@@ -16,7 +16,7 @@ public class MysqlServerSlave extends MysqlServer {
     private static ComboPooledDataSource dataSource;
 
     static {
-        var config = ZkMysqlConfig.getSlave();
+        var config = MysqlConfig.getSlave();
         if (config.maxPoolSize() > 0)
             dataSource = config.createDataSource();
     }
@@ -28,7 +28,7 @@ public class MysqlServerSlave extends MysqlServer {
 
         // 不使用线程池直接创建
         if (getConnection() == null)
-            setConnection(ZkMysqlConfig.getSlave().createConnection());
+            setConnection(MysqlConfig.getSlave().createConnection());
         return getConnection();
     }
 
@@ -39,12 +39,12 @@ public class MysqlServerSlave extends MysqlServer {
 
     @Override
     public String getHost() {
-        return ZkMysqlConfig.getSlave().site();
+        return MysqlConfig.getSlave().site();
     }
 
     @Override
     public String getDatabase() {
-        return ZkMysqlConfig.getSlave().database();
+        return MysqlConfig.getSlave().database();
     }
 
     public static void openPool() {

@@ -23,24 +23,21 @@ import com.aliyun.teaopenapi.models.Config;
 
 import cn.cerc.db.SummerDB;
 import cn.cerc.db.core.ClassResource;
-import cn.cerc.db.core.IConfig;
-import cn.cerc.db.zk.ZkConfig;
+import cn.cerc.db.zk.ZkNode;
 
 public class QueueServer {
     private static final ClassResource res = new ClassResource(QueueServer.class, SummerDB.ID);
     private static final Logger log = LoggerFactory.getLogger(QueueServer.class);
 
 //    public static final String AccountEndpoint = "mns.accountendpoint";
-    public static final String AliyunAccessKeyId = "aliyunAccesskeyid";
-    public static final String AliyunAccessKeySecret = "aliyunAccesskeysecret";
+    public static final String AliyunAccessKeyId = "rocketMQ/aliyunAccesskeyid";
+    public static final String AliyunAccessKeySecret = "rocketMQ/aliyunAccesskeysecret";
 
-    public static final String RMQAccountEndpoint = "accountEndpoint";
-    public static final String RMQInstanceId = "instanceId";
-    public static final String RMQEndpoint = "endpoint";
-    public static final String RMQAccessKeyId = "accessKeyId";
-    public static final String RMQAccessKeySecret = "accessKeySecret";
-
-    private static final IConfig config = new ZkConfig("/rocketMQ");
+    public static final String RMQAccountEndpoint = "rocketMQ/accountEndpoint";
+    public static final String RMQInstanceId = "rocketMQ/instanceId";
+    public static final String RMQEndpoint = "rocketMQ/endpoint";
+    public static final String RMQAccessKeyId = "rocketMQ/accessKeyId";
+    public static final String RMQAccessKeySecret = "rocketMQ/accessKeySecret";
 
     private static final List<String> queues = new ArrayList<>();
 
@@ -94,15 +91,16 @@ public class QueueServer {
         if (client != null)
             return client;
 
-        String endpoint = config.getProperty(QueueServer.RMQAccountEndpoint, null);
+        var node = ZkNode.get();
+        String endpoint = node.getString(QueueServer.RMQAccountEndpoint, null);
         if (endpoint == null)
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccountEndpoint));
 
-        String accessId = config.getProperty(QueueServer.AliyunAccessKeyId, null);
+        String accessId = node.getString(QueueServer.AliyunAccessKeyId, null);
         if (accessId == null)
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AliyunAccessKeyId));
 
-        String password = config.getProperty(QueueServer.AliyunAccessKeySecret, null);
+        String password = node.getString(QueueServer.AliyunAccessKeySecret, null);
         if (password == null)
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.AliyunAccessKeySecret));
         Config config = new Config().setAccessKeyId(accessId).setAccessKeySecret(password);
@@ -116,28 +114,32 @@ public class QueueServer {
     }
 
     public static String getInstanceId() {
-        String instanceId = config.getProperty(QueueServer.RMQInstanceId, null);
+        var node = ZkNode.get();
+        String instanceId = node.getString(QueueServer.RMQInstanceId, null);
         if (instanceId == null)
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQInstanceId));
         return instanceId;
     }
 
     public static String getEndpoint() {
-        String endpoint = config.getProperty(QueueServer.RMQEndpoint, null);
+        var node = ZkNode.get();
+        String endpoint = node.getString(QueueServer.RMQEndpoint, null);
         if (endpoint == null)
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQEndpoint));
         return endpoint;
     }
 
     public static String getAccessKeyId() {
-        String accessKeyId = config.getProperty(QueueServer.RMQAccessKeyId, null);
+        var node = ZkNode.get();
+        String accessKeyId = node.getString(QueueServer.RMQAccessKeyId, null);
         if (accessKeyId == null)
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccessKeyId));
         return accessKeyId;
     }
 
     public static String getAccessSecret() {
-        String accessKeySecret = config.getProperty(QueueServer.RMQAccessKeySecret, null);
+        var node = ZkNode.get();
+        String accessKeySecret = node.getString(QueueServer.RMQAccessKeySecret, null);
         if (accessKeySecret == null)
             throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), QueueServer.RMQAccessKeySecret));
         return accessKeySecret;

@@ -16,21 +16,21 @@ public class MysqlServerHistory extends MysqlServer {
 
     @Override
     public String getHost() {
-        return ZkMysqlConfig.getMaster().site();
+        return MysqlConfig.getMaster().site();
     }
 
     @Override
     public String getDatabase() {
-        return ZkMysqlConfig.getMaster().database();
+        return MysqlConfig.getMaster().database();
     }
 
     @Override
     public Connection createConnection() {
         // 不使用线程池直接创建
         try {
-            var config = ZkMysqlConfig.getMaster();
+            var config = MysqlConfig.getMaster();
             if (getConnection() == null) {
-                Class.forName(ZkMysqlConfig.JdbcDriver);
+                Class.forName(MysqlConfig.JdbcDriver);
                 setConnection(
                         DriverManager.getConnection(config.getConnectUrl(), config.username(), config.password()));
             }

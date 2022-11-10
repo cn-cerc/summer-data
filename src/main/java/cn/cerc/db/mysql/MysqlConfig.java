@@ -14,12 +14,12 @@ import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
 import cn.cerc.db.zk.ZkNode;
 
-public class ZkMysqlConfig {
-    private static final Logger log = LoggerFactory.getLogger(ZkMysqlConfig.class);
+public class MysqlConfig {
+    private static final Logger log = LoggerFactory.getLogger(MysqlConfig.class);
     // mysql驱动
     public static final String JdbcDriver;
-    private static ZkMysqlConfig instanceMaster;
-    private static ZkMysqlConfig instanceSalve;
+    private static MysqlConfig instanceMaster;
+    private static MysqlConfig instanceSalve;
     private static ServerConfig config;
     private ZkNode node = ZkNode.get();
     private String savleFlag = "";
@@ -29,19 +29,19 @@ public class ZkMysqlConfig {
         JdbcDriver = config.getProperty("spring.datasource.driver-class-name", "com.mysql.cj.jdbc.Driver");
     }
 
-    public synchronized static ZkMysqlConfig getMaster() {
+    public synchronized static MysqlConfig getMaster() {
         if (instanceMaster == null)
-            instanceMaster = new ZkMysqlConfig(true);
+            instanceMaster = new MysqlConfig(true);
         return instanceMaster;
     }
 
-    public synchronized static ZkMysqlConfig getSlave() {
+    public synchronized static MysqlConfig getSlave() {
         if (instanceSalve == null)
-            instanceSalve = new ZkMysqlConfig(false);
+            instanceSalve = new MysqlConfig(false);
         return instanceSalve;
     }
 
-    private ZkMysqlConfig(boolean isMaster) {
+    private MysqlConfig(boolean isMaster) {
         if (isMaster) {
             instanceMaster = this;
             savleFlag = "";
@@ -149,7 +149,7 @@ public class ZkMysqlConfig {
         // 使用线程池创建
         ComboPooledDataSource dataSource = new ComboPooledDataSource();
         try {
-            dataSource.setDriverClass(ZkMysqlConfig.JdbcDriver);
+            dataSource.setDriverClass(MysqlConfig.JdbcDriver);
         } catch (PropertyVetoException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
@@ -183,8 +183,10 @@ public class ZkMysqlConfig {
     }
 
     public Connection createConnection() {
-        var host = site();
-        var database = database();
+        return this.createConnection(site(), database(), username(), password());
+    }
+
+    public Connection createConnection(String host, String database, String username, String password) {
         var timezone = serverTimezone();
         if (Utils.isEmpty(host) || Utils.isEmpty(database) || Utils.isEmpty(timezone))
             throw new RuntimeException("mysql connection config is null");
@@ -192,8 +194,8 @@ public class ZkMysqlConfig {
                 "jdbc:mysql://%s/%s?useSSL=false&autoReconnect=true&autoCommit=false&useUnicode=true&characterEncoding=utf8&serverTimezone=%s",
                 host, database, timezone);
         try {
-            Class.forName(ZkMysqlConfig.JdbcDriver);
-            return DriverManager.getConnection(jdbcUrl, username(), password());
+            Class.forName(MysqlConfig.JdbcDriver);
+            return DriverManager.getConnection(jdbcUrl, username, password);
         } catch (SQLException | ClassNotFoundException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
