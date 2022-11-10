@@ -17,21 +17,12 @@ import com.aliyun.mns.common.ServiceException;
 import com.aliyun.mns.model.Message;
 import com.aliyun.mns.model.QueueMeta;
 
-import cn.cerc.db.SummerDB;
-import cn.cerc.db.core.ClassResource;
-import cn.cerc.db.core.IConfig;
 import cn.cerc.db.core.IConnection;
-import cn.cerc.db.zk.ZkConfig;
-import cn.cerc.db.zk.ZkNode;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MnsServer implements IConnection {
-    private static final ClassResource res = new ClassResource(MnsServer.class, SummerDB.ID);
     private static final Logger log = LoggerFactory.getLogger(MnsServer.class);
-    public static final String AccountEndpoint = "aliyunMNS/accountendpoint";
-    public static final String AccessKeyId = "aliyunMNS/accesskeyid";
-    public static final String AccessKeySecret = "aliyunMNS/accesskeysecret";
     private static final MnsServer instance = new MnsServer();
     // IHandle中识别码
     public static final String SessionId = "aliyunQueueSession";
@@ -41,36 +32,17 @@ public class MnsServer implements IConnection {
     private static CloudAccount account;
     private static MNSClient client;
     private static Map<String, MnsQueue> items = new ConcurrentHashMap<>();
-    private static ZkConfig config = new ZkConfig("/aliyunMNS");
 
     @Override
     public MNSClient getClient() {
-        if (client != null) {
+        if (client != null)
             return client;
-        }
 
-        if (account == null) {
-            var node = ZkNode.get();
-            String server = node.getString(AccountEndpoint, config.getProperty("mns.accountendpoint"));
-            String userCode = node.getString(AccessKeyId, config.getProperty("mns.accesskeyid"));
-            String password = node.getString(AccessKeySecret, config.getProperty("mns.accesskeysecret"));
-            if (server == null) {
-                throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), MnsServer.AccountEndpoint));
-            }
-            if (userCode == null) {
-                throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), MnsServer.AccessKeyId));
-            }
-            if (password == null) {
-                throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), MnsServer.AccessKeySecret));
-            }
-            if (account == null) {
-                account = new CloudAccount(userCode, password, server);
-            }
-        }
+        if (account == null)
+            account = new CloudAccount(MnsConfig.accessId(), MnsConfig.accessKey(), MnsConfig.accountEndpoint());
 
-        if (client == null) {
+        if (client == null)
             client = account.getMNSClient();
-        }
 
         return client;
     }
@@ -163,10 +135,6 @@ public class MnsServer implements IConnection {
         // 第一个参数为旧的ReceiptHandle值，第二个参数为新的不可见时间（VisibilityTimeout）
         String newReceiptHandle = queue.changeMessageVisibilityTimeout(receiptHandle, visibilityTimeout);
         log.debug("new receipt handle: " + newReceiptHandle);
-    }
-
-    public IConfig getConfig() {
-        return config;
     }
 
     public void close() {
