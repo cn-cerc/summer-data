@@ -22,16 +22,16 @@ import cn.cerc.db.core.ClassResource;
 import cn.cerc.db.core.IConfig;
 import cn.cerc.db.core.IConnection;
 import cn.cerc.db.zk.ZkConfig;
+import cn.cerc.db.zk.ZkNode;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MnsServer implements IConnection {
     private static final ClassResource res = new ClassResource(MnsServer.class, SummerDB.ID);
     private static final Logger log = LoggerFactory.getLogger(MnsServer.class);
-    public static final String AccountEndpoint = "accountendpoint";
-    public static final String AccessKeyId = "accesskeyid";
-    public static final String AccessKeySecret = "accesskeysecret";
-    public static final String SecurityToken = "securitytoken";
+    public static final String AccountEndpoint = "aliyunMNS/accountendpoint";
+    public static final String AccessKeyId = "aliyunMNS/accesskeyid";
+    public static final String AccessKeySecret = "aliyunMNS/accesskeysecret";
     private static final MnsServer instance = new MnsServer();
     // IHandle中识别码
     public static final String SessionId = "aliyunQueueSession";
@@ -50,9 +50,10 @@ public class MnsServer implements IConnection {
         }
 
         if (account == null) {
-            String server = config.getProperty(MnsServer.AccountEndpoint, null);
-            String userCode = config.getProperty(MnsServer.AccessKeyId, null);
-            String password = config.getProperty(MnsServer.AccessKeySecret, null);
+            var node = ZkNode.get();
+            String server = node.getString(AccountEndpoint, config.getProperty("mns.accountendpoint"));
+            String userCode = node.getString(AccessKeyId, config.getProperty("mns.accesskeyid"));
+            String password = node.getString(AccessKeySecret, config.getProperty("mns.accesskeysecret"));
             if (server == null) {
                 throw new RuntimeException(String.format(res.getString(1, "%s 配置为空"), MnsServer.AccountEndpoint));
             }

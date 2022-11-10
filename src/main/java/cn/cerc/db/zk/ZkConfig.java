@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import cn.cerc.db.core.IConfig;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
-import cn.cerc.db.queue.MnsServer;
 import cn.cerc.db.queue.QueueServer;
 
 public class ZkConfig implements IConfig {
@@ -32,8 +31,6 @@ public class ZkConfig implements IConfig {
                 ServerConfig.getAppIndustry(), path);
 
         server = ZkNode.get().server();
-        if ("/aliyunMNS".equals(path) && !this.exists())
-            this.fixAliyunMNS();
         if ("/rocketMQ".equals(path) && !this.exists())
             this.fixRocketMQ();
     }
@@ -111,19 +108,6 @@ public class ZkConfig implements IConfig {
 
     public void delete(String key) {
         server.delete(path(key));
-    }
-
-    /**
-     * 用于结转旧的配置文件
-     * 
-     * @param config
-     */
-    private void fixAliyunMNS() {
-        log.warn("fixAliyunMNS: 自动结转旧的配置数据");
-        setValue(MnsServer.AccountEndpoint, config.getProperty("mns.accountendpoint"));
-        setValue(MnsServer.AccessKeyId, config.getProperty("mns.accesskeyid"));
-        setValue(MnsServer.AccessKeySecret, config.getProperty("mns.accesskeysecret"));
-        setValue(MnsServer.SecurityToken, config.getProperty("mns.securitytoken"));
     }
 
     /**
