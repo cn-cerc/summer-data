@@ -153,11 +153,16 @@ public class Utils {
      * @return 指定小数点的四舍六入
      */
     public static double roundTo(double val, int scale) {
-        BigDecimal bigDecimal = new BigDecimal(Double.toString(val));
-        if (LanguageResource.isLanguageTW())
-            return bigDecimal.setScale(-scale, RoundingMode.HALF_UP).doubleValue();
-        else
-            return bigDecimal.setScale(-scale, RoundingMode.HALF_EVEN).doubleValue();
+        try {
+            BigDecimal bigDecimal = new BigDecimal(Double.toString(val));
+            if (LanguageResource.isLanguageTW())
+                return bigDecimal.setScale(-scale, RoundingMode.HALF_UP).doubleValue();
+            else
+                return bigDecimal.setScale(-scale, RoundingMode.HALF_EVEN).doubleValue();
+        } catch (NumberFormatException e) {
+            log.error(e.getMessage(), e);
+            return 0;
+        }
     }
 
     // 兼容 delphi 代码
