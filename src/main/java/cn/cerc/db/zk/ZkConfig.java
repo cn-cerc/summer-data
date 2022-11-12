@@ -6,19 +6,13 @@ import java.util.Map;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooKeeper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import cn.cerc.db.core.IConfig;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
-import cn.cerc.db.mysql.MysqlConfig;
-import cn.cerc.db.queue.MnsServer;
-import cn.cerc.db.queue.QueueServer;
 
 public class ZkConfig implements IConfig {
-    private static final Logger log = LoggerFactory.getLogger(ZkConfig.class);
-    private static final IConfig config = ServerConfig.getInstance();
+//    private static final Logger log = LoggerFactory.getLogger(ZkConfig.class);
     private ZkServer server;
     private String path;
 
@@ -33,16 +27,6 @@ public class ZkConfig implements IConfig {
                 ServerConfig.getAppIndustry(), path);
 
         server = ZkNode.get().server();
-        if ("/redis".equals(path) && !this.exists())
-            this.fixRedis();
-        if ("/aliyunMNS".equals(path) && !this.exists())
-            this.fixAliyunMNS();
-        if ("/rocketMQ".equals(path) && !this.exists())
-            this.fixRocketMQ();
-        if ("/mysql".equals(path) && !this.exists())
-            this.fixMysqlMaster();
-        if ("/mysql/slave".equals(path) && !this.exists())
-            this.fixMysqlSlave();
     }
 
     public String path() {
@@ -118,92 +102,6 @@ public class ZkConfig implements IConfig {
 
     public void delete(String key) {
         server.delete(path(key));
-    }
-
-    /**
-     * 用于结转旧的配置文件
-     * 
-     * @param config
-     */
-    private void fixRedis() {
-        log.warn("fixRedis: 自动结转旧的配置数据");
-        setValue("host", config.getProperty("redis.host", ""));
-        setValue("port", config.getProperty("redis.port", "6379"));
-        setValue("password", config.getProperty("redis.password", ""));
-        setValue("timeout", config.getProperty("redis.timeout", "10000"));
-    }
-
-    /**
-     * 用于结转旧的配置文件
-     * 
-     * @param config
-     */
-    private void fixAliyunMNS() {
-        log.warn("fixAliyunMNS: 自动结转旧的配置数据");
-        setValue(MnsServer.AccountEndpoint, config.getProperty("mns.accountendpoint"));
-        setValue(MnsServer.AccessKeyId, config.getProperty("mns.accesskeyid"));
-        setValue(MnsServer.AccessKeySecret, config.getProperty("mns.accesskeysecret"));
-        setValue(MnsServer.SecurityToken, config.getProperty("mns.securitytoken"));
-    }
-
-    /**
-     * 用于结转旧的配置文件
-     * 
-     * @param config
-     */
-    private void fixRocketMQ() {
-        log.warn("fixRocketMQ: 自动结转旧的配置数据");
-        setValue(QueueServer.AliyunAccessKeyId, config.getProperty("mns.accesskeyid"));
-        setValue(QueueServer.AliyunAccessKeySecret, config.getProperty("mns.accesskeysecret"));
-        //
-        setValue(QueueServer.RMQAccountEndpoint, config.getProperty("rocketmq.endpoint"));
-        setValue(QueueServer.RMQInstanceId, config.getProperty("rocketmq.instanceId"));
-        setValue(QueueServer.RMQEndpoint, config.getProperty("rocketmq.queue.endpoint"));
-        setValue(QueueServer.RMQAccessKeyId, config.getProperty("rocketmq.queue.accesskeyid"));
-        setValue(QueueServer.RMQAccessKeySecret, config.getProperty("rocketmq.queue.accesskeysecret"));
-    }
-
-    private void fixMysqlMaster() {
-        log.warn("fixMysql: 自动结转旧的配置数据-主库");
-        setValue(MysqlConfig.rds_site, config.getProperty("rds.site", "127.0.0.1:3306"));
-        setValue(MysqlConfig.rds_database, config.getProperty("rds.database", "appdb"));
-        setValue(MysqlConfig.rds_username, config.getProperty("rds.username", "appdb_user"));
-        setValue(MysqlConfig.rds_password, config.getProperty("rds.password", "appdb_password"));
-        //
-        setValue(MysqlConfig.rds_ServerTimezone, config.getProperty("rds.serverTimezone", "Asia/Shanghai"));
-        setValue(MysqlConfig.rds_MaxPoolSize, config.getProperty("rds.MaxPoolSize", "0"));
-        setValue(MysqlConfig.rds_MinPoolSize, config.getProperty("rds.MinPoolSize", "9"));
-        setValue(MysqlConfig.rds_InitialPoolSize, config.getProperty("rds.InitialPoolSize", "3"));
-        setValue(MysqlConfig.rds_CheckoutTimeout, config.getProperty("rds.CheckoutTimeout", "500"));
-        setValue(MysqlConfig.rds_MaxIdleTime, config.getProperty("rds.MaxIdleTime", "7800"));
-        setValue(MysqlConfig.rds_IdleConnectionTestPeriod, config.getProperty("rds.IdleConnectionTestPeriod", "9"));
-    }
-
-    private void fixMysqlSlave() {
-        log.warn("fixMysql: 自动结转旧的配置数据-从库");
-        ZkConfig zkc = new ZkConfig("/mysql");
-        setValue(MysqlConfig.rds_site, config.getProperty("rds.site.slave", zkc.getProperty(MysqlConfig.rds_site)));
-        setValue(MysqlConfig.rds_database,
-                config.getProperty("rds.database.slave", zkc.getProperty(MysqlConfig.rds_database)));
-        setValue(MysqlConfig.rds_username,
-                config.getProperty("rds.username.slave", zkc.getProperty(MysqlConfig.rds_username)));
-        setValue(MysqlConfig.rds_password,
-                config.getProperty("rds.password.slave", zkc.getProperty(MysqlConfig.rds_password)));
-        //
-        setValue(MysqlConfig.rds_ServerTimezone,
-                config.getProperty("rds.serverTimezone.slave", zkc.getProperty(MysqlConfig.rds_ServerTimezone)));
-        setValue(MysqlConfig.rds_MaxPoolSize,
-                config.getProperty("rds.MaxPoolSize.slave", zkc.getProperty(MysqlConfig.rds_MaxPoolSize)));
-        setValue(MysqlConfig.rds_MinPoolSize,
-                config.getProperty("rds.MinPoolSize.slave", zkc.getProperty(MysqlConfig.rds_MinPoolSize)));
-        setValue(MysqlConfig.rds_InitialPoolSize,
-                config.getProperty("rds.InitialPoolSize.slave", zkc.getProperty(MysqlConfig.rds_InitialPoolSize)));
-        setValue(MysqlConfig.rds_CheckoutTimeout,
-                config.getProperty("rds.CheckoutTimeout.slave", zkc.getProperty(MysqlConfig.rds_CheckoutTimeout)));
-        setValue(MysqlConfig.rds_MaxIdleTime,
-                config.getProperty("rds.MaxIdleTime.slave", zkc.getProperty(MysqlConfig.rds_MaxIdleTime)));
-        setValue(MysqlConfig.rds_IdleConnectionTestPeriod, config.getProperty("rds.IdleConnectionTestPeriod.slave",
-                zkc.getProperty(MysqlConfig.rds_IdleConnectionTestPeriod)));
     }
 
     public ZooKeeper client() {

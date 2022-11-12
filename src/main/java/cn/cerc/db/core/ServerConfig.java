@@ -119,6 +119,15 @@ public enum ServerConfig implements IConfig {
         return config.getString(key, def);
     }
 
+    public int getInt(String key, int def) {
+        String value = this.getProperty(key, "" + def);
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return def;
+        }
+    }
+
     public Properties loadAll() {
         return config.getProperties();
     }
