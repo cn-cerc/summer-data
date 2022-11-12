@@ -22,7 +22,7 @@ public class MysqlConfig {
     private static MysqlConfig instanceSalve;
     private static ServerConfig config;
     private ZkNode node = ZkNode.get();
-    private String savleFlag = "";
+    private String slaveFlag = "";
 
     static {
         config = ServerConfig.getInstance();
@@ -44,28 +44,28 @@ public class MysqlConfig {
     private MysqlConfig(boolean isMaster) {
         if (isMaster) {
             instanceMaster = this;
-            savleFlag = "";
+            slaveFlag = "";
         } else {
             instanceSalve = this;
-            savleFlag = ".slave";
+            slaveFlag = ".slave";
         }
     }
 
     public String site() {
-        return node.getString(getNodePath("site"), config.getProperty("rds.site" + savleFlag, "127.0.0.1:3306"));
+        return node.getString(getNodePath("site"), config.getProperty("rds.site" + slaveFlag, "127.0.0.1:3306"));
     }
 
     public String database() {
-        return node.getString(getNodePath("database"), config.getProperty("rds.database" + savleFlag, "appdb"));
+        return node.getString(getNodePath("database"), config.getProperty("rds.database" + slaveFlag, "appdb"));
     }
 
     public String username() {
-        return node.getString(getNodePath("username"), config.getProperty("rds.username" + savleFlag, "appdb_user"));
+        return node.getString(getNodePath("username"), config.getProperty("rds.username" + slaveFlag, "appdb_user"));
     }
 
     public String password() {
         return node.getString(getNodePath("password"),
-                config.getProperty("rds.password" + savleFlag, "appdb_password"));
+                config.getProperty("rds.password" + slaveFlag, "appdb_password"));
     }
 
     public String serverTimezone() {
@@ -128,7 +128,7 @@ public class MysqlConfig {
     }
 
     private String getNodePath(String key) {
-        return String.format("mysql/%s%s", "".equals(savleFlag) ? "" : "slave/", key);
+        return String.format("mysql/%s%s", "".equals(slaveFlag) ? "" : "slave/", key);
     }
 
     public boolean isConfigNull() {
