@@ -88,8 +88,8 @@ public class QueueServer {
         if (client != null)
             return client;
 
-        Config config = new Config().setAccessKeyId(AliyunConfig.accessKeyId())
-                .setAccessKeySecret(AliyunConfig.accessKeySecret());
+        Config config = new Config().setAccessKeyId(AliyunUserConfig.accessKeyId())
+                .setAccessKeySecret(AliyunUserConfig.accessKeySecret());
         config.endpoint = QueueServer.getAccountEndpoint();
         try {
             client = new Client(config);

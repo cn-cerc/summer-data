@@ -6,7 +6,7 @@ import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
 import cn.cerc.db.zk.ZkNode;
 
-public class AliyunConfig {
+public class AliyunUserConfig {
     private static final ClassResource res = new ClassResource(MnsServer.class, SummerDB.ID);
     private static final String AccountEndpoint = "aliyunMNS/accountendpoint";
     private static final String AccessKeyId = "aliyunMNS/accesskeyid";
