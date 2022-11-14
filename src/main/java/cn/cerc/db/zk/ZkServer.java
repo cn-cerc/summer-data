@@ -52,6 +52,9 @@ public class ZkServer implements AutoCloseable, Watcher {
             cdl = new CountDownLatch(1);
             System.setProperty("zookeeper.sasl.client", "false");
             this.client = new ZooKeeper(host, 50000, this);
+            String authentication = config.getProperty("authentication", "");
+            if (!Utils.isEmpty(authentication))
+                client.addAuthInfo("digest", authentication.getBytes());
             cdl.await(60, TimeUnit.SECONDS); // 等待zk联接成功
         } catch (IOException | InterruptedException e) {
             log.error(e.getMessage(), e);
@@ -65,13 +68,19 @@ public class ZkServer implements AutoCloseable, Watcher {
     @Override
     public void process(WatchedEvent event) {
         if (event.getType() == EventType.None) {
-            cdl.countDown();
             if (event.getState() == KeeperState.SyncConnected) {
                 log.info("ZooKeeper 成功联接到 " + this.getHost());
+                cdl.countDown();
             } else if (event.getState() == KeeperState.Closed) {
                 log.info("ZooKeeper 关闭联接 " + this.getHost());
+            } else if (event.getState() == KeeperState.AuthFailed) {
+                log.info("ZooKeeper 权限检查失败 " + this.getHost());
+            } else if (event.getState() == KeeperState.Expired) {
+                log.info("ZooKeeper 会话失效 " + this.getHost());
             } else
                 log.error("未处理事件：" + event.getState().name());
+        } else {
+            log.error("未处理类型：" + event.getType().name());
         }
     }
 
