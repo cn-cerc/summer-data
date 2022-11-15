@@ -53,41 +53,29 @@ public class MysqlConfig {
 
     public String site() {
         String site = config.getProperty("rds.site", "127.0.0.1:3306");
-        if (!Utils.isEmpty(slaveFlag)) {
-            String slave = config.getProperty("rds.site" + slaveFlag);
-            if (!Utils.isEmpty(slave))
-                site = slave;
-        }
+        if (!Utils.isEmpty(slaveFlag))
+            site = config.getProperty("rds.site" + slaveFlag, site);
         return node.getString(getNodePath("site"), site);
     }
 
     public String database() {
         String database = config.getProperty("rds.database", "appdb");
-        if (!Utils.isEmpty(slaveFlag)) {
-            String slave = config.getProperty("rds.database" + slaveFlag);
-            if (!Utils.isEmpty(slave))
-                database = slave;
-        }
+        if (!Utils.isEmpty(slaveFlag))
+            database = config.getProperty("rds.database" + slaveFlag, database);
         return node.getString(getNodePath("database"), database);
     }
 
     public String username() {
         String username = config.getProperty("rds.username", "appdb_user");
-        if (!Utils.isEmpty(slaveFlag)) {
-            String slave = config.getProperty("rds.username" + slaveFlag);
-            if (!Utils.isEmpty(slave))
-                username = slave;
-        }
+        if (!Utils.isEmpty(slaveFlag))
+            username = config.getProperty("rds.username" + slaveFlag, username);
         return node.getString(getNodePath("username"), username);
     }
 
     public String password() {
         String password = config.getProperty("rds.password", "appdb_password");
-        if (!Utils.isEmpty(slaveFlag)) {
-            String slave = config.getProperty("rds.password" + slaveFlag);
-            if (!Utils.isEmpty(slave))
-                password = slave;
-        }
+        if (!Utils.isEmpty(slaveFlag))
+            password = config.getProperty("rds.password" + slaveFlag, password);
         return node.getString(getNodePath("password"), password);
     }
 
