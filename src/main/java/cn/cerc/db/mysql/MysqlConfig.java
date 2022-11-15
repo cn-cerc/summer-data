@@ -52,20 +52,43 @@ public class MysqlConfig {
     }
 
     public String site() {
-        return node.getString(getNodePath("site"), config.getProperty("rds.site" + slaveFlag, "127.0.0.1:3306"));
+        String site = config.getProperty("rds.site", "127.0.0.1:3306");
+        if (!Utils.isEmpty(slaveFlag)) {
+            String slave = config.getProperty("rds.site" + slaveFlag);
+            if (!Utils.isEmpty(slave))
+                site = slave;
+        }
+        return node.getString(getNodePath("site"), site);
     }
 
     public String database() {
-        return node.getString(getNodePath("database"), config.getProperty("rds.database" + slaveFlag, "appdb"));
+        String database = config.getProperty("rds.database", "appdb");
+        if (!Utils.isEmpty(slaveFlag)) {
+            String slave = config.getProperty("rds.database" + slaveFlag);
+            if (!Utils.isEmpty(slave))
+                database = slave;
+        }
+        return node.getString(getNodePath("database"), database);
     }
 
     public String username() {
-        return node.getString(getNodePath("username"), config.getProperty("rds.username" + slaveFlag, "appdb_user"));
+        String username = config.getProperty("rds.username", "appdb_user");
+        if (!Utils.isEmpty(slaveFlag)) {
+            String slave = config.getProperty("rds.username" + slaveFlag);
+            if (!Utils.isEmpty(slave))
+                username = slave;
+        }
+        return node.getString(getNodePath("username"), username);
     }
 
     public String password() {
-        return node.getString(getNodePath("password"),
-                config.getProperty("rds.password" + slaveFlag, "appdb_password"));
+        String password = config.getProperty("rds.password", "appdb_password");
+        if (!Utils.isEmpty(slaveFlag)) {
+            String slave = config.getProperty("rds.password" + slaveFlag);
+            if (!Utils.isEmpty(slave))
+                password = slave;
+        }
+        return node.getString(getNodePath("password"), password);
     }
 
     public String serverTimezone() {
@@ -128,7 +151,7 @@ public class MysqlConfig {
     }
 
     private String getNodePath(String key) {
-        return String.format("mysql/%s%s", "".equals(slaveFlag) ? "" : "slave/", key);
+        return String.format("mysql/%s%s", Utils.isEmpty(slaveFlag) ? "" : "slave/", key);
     }
 
     public boolean isConfigNull() {
