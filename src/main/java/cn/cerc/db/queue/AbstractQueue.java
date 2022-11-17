@@ -22,6 +22,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
     private boolean initTopic;
     private long delayTime = 0L;
     private String industry;
+    private String order;
 
     public AbstractQueue() {
         super();
@@ -85,8 +86,8 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
         }
         config().setTempNode(this.getClass().getSimpleName(), "running");
 
-        log.info("注册消息服务：{} from {}", this.getId(), this.service.name());
-        if (this.service == QueueServiceEnum.RocketMQ) {
+        log.info("注册消息服务：{} from {}", this.getId(), this.getService().name());
+        if (this.getService() == QueueServiceEnum.RocketMQ) {
             initTopic();
             consumer.addConsumer(this.getTopic(), this.getTag(), this);
         }
@@ -112,7 +113,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
     }
 
     protected String push(String data) {
-        switch (service) {
+        switch (getService()) {
         case Redis:
             try (Redis redis = new Redis()) {
                 redis.lpush(this.getId(), data);
@@ -132,6 +133,8 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
                 e.printStackTrace();
                 return null;
             }
+        case Sqlmq:
+            return SqlmqServer.getQueue(this.getId()).push(data, this.order);
         default:
             return null;
         }
@@ -145,7 +148,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
     }
 
     protected void receiveMessage() {
-        switch (service) {
+        switch (getService()) {
         case Redis:
             try (Redis redis = new Redis()) {
                 var data = redis.rpop(this.getId());
@@ -156,16 +159,19 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
         case AliyunMNS:
             MnsServer.getQueue(getId()).pop(100, this);
             break;
+        case Sqlmq:
+            SqlmqServer.getQueue(getId()).pop(100, this);
+            break;
         default:
-            log.error("{} 不支持消息拉取模式:", service.name());
+            log.error("{} 不支持消息拉取模式:", getService().name());
         }
     }
 
-    protected QueueServiceEnum getService() {
+    public final QueueServiceEnum getService() {
         return service;
     }
 
-    public void setService(QueueServiceEnum service) {
+    public final void setService(QueueServiceEnum service) {
         this.service = service;
     }
 
@@ -176,11 +182,19 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
     public void defaultCheck() {
         if (ServerConfig.enableTaskService()) {
             switch (this.getService()) {
-            case Redis, AliyunMNS:
+            case Redis, AliyunMNS, Sqlmq:
                 this.receiveMessage();
             default:
                 break;
             }
         }
+    }
+
+    public String getOrder() {
+        return order;
+    }
+
+    public void setOrder(String order) {
+        this.order = order;
     }
 }
