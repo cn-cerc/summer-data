@@ -15,7 +15,7 @@ import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.redis.Redis;
 import cn.cerc.db.zk.ZkConfig;
 
-public abstract class AbstractQueue implements OnStringMessage, Watcher {
+public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnable {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
     private static ZkConfig config;
     private QueueServiceEnum service;
@@ -147,7 +147,8 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
         this.initTopic = true;
     }
 
-    protected void receiveMessage() {
+    @Override
+    public void run() {
         switch (getService()) {
         case Redis:
             try (Redis redis = new Redis()) {
@@ -183,7 +184,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
         if (ServerConfig.enableTaskService()) {
             switch (this.getService()) {
             case Redis, AliyunMNS, Sqlmq:
-                this.receiveMessage();
+                this.run();
             default:
                 break;
             }
@@ -197,4 +198,5 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher {
     public void setOrder(String order) {
         this.order = order;
     }
+
 }
