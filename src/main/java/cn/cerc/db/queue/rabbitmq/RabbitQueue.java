@@ -13,13 +13,14 @@ import com.rabbitmq.client.GetResponse;
 
 import cn.cerc.db.queue.OnStringMessage;
 
-public class RabbitQueue {
+public class RabbitQueue implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(RabbitQueue.class);
+    private String consumerTag = null;
     private Channel channel;
     private String queueId;
 
-    public RabbitQueue(Channel channel, String queueId) {
-        this.channel = channel;
+    public RabbitQueue(String queueId) {
+        this.channel = RabbitServer.createChannel();
         this.queueId = queueId;
         try {
             channel.queueDeclare(queueId, true, false, false, null);
@@ -30,14 +31,22 @@ public class RabbitQueue {
 
     public void watch(OnStringMessage resume) {
         try {
-            channel.basicConsume(queueId, false, new DefaultConsumer(channel) {
-                @Override
-                public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties,
-                        byte[] body) throws IOException {
-                    String msg = new String(body);
-                    channel.basicAck(envelope.getDeliveryTag(), resume.consume(msg));
-                }
-            });
+            if (resume != null) {
+                consumerTag = channel.basicConsume(queueId, false, new DefaultConsumer(channel) {
+                    @Override
+                    public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties,
+                            byte[] body) throws IOException {
+                        String msg = new String(body);
+                        if (resume.consume(msg))
+                            channel.basicAck(envelope.getDeliveryTag(), true);
+                        else
+                            channel.basicAck(envelope.getDeliveryTag(), false);
+                    }
+                });
+            } else if (consumerTag != null) {
+                channel.basicCancel(consumerTag);
+                consumerTag = null;
+            }
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         }
@@ -66,6 +75,18 @@ public class RabbitQueue {
         } catch (IOException e) {
             log.error(e.getMessage(), e);
             return "error";
+        }
+    }
+
+    @Override
+    public void close() {
+        try {
+            if (channel != null) {
+                channel.close();
+                channel = null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
