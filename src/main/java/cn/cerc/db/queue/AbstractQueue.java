@@ -20,6 +20,7 @@ import cn.cerc.db.zk.ZkConfig;
 public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnable {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
     private static ZkConfig config;
+    private boolean pushMode = false;
     private QueueServiceEnum service;
     private boolean initTopic;
     private long delayTime = 0L;
@@ -188,6 +189,8 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
      */
     @Scheduled(initialDelay = 30000, fixedRate = 3000)
     public void defaultCheck() {
+        if (this.isPushMode())
+            return;
         if (ServerConfig.enableTaskService()) {
             switch (this.getService()) {
             case Redis, AliyunMNS, Sqlmq, RabbitMQ:
@@ -204,6 +207,18 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
 
     public void setOrder(String order) {
         this.order = order;
+    }
+
+    /**
+     * 
+     * @return 为true表示为推模式
+     */
+    public boolean isPushMode() {
+        return pushMode;
+    }
+
+    protected void setConsumeType(boolean pushMode) {
+        this.pushMode = pushMode;
     }
 
 }

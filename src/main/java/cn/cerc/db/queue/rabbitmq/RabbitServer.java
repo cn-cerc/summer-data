@@ -1,6 +1,8 @@
 package cn.cerc.db.queue.rabbitmq;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -26,6 +28,7 @@ public class RabbitServer implements AutoCloseable, ApplicationListener<Applicat
     private static final Logger log = LoggerFactory.getLogger(RabbitServer.class);
     private static ConcurrentHashMap<String, RabbitQueue> items = new ConcurrentHashMap<>();
     private static RabbitServer instance;
+    private List<AbstractQueue> startItems = new ArrayList<>();
     private Connection connection;
 
     public synchronized static RabbitServer get() {
@@ -93,21 +96,18 @@ public class RabbitServer implements AutoCloseable, ApplicationListener<Applicat
                 }
                 Map<String, AbstractQueue> queues = context.getBeansOfType(AbstractQueue.class);
                 queues.forEach((name, queue) -> {
-                    if (queue.getService() == QueueServiceEnum.RabbitMQ)
+                    if (queue.isPushMode() && queue.getService() == QueueServiceEnum.RabbitMQ) {
                         RabbitServer.getQueue(queue.getId()).watch(queue);
+                        startItems.add(queue);
+                    }
                 });
-                log.info("成功注册的推送消息数量：" + queues.size());
+                log.info("成功注册的推送消息数量：" + startItems.size());
             }
         } else if (event instanceof ContextClosedEvent) {
-            ApplicationContext context = event.getApplicationContext();
-            if (context.getParent() == null) {
-                Map<String, AbstractQueue> queues = context.getBeansOfType(AbstractQueue.class);
-                queues.forEach((name, queue) -> {
-                    if (queue.getService() == QueueServiceEnum.RabbitMQ)
-                        RabbitServer.getQueue(queue.getId()).watch(null);
-                });
-                log.info("关闭注册的推送消息数量：" + queues.size());
-            }
+            for (var queue : startItems)
+                RabbitServer.getQueue(queue.getId()).watch(null);
+            log.info("关闭注册的推送消息数量：" + startItems.size());
+            startItems.clear();
         }
     }
 
