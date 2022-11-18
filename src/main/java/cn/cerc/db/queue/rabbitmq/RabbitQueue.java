@@ -30,12 +30,12 @@ public class RabbitQueue {
 
     public void watch(OnStringMessage resume) {
         try {
-            channel.basicConsume(queueId, true, new DefaultConsumer(channel) {
+            channel.basicConsume(queueId, false, new DefaultConsumer(channel) {
                 @Override
                 public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties,
                         byte[] body) throws IOException {
                     String msg = new String(body);
-                    resume.consume(msg);
+                    channel.basicAck(envelope.getDeliveryTag(), resume.consume(msg));
                 }
             });
         } catch (IOException e) {
@@ -52,10 +52,7 @@ public class RabbitQueue {
                     return;
                 String msg = new String(response.getBody());
                 // 手动设置消息已被读取
-                if (resume.consume(msg))
-                    channel.basicAck(response.getEnvelope().getDeliveryTag(), true);
-                else
-                    channel.basicAck(response.getEnvelope().getDeliveryTag(), false);
+                channel.basicAck(response.getEnvelope().getDeliveryTag(), resume.consume(msg));
             }
         } catch (IOException e) {
             log.error(e.getMessage(), e);
