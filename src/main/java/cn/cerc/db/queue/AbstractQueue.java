@@ -20,7 +20,7 @@ import cn.cerc.db.zk.ZkConfig;
 public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnable {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
     private static ZkConfig config;
-    private boolean pushMode = false;
+    private boolean pushMode = false;  // 默认为拉模式
     private QueueServiceEnum service;
     private boolean initTopic;
     private long delayTime = 0L;
@@ -217,7 +217,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         return pushMode;
     }
 
-    protected void setConsumeType(boolean pushMode) {
+    protected void setPushMode(boolean pushMode) {
         this.pushMode = pushMode;
     }
 
