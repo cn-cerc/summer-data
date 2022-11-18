@@ -4,5 +4,6 @@ public enum QueueServiceEnum {
     Redis,
     AliyunMNS,
     RocketMQ,
-    Sqlmq
+    Sqlmq,
+    RabbitMQ
 }

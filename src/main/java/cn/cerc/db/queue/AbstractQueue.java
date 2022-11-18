@@ -12,6 +12,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.queue.rabbitmq.RabbitServer;
+import cn.cerc.db.queue.sqlmq.SqlmqServer;
 import cn.cerc.db.redis.Redis;
 import cn.cerc.db.zk.ZkConfig;
 
@@ -135,6 +137,8 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             }
         case Sqlmq:
             return SqlmqServer.getQueue(this.getId()).push(data, this.order);
+        case RabbitMQ:
+            return RabbitServer.getQueue(this.getId()).push(data);
         default:
             return null;
         }
@@ -163,6 +167,9 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         case Sqlmq:
             SqlmqServer.getQueue(getId()).pop(100, this);
             break;
+        case RabbitMQ:
+            RabbitServer.getQueue(this.getId()).pop(100, this);
+            break;
         default:
             log.error("{} 不支持消息拉取模式:", getService().name());
         }
@@ -183,7 +190,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     public void defaultCheck() {
         if (ServerConfig.enableTaskService()) {
             switch (this.getService()) {
-            case Redis, AliyunMNS, Sqlmq:
+            case Redis, AliyunMNS, Sqlmq, RabbitMQ:
                 this.run();
             default:
                 break;
