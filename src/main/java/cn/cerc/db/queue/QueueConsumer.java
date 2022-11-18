@@ -3,6 +3,7 @@ package cn.cerc.db.queue;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ public class QueueConsumer implements AutoCloseable, ApplicationListener<Applica
     private static final Logger log = LoggerFactory.getLogger(QueueConsumer.class);
     private static final Map<String, OnStringMessage> items1 = new HashMap<>();
     private static final Map<String, FilterExpression> items2 = new HashMap<>();
+    private List<AbstractQueue> startItems = new ArrayList<>();
     private PushConsumer pushConsumer;
     private SimpleConsumer pullConsumer;
 
@@ -97,17 +99,20 @@ public class QueueConsumer implements AutoCloseable, ApplicationListener<Applica
                     return;
                 }
                 Map<String, AbstractQueue> queues = context.getBeansOfType(AbstractQueue.class);
-                queues.forEach((name, queue) -> queue.startService(this));
+                queues.forEach((name, queue) -> {
+                    if (queue.isPushMode() && queue.getService() == QueueServiceEnum.RocketMQ) {
+                        queue.startService(this);
+                        startItems.add(queue);
+                    }
+                });
                 startPush();
-                log.info("成功注册的推送消息数量：" + queues.size());
+                log.info("成功注册的推送消息数量：" + startItems.size());
             }
         } else if (event instanceof ContextClosedEvent) {
-            ApplicationContext context = event.getApplicationContext();
-            if (context.getParent() == null) {
-                Map<String, AbstractQueue> queues = context.getBeansOfType(AbstractQueue.class);
-                queues.forEach((name, queue) -> queue.stopService());
-                log.info("关闭注册的推送消息数量：" + queues.size());
-            }
+            for (var queue : startItems)
+                queue.stopService();
+            log.info("关闭注册的推送消息数量：" + startItems.size());
+            startItems.clear();
         }
     }
 

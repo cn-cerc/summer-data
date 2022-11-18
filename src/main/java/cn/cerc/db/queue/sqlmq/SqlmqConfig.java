@@ -1,4 +1,4 @@
-package cn.cerc.db.queue;
+package cn.cerc.db.queue.sqlmq;
 
 import cn.cerc.db.mysql.MysqlConfigImpl;
 import cn.cerc.db.zk.ZkNode;

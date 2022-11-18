@@ -1,9 +1,10 @@
-package cn.cerc.db.queue;
+package cn.cerc.db.queue.sqlmq;
 
 import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.Datetime.DateType;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.mysql.MysqlQuery;
+import cn.cerc.db.queue.OnStringMessage;
 
 public class SqlmqQueue {
     private static final String s_sqlmq_info = "s_sqlmq_info";

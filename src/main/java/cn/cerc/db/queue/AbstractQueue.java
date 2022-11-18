@@ -12,12 +12,15 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.queue.rabbitmq.RabbitServer;
+import cn.cerc.db.queue.sqlmq.SqlmqServer;
 import cn.cerc.db.redis.Redis;
 import cn.cerc.db.zk.ZkConfig;
 
 public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnable {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
     private static ZkConfig config;
+    private boolean pushMode = false;  // 默认为拉模式
     private QueueServiceEnum service;
     private boolean initTopic;
     private long delayTime = 0L;
@@ -135,6 +138,8 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             }
         case Sqlmq:
             return SqlmqServer.getQueue(this.getId()).push(data, this.order);
+        case RabbitMQ:
+            return RabbitServer.getQueue(this.getId()).push(data);
         default:
             return null;
         }
@@ -163,6 +168,9 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         case Sqlmq:
             SqlmqServer.getQueue(getId()).pop(100, this);
             break;
+        case RabbitMQ:
+            RabbitServer.getQueue(this.getId()).pop(100, this);
+            break;
         default:
             log.error("{} 不支持消息拉取模式:", getService().name());
         }
@@ -181,9 +189,11 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
      */
     @Scheduled(initialDelay = 30000, fixedRate = 3000)
     public void defaultCheck() {
+        if (this.isPushMode())
+            return;
         if (ServerConfig.enableTaskService()) {
             switch (this.getService()) {
-            case Redis, AliyunMNS, Sqlmq:
+            case Redis, AliyunMNS, Sqlmq, RabbitMQ:
                 this.run();
             default:
                 break;
@@ -197,6 +207,18 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
 
     public void setOrder(String order) {
         this.order = order;
+    }
+
+    /**
+     * 
+     * @return 为true表示为推模式
+     */
+    public boolean isPushMode() {
+        return pushMode;
+    }
+
+    protected void setPushMode(boolean pushMode) {
+        this.pushMode = pushMode;
     }
 
 }

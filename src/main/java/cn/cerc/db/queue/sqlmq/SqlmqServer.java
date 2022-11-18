@@ -1,4 +1,4 @@
-package cn.cerc.db.queue;
+package cn.cerc.db.queue.sqlmq;
 
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
