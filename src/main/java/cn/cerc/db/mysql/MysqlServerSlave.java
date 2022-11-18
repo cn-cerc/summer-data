@@ -6,14 +6,14 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.zaxxer.hikari.HikariDataSource;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MysqlServerSlave extends MysqlServer {
     // IHandle中识别码
     public static final String SessionId = "slaveSqlSession";
-    private static ComboPooledDataSource dataSource;
+    private static HikariDataSource dataSource;
 
     static {
         var config = MysqlConfig.getSlave();
