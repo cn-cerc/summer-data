@@ -1,4 +1,4 @@
-package cn.cerc.db.queue;
+package cn.cerc.db.queue.rocket;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +25,7 @@ import cn.cerc.db.SummerDB;
 import cn.cerc.db.core.ClassResource;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
+import cn.cerc.db.queue.AliyunUserConfig;
 import cn.cerc.db.zk.ZkNode;
 
 public class QueueServer {

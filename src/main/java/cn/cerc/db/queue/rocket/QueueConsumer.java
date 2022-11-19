@@ -1,4 +1,4 @@
-package cn.cerc.db.queue;
+package cn.cerc.db.queue.rocket;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -35,6 +35,10 @@ import com.aliyun.rocketmq20220801.models.GetConsumerGroupResponse;
 import com.aliyun.rocketmq20220801.models.GetConsumerGroupResponseBody.GetConsumerGroupResponseBodyData;
 
 import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.queue.AbstractQueue;
+import cn.cerc.db.queue.OnMessageRecevie;
+import cn.cerc.db.queue.OnStringMessage;
+import cn.cerc.db.queue.QueueServiceEnum;
 
 @Component
 public class QueueConsumer implements AutoCloseable, ApplicationListener<ApplicationContextEvent>, OnMessageRecevie {

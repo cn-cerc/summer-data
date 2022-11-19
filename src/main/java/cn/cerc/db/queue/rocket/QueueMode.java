@@ -1,4 +1,4 @@
-package cn.cerc.db.queue;
+package cn.cerc.db.queue.rocket;
 
 public enum QueueMode {
     append,
