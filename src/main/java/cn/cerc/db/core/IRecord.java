@@ -157,6 +157,10 @@ public interface IRecord {
         }
     }
 
+    default double getDouble(String field, int scale) {
+        return Utils.roundTo(getDouble(field), scale);
+    }
+
     default double getDouble(String field) {
         Object value = this.getValue(field);
         if (value == null) {
