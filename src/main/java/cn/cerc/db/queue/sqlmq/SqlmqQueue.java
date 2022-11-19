@@ -1,5 +1,10 @@
 package cn.cerc.db.queue.sqlmq;
 
+import java.net.InetAddress;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.Datetime.DateType;
 import cn.cerc.db.core.IHandle;
@@ -7,6 +12,7 @@ import cn.cerc.db.mysql.MysqlQuery;
 import cn.cerc.db.queue.OnStringMessage;
 
 public class SqlmqQueue {
+    private static final Logger log = LoggerFactory.getLogger(SqlmqQueue.class);
     private static final String s_sqlmq_info = "s_sqlmq_info";
     private static final String s_sqlmq_log = "s_sqlmq_log";
 
@@ -37,7 +43,7 @@ public class SqlmqQueue {
         query.add("where queue_='%s'", this.queue);
         query.add("and ((status_=%d)", StatusEnum.Waiting.ordinal());
         query.add("or (status_=%d and show_time_ <= '%s'))", StatusEnum.Next.ordinal(), new Datetime());
-        query.setMaximum(maximum);
+        query.setMaximum(1);
         query.open();
         for (var row : query) {
             boolean result = false;
@@ -52,6 +58,7 @@ public class SqlmqQueue {
                 query.post();
                 result = onConsume.consume(row.getString("message_"));
             } catch (Exception e) {
+                log.error(e.getMessage(), e);
                 content = e.getMessage();
             }
             addLog(uid.getLong(), result ? AckEnum.Ok : AckEnum.Error, content);
@@ -92,17 +99,22 @@ public class SqlmqQueue {
     }
 
     private void addLog(long queueId, AckEnum ack, String content) {
-        MysqlQuery query = new MysqlQuery(handle);
-        query.add("select * from %s", s_sqlmq_log);
-        query.setMaximum(0);
-        query.open();
+        try {
+            MysqlQuery query = new MysqlQuery(handle);
+            query.add("select * from %s", s_sqlmq_log);
+            query.setMaximum(0);
+            query.open();
 
-        query.append();
-        query.setValue("queue_id_", queueId);
-        query.setValue("ack_", ack.ordinal());
-        query.setValue("content_", content);
-        query.setValue("create_time_", new Datetime());
-        query.post();
+            query.append();
+            query.setValue("queue_id_", queueId);
+            query.setValue("ack_", ack.ordinal());
+            query.setValue("content_", content);
+            query.setValue("create_time_", new Datetime());
+            query.setValue("ip_", InetAddress.getLocalHost().getHostAddress());
+            query.post();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
 }
