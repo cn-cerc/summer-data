@@ -38,9 +38,11 @@ public class RabbitQueue implements AutoCloseable {
                             byte[] body) throws IOException {
                         String msg = new String(body);
                         if (resume.consume(msg))
-                            channel.basicAck(envelope.getDeliveryTag(), true);
-                        else
+                            // 消息处理成功将消息设为确认状态，multiple = false 不允许批量，防止消息的丢失
                             channel.basicAck(envelope.getDeliveryTag(), false);
+                        else
+                            // 消息处理失败，将消息重新放回队列
+                            channel.basicReject(envelope.getDeliveryTag(), true);
                     }
                 });
             } else if (consumerTag != null) {
@@ -61,7 +63,12 @@ public class RabbitQueue implements AutoCloseable {
                     return;
                 String msg = new String(response.getBody());
                 // 手动设置消息已被读取
-                channel.basicAck(response.getEnvelope().getDeliveryTag(), resume.consume(msg));
+                if (resume.consume(msg))
+                    // 消息处理成功将消息设为确认状态，multiple = false 不允许批量，防止消息的丢失
+                    channel.basicAck(response.getEnvelope().getDeliveryTag(), false);
+                else
+                    // 消息处理失败，将消息重新放回队列
+                    channel.basicReject(response.getEnvelope().getDeliveryTag(), true);
             }
         } catch (IOException e) {
             log.error(e.getMessage(), e);
@@ -71,6 +78,17 @@ public class RabbitQueue implements AutoCloseable {
     public String push(String msg) {
         try {
             channel.basicPublish("", this.queueId, null, msg.getBytes());
+            return "ok";
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            return "error";
+        }
+    }
+
+    // 发送死信队列消息
+    public String pushDLX(String msg) {
+        try {
+            channel.basicPublish(DLX_EXCHANGE, msg, null, null);
             return "ok";
         } catch (IOException e) {
             log.error(e.getMessage(), e);
