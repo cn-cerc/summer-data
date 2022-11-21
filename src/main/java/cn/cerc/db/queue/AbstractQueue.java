@@ -1,6 +1,11 @@
 package cn.cerc.db.queue;
 
 import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.rocketmq.client.apis.ClientException;
 import org.apache.zookeeper.KeeperException;
@@ -19,8 +24,13 @@ import cn.cerc.db.zk.ZkConfig;
 
 public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnable {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
+
+    private static final int MAX_THREAD_SIZE = Runtime.getRuntime().availableProcessors();
+    public static final ExecutorService pool = Executors.newFixedThreadPool(MAX_THREAD_SIZE);
+    public static final Map<String, Future<?>> items = new ConcurrentHashMap<>();// 正在执行任务的线程列表
+
     private static ZkConfig config;
-    private boolean pushMode = false;  // 默认为拉模式
+    private boolean pushMode = false; // 默认为拉模式
     private QueueServiceEnum service;
     private boolean initTopic;
     private long delayTime = 0L;
@@ -189,12 +199,27 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
      */
     @Scheduled(initialDelay = 30000, fixedRate = 3000)
     public void defaultCheck() {
+        int before = items.size();
+        items.values().removeIf(Future::isDone);
+        if (items.size() < before)
+            log.info("清理之前 {} 清理之后 {}", before, items.size());
+
         if (this.isPushMode())
             return;
+
         if (ServerConfig.enableTaskService()) {
             switch (this.getService()) {
             case Redis, AliyunMNS, Sqlmq, RabbitMQ:
-                this.run();
+//                this.run();
+//                new Thread(this).start(); // 直接开线程
+                if (items.containsKey(this.getClass().getSimpleName())) {
+                    log.warn("{} 当前类有任务正在执行中，等候下一轮排队吧", this.getClass().getSimpleName());
+                    break;
+                }
+
+                Future<?> future = pool.submit(this);// 使用线程池
+                items.put(this.getClass().getSimpleName(), future);
+                break;
             default:
                 break;
             }
