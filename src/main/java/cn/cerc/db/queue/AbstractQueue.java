@@ -199,13 +199,13 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
      */
     @Scheduled(initialDelay = 30000, fixedRate = 3000)
     public void defaultCheck() {
+        if (this.isPushMode())
+            return;
+
         int before = items.size();
         items.values().removeIf(Future::isDone);
         if (items.size() < before)
             log.info("清理之前 {} 清理之后 {}", before, items.size());
-
-        if (this.isPushMode())
-            return;
 
         if (ServerConfig.enableTaskService()) {
             switch (this.getService()) {
