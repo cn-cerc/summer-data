@@ -9,7 +9,8 @@ public class RabbitConsumerTest {
     private static final ExecutorService pool = Executors.newFixedThreadPool(MAX_THREAD_SIZE);
 
     public static void main(String[] args) {
-        for (int i = 0; i < 1; i++) {
+//        new ConsumeThread().run();
+        for (int i = 0; i < MAX_THREAD_SIZE; i++) {
             pool.submit(new ConsumeThread());
         }
     }

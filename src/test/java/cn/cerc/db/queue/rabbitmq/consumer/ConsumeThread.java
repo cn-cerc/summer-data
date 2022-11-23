@@ -16,7 +16,7 @@ import cn.cerc.db.queue.rabbitmq.config.RabbitTestConfig;
 
 public class ConsumeThread implements Runnable {
 
-    private static final Logger log = LoggerFactory.getLogger(RabbitConsumerTest.class);
+    private static final Logger log = LoggerFactory.getLogger(ConsumeThread.class);
 
     @Override
     public void run() {
@@ -31,7 +31,7 @@ public class ConsumeThread implements Runnable {
                     channel.getChannelNumber()));
 
             // 消费者预取的消费数量
-            channel.basicQos(100);
+            channel.basicQos(1);
             channel.queueDeclare(RabbitTestConfig.QUEUE_NAME, true, false, false, null);
 
             // 声明路由
