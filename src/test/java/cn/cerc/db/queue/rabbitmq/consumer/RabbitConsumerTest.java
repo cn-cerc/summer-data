@@ -10,7 +10,7 @@ public class RabbitConsumerTest {
 
     public static void main(String[] args) {
         for (int i = 0; i < 2; i++) {
-            pool.submit(new RabbitConsumeThread());
+            pool.submit(new ConsumeThread());
         }
     }
 

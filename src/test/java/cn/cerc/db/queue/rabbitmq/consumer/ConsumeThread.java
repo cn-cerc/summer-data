@@ -13,7 +13,7 @@ import com.rabbitmq.client.Envelope;
 
 import cn.cerc.db.queue.rabbitmq.config.RabbitTestConfig;
 
-public class RabbitConsumeThread implements Runnable {
+public class ConsumeThread implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(RabbitConsumerTest.class);
 
