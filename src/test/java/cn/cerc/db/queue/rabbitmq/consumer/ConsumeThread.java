@@ -51,7 +51,7 @@ public class ConsumeThread implements Runnable {
                      * 
                      * 2.是否批量确认 true:批量确认 false:只确认当前消息
                      */
-                    channel.basicAck(envelope.getDeliveryTag(), false);
+                    channel.basicAck(envelope.getDeliveryTag(), false);// 成功确认
                 }
             };
             // 监听队列，false表示手动返回完成状态，true表示自动

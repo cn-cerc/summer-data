@@ -8,6 +8,7 @@ import com.rabbitmq.client.ConnectionFactory;
 
 public class RabbitTestConfig {
     public final static String QUEUE_NAME = "queue_work";
+    public final static String EXCHANGE_DIRECT_DTIENG = "diteng.direct";
 
     private static final ConnectionFactory factory = new ConnectionFactory();
 
