@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
+import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.DefaultConsumer;
@@ -31,8 +32,14 @@ public class ConsumeThread implements Runnable {
 
             // 消费者预取的消费数量
             channel.basicQos(100);
-            // 声明队列
             channel.queueDeclare(RabbitTestConfig.QUEUE_NAME, true, false, false, null);
+
+            // 声明路由
+            channel.exchangeDeclare(RabbitTestConfig.EXCHANGE_DIRECT_DTIENG, BuiltinExchangeType.DIRECT, true, false,
+                    false, null);
+            // 队列绑定
+            channel.queueBind(RabbitTestConfig.QUEUE_NAME, RabbitTestConfig.EXCHANGE_DIRECT_DTIENG,
+                    RabbitTestConfig.QUEUE_NAME);
 
             // 创建消费者监听器
             DefaultConsumer consumer = new DefaultConsumer(channel) {
