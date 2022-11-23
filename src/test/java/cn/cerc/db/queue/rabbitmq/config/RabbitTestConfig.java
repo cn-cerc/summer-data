@@ -6,12 +6,14 @@ import java.util.concurrent.TimeoutException;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
-public class RabbitClient {
+public class RabbitTestConfig {
+    public final static String QUEUE_NAME = "queue_work";
 
     private static final ConnectionFactory factory = new ConnectionFactory();
 
     static {
         factory.setHost("172.16.0.212"); // 代理服务器地址
+//        factory.setHost("121.37.154.92"); // 4plc-huawei-jenkins
         factory.setPort(5672); // 代理服务器端口
         factory.setUsername("admin");
         factory.setPassword("admin");
