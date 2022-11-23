@@ -15,15 +15,15 @@ import com.rabbitmq.client.Envelope;
 
 import cn.cerc.db.queue.rabbitmq.config.RabbitClient;
 
-public class RabbitConsumerTest4 {
-    private static final Logger log = LoggerFactory.getLogger(RabbitConsumerTest4.class);
+public class RabbitConsumerTest {
+    private static final Logger log = LoggerFactory.getLogger(RabbitConsumerTest.class);
 
     private static final int MAX_THREAD_SIZE = Runtime.getRuntime().availableProcessors();
     private static final ExecutorService pool = Executors.newFixedThreadPool(MAX_THREAD_SIZE);
     private final static String QUEUE_NAME = "queue_work";
 
     public static void main(String[] args) {
-        for (int i = 0; i < 128; i++) {
+        for (int i = 0; i < 2; i++) {
             pool.submit(() -> {
                 try {
                     // 获取到连接
@@ -49,8 +49,8 @@ public class RabbitConsumerTest4 {
                         @Override
                         public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties,
                                 byte[] body) throws IOException {
-                            String mess = new String(body);
-//                System.out.println("1接收到的消息：" + mess);
+                            String message = new String(body);
+                            log.info("{} 接收到的消息 {}", Thread.currentThread().getName(), message);
                             // 手动返回一个回执确认
                             /**
                              * 1.要回执确认的消息的编号 2.是否批量确认 true:批量确认 false:只确认当前消息
