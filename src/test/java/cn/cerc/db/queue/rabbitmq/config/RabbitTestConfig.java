@@ -13,7 +13,8 @@ public class RabbitTestConfig {
     private static final ConnectionFactory factory = new ConnectionFactory();
 
     static {
-        factory.setHost("172.16.0.212"); // 代理服务器地址
+        factory.setHost("127.0.0.1");
+//        factory.setHost("172.16.0.212"); // itjun-buntu
 //        factory.setHost("121.37.154.92"); // 4plc-huawei-jenkins
         factory.setPort(5672); // 代理服务器端口
         factory.setUsername("admin");

@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.MessageProperties;
 
 import cn.cerc.db.queue.rabbitmq.config.RabbitTestConfig;
 
@@ -47,8 +48,8 @@ public class RabbitProducerTest {
                         String.valueOf(atomic.incrementAndGet()));
 
                 // 推送消息
-                channel.basicPublish(RabbitTestConfig.EXCHANGE_DIRECT_DTIENG, RabbitTestConfig.QUEUE_NAME, null,
-                        message.getBytes(StandardCharsets.UTF_8));
+                channel.basicPublish(RabbitTestConfig.EXCHANGE_DIRECT_DTIENG, RabbitTestConfig.QUEUE_NAME,
+                        MessageProperties.PERSISTENT_TEXT_PLAIN, message.getBytes(StandardCharsets.UTF_8));
                 System.out.println("发送: " + message);
             }
             channel.close();
