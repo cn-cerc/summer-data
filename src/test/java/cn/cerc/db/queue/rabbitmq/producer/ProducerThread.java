@@ -50,7 +50,7 @@ public class ProducerThread implements Runnable {
 
             // 将信道设置为 publisher confirm 模式
             channel.confirmSelect();
-            for (int i = 1; i <= 10000; i++) {
+            for (int i = 1; i <= 100000; i++) {
                 // 消息内容
                 String message = String.join("-", Thread.currentThread().getName(),
                         String.valueOf(atomic.incrementAndGet()));
@@ -60,9 +60,9 @@ public class ProducerThread implements Runnable {
                         MessageProperties.PERSISTENT_TEXT_PLAIN, message.getBytes(StandardCharsets.UTF_8));
 //                System.out.println("发送: " + message);
                 if (channel.waitForConfirms()) {
-                    log.error("{} 消息发送成功", Thread.currentThread().getName());
+                    log.error("{} 消息发送成功 {}", Thread.currentThread().getName(), message);
                 } else {
-                    log.error("{} 消息发送失败", Thread.currentThread().getName());
+                    log.error("{} 消息发送失败 {}", Thread.currentThread().getName(), message);
                 }
             }
             channel.close();
