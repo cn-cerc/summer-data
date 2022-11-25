@@ -200,10 +200,12 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
 
         if (ServerConfig.enableTaskService()) {
             switch (this.getService()) {
-            case Redis, AliyunMNS, Sqlmq, RabbitMQ:
-//                this.run();
+            case Redis, AliyunMNS, RabbitMQ:
 //                new Thread(this).start(); // 直接开线程
                 pool.submit(this);// 使用线程池
+                break;
+            case Sqlmq:
+                this.run();
                 break;
             default:
                 break;
