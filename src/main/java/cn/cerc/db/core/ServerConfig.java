@@ -57,14 +57,6 @@ public enum ServerConfig implements IConfig {
 
     /**
      * 
-     * @return 商标代码
-     */
-    public static String getAppTrademark() {
-        return config.getString("application.trademark", "summer");
-    }
-
-    /**
-     * 
      * @return 产品版本：develop/beta/main
      */
     public static String getAppVersion() {
