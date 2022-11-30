@@ -50,7 +50,7 @@ public class ZkConfig implements IConfig {
 
     @Override
     public String getProperty(String key, String def) {
-        String result = ZkNode.get().getNodeValue(path(key), def);
+        String result = ZkNode.get().getNodeValue(path(key), () -> def);
         return Utils.isEmpty(result) ? def : result;
     }
 

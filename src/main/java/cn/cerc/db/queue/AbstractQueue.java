@@ -1,5 +1,10 @@
 package cn.cerc.db.queue;
 
+import java.time.Duration;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import org.apache.rocketmq.client.apis.ClientException;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -16,6 +21,10 @@ import cn.cerc.db.zk.ZkConfig;
 
 public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnable {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
+
+    private static final int MAX_THREAD_SIZE = Runtime.getRuntime().availableProcessors();
+    public static final ExecutorService pool = Executors.newFixedThreadPool(MAX_THREAD_SIZE);
+
     private static ZkConfig config;
     private boolean pushMode = false; // 默认为拉模式
     private QueueServiceEnum service;
@@ -165,10 +174,16 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     public void defaultCheck() {
         if (this.isPushMode())
             return;
+
         if (ServerConfig.enableTaskService()) {
             switch (this.getService()) {
-            case Redis, AliyunMNS, Sqlmq, RabbitMQ:
+            case Redis, AliyunMNS, RabbitMQ:
+//                new Thread(this).start(); // 直接开线程
+                pool.submit(this);// 使用线程池
+                break;
+            case Sqlmq:
                 this.run();
+                break;
             default:
                 break;
             }

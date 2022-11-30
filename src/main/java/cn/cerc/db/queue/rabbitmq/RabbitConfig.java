@@ -14,11 +14,11 @@ public class RabbitConfig {
     }
 
     public String getUsername() {
-        return ZkNode.get().getString(Root + "/username", "");
+        return ZkNode.get().getString(Root + "/username", "admin");
     }
 
     public String getPassword() {
-        return ZkNode.get().getString(Root + "/password", "");
+        return ZkNode.get().getString(Root + "/password", "admin");
     }
 
 }
