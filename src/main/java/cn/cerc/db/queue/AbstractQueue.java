@@ -1,10 +1,8 @@
 package cn.cerc.db.queue;
 
-import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.rocketmq.client.apis.ClientException;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -28,7 +26,6 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     private static ZkConfig config;
     private boolean pushMode = false; // 默认为拉模式
     private QueueServiceEnum service;
-    private boolean initTopic;
     private long delayTime = 0L;
     private String industry;
     private String order;
@@ -74,7 +71,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         return this.delayTime;
     }
 
-    public void startService(QueueConsumer consumer) {
+    public void startService() {
         // 通知ZooKeeper
         try {
             ZkConfig host = new ZkConfig(String.format("/app/%s", ServerConfig.getAppName()));
@@ -94,12 +91,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             return;
         }
         config().setTempNode(this.getClass().getSimpleName(), "running");
-
         log.info("注册消息服务：{} from {}", this.getId(), this.getService().name());
-        if (this.getService() == QueueServiceEnum.RocketMQ) {
-            initTopic();
-            consumer.addConsumer(this.getTopic(), this.getTag(), this);
-        }
     }
 
     @Override
@@ -130,18 +122,6 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             }
         case AliyunMNS:
             return MnsServer.getQueue(this.getId()).push(data);
-        case RocketMQ:
-            this.initTopic();
-            try {
-                var producer = new QueueProducer(getTopic(), getTag());
-                var messageId = producer.append(data, Duration.ofSeconds(getDelayTime()));
-                log.info("发送消息成功  {} {} {}", getTopic(), getTag(), messageId);
-                return messageId;
-            } catch (ClientException e) {
-                log.error(e.getMessage());
-                e.printStackTrace();
-                return null;
-            }
         case Sqlmq:
             return SqlmqServer.getQueue(this.getId()).push(data, this.order);
         case RabbitMQ:
@@ -149,13 +129,6 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         default:
             return null;
         }
-    }
-
-    private void initTopic() {
-        if (this.initTopic)
-            return;
-        QueueServer.createTopic(this.getTopic(), this.getDelayTime() > 0);
-        this.initTopic = true;
     }
 
     @Override
