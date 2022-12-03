@@ -20,8 +20,7 @@ import cn.cerc.db.zk.ZkConfig;
 public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnable {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
 
-    private static final int MAX_THREAD_SIZE = Runtime.getRuntime().availableProcessors();
-    public static final ExecutorService pool = Executors.newFixedThreadPool(MAX_THREAD_SIZE);
+    public static final ExecutorService pool = Executors.newFixedThreadPool(2);
 
     private static ZkConfig config;
     private boolean pushMode = false; // 默认为拉模式

@@ -85,8 +85,7 @@ public class ZkServer implements AutoCloseable, Watcher {
                 cdl.await();
                 Thread.sleep(300);
             } catch (InterruptedException e) {
-                log.error(e.getMessage());
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
             }
         }
     }
@@ -110,8 +109,7 @@ public class ZkServer implements AutoCloseable, Watcher {
             // 参数：1，节点路径； 2，要存储的数据； 3，节点的权限； 4，节点的类型
             return client.create(path, value.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, createMode);
         } catch (KeeperException | InterruptedException e) {
-            log.error(e.getMessage());
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return null;
         }
     }
@@ -131,8 +129,7 @@ public class ZkServer implements AutoCloseable, Watcher {
             } else
                 return false;
         } catch (KeeperException | InterruptedException e) {
-            log.error(e.getMessage());
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return false;
         }
     }
@@ -168,8 +165,7 @@ public class ZkServer implements AutoCloseable, Watcher {
         try {
             return client.getChildren(node, false);
         } catch (KeeperException | InterruptedException e) {
-            log.error(e.getMessage());
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return List.of();
         }
     }
@@ -189,8 +185,7 @@ public class ZkServer implements AutoCloseable, Watcher {
                 return null;
             }
         } catch (KeeperException | InterruptedException | UnsupportedEncodingException e) {
-            log.error(e.getMessage());
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return null;
         }
     }
