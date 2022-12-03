@@ -1,13 +1,8 @@
 package cn.cerc.db.queue;
 
-import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
-import org.apache.rocketmq.client.apis.ClientException;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -25,14 +20,11 @@ import cn.cerc.db.zk.ZkConfig;
 public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnable {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
 
-    private static final int MAX_THREAD_SIZE = Runtime.getRuntime().availableProcessors();
-    public static final ExecutorService pool = Executors.newFixedThreadPool(MAX_THREAD_SIZE);
-    public static final Map<String, Future<?>> items = new ConcurrentHashMap<>();// 正在执行任务的线程列表
+    public static final ExecutorService pool = Executors.newFixedThreadPool(2);
 
     private static ZkConfig config;
     private boolean pushMode = false; // 默认为拉模式
     private QueueServiceEnum service;
-    private boolean initTopic;
     private long delayTime = 0L;
     private String industry;
     private String order;
@@ -78,7 +70,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         return this.delayTime;
     }
 
-    public void startService(QueueConsumer consumer) {
+    public void startService() {
         // 通知ZooKeeper
         try {
             ZkConfig host = new ZkConfig(String.format("/app/%s", ServerConfig.getAppName()));
@@ -98,12 +90,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             return;
         }
         config().setTempNode(this.getClass().getSimpleName(), "running");
-
         log.info("注册消息服务：{} from {}", this.getId(), this.getService().name());
-        if (this.getService() == QueueServiceEnum.RocketMQ) {
-            initTopic();
-            consumer.addConsumer(this.getTopic(), this.getTag(), this);
-        }
     }
 
     @Override
@@ -134,18 +121,6 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             }
         case AliyunMNS:
             return MnsServer.getQueue(this.getId()).push(data);
-        case RocketMQ:
-            this.initTopic();
-            try {
-                var producer = new QueueProducer(getTopic(), getTag());
-                var messageId = producer.append(data, Duration.ofSeconds(getDelayTime()));
-                log.info("发送消息成功  {} {} {}", getTopic(), getTag(), messageId);
-                return messageId;
-            } catch (ClientException e) {
-                log.error(e.getMessage());
-                e.printStackTrace();
-                return null;
-            }
         case Sqlmq:
             return SqlmqServer.getQueue(this.getId()).push(data, this.order);
         case RabbitMQ:
@@ -153,13 +128,6 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         default:
             return null;
         }
-    }
-
-    private void initTopic() {
-        if (this.initTopic)
-            return;
-        QueueServer.createTopic(this.getTopic(), this.getDelayTime() > 0);
-        this.initTopic = true;
     }
 
     @Override
@@ -202,23 +170,14 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         if (this.isPushMode())
             return;
 
-        int before = items.size();
-        items.values().removeIf(Future::isDone);
-        if (items.size() < before)
-            log.info("清理之前 {} 清理之后 {}", before, items.size());
-
         if (ServerConfig.enableTaskService()) {
             switch (this.getService()) {
-            case Redis, AliyunMNS, Sqlmq, RabbitMQ:
-//                this.run();
+            case Redis, AliyunMNS, RabbitMQ:
 //                new Thread(this).start(); // 直接开线程
-                if (items.containsKey(this.getClass().getSimpleName())) {
-                    log.warn("{} 当前类有任务正在执行中，等候下一轮排队吧", this.getClass().getSimpleName());
-                    break;
-                }
-
-                Future<?> future = pool.submit(this);// 使用线程池
-                items.put(this.getClass().getSimpleName(), future);
+                pool.submit(this);// 使用线程池
+                break;
+            case Sqlmq:
+                this.run();
                 break;
             default:
                 break;

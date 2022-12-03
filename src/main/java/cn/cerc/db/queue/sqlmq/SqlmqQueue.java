@@ -44,7 +44,7 @@ public class SqlmqQueue {
         query.add("where queue_='%s'", this.queue);
         query.add("and ((status_=%d)", StatusEnum.Waiting.ordinal());
         query.add("or (status_=%d and show_time_ <= '%s'))", StatusEnum.Next.ordinal(), new Datetime());
-        query.setMaximum(10);
+        query.setMaximum(1);
         query.open();
         try (Redis redis = new Redis()) {
             for (var row : query) {
