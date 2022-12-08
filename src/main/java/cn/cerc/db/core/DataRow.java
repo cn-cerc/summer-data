@@ -6,7 +6,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -117,8 +116,6 @@ public class DataRow implements Serializable, IRecord {
         Object newValue = value;
         if (value instanceof Datetime) // 将Datetime转化为Date存储
             newValue = ((Datetime) value).asBaseDate();
-        else if (value instanceof Timestamp)
-            newValue = new Datetime((Date) value);
         else if (value instanceof Optional<?>)
             newValue = ((Optional<?>) value).orElse(null);
         else if (value != null && value.getClass().isEnum())
