@@ -39,7 +39,8 @@ public class MnsServer implements IConnection {
             return client;
 
         if (account == null)
-            account = new CloudAccount(AliyunUserConfig.accessKeyId(), AliyunUserConfig.accessKeySecret(), AliyunUserConfig.accountEndpoint());
+            account = new CloudAccount(AliyunUserConfig.accessKeyId(), AliyunUserConfig.accessKeySecret(),
+                    AliyunUserConfig.accountEndpoint());
 
         if (client == null)
             client = account.getMNSClient();
@@ -161,8 +162,11 @@ public class MnsServer implements IConnection {
             CloudQueue item;
             if (instance.exists(key))
                 item = instance.getClient().getQueueRef(key);
-            else
-                item = instance.createQueue(key);
+            else {
+                log.error("mns queue {} uncreate", key);
+                throw new RuntimeException("不支持自动创建阿里云MNS消息队列");
+            }
+//                item = instance.createQueue(key);
             result = new MnsQueue(item);
             items.put(key, result);
         }
