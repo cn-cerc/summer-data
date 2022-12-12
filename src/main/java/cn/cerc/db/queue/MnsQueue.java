@@ -29,7 +29,7 @@ public class MnsQueue {
         try {
             message = client.popMessage();
         } catch (ServiceException | ClientException e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
         }
         if (message == null)
             return null;
