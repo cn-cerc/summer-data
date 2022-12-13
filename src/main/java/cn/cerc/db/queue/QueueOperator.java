@@ -22,4 +22,5 @@ public class QueueOperator implements NosqlOperator {
     public boolean delete(DataRow record) {
         throw new RuntimeException(res.getString(3, "消息队列服务，不支持删除操作"));
     }
+
 }

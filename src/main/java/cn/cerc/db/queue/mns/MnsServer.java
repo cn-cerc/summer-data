@@ -1,4 +1,4 @@
-package cn.cerc.db.queue;
+package cn.cerc.db.queue.mns;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

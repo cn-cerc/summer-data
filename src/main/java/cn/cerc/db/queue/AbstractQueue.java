@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.queue.mns.MnsServer;
 import cn.cerc.db.queue.rabbitmq.RabbitServer;
 import cn.cerc.db.queue.sqlmq.SqlmqServer;
 import cn.cerc.db.redis.Redis;
