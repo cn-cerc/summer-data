@@ -11,7 +11,7 @@ public class RabbitConsumerTest {
     public static void main(String[] args) {
 //        new ConsumeThread().run();
         for (int i = 0; i < MAX_THREAD_SIZE; i++) {
-            pool.submit(new ConsumeThread());
+            pool.submit(new ConsumePushThread());
         }
     }
 

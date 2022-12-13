@@ -14,9 +14,9 @@ import com.rabbitmq.client.Envelope;
 
 import cn.cerc.db.queue.rabbitmq.config.RabbitTestConfig;
 
-public class ConsumeThread implements Runnable {
+public class ConsumePushThread implements Runnable {
 
-    private static final Logger log = LoggerFactory.getLogger(ConsumeThread.class);
+    private static final Logger log = LoggerFactory.getLogger(ConsumePushThread.class);
 
     @Override
     public void run() {
@@ -29,7 +29,7 @@ public class ConsumeThread implements Runnable {
             Channel channel = connection.createChannel();
             channel.addShutdownListener(cause -> log.info("{} Channel {} Closed.", Thread.currentThread().getName(),
                     channel.getChannelNumber()));
-
+            
             // 消费者预取的消费数量
             channel.basicQos(1);
             channel.queueDeclare(RabbitTestConfig.QUEUE_NAME, true, false, false, null);
