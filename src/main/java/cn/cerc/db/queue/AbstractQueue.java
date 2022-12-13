@@ -168,8 +168,10 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
      */
     @Scheduled(initialDelay = 30000, fixedRate = 3000)
     public void defaultCheck() {
-        if (this.isPushMode())
+        if (this.isPushMode()) {
+            log.warn("current queue mode is push {}", this.isPushMode());
             return;
+        }
 
         if (ServerConfig.enableTaskService()) {
             switch (this.getService()) {
@@ -179,6 +181,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
                 pool.submit(this);// 使用线程池
                 break;
             case Sqlmq:
+                log.info("{} sqlmq add job {}", Thread.currentThread(), this.getClass().getSimpleName());
                 this.run();
                 break;
             default:
