@@ -12,12 +12,12 @@ public class SqlmqConfig implements MysqlConfigImpl {
 
     @Override
     public String getUsername() {
-        return ZkNode.get().getString(getKey("username"), "admin");
+        return ZkNode.get().getString(getKey("username"), "sqlmq_user");
     }
 
     @Override
     public String getPassword() {
-        return ZkNode.get().getString(getKey("password"), "admin");
+        return ZkNode.get().getString(getKey("password"), "sqlmq_password");
     }
 
     @Override
