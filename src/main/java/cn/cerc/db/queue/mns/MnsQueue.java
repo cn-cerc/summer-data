@@ -1,4 +1,4 @@
-package cn.cerc.db.queue;
+package cn.cerc.db.queue.mns;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +9,7 @@ import com.aliyun.mns.common.ServiceException;
 import com.aliyun.mns.model.Message;
 
 import cn.cerc.db.core.Variant;
+import cn.cerc.db.queue.OnStringMessage;
 
 public class MnsQueue {
     private static final Logger log = LoggerFactory.getLogger(MnsQueue.class);

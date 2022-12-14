@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,20 +15,19 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
-import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.queue.AbstractQueue;
 import cn.cerc.db.queue.QueueServiceEnum;
+import cn.cerc.db.zk.ZkNode;
 
 @Component
 public class RabbitServer implements AutoCloseable, ApplicationListener<ApplicationContextEvent> {
     private static final Logger log = LoggerFactory.getLogger(RabbitServer.class);
-    private static ConcurrentHashMap<String, RabbitQueue> items = new ConcurrentHashMap<>();
     private static RabbitServer instance;
-    private List<AbstractQueue> startItems = new ArrayList<>();
+    private List<RabbitQueue> startItems = new ArrayList<>();
     private Connection connection;
 
     public synchronized static RabbitServer get() {
@@ -40,37 +39,25 @@ public class RabbitServer implements AutoCloseable, ApplicationListener<Applicat
     // 创建连接
     private RabbitServer() {
         try {
-            RabbitConfig config = new RabbitConfig();
+            final String prefix = String.format("%s/%s/rabbitmq/", ServerConfig.getAppProduct(), ServerConfig.getAppVersion());
+
+            var host = ZkNode.get().getNodeValue(prefix + "host", () -> "127.0.0.1");
+            var port = ZkNode.get().getNodeValue(prefix + "port", () -> "5672");
+            var username = ZkNode.get().getNodeValue(prefix + "username", () -> "admin");
+            var password = ZkNode.get().getNodeValue(prefix + "password", () -> "admin");
+
             // 创建连接工厂
-            ConnectionFactory connectionFactory = new ConnectionFactory();
-            connectionFactory.setHost(config.getHost());
-            connectionFactory.setPort(config.getPort());
-            // 设置连接哪个虚拟主机
-//            connectionFactory.setVirtualHost("/test-1");
-            connectionFactory.setUsername(config.getUsername());
-            connectionFactory.setPassword(config.getPassword());
-            this.connection = connectionFactory.newConnection();
-        } catch (Exception e) {
+            ConnectionFactory factory = new ConnectionFactory();
+            factory.setHost(host);
+            factory.setPort(Integer.parseInt(port));
+            factory.setUsername(username);
+            factory.setPassword(password);
+
+            this.connection = factory.newConnection();
+            this.connection.addShutdownListener(cause -> log.info("RabbitMQ connection closed."));
+        } catch (IOException | TimeoutException e) {
             log.error(e.getMessage(), e);
         }
-    }
-
-    public static Channel createChannel() {
-        try {
-            return get().connection.createChannel();
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
-            return null;
-        }
-    }
-
-    public synchronized static RabbitQueue getQueue(String queueId) {
-        RabbitQueue result = items.get(queueId);
-        if (result == null) {
-            result = new RabbitQueue(queueId);
-            items.put(queueId, result);
-        }
-        return result;
     }
 
     @Override
@@ -95,9 +82,10 @@ public class RabbitServer implements AutoCloseable, ApplicationListener<Applicat
                     return;
                 }
                 Map<String, AbstractQueue> queues = context.getBeansOfType(AbstractQueue.class);
-                queues.forEach((name, queue) -> {
-                    if (queue.isPushMode() && queue.getService() == QueueServiceEnum.RabbitMQ) {
-                        RabbitServer.getQueue(queue.getId()).watch(queue);
+                queues.forEach((queueId, bean) -> {
+                    if (bean.isPushMode() && bean.getService() == QueueServiceEnum.RabbitMQ) {
+                        var queue = new RabbitQueue(bean.getId());
+                        queue.watch(bean);
                         startItems.add(queue);
                     }
                 });
@@ -105,10 +93,14 @@ public class RabbitServer implements AutoCloseable, ApplicationListener<Applicat
             }
         } else if (event instanceof ContextClosedEvent) {
             for (var queue : startItems)
-                RabbitServer.getQueue(queue.getId()).watch(null);
+                queue.watch(null);
             log.info("关闭注册的推送消息数量：" + startItems.size());
             startItems.clear();
         }
+    }
+
+    public Connection getConnection() {
+        return this.connection;
     }
 
 }
