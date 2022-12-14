@@ -52,7 +52,7 @@ public class MysqlConfig {
     }
 
     public String site() {
-        String site = config.getProperty("rds.site", "127.0.0.1:3306");
+        String site = config.getProperty("rds.site", "mysql.local.top:3306");
         if (!Utils.isEmpty(slaveFlag))
             site = config.getProperty("rds.site" + slaveFlag, site);
         return node.getString(getNodePath("site"), site);

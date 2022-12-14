@@ -176,10 +176,8 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
      */
     @Scheduled(initialDelay = 30000, fixedRate = 3000)
     public void defaultCheck() {
-        if (this.isPushMode()) {
-            log.warn("current queue mode is push {}", this.isPushMode());
+        if (this.isPushMode())
             return;
-        }
 
         if (ServerConfig.enableTaskService()) {
             switch (this.getService()) {

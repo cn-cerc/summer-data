@@ -31,7 +31,7 @@ public class RabbitQueue implements AutoCloseable {
             try {
                 channel = RabbitServer.get().getConnection().createChannel();
                 channel.addShutdownListener(
-                        cause -> log.info("RabbitMQ channel {} closed.", channel.getChannelNumber()));
+                        cause -> log.debug("RabbitMQ channel {} closed.", channel.getChannelNumber()));
                 channel.basicQos(this.maximum);
                 channel.queueDeclare(queueId, true, false, false, null);
             } catch (IOException e) {
