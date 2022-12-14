@@ -36,23 +36,20 @@ public class RabbitServer implements AutoCloseable, ApplicationListener<Applicat
         return instance;
     }
 
-    private static final ServerConfig config = ServerConfig.getInstance();
-    private static final String Root = "rabbitmq";
-
     // 创建连接
     private RabbitServer() {
         try {
-            var host = ZkNode.get().getString(Root + "/host", () -> config.getProperty("rabbitmq.host", "127.0.0.1"));
-            var port = ZkNode.get().getInt(Root + "/port", 5672);
-            var username = ZkNode.get()
-                    .getString(Root + "/username", () -> config.getProperty("rabbitmq.username", "admin"));
-            var password = ZkNode.get()
-                    .getString(Root + "/password", () -> config.getProperty("rabbitmq.password", "admin"));
+            final String prefix = String.format("%s/%s/rabbitmq/", ServerConfig.getAppProduct(), ServerConfig.getAppVersion());
+
+            var host = ZkNode.get().getNodeValue(prefix + "host", () -> "127.0.0.1");
+            var port = ZkNode.get().getNodeValue(prefix + "port", () -> "5672");
+            var username = ZkNode.get().getNodeValue(prefix + "username", () -> "admin");
+            var password = ZkNode.get().getNodeValue(prefix + "password", () -> "admin");
 
             // 创建连接工厂
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost(host);
-            factory.setPort(port);
+            factory.setPort(Integer.parseInt(port));
             factory.setUsername(username);
             factory.setPassword(password);
 
