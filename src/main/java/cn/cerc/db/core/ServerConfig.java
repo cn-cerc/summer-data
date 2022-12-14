@@ -33,6 +33,8 @@ public enum ServerConfig implements IConfig {
             return QueueServiceEnum.Redis;
         else if ("aliyunmns".equals(result))
             return QueueServiceEnum.AliyunMNS;
+        else if ("rabbitmq".equals(result))
+            return QueueServiceEnum.RabbitMQ;
         else
             return QueueServiceEnum.Redis;
     }
