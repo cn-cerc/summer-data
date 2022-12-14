@@ -7,17 +7,17 @@ public class SqlmqConfig implements MysqlConfigImpl {
 
     @Override
     public String getHost() {
-        return ZkNode.get().getString(getKey("host"), "127.0.0.1");
+        return ZkNode.get().getString(getKey("host"), "sqlmq.local.top");
     }
 
     @Override
     public String getUsername() {
-        return ZkNode.get().getString(getKey("username"), "");
+        return ZkNode.get().getString(getKey("username"), "admin");
     }
 
     @Override
     public String getPassword() {
-        return ZkNode.get().getString(getKey("password"), "");
+        return ZkNode.get().getString(getKey("password"), "admin");
     }
 
     @Override
