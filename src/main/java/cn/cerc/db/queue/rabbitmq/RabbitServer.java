@@ -1,8 +1,10 @@
 package cn.cerc.db.queue.rabbitmq;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +21,7 @@ import com.rabbitmq.client.ConnectionFactory;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.queue.AbstractQueue;
 import cn.cerc.db.queue.QueueServiceEnum;
+import cn.cerc.db.zk.ZkNode;
 
 @Component
 public class RabbitServer implements AutoCloseable, ApplicationListener<ApplicationContextEvent> {
@@ -33,22 +36,29 @@ public class RabbitServer implements AutoCloseable, ApplicationListener<Applicat
         return instance;
     }
 
+    private static final ServerConfig config = ServerConfig.getInstance();
+    private static final String Root = "rabbitmq";
+
     // 创建连接
     private RabbitServer() {
         try {
-            RabbitConfig config = new RabbitConfig();
-            // 创建连接工厂
-            ConnectionFactory connectionFactory = new ConnectionFactory();
-            connectionFactory.setHost(config.getHost());
-            connectionFactory.setPort(config.getPort());
+            var host = ZkNode.get().getString(Root + "/host", () -> config.getProperty("rabbitmq.host", "127.0.0.1"));
+            var port = ZkNode.get().getInt(Root + "/port", 5672);
+            var username = ZkNode.get()
+                    .getString(Root + "/username", () -> config.getProperty("rabbitmq.username", "admin"));
+            var password = ZkNode.get()
+                    .getString(Root + "/password", () -> config.getProperty("rabbitmq.password", "admin"));
 
-            // 设置连接哪个虚拟主机
-//            connectionFactory.setVirtualHost("/test-1");
-            connectionFactory.setUsername(config.getUsername());
-            connectionFactory.setPassword(config.getPassword());
-            this.connection = connectionFactory.newConnection();
-            connection.addShutdownListener(cause -> log.info("RabbitMQ connection closed."));
-        } catch (Exception e) {
+            // 创建连接工厂
+            ConnectionFactory factory = new ConnectionFactory();
+            factory.setHost(host);
+            factory.setPort(port);
+            factory.setUsername(username);
+            factory.setPassword(password);
+
+            this.connection = factory.newConnection();
+            this.connection.addShutdownListener(cause -> log.info("RabbitMQ connection closed."));
+        } catch (IOException | TimeoutException e) {
             log.error(e.getMessage(), e);
         }
     }
