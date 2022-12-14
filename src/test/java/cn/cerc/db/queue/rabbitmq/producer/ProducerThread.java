@@ -50,7 +50,7 @@ public class ProducerThread implements Runnable {
 
             // 将信道设置为 publisher confirm 模式
             channel.confirmSelect();
-            for (int i = 1; i <= 10000; i++) {
+            for (int i = 1; i <= 100; i++) {
                 // 消息内容
                 String message = String.join("-", Thread.currentThread().getName(),
                         String.valueOf(atomic.incrementAndGet()));
@@ -64,6 +64,7 @@ public class ProducerThread implements Runnable {
             }
             channel.close();
             connection.close();
+            log.info("{} 线程发送完成，当前原子数值 {}", Thread.currentThread().getName(), atomic.get());
         } catch (IOException | TimeoutException | InterruptedException e) {
             e.printStackTrace();
         }
