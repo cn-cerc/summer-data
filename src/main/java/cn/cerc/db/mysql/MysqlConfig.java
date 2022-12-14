@@ -208,7 +208,7 @@ public class MysqlConfig {
             Class.forName(MysqlConfig.JdbcDriver);
             return DriverManager.getConnection(jdbcUrl, username, password);
         } catch (SQLException | ClassNotFoundException e) {
-            log.error(e.getMessage(), e);
+            log.error("mysql connection {} database {}", jdbcUrl, database);
             throw new RuntimeException(e);
         }
 

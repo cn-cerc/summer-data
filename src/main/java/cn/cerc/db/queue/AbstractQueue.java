@@ -21,7 +21,8 @@ import cn.cerc.db.zk.ZkConfig;
 public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnable {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
 
-    public static final ExecutorService pool = Executors.newFixedThreadPool(2);
+    // 创建一个缓存线程池，在必要的时候在创建线程，若线程空闲60秒则终止该线程
+    public static final ExecutorService pool = Executors.newCachedThreadPool();
 
     private static ZkConfig config;
     private boolean pushMode = false; // 默认为拉模式
@@ -168,16 +169,19 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
      */
     @Scheduled(initialDelay = 30000, fixedRate = 3000)
     public void defaultCheck() {
-        if (this.isPushMode())
+        if (this.isPushMode()) {
+            log.warn("current queue mode is push {}", this.isPushMode());
             return;
+        }
 
         if (ServerConfig.enableTaskService()) {
             switch (this.getService()) {
             case Redis, AliyunMNS, RabbitMQ:
-//                new Thread(this).start(); // 直接开线程
+                log.debug("thread pool add {} job {}", Thread.currentThread(), this.getClass().getSimpleName());
                 pool.submit(this);// 使用线程池
                 break;
             case Sqlmq:
+                log.debug("{} sqlmq add job {}", Thread.currentThread(), this.getClass().getSimpleName());
                 this.run();
                 break;
             default:
