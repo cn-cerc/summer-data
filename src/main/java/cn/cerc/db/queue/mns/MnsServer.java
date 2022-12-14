@@ -163,10 +163,10 @@ public class MnsServer implements IConnection {
             if (instance.exists(key))
                 item = instance.getClient().getQueueRef(key);
             else {
-                log.error("mns queue {} uncreate", key);
-                throw new RuntimeException("不支持自动创建阿里云MNS消息队列");
+//                log.error("mns queue {} uncreate", key);
+//                throw new RuntimeException("不支持自动创建阿里云MNS消息队列");
+                item = instance.createQueue(key);
             }
-//                item = instance.createQueue(key);
             result = new MnsQueue(item);
             items.put(key, result);
         }
