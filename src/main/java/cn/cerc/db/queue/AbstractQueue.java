@@ -33,7 +33,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
 
     public AbstractQueue() {
         super();
-        // 配置消息服务方式：redis/mns/rocketmq
+        // 配置消息服务方式：redis/mns/rabbitMQ
         this.setService(ServerConfig.getQueueService());
         // 配置产业代码：csp/fpl/obm/oem/odm
         this.setIndustry(ServerConfig.getAppIndustry());

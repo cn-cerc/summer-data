@@ -19,6 +19,7 @@ public class ClassConfig implements IConfig {
     private static final Logger log = LoggerFactory.getLogger(ClassConfig.class);
     private static final Properties localConfig = new Properties();
     private static final Properties applicationConfig = new Properties();
+    private static final Properties commonConfig = new Properties();
     private static final Map<String, Properties> buffer = new ConcurrentHashMap<>();
     private final String classPath;
     private Properties config;
@@ -53,6 +54,20 @@ public class ClassConfig implements IConfig {
         } catch (IOException e) {
             log.error("Failed to load the settings from the file: {}", appFile);
         }
+
+        // 加载项目文件配置
+        String appCommonFile = "/application-common.properties";
+        try {
+            InputStream input = ClassConfig.class.getResourceAsStream(appCommonFile);
+            if (input != null) {
+                commonConfig.load(new InputStreamReader(input, StandardCharsets.UTF_8));
+                log.info("{} is loaded.", appCommonFile);
+            } else {
+                log.warn("{} doesn't exist.", appCommonFile);
+            }
+        } catch (IOException e) {
+            log.error("Failed to load the settings from the file: {}", appCommonFile);
+        }
     }
 
     public ClassConfig() {
@@ -61,6 +76,7 @@ public class ClassConfig implements IConfig {
         config = new Properties();
         config.putAll(applicationConfig);
         config.putAll(localConfig);
+        config.putAll(commonConfig);
     }
 
     public ClassConfig(Class<?> owner, String packageName) {
@@ -71,6 +87,7 @@ public class ClassConfig implements IConfig {
         if (packageName == null) {
             config.putAll(applicationConfig);
             config.putAll(localConfig);
+            config.putAll(commonConfig);
             return;
         }
 
@@ -97,6 +114,7 @@ public class ClassConfig implements IConfig {
         config.putAll(packageConfig);
         config.putAll(applicationConfig);
         config.putAll(localConfig);
+        config.putAll(commonConfig);
     }
 
     /**
