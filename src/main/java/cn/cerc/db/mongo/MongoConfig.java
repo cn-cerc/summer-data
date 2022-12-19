@@ -29,7 +29,7 @@ public class MongoConfig {
     private static final IConfig config = ServerConfig.getInstance();
     private static volatile MongoClient client;
 
-    public MongoClient getClient() {
+    public static MongoClient getClient() {
         if (client == null) {
             synchronized (MongoConfig.class) {
                 final String prefix = String.format("/%s/%s/mongodb/", ServerConfig.getAppProduct(),ServerConfig.getAppVersion());
@@ -75,7 +75,7 @@ public class MongoConfig {
         return client;
     }
 
-    public String databaseName() {
+    public static String databaseName() {
          String prefix = String.format("/%s/%s/mongodb/", ServerConfig.getAppProduct(),ServerConfig.getAppVersion());
         String databaseName = ZkNode.get()
                 .getNodeValue(prefix + "database", () -> config.getProperty(MongoConfig.mongodb_database));

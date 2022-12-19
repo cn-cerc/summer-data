@@ -14,9 +14,8 @@ public class MongoUtils {
     private MongoDatabase database;
 
     public MongoUtils() {
-        MongoConfig config = new MongoConfig();
-        MongoClient client = config.getClient();
-        database = client.getDatabase(config.databaseName());
+        MongoClient client = MongoConfig.getClient();
+        database = client.getDatabase(MongoConfig.databaseName());
     }
 
     // 获取Collection by name
