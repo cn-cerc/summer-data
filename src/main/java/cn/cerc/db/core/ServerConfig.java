@@ -24,7 +24,7 @@ public enum ServerConfig implements IConfig {
 
     /**
      * 
-     * @return 返回消息服务的类型， Redis/RocketMQ
+     * @return 返回消息服务的类型， Redis/RabbitMQ
      */
     public static QueueServiceEnum getQueueService() {
         String value = config.getString("queue.service", "");
