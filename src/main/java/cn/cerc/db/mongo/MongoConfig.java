@@ -79,7 +79,7 @@ public class MongoConfig {
     }
 
     public String databaseName() {
-        final String prefix = String.format("/%s/%s/mongodb", ServerConfig.getAppProduct(),ServerConfig.getAppVersion());
+         String prefix = String.format("/%s/%s/mongodb", ServerConfig.getAppProduct(),ServerConfig.getAppVersion());
         String databaseName = ZkNode.get()
                 .getNodeValue(prefix + "dbname", () -> config.getProperty(MongoConfig.mongodb_database));
         if (Utils.isEmpty(databaseName))
