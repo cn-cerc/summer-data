@@ -54,9 +54,10 @@ public class MongoQuery extends DataSet implements IHandle {
 
     public MongoQuery open() {
         this.setStorage(true);
+        MongoConfig config = new MongoConfig();
         // 查找业务ID对应的数据
-        MongoClient client = MongoConfig.getClient();
-        MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
+        MongoClient client = config.getClient();
+        MongoDatabase database = client.getDatabase(config.databaseName());
         MongoCollection<Document> collection = database.getCollection(collectionName());
         // 增加查询条件
         BasicDBObject filter = decodeWhere(this.sql().text());
@@ -229,9 +230,10 @@ public class MongoQuery extends DataSet implements IHandle {
 
     @Override
     protected final void insertStorage(DataRow record) {
+        MongoConfig config = new MongoConfig();
         String collectionName = collectionName();
-        MongoClient client = MongoConfig.getClient();
-        MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
+        MongoClient client = config.getClient();
+        MongoDatabase database = client.getDatabase(config.databaseName());
         MongoCollection<Document> collection = database.getCollection(collectionName);
         Document doc = getValue(record);
         collection.insertOne(doc);
@@ -239,8 +241,9 @@ public class MongoQuery extends DataSet implements IHandle {
 
     @Override
     protected final void updateStorage(DataRow record) {
-        MongoClient client = MongoConfig.getClient();
-        MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
+        MongoConfig config = new MongoConfig();
+        MongoClient client = config.getClient();
+        MongoDatabase database = client.getDatabase(config.databaseName());
         MongoCollection<Document> collection = database.getCollection(collectionName());
         Document doc = getValue(record);
         String uid = record.getString("_id");
@@ -252,8 +255,9 @@ public class MongoQuery extends DataSet implements IHandle {
 
     @Override
     protected final void deleteStorage(DataRow record) {
-        MongoClient client = MongoConfig.getClient();
-        MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
+        MongoConfig config = new MongoConfig();
+        MongoClient client = config.getClient();
+        MongoDatabase database = client.getDatabase(config.databaseName());
         MongoCollection<Document> collection = database.getCollection(collectionName());
 
         String uid = record.getString("_id");
