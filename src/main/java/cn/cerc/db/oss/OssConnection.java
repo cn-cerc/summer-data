@@ -22,6 +22,7 @@ import cn.cerc.db.core.IConfig;
 import cn.cerc.db.core.IConnection;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
+import cn.cerc.db.zk.ZkNode;
 
 @Component
 public class OssConnection implements IConnection {
@@ -44,24 +45,31 @@ public class OssConnection implements IConnection {
     public static final String sessionId = "ossSession";
     private static final IConfig config = ServerConfig.getInstance();
     private static volatile OSS client;
+    final String prefix = String.format("/%s/%s/oss/", ServerConfig.getAppProduct(), ServerConfig.getAppVersion());
 
     @Override
     public OSS getClient() {
         if (client == null) {
             synchronized (OssConnection.class) {
                 if (client == null) {
+
+                    String endpoint = ZkNode.get()
+                            .getNodeValue(prefix + "endpoint", () -> config.getProperty(OssConnection.oss_endpoint));
                     // 如果连接被意外断开了,那么重新建立连接
-                    String endpoint = config.getProperty(OssConnection.oss_endpoint);
                     if (Utils.isEmpty(endpoint))
                         throw new RuntimeException(
                                 String.format("the property %s is empty", OssConnection.oss_endpoint));
 
-                    String accessKeyId = config.getProperty(OssConnection.oss_accessKeyId);
+                    String accessKeyId = ZkNode.get()
+                            .getNodeValue(prefix + "accessKeyId",
+                                    () -> config.getProperty(OssConnection.oss_accessKeyId));
                     if (Utils.isEmpty(accessKeyId))
                         throw new RuntimeException(
                                 String.format("the property %s is empty", OssConnection.oss_accessKeyId));
 
-                    String accessKeySecret = config.getProperty(OssConnection.oss_accessKeySecret);
+                    String accessKeySecret = ZkNode.get()
+                            .getNodeValue(prefix + "accessKeySecret",
+                                    () -> config.getProperty(OssConnection.oss_accessKeySecret));
                     if (Utils.isEmpty(accessKeySecret))
                         throw new RuntimeException(
                                 String.format("the property %s is empty", OssConnection.oss_accessKeySecret));
@@ -187,13 +195,13 @@ public class OssConnection implements IConnection {
 
     public String getBucket() {
         if (Utils.isEmpty(bucket))
-            bucket = config.getProperty(OssConnection.oss_bucket);
+            bucket = ZkNode.get().getNodeValue(prefix + "bucket", () -> config.getProperty(OssConnection.oss_bucket));
         return bucket;
     }
 
     public String getSite() {
         if (Utils.isEmpty(site))
-            site = config.getProperty(OssConnection.oss_site);
+            site = ZkNode.get().getNodeValue(prefix + "site", () -> config.getProperty(OssConnection.oss_site));
         return site;
     }
 
