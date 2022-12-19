@@ -32,7 +32,7 @@ public class MongoConfig {
     public MongoClient getClient() {
         if (client == null) {
             synchronized (MongoConfig.class) {
-                final String prefix = String.format("/%s/%s/mongodb", ServerConfig.getAppProduct(),ServerConfig.getAppVersion());
+                final String prefix = String.format("/%s/%s/mongodb/", ServerConfig.getAppProduct(),ServerConfig.getAppVersion());
                 var username = ZkNode.get()
                         .getNodeValue(prefix + "username", () -> config.getProperty(MongoConfig.mongodb_username));
                 var password = ZkNode.get()
@@ -47,9 +47,6 @@ public class MongoConfig {
                         .getNodeValue(prefix + "replicaset", () -> config.getProperty(MongoConfig.mgdb_replicaset));
                 var maxpoolsize = ZkNode.get()
                         .getNodeValue(prefix + "maxpoolsize", () -> config.getProperty(MongoConfig.mgdb_maxpoolsize));
-                var connectTimeoutMS = ZkNode.get().getNodeValue(prefix + "connectTimeoutMS", () -> "3000");
-                var serverSelectionTimeoutMS = ZkNode.get()
-                        .getNodeValue(prefix + "serverSelectionTimeoutMS", () -> "3000");
 
                 StringBuilder builder = new StringBuilder();
                 builder.append("mongodb://");
@@ -67,8 +64,8 @@ public class MongoConfig {
                     builder.append("?").append("replicaSet=").append(replicaset);
                     // poolsize
                     builder.append("&").append("maxPoolSize=").append(maxpoolsize);
-                    builder.append("&").append("connectTimeoutMS=").append(connectTimeoutMS);
-                    builder.append("&").append("serverSelectionTimeoutMS=").append(serverSelectionTimeoutMS);
+                    builder.append("&").append("connectTimeoutMS=").append("3000");
+                    builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
                     log.info("Connect to the MongoDB sharded cluster {}", builder);
                 }
                 ConnectionString connectionString = new ConnectionString(builder.toString());
@@ -79,9 +76,9 @@ public class MongoConfig {
     }
 
     public String databaseName() {
-         String prefix = String.format("/%s/%s/mongodb", ServerConfig.getAppProduct(),ServerConfig.getAppVersion());
+         String prefix = String.format("/%s/%s/mongodb/", ServerConfig.getAppProduct(),ServerConfig.getAppVersion());
         String databaseName = ZkNode.get()
-                .getNodeValue(prefix + "dbname", () -> config.getProperty(MongoConfig.mongodb_database));
+                .getNodeValue(prefix + "database", () -> config.getProperty(MongoConfig.mongodb_database));
         if (Utils.isEmpty(databaseName))
             throw new RuntimeException("MongoDB database name is empty.");
         return databaseName;
