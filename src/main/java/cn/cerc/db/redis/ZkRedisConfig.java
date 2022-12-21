@@ -25,7 +25,7 @@ public class ZkRedisConfig {
     }
 
     public String password() {
-        return node.getString(key("password"), "password");
+        return node.getString(key("password"), "");
     }
 
     public int timeout() {
