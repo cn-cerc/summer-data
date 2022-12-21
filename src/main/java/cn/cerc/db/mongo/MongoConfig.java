@@ -32,7 +32,8 @@ public class MongoConfig {
     public static MongoClient getClient() {
         if (client == null) {
             synchronized (MongoConfig.class) {
-                final String prefix = String.format("/%s/%s/mongodb/", ServerConfig.getAppProduct(),ServerConfig.getAppVersion());
+                final String prefix = String.format("/%s/%s/mongodb/", ServerConfig.getAppProduct(),
+                        ServerConfig.getAppVersion());
                 var username = ZkNode.get()
                         .getNodeValue(prefix + "username", () -> config.getProperty(MongoConfig.mongodb_username));
                 var password = ZkNode.get()
@@ -76,7 +77,7 @@ public class MongoConfig {
     }
 
     public static String databaseName() {
-         String prefix = String.format("/%s/%s/mongodb/", ServerConfig.getAppProduct(),ServerConfig.getAppVersion());
+        String prefix = String.format("/%s/%s/mongodb/", ServerConfig.getAppProduct(), ServerConfig.getAppVersion());
         String databaseName = ZkNode.get()
                 .getNodeValue(prefix + "database", () -> config.getProperty(MongoConfig.mongodb_database));
         if (Utils.isEmpty(databaseName))
