@@ -44,8 +44,8 @@ public class MongoConfig {
                         .getNodeValue(prefix + "database", () -> config.getProperty(MongoConfig.mongodb_database));
                 var enablerep = ZkNode.get()
                         .getNodeValue(prefix + "enablerep", () -> config.getProperty(MongoConfig.mgdb_enablerep));
-                var replicaset = ZkNode.get()
-                        .getNodeValue(prefix + "replicaset", () -> config.getProperty(MongoConfig.mgdb_replicaset));
+//                var replicaset = ZkNode.get()
+//                        .getNodeValue(prefix + "replicaset", () -> config.getProperty(MongoConfig.mgdb_replicaset));
                 var maxpoolsize = ZkNode.get()
                         .getNodeValue(prefix + "maxpoolsize", () -> config.getProperty(MongoConfig.mgdb_maxpoolsize));
 
@@ -62,9 +62,9 @@ public class MongoConfig {
 
                 if ("true".equals(enablerep)) {
                     // replacaset
-                    builder.append("?").append("replicaSet=").append(replicaset);
+//                    builder.append("?").append("replicaSet=").append(replicaset);
                     // poolsize
-                    builder.append("&").append("maxPoolSize=").append(maxpoolsize);
+                    builder.append("?").append("maxPoolSize=").append(maxpoolsize);
                     builder.append("&").append("connectTimeoutMS=").append("3000");
                     builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
                     log.info("Connect to the MongoDB sharded cluster {}", builder);

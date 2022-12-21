@@ -1,11 +1,9 @@
 package cn.cerc.db.redis;
 
-import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
 import cn.cerc.db.zk.ZkNode;
 
 public class ZkRedisConfig {
-    private static final ServerConfig config = ServerConfig.getInstance();
     private final String configId;
     private final ZkNode node;
 
@@ -19,20 +17,19 @@ public class ZkRedisConfig {
     }
 
     public String host() {
-        return node.getString(key("host"), config.getProperty("redis.host", "127.0.0.1"));
+        return node.getString(key("host"), () -> "127.0.0.1");
     }
 
     public int port() {
-        return node.getInt(key("port"), config.getInt("redis.port", 6379));
+        return node.getInt(key("port"), 6379);
     }
 
     public String password() {
-        String value = node.getString(key("password"), config.getProperty("redis.password", ""));
-        return Utils.isEmpty(value) ? null : value;
+        return node.getString(key("password"), "password");
     }
 
     public int timeout() {
-        return node.getInt(key("timeout"), config.getInt("redis.timeout", 10000));
+        return node.getInt(key("timeout"), 10000);
     }
 
     public String getFullPath() {
