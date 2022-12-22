@@ -3,15 +3,15 @@ package cn.cerc.db.redis;
 import cn.cerc.db.core.Utils;
 import cn.cerc.db.zk.ZkNode;
 
-public class ZkRedisConfig {
+public class RedisConfig {
     private final String configId;
     private final ZkNode node;
 
-    public ZkRedisConfig() {
+    public RedisConfig() {
         this(null);
     }
 
-    public ZkRedisConfig(String configId) {
+    public RedisConfig(String configId) {
         this.configId = configId;
         this.node = ZkNode.get();
     }
