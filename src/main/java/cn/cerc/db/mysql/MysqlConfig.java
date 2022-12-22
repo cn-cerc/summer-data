@@ -127,7 +127,7 @@ public class MysqlConfig {
     }
 
     private String getNodePath(String key) {
-        return String.format("mysql/%s%s", Utils.isEmpty(slaveFlag) ? "" : "slave/", key);
+        return String.format("mysql/%s%s", Utils.isEmpty(slaveFlag) ? "main/" : "slave/", key);
     }
 
     public boolean isConfigNull() {
