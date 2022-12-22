@@ -8,7 +8,6 @@ import com.mongodb.ConnectionString;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 
-import cn.cerc.db.core.IConfig;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
 import cn.cerc.db.zk.ZkNode;
@@ -17,72 +16,53 @@ import cn.cerc.db.zk.ZkNode;
 public class MongoConfig {
     private static final Logger log = LoggerFactory.getLogger(MongoConfig.class);
 
-    public static final String mongodb_database = "mgdb.dbname";
-    public static final String mongodb_username = "mgdb.username";
-    public static final String mongodb_password = "mgdb.password";
-    public static final String mgdb_site = "mgdb.ipandport";
-    public static final String mgdb_enablerep = "mgdb.enablerep";
-    public static final String mgdb_replicaset = "mgdb.replicaset";
-    public static final String mgdb_maxpoolsize = "mgdb.maxpoolsize";
-//    public static final String SessionId = "mongoSession";
+    private static final String prefix = String.format("/%s/%s/mongodb/", ServerConfig.getAppProduct(),
+            ServerConfig.getAppVersion());
 
-    private static final IConfig config = ServerConfig.getInstance();
     private static volatile MongoClient client;
 
     public static MongoClient getClient() {
-        if (client == null) {
-            synchronized (MongoConfig.class) {
-                final String prefix = String.format("/%s/%s/mongodb/", ServerConfig.getAppProduct(),
-                        ServerConfig.getAppVersion());
-                var username = ZkNode.get()
-                        .getNodeValue(prefix + "username", () -> config.getProperty(MongoConfig.mongodb_username));
-                var password = ZkNode.get()
-                        .getNodeValue(prefix + "password", () -> config.getProperty(MongoConfig.mongodb_password));
-                var ipandport = ZkNode.get()
-                        .getNodeValue(prefix + "ipandport", () -> config.getProperty(MongoConfig.mgdb_site));
-                var database = ZkNode.get()
-                        .getNodeValue(prefix + "database", () -> config.getProperty(MongoConfig.mongodb_database));
-                var enablerep = ZkNode.get()
-                        .getNodeValue(prefix + "enablerep", () -> config.getProperty(MongoConfig.mgdb_enablerep));
-//                var replicaset = ZkNode.get()
-//                        .getNodeValue(prefix + "replicaset", () -> config.getProperty(MongoConfig.mgdb_replicaset));
-                var maxpoolsize = ZkNode.get()
-                        .getNodeValue(prefix + "maxpoolsize", () -> config.getProperty(MongoConfig.mgdb_maxpoolsize));
+        if (client != null)
+            return client;
 
-                StringBuilder builder = new StringBuilder();
-                builder.append("mongodb://");
-                // userName
-                builder.append(username);
-                // password
-                builder.append(":").append(password);
-                // ip
-                builder.append("@").append(ipandport);
-                // database
-                builder.append("/").append(database);
+        var username = ZkNode.get().getNodeValue(prefix + "username", () -> "mongodb_user");
+        var password = ZkNode.get().getNodeValue(prefix + "password", () -> "mongodb_password");
+        var database = MongoConfig.database();
+        var enablerep = ZkNode.get().getNodeValue(prefix + "enablerep", () -> "true");
+        var maxpoolsize = ZkNode.get().getNodeValue(prefix + "maxpoolsize", () -> "100");// 单客户端默认最大100个连接
+        var hosts = ZkNode.get()
+                .getNodeValue(prefix + "hosts",
+                        () -> "mongodb.local.top:27018,mongodb.local.top:27019,mongodb.local.top:27020");
 
-                if ("true".equals(enablerep)) {
-                    // replacaset
-//                    builder.append("?").append("replicaSet=").append(replicaset);
-                    // poolsize
-                    builder.append("?").append("maxPoolSize=").append(maxpoolsize);
-                    builder.append("&").append("connectTimeoutMS=").append("3000");
-                    builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
-                    log.info("Connect to the MongoDB sharded cluster {}", builder);
-                }
-                ConnectionString connectionString = new ConnectionString(builder.toString());
-                client = MongoClients.create(connectionString);
+        synchronized (MongoConfig.class) {
+            StringBuilder builder = new StringBuilder();
+            builder.append("mongodb://")
+                    .append(username)
+                    .append(":")
+                    .append(password)
+                    .append("@")
+                    .append(hosts)
+                    .append("/")
+                    .append(database);
+
+            if ("true".equals(enablerep)) {
+                builder.append("?").append("maxPoolSize=").append(maxpoolsize);
+                builder.append("&").append("connectTimeoutMS=").append("3000");
+                builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
+                log.info("Connect to the MongoDB sharded cluster {}", builder);
             }
+
+            ConnectionString connection = new ConnectionString(builder.toString());
+            client = MongoClients.create(connection);
         }
         return client;
     }
 
-    public static String databaseName() {
-        String prefix = String.format("/%s/%s/mongodb/", ServerConfig.getAppProduct(), ServerConfig.getAppVersion());
-        String databaseName = ZkNode.get()
-                .getNodeValue(prefix + "database", () -> config.getProperty(MongoConfig.mongodb_database));
-        if (Utils.isEmpty(databaseName))
+    public static String database() {
+        String database = ZkNode.get().getNodeValue(prefix + "database", () -> "mongodb_database");
+        if (Utils.isEmpty(database))
             throw new RuntimeException("MongoDB database name is empty.");
-        return databaseName;
+        return database;
     }
 
 }

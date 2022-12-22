@@ -40,7 +40,6 @@ public class RabbitServer implements AutoCloseable, ApplicationListener<Applicat
     private RabbitServer() {
         try {
             final String prefix = String.format("/%s/%s/rabbitmq/", ServerConfig.getAppProduct(), ServerConfig.getAppVersion());
-
             var host = ZkNode.get().getNodeValue(prefix + "host", () -> "rabbitmq.local.top");
             var port = ZkNode.get().getNodeValue(prefix + "port", () -> "5672");
             var username = ZkNode.get().getNodeValue(prefix + "username", () -> "admin");
