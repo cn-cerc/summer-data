@@ -86,7 +86,7 @@ public class JedisFactory {
     }
 
     private JedisFactory(String configId) {
-        ZkRedisConfig config = new ZkRedisConfig(configId);
+        RedisConfig config = new RedisConfig(configId);
         this.host = config.host();
         this.port = config.port();
         if (Utils.isEmpty(this.host)) {
@@ -148,9 +148,7 @@ public class JedisFactory {
     }
 
     public static void close() {
-        items.values().forEach((jf) -> {
-            jf.jedisPool.close();
-        });
+        items.values().forEach((jf) -> jf.jedisPool.close());
     }
 
 }
