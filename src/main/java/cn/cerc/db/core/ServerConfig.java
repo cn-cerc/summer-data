@@ -87,6 +87,8 @@ public enum ServerConfig implements IConfig {
         String value = config.getString("version", "develop");
         if ("release".equals(value))
             return true;
+        if ("main".equals(value))
+            return true;
         return "master".equals(value);
     }
 
