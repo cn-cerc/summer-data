@@ -35,8 +35,10 @@ public enum ServerConfig implements IConfig {
             return QueueServiceEnum.AliyunMNS;
         else if ("rabbitmq".equals(result))
             return QueueServiceEnum.RabbitMQ;
+        else if ("sqlmq".equals(result))
+            return QueueServiceEnum.Sqlmq;
         else
-            return QueueServiceEnum.Redis;
+            return QueueServiceEnum.RabbitMQ;
     }
 
     /**
