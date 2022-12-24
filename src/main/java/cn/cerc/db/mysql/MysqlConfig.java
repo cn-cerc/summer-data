@@ -52,19 +52,27 @@ public class MysqlConfig {
     }
 
     public String site() {
-        return node.getString(getNodePath("site"), () -> "mysql.local.top:3306");
+        return node.getString(getNodePath("site"), () -> {
+            return config.getProperty("rds.site", "mysql.local.top:3306");
+        });
     }
 
     public String database() {
-        return node.getString(getNodePath("database"), () -> "appdb");
+        return node.getString(getNodePath("database"), () -> {
+            return config.getProperty("rds.database", "appdb");
+        });
     }
 
     public String username() {
-        return node.getString(getNodePath("username"), () -> "appdb_user");
+        return node.getString(getNodePath("username"), () -> {
+            return config.getProperty("rds.username", "appdb_user");
+        });
     }
 
     public String password() {
-        return node.getString(getNodePath("password"), () -> "appdb_password");
+        return node.getString(getNodePath("password"), () -> {
+            return config.getProperty("rds.password", "appdb_password");
+        });
     }
 
     public String serverTimezone() {
