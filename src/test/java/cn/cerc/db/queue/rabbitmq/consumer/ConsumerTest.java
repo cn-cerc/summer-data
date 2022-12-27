@@ -9,7 +9,7 @@ public class ConsumerTest {
     public void test_consume_1() {
         try (RabbitQueue queue = new RabbitQueue(RabbitTestConfig.QUEUE_NAME)) {
             queue.setMaximum(15);
-            queue.pop(msg -> {
+            queue.pop((msg, repushOnError) -> {
                 System.out.println(msg);
                 return true;
             });
@@ -20,7 +20,7 @@ public class ConsumerTest {
     public void test_consume_2() throws InterruptedException {
         try (RabbitQueue queue = new RabbitQueue(RabbitTestConfig.QUEUE_NAME)) {
             queue.setMaximum(10);
-            queue.watch(msg -> {
+            queue.watch((msg, repushOnError) -> {
                 System.out.println(msg);
                 return true;
             });
