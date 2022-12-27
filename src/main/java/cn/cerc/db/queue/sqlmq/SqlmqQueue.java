@@ -151,7 +151,7 @@ public class SqlmqQueue implements IHandle {
         }
     }
 
-    public long getDelayTime() {
+    public int getDelayTime() {
         return delayTime;
     }
 
