@@ -27,7 +27,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     private static ZkConfig config;
     private boolean pushMode = false; // 默认为拉模式
     private QueueServiceEnum service;
-    private long delayTime = 0L;
+    private int delayTime = 60; // 单位：秒
     private String industry;
     private String order;
 
@@ -63,7 +63,11 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         throw new RuntimeException("从数据库取得相应的产业代码");
     }
 
-    protected void setDelayTime(long delayTime) {
+    /**
+     * 
+     * @param delayTime 设置延迟时间，单位：秒
+     */
+    protected void setDelayTime(int delayTime) {
         this.delayTime = delayTime;
     }
 
@@ -124,7 +128,11 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         case AliyunMNS:
             return MnsServer.getQueue(this.getId()).push(data);
         case Sqlmq:
-            return SqlmqServer.getQueue(this.getId()).push(data, this.order);
+            var sqlQueue = SqlmqServer.getQueue(this.getId());
+            sqlQueue.setDelayTime(delayTime);
+            sqlQueue.setService(service);
+            sqlQueue.setQueueClass(this.getClass().getSimpleName());
+            return sqlQueue.push(data, this.order);
         case RabbitMQ: {
             try (var queue = new RabbitQueue(this.getId())) {
                 return queue.push(data);
@@ -213,6 +221,16 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
 
     protected void setPushMode(boolean pushMode) {
         this.pushMode = pushMode;
+    }
+
+    protected void pushToSqlmq(String message) {
+        if (this.getService() == QueueServiceEnum.Sqlmq)
+            return;
+        var queue = SqlmqServer.getQueue(this.getId());
+        queue.setService(this.service);
+        queue.setDelayTime(this.delayTime);
+        queue.setQueueClass(this.getClass().getSimpleName());
+        queue.push(message, this.order);
     }
 
 }
