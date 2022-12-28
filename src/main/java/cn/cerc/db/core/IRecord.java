@@ -230,10 +230,9 @@ public interface IRecord {
         return this.getDatetime(field).toFastTime();
     }
 
-    @SuppressWarnings("rawtypes")
-    default Enum<?> getEnum(String field, Class<? extends Enum> clazz) {
+    default <T extends Enum<?>> T getEnum(String field, Class<T> clazz) {
         final int index = getInt(field);
-        Enum[] list = clazz.getEnumConstants();
+        T[] list = clazz.getEnumConstants();
         if (index >= 0 && index < list.length)
             return list[index];
         else
