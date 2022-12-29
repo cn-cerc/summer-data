@@ -16,6 +16,8 @@ import cn.cerc.db.zk.ZkNode;
 public class MongoConfig {
     private static final Logger log = LoggerFactory.getLogger(MongoConfig.class);
 
+    private static final ServerConfig config = ServerConfig.getInstance();
+
     private static final String prefix = String.format("/%s/%s/mongodb/", ServerConfig.getAppProduct(),
             ServerConfig.getAppVersion());
 
@@ -25,14 +27,18 @@ public class MongoConfig {
         if (client != null)
             return client;
 
-        var username = ZkNode.get().getNodeValue(prefix + "username", () -> "mongodb_user");
-        var password = ZkNode.get().getNodeValue(prefix + "password", () -> "mongodb_password");
+        var username = ZkNode.get()
+                .getNodeValue(prefix + "username", () -> config.getProperty("mgdb.username", "mongodb_user"));
+        var password = ZkNode.get()
+                .getNodeValue(prefix + "password", () -> config.getProperty("mgdb.password", "mongodb_password"));
         var database = MongoConfig.database();
-        var enablerep = ZkNode.get().getNodeValue(prefix + "enablerep", () -> "true");
-        var maxpoolsize = ZkNode.get().getNodeValue(prefix + "maxpoolsize", () -> "100");// 单客户端默认最大100个连接
+        var enablerep = ZkNode.get()
+                .getNodeValue(prefix + "enablerep", () -> config.getProperty("mgdb.enablerep", "false"));
+        var maxpoolsize = ZkNode.get()
+                .getNodeValue(prefix + "maxpoolsize", () -> config.getProperty("mgdb.maxpoolsize", "100"));// 单客户端默认最大100个连接
         var hosts = ZkNode.get()
-                .getNodeValue(prefix + "hosts",
-                        () -> "mongodb.local.top:27018,mongodb.local.top:27019,mongodb.local.top:27020");
+                .getNodeValue(prefix + "hosts", () -> config.getProperty("mgdb.ipandport",
+                        "mongodb.local.top:27018,mongodb.local.top:27019,mongodb.local.top:27020"));
 
         synchronized (MongoConfig.class) {
             StringBuilder builder = new StringBuilder();
@@ -45,6 +51,7 @@ public class MongoConfig {
                     .append("/")
                     .append(database);
 
+            // 是否启用集群模式
             if ("true".equals(enablerep)) {
                 builder.append("?").append("maxPoolSize=").append(maxpoolsize);
                 builder.append("&").append("connectTimeoutMS=").append("3000");
@@ -59,7 +66,8 @@ public class MongoConfig {
     }
 
     public static String database() {
-        String database = ZkNode.get().getNodeValue(prefix + "database", () -> "mongodb_database");
+        String database = ZkNode.get()
+                .getNodeValue(prefix + "database", () -> config.getProperty("mgdb.dbname", "mongodb_database"));
         if (Utils.isEmpty(database))
             throw new RuntimeException("MongoDB database name is empty.");
         return database;
