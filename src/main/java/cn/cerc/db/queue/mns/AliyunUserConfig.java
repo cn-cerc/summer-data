@@ -1,4 +1,4 @@
-package cn.cerc.db.queue;
+package cn.cerc.db.queue.mns;
 
 import cn.cerc.db.SummerDB;
 import cn.cerc.db.core.ClassResource;

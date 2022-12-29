@@ -52,35 +52,31 @@ public class MysqlConfig {
     }
 
     public String site() {
-        String site = config.getProperty("rds.site", "127.0.0.1:3306");
-        if (!Utils.isEmpty(slaveFlag))
-            site = config.getProperty("rds.site" + slaveFlag, site);
-        return node.getString(getNodePath("site"), site);
+        return node.getString(getNodePath("site"), () -> {
+            return config.getProperty("rds.site", "mysql.local.top:3306");
+        });
     }
 
     public String database() {
-        String database = config.getProperty("rds.database", "appdb");
-        if (!Utils.isEmpty(slaveFlag))
-            database = config.getProperty("rds.database" + slaveFlag, database);
-        return node.getString(getNodePath("database"), database);
+        return node.getString(getNodePath("database"), () -> {
+            return config.getProperty("rds.database", "appdb");
+        });
     }
 
     public String username() {
-        String username = config.getProperty("rds.username", "appdb_user");
-        if (!Utils.isEmpty(slaveFlag))
-            username = config.getProperty("rds.username" + slaveFlag, username);
-        return node.getString(getNodePath("username"), username);
+        return node.getString(getNodePath("username"), () -> {
+            return config.getProperty("rds.username", "appdb_user");
+        });
     }
 
     public String password() {
-        String password = config.getProperty("rds.password", "appdb_password");
-        if (!Utils.isEmpty(slaveFlag))
-            password = config.getProperty("rds.password" + slaveFlag, password);
-        return node.getString(getNodePath("password"), password);
+        return node.getString(getNodePath("password"), () -> {
+            return config.getProperty("rds.password", "appdb_password");
+        });
     }
 
     public String serverTimezone() {
-        return node.getString(getNodePath("serverTimezone"), "Asia/Shanghai");
+        return node.getString(getNodePath("serverTimezone"), () -> "Asia/Shanghai");
     }
 
     /**
@@ -89,7 +85,7 @@ public class MysqlConfig {
      * @return maxPoolSize
      */
     public int maxPoolSize() {
-        return node.getInt(getNodePath("MaxPoolSize"), config.getInt("rds.MaxPoolSize", 0));
+        return node.getInt(getNodePath("MaxPoolSize"), 0);
     }
 
     /**
@@ -98,7 +94,7 @@ public class MysqlConfig {
      * @return minPoolSize
      */
     public int minPoolSize() {
-        return node.getInt(getNodePath("MinPoolSize"), config.getInt("rds.MinPoolSize", 9));
+        return node.getInt(getNodePath("MinPoolSize"), 9);
     }
 
     /**
@@ -107,7 +103,7 @@ public class MysqlConfig {
      * @return initialPoolSize
      */
     public int initialPoolSize() {
-        return node.getInt(getNodePath("InitialPoolSize"), config.getInt("rds.InitialPoolSize", 3));
+        return node.getInt(getNodePath("InitialPoolSize"), 3);
     }
 
     /**
@@ -116,7 +112,7 @@ public class MysqlConfig {
      * @return checkoutTimeout
      */
     public int checkoutTimeout() {
-        return node.getInt(getNodePath("CheckoutTimeout"), config.getInt("rds.CheckoutTimeout", 500));
+        return node.getInt(getNodePath("CheckoutTimeout"), 500);
     }
 
     /**
@@ -126,7 +122,7 @@ public class MysqlConfig {
      * @return maxIdleTime
      */
     public int maxIdleTime() {
-        return node.getInt(getNodePath("MaxIdleTime"), config.getInt("rds.MaxIdleTime", 7800));
+        return node.getInt(getNodePath("MaxIdleTime"), 7800);
     }
 
     /**
@@ -135,11 +131,11 @@ public class MysqlConfig {
      * @return idleConnectionTestPeriod
      */
     public int idleConnectionTestPeriod() {
-        return node.getInt(getNodePath("IdleConnectionTestPeriod"), config.getInt("rds.IdleConnectionTestPeriod", 9));
+        return node.getInt(getNodePath("IdleConnectionTestPeriod"), 9);
     }
 
     private String getNodePath(String key) {
-        return String.format("mysql/%s%s", Utils.isEmpty(slaveFlag) ? "" : "slave/", key);
+        return String.format("mysql/%s%s", Utils.isEmpty(slaveFlag) ? "main/" : "slave/", key);
     }
 
     public boolean isConfigNull() {
@@ -219,10 +215,9 @@ public class MysqlConfig {
             Class.forName(MysqlConfig.JdbcDriver);
             return DriverManager.getConnection(jdbcUrl, username, password);
         } catch (SQLException | ClassNotFoundException e) {
-            log.error(e.getMessage(), e);
+            log.error("mysql connection {} database {}", jdbcUrl, database);
             throw new RuntimeException(e);
         }
-
     }
 
 }

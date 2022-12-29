@@ -1,8 +1,8 @@
 package cn.cerc.db.queue;
 
-import java.time.Duration;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import org.apache.rocketmq.client.apis.ClientException;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -12,15 +12,22 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.queue.mns.MnsServer;
+import cn.cerc.db.queue.rabbitmq.RabbitQueue;
+import cn.cerc.db.queue.sqlmq.SqlmqServer;
 import cn.cerc.db.redis.Redis;
 import cn.cerc.db.zk.ZkConfig;
 
 public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnable {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
+
+    // 创建一个缓存线程池，在必要的时候在创建线程，若线程空闲60秒则终止该线程
+    public static final ExecutorService pool = Executors.newCachedThreadPool();
+
     private static ZkConfig config;
+    private boolean pushMode = false; // 默认为拉模式
     private QueueServiceEnum service;
-    private boolean initTopic;
-    private long delayTime = 0L;
+    private int delayTime = 60; // 单位：秒
     private String industry;
     private String order;
 
@@ -56,7 +63,11 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         throw new RuntimeException("从数据库取得相应的产业代码");
     }
 
-    protected void setDelayTime(long delayTime) {
+    /**
+     * 
+     * @param delayTime 设置延迟时间，单位：秒
+     */
+    protected void setDelayTime(int delayTime) {
         this.delayTime = delayTime;
     }
 
@@ -65,7 +76,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         return this.delayTime;
     }
 
-    public void startService(QueueConsumer consumer) {
+    public void startService() {
         // 通知ZooKeeper
         try {
             ZkConfig host = new ZkConfig(String.format("/app/%s", ServerConfig.getAppName()));
@@ -85,12 +96,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             return;
         }
         config().setTempNode(this.getClass().getSimpleName(), "running");
-
         log.info("注册消息服务：{} from {}", this.getId(), this.getService().name());
-        if (this.getService() == QueueServiceEnum.RocketMQ) {
-            initTopic();
-            consumer.addConsumer(this.getTopic(), this.getTag(), this);
-        }
     }
 
     @Override
@@ -121,30 +127,20 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             }
         case AliyunMNS:
             return MnsServer.getQueue(this.getId()).push(data);
-        case RocketMQ:
-            this.initTopic();
-            try {
-                var producer = new QueueProducer(getTopic(), getTag());
-                var messageId = producer.append(data, Duration.ofSeconds(getDelayTime()));
-                log.info("发送消息成功  {} {} {}", getTopic(), getTag(), messageId);
-                return messageId;
-            } catch (ClientException e) {
-                log.error(e.getMessage());
-                e.printStackTrace();
-                return null;
-            }
         case Sqlmq:
-            return SqlmqServer.getQueue(this.getId()).push(data, this.order);
+            var sqlQueue = SqlmqServer.getQueue(this.getId());
+            sqlQueue.setDelayTime(delayTime);
+            sqlQueue.setService(service);
+            sqlQueue.setQueueClass(this.getClass().getSimpleName());
+            return sqlQueue.push(data, this.order);
+        case RabbitMQ: {
+            try (var queue = new RabbitQueue(this.getId())) {
+                return queue.push(data);
+            }
+        }
         default:
             return null;
         }
-    }
-
-    private void initTopic() {
-        if (this.initTopic)
-            return;
-        QueueServer.createTopic(this.getTopic(), this.getDelayTime() > 0);
-        this.initTopic = true;
     }
 
     @Override
@@ -162,6 +158,13 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             break;
         case Sqlmq:
             SqlmqServer.getQueue(getId()).pop(100, this);
+            break;
+        case RabbitMQ: {
+            try (var queue = new RabbitQueue(this.getId())) {
+                queue.setMaximum(100);
+                queue.pop(this);
+            }
+        }
             break;
         default:
             log.error("{} 不支持消息拉取模式:", getService().name());
@@ -181,10 +184,19 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
      */
     @Scheduled(initialDelay = 30000, fixedRate = 3000)
     public void defaultCheck() {
+        if (this.isPushMode())
+            return;
+
         if (ServerConfig.enableTaskService()) {
             switch (this.getService()) {
-            case Redis, AliyunMNS, Sqlmq:
+            case Redis, AliyunMNS, RabbitMQ:
+                log.debug("thread pool add {} job {}", Thread.currentThread(), this.getClass().getSimpleName());
+                pool.submit(this);// 使用线程池
+                break;
+            case Sqlmq:
+                log.debug("{} sqlmq add job {}", Thread.currentThread(), this.getClass().getSimpleName());
                 this.run();
+                break;
             default:
                 break;
             }
@@ -197,6 +209,28 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
 
     public void setOrder(String order) {
         this.order = order;
+    }
+
+    /**
+     * 
+     * @return 为true表示为推模式
+     */
+    public boolean isPushMode() {
+        return pushMode;
+    }
+
+    protected void setPushMode(boolean pushMode) {
+        this.pushMode = pushMode;
+    }
+
+    protected void pushToSqlmq(String message) {
+        if (this.getService() == QueueServiceEnum.Sqlmq)
+            return;
+        var queue = SqlmqServer.getQueue(this.getId());
+        queue.setService(this.service);
+        queue.setDelayTime(this.delayTime);
+        queue.setQueueClass(this.getClass().getSimpleName());
+        queue.push(message, this.order);
     }
 
 }

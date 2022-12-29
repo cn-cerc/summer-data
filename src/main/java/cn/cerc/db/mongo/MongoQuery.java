@@ -56,7 +56,7 @@ public class MongoQuery extends DataSet implements IHandle {
         this.setStorage(true);
         // 查找业务ID对应的数据
         MongoClient client = MongoConfig.getClient();
-        MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
+        MongoDatabase database = client.getDatabase(MongoConfig.database());
         MongoCollection<Document> collection = database.getCollection(collectionName());
         // 增加查询条件
         BasicDBObject filter = decodeWhere(this.sql().text());
@@ -231,7 +231,7 @@ public class MongoQuery extends DataSet implements IHandle {
     protected final void insertStorage(DataRow record) {
         String collectionName = collectionName();
         MongoClient client = MongoConfig.getClient();
-        MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
+        MongoDatabase database = client.getDatabase(MongoConfig.database());
         MongoCollection<Document> collection = database.getCollection(collectionName);
         Document doc = getValue(record);
         collection.insertOne(doc);
@@ -240,7 +240,7 @@ public class MongoQuery extends DataSet implements IHandle {
     @Override
     protected final void updateStorage(DataRow record) {
         MongoClient client = MongoConfig.getClient();
-        MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
+        MongoDatabase database = client.getDatabase(MongoConfig.database());
         MongoCollection<Document> collection = database.getCollection(collectionName());
         Document doc = getValue(record);
         String uid = record.getString("_id");
@@ -253,7 +253,7 @@ public class MongoQuery extends DataSet implements IHandle {
     @Override
     protected final void deleteStorage(DataRow record) {
         MongoClient client = MongoConfig.getClient();
-        MongoDatabase database = client.getDatabase(MongoConfig.databaseName());
+        MongoDatabase database = client.getDatabase(MongoConfig.database());
         MongoCollection<Document> collection = database.getCollection(collectionName());
 
         String uid = record.getString("_id");

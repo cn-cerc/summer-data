@@ -1,6 +1,8 @@
 package cn.cerc.db.zk;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.WatchedEvent;
@@ -15,7 +17,7 @@ import cn.cerc.db.core.ServerConfig;
 public class ZkNode implements Watcher {
     private static final Logger log = LoggerFactory.getLogger(ZkNode.class);
     private static final String rootPath;
-    private static final ConcurrentHashMap<String, String> items = new ConcurrentHashMap<>();
+    private static final Map<String, String> items = new ConcurrentHashMap<>();
     private static final ZkServer server;
     private static ZkNode instance;
 
@@ -35,7 +37,11 @@ public class ZkNode implements Watcher {
         ZkNode.instance = this;
     }
 
-    public String getNodeValue(String node, String def) {
+    public String getString(String key, Supplier<String> supplier) {
+        return getNodeValue(rootPath + "/" + key, supplier);
+    }
+
+    public String getNodeValue(String node, Supplier<String> supplier) {
         if (items.containsKey(node))
             return items.get(node);
 
@@ -47,6 +53,7 @@ public class ZkNode implements Watcher {
             return value;
         } else {
             log.debug("在zeekeeper中建立 {}", node);
+            String def = supplier.get();
             server.create(node, def, CreateMode.PERSISTENT);
             server.watch(node, this);
             items.put(node, def);
@@ -55,11 +62,11 @@ public class ZkNode implements Watcher {
     }
 
     public String getString(String key, String def) {
-        return getNodeValue(rootPath + "/" + key, def);
+        return getNodeValue(rootPath + "/" + key, () -> def);
     }
 
     public int getInt(String key, int def) {
-        String value = getNodeValue(rootPath + "/" + key, "" + def);
+        String value = getNodeValue(rootPath + "/" + key, () -> "" + def);
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
@@ -75,14 +82,14 @@ public class ZkNode implements Watcher {
             var value = server.getValue(node);
             if (value != null) {
                 items.put(node, value);
-                log.debug("{} 变更为：{}", node, value);
+                log.warn("节点 {} 值变更为 {}", node, value);
                 server.watch(node, this); // 继续监视
             } else {
-                log.error("{} 不应该找不到！！！", node);
+                log.error("节点 {} 不应该找不到！！！", node);
             }
         } else if (event.getType() == Watcher.Event.EventType.NodeDeleted) {
             items.remove(node);
-            log.debug("{} 已被删除！", node);
+            log.debug("节点 {} 已被删除！", node);
         }
     }
 

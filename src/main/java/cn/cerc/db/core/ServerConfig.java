@@ -33,10 +33,12 @@ public enum ServerConfig implements IConfig {
             return QueueServiceEnum.Redis;
         else if ("aliyunmns".equals(result))
             return QueueServiceEnum.AliyunMNS;
-        else if ("rocketmq".equals(result))
-            return QueueServiceEnum.RocketMQ;
+        else if ("rabbitmq".equals(result))
+            return QueueServiceEnum.RabbitMQ;
+        else if ("sqlmq".equals(result))
+            return QueueServiceEnum.Sqlmq;
         else
-            return QueueServiceEnum.Redis;
+            return QueueServiceEnum.RabbitMQ;
     }
 
     /**
@@ -86,6 +88,8 @@ public enum ServerConfig implements IConfig {
     public static boolean isServerMaster() {
         String value = config.getString("version", "develop");
         if ("release".equals(value))
+            return true;
+        if ("main".equals(value))
             return true;
         return "master".equals(value);
     }

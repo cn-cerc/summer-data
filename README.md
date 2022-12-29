@@ -49,3 +49,10 @@ MySQL、MsSQL、MongoDB、Redis、SQLite等用于各类存储库的操作。
 
 欢迎大家使用，同时反馈更多的建议与意见，也欢迎其它业内人士，对此项目进行协同改进！
 
+### docker自建环境
+
+RabbitMQ
+
+```shell
+docker run -d -p 15672:15672 -p 5672:5672 -e RABBITMQ_DEFAULT_USER=admin -e RABBITMQ_DEFAULT_PASS=admin --restart=always --name rabbitmq rabbitmq:management
+```

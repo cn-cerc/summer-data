@@ -86,7 +86,7 @@ public class JedisFactory {
     }
 
     private JedisFactory(String configId) {
-        ZkRedisConfig config = new ZkRedisConfig(configId);
+        RedisConfig config = new RedisConfig(configId);
         this.host = config.host();
         this.port = config.port();
         if (Utils.isEmpty(this.host)) {
@@ -132,24 +132,23 @@ public class JedisFactory {
             return null;
         }
         // 达3次时，不再重试
-        if (error >= 3) {
+        if (this.error >= 3) {
+            log.error("redis {}:{} 尝试连接 {} 次失败，不在进行尝试", this.host, this.port, this.error);
             return null;
         }
         try {
             return jedisPool.getResource();
         } catch (JedisConnectionException e) {
-            if (error < 3) {
+            if (this.error < 3) {
                 log.error("redis {}:{} 无法联接，原因：{}", this.host, this.port, e.getMessage());
-                error++;
+                this.error++;
             }
             return null;
         }
     }
 
     public static void close() {
-        items.values().forEach((jf) -> {
-            jf.jedisPool.close();
-        });
+        items.values().forEach((jf) -> jf.jedisPool.close());
     }
 
 }
