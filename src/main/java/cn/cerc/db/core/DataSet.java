@@ -22,6 +22,11 @@ import cn.cerc.db.core.FieldMeta.FieldKind;
 import cn.cerc.db.core.SqlOperator.ResultSetReader;
 
 public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRecord, ResultSetReader {
+    // 执行成功
+    public static final int OK = 1;
+    // 以下为普通错误
+    public static final int ERROR = 0;
+
     private static final Logger log = LoggerFactory.getLogger(DataSet.class);
     private static final long serialVersionUID = 873159747066855363L;
     private static final ClassResource res = new ClassResource(DataSet.class, SummerDB.ID);
@@ -680,6 +685,14 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     public DataSet setState(int state) {
         this.state = state;
         return this;
+    }
+
+    public DataSet setOk() {
+        return this.setState(OK);
+    }
+
+    public DataSet setError() {
+        return this.setState(ERROR);
     }
 
     public String message() {
