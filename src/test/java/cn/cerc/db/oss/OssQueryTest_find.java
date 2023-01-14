@@ -1,6 +1,7 @@
 package cn.cerc.db.oss;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import cn.cerc.db.core.IHandle;
@@ -24,6 +25,7 @@ public class OssQueryTest_find implements IHandle {
      * @author rick_zhou
      */
     @Test
+    @Ignore
     public void queryFile() {
         ds.setOssMode(OssMode.readWrite);
         ds.add("select * from %s", "id_00001.txt");

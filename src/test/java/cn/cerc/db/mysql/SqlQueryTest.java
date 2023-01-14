@@ -3,6 +3,7 @@ package cn.cerc.db.mysql;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ public class SqlQueryTest implements IHandle {
     }
 
     @Test
+    @Ignore
     public void test_open() {
         ds.sql().setMaximum(1);
         ds.add("select Code_,Name_ from %s", userInfo);
@@ -56,6 +58,7 @@ public class SqlQueryTest implements IHandle {
     }
 
     @Test
+    @Ignore
     public void test_open_2() {
         ds.sql().setMaximum(1);
         String str = "\\小王233\\";

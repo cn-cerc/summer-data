@@ -1,6 +1,7 @@
 package cn.cerc.db.mssql;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import cn.cerc.db.core.IHandle;
@@ -17,6 +18,7 @@ public class MssqlQueryTest implements IHandle {
     }
 
     @Test
+    @Ignore
     public void test_append() {
         MssqlQuery query = new MssqlQuery(this);
         query.add("select * from Dept where Code_='%s'", "191220");

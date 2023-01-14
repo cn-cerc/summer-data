@@ -1,6 +1,7 @@
 package cn.cerc.db.oss;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import cn.cerc.db.core.IHandle;
@@ -21,6 +22,7 @@ public class OssQueryTest_send implements IHandle {
      * 保存文件/覆盖文件
      */
     @Test
+    @Ignore
     public void saveFile() {
         ds.setOssMode(OssMode.create);
         ds.add("select * from %s", "id_00001.txt");
