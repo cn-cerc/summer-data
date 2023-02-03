@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -310,7 +311,11 @@ public class Curl {
             if (status >= 400) {
                 in = new BufferedInputStream(fcon.getErrorStream());
             } else {
-                in = new BufferedInputStream(fcon.getInputStream());
+                String contentEncoding = fcon.getContentEncoding();
+                if (!Utils.isEmpty(contentEncoding) && contentEncoding.equalsIgnoreCase("gzip"))
+                    in = new BufferedInputStream(new GZIPInputStream(fcon.getInputStream()));
+                else
+                    in = new BufferedInputStream(fcon.getInputStream());
             }
 
             BufferedReader rd = new BufferedReader(new InputStreamReader(in, recvEncoding));
