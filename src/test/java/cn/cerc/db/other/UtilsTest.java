@@ -9,6 +9,7 @@ import static cn.cerc.db.core.Utils.roundTo;
 import static cn.cerc.db.core.Utils.strToDoubleDef;
 import static cn.cerc.db.core.Utils.trunc;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
@@ -86,9 +87,15 @@ public class UtilsTest {
 
     @Test
     public void test_isNumeric() {
+        assertTrue(isNumeric("1"));
+        assertTrue(isNumeric("-1"));
         assertTrue(isNumeric("111.333"));
-        assertTrue(isNumeric("1113232333"));
-        assertTrue(!isNumeric("a111.333"));
+        assertTrue(isNumeric("-111.333"));
+
+        assertTrue(isNumeric("-111.333222222222222222222222"));
+        assertTrue(isNumeric("1113232333554545454544545"));
+
+        assertFalse(isNumeric("a111.333"));
     }
 
     @Test

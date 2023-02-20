@@ -330,13 +330,11 @@ public class Utils {
      * @return 判断字符串是否全部为数字
      */
     public static boolean isNumeric(String text) {
-        if (text == null) {
+        if (text == null) 
             return false;
-        }
-        if (".".equals(text)) {
+        if (".".equals(text)) 
             return false;
-        }
-        return text.matches("[0-9,.]*");
+        return text.matches("[-+]?\\d+(?:\\.\\d+)?");
     }
 
     public static boolean isNotNumeric(String text) {
