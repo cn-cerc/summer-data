@@ -1,6 +1,7 @@
 package cn.cerc.db.core;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -307,7 +308,7 @@ public class SqlWhere {
         return this;
     }
 
-    public final SqlWhere in(String field, List<Object> values) {
+    public final SqlWhere in(String field, Collection<?> values) {
         if (field.contains("'"))
             throw new RuntimeException("field contains error character[']");
         if (values.size() == 0)
@@ -315,9 +316,10 @@ public class SqlWhere {
         if (this.size++ > 0)
             sb.append(joinMode == JoinDirectionEnum.And ? " and " : " or ");
         sb.append(field).append(" in (");
-        for (int i = 0; i < values.size(); i++) {
-            appendValue(values.get(i));
-            if (i < values.size() - 1)
+        int i = 0;
+        for (Object obj : values) {
+            appendValue(obj);
+            if (i++ < values.size() - 1)
                 sb.append(",");
         }
         sb.append(")");
