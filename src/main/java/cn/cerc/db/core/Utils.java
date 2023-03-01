@@ -15,6 +15,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -330,9 +331,9 @@ public class Utils {
      * @return 判断字符串是否全部为数字
      */
     public static boolean isNumeric(String text) {
-        if (text == null) 
+        if (text == null)
             return false;
-        if (".".equals(text)) 
+        if (".".equals(text))
             return false;
         return text.matches("[-+]?\\d+(?:\\.\\d+)?");
     }
@@ -689,4 +690,15 @@ public class Utils {
         return gson.toJson(jsonObject);
     }
 
+    /**
+     * 获取今天星期几
+     */
+    public static final String getWeekOfDate() {
+        String[] weekDays = { "星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六" };
+        // 获取当前时间
+        LocalDateTime endDate = LocalDateTime.now();
+        // 获取当前周
+        Integer week = endDate.getDayOfWeek().getValue();
+        return weekDays[week];
+    }
 }
