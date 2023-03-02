@@ -536,7 +536,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
      * @return 是否在区间内
      */
     public boolean between(Datetime start, Datetime end) {
-        return this.after(start) && this.before(end);
+        return this.getTimestamp() >= start.getTimestamp() && this.getTimestamp() <= end.getTimestamp();
     }
 
     /**
