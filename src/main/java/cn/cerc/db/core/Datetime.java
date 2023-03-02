@@ -529,6 +529,17 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
     }
 
     /**
+     * 判断当前对象是否在指定的时间区间内
+     * 
+     * @param start 区间开始
+     * @param end   区间结束
+     * @return 是否在区间内
+     */
+    public boolean between(Datetime start, Datetime end) {
+        return this.after(start) && this.before(end);
+    }
+
+    /**
      * 获取指定日期的开始时间
      *
      * @return 返回新的对象
