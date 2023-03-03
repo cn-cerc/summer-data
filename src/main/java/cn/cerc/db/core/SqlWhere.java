@@ -486,6 +486,8 @@ public class SqlWhere {
             sb.append(value);
         else if (value instanceof Boolean)
             sb.append((Boolean) value ? 1 : 0);
+        else if (value instanceof Enum)
+            sb.append(((Enum<?>) value).ordinal());
         else
             throw new RuntimeException(String.format("value type not support: %s", value.getClass().getName()));
     }
