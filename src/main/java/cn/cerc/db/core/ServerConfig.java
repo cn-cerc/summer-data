@@ -80,6 +80,10 @@ public enum ServerConfig implements IConfig {
         return "csp".equals(getAppOriginal());
     }
 
+    public static boolean isFplOriginal() {
+        return "fpl".equals(getAppOriginal());
+    }
+
     public static boolean enableDocService() {
         return config.getBoolean("docs.service", false);
     }
