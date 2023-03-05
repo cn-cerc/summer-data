@@ -340,6 +340,7 @@ public class DataRow implements Serializable, IRecord {
         return this;
     }
 
+    @Override
     public double getDouble(String field, int scale) {
         double value = this.getDouble(field);
         return Utils.roundTo(value, scale);

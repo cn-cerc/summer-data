@@ -1,5 +1,7 @@
 package cn.cerc.db.queue;
 
+import java.util.Optional;
+
 import cn.cerc.db.core.ISession;
 
 public class TokenConfig implements TokenConfigImpl {
@@ -15,8 +17,8 @@ public class TokenConfig implements TokenConfigImpl {
     }
 
     @Override
-    public String getToken() {
-        return token;
+    public Optional<String> getToken() {
+        return Optional.ofNullable(token);
     }
 
     @Override
@@ -30,8 +32,8 @@ public class TokenConfig implements TokenConfigImpl {
     }
 
     @Override
-    public String getOriginal() {
-        return original;
+    public Optional<String> getOriginal() {
+        return Optional.ofNullable(original);
     }
 
     public void setOriginal(String original) {

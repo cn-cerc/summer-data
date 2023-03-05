@@ -1,5 +1,6 @@
 package cn.cerc.db.queue;
 
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -60,6 +61,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
      * @param original
      */
     protected void setOriginal(String original) {
+        Objects.requireNonNull(original);
         this.original = original;
     }
 

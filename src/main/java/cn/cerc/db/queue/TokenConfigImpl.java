@@ -1,5 +1,7 @@
 package cn.cerc.db.queue;
 
+import java.util.Optional;
+
 import cn.cerc.db.core.IHandle;
 
 /**
@@ -14,12 +16,12 @@ public interface TokenConfigImpl extends IHandle {
      * 
      * @return 企业帐套原始产业别
      */
-    String getOriginal();
+    Optional<String> getOriginal();
 
     /**
      * 
      * @return 企业帐套访问令牌
      */
-    String getToken();
+    Optional<String> getToken();
 
 }
