@@ -24,7 +24,7 @@ public class ZkNode implements Watcher {
     static {
         server = ZkServer.get();
         rootPath = String.format("/%s/%s/%s", ServerConfig.getAppProduct(), ServerConfig.getAppVersion(),
-                ServerConfig.getAppIndustry());
+                ServerConfig.getAppOriginal());
     }
 
     public static ZkNode get() {

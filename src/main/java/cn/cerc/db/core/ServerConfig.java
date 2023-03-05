@@ -69,15 +69,15 @@ public enum ServerConfig implements IConfig {
      * 
      * @return 产业：csp/obm/odm/oem/fpl
      */
-    public static String getAppIndustry() {
+    public static String getAppOriginal() {
         var result = config.getString("application.original", "csp").toLowerCase();
         if ("center".equals(result))
             result = "csp";
         return result;
     }
 
-    public static boolean isCspIndustry() {
-        return "csp".equals(getAppIndustry());
+    public static boolean isCspOriginal() {
+        return "csp".equals(getAppOriginal());
     }
 
     public static boolean enableDocService() {

@@ -24,7 +24,7 @@ public class ZkConfig implements IConfig {
             throw new RuntimeException("path 不得以 / 结尾");
 
         this.path = String.format("/%s/%s/%s%s", ServerConfig.getAppProduct(), ServerConfig.getAppVersion(),
-                ServerConfig.getAppIndustry(), path);
+                ServerConfig.getAppOriginal(), path);
 
         server = ZkNode.get().server();
     }

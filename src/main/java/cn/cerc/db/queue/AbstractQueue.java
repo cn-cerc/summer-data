@@ -28,7 +28,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     private boolean pushMode = false; // 默认为拉模式
     private QueueServiceEnum service;
     private int delayTime = 60; // 单位：秒
-    private String industry;
+    private String original;
     private String order;
 
     public AbstractQueue() {
@@ -36,7 +36,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         // 配置消息服务方式：redis/mns/rocketmq
         this.setService(ServerConfig.getQueueService());
         // 配置产业代码：csp/fpl/obm/oem/odm
-        this.setIndustry(ServerConfig.getAppIndustry());
+        this.setOriginal(ServerConfig.getAppOriginal());
     }
 
     public String getTopic() {
@@ -44,19 +44,23 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     }
 
     public final String getTag() {
-        return String.format("%s-%s", ServerConfig.getAppVersion(), getIndustry());
+        return String.format("%s-%s", ServerConfig.getAppVersion(), getOriginal());
     }
 
     public final String getId() {
         return this.getTopic() + "-" + getTag();
     }
 
-    public String getIndustry() {
-        return industry;
+    public String getOriginal() {
+        return original;
     }
 
-    public void setIndustry(String industry) {
-        this.industry = industry;
+    /**
+     *  切换消息队列所指向的机群，如FPL/OBM/CSM等
+     * @param original
+     */
+    protected void setOriginal(String original) {
+        this.original = original;
     }
 
     protected void setIndustryByCorpNo(IHandle handle, String corpNo) {
