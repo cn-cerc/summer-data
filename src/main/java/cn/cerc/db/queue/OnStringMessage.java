@@ -2,10 +2,6 @@ package cn.cerc.db.queue;
 
 public interface OnStringMessage {
 
-    default boolean consume(String message) {
-        return consume(message, true);
-    }
-
     /**
      * 
      * @param message       消息内容

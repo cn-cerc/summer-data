@@ -49,7 +49,7 @@ public class RabbitQueue implements AutoCloseable {
                     public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties,
                             byte[] body) throws IOException {
                         String msg = new String(body);
-                        if (consumer.consume(msg))
+                        if (consumer.consume(msg, true))
                             channel.basicAck(envelope.getDeliveryTag(), false); // 通知服务端删除消息
                         else
                             channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
@@ -75,7 +75,7 @@ public class RabbitQueue implements AutoCloseable {
                 String msg = new String(response.getBody());
                 // 手动设置消息已被读取
                 Envelope envelope = response.getEnvelope();
-                if (resume.consume(msg))
+                if (resume.consume(msg, true))
                     channel.basicAck(envelope.getDeliveryTag(), false); // 通知服务端删除消息
                 else
                     channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送

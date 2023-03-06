@@ -83,7 +83,7 @@ public class SqlmqQueue implements IHandle {
                 query.setValue("consume_times_", query.getInt("consume_times_") + 1);
                 query.setValue("version_", query.getInt("version_") + 1);
                 query.post();
-                result = onConsume.consume(row.getString("message_"));
+                result = onConsume.consume(row.getString("message_"), true);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 content = e.getMessage();

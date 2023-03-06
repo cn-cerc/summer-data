@@ -156,7 +156,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             try (Redis redis = new Redis()) {
                 var data = redis.rpop(this.getId());
                 if (data != null)
-                    this.consume(data);
+                    this.consume(data, true);
             }
             break;
         case AliyunMNS:
