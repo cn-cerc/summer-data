@@ -40,4 +40,9 @@ public class TokenConfig implements TokenConfigImpl {
         this.original = original;
     }
 
+    @Override
+    public Optional<String> getBookNo() {
+        return Optional.empty();
+    }
+
 }

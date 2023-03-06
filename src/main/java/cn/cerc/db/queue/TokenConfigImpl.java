@@ -14,6 +14,12 @@ public interface TokenConfigImpl extends IHandle {
 
     /**
      * 
+     * @return 企业原始帐套代码
+     */
+    Optional<String> getBookNo();
+
+    /**
+     * 
      * @return 企业帐套原始产业别
      */
     Optional<String> getOriginal();
