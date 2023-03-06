@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.queue.mns.MnsServer;
 import cn.cerc.db.queue.rabbitmq.RabbitQueue;
@@ -49,10 +48,11 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     }
 
     public final String getId() {
+        Objects.requireNonNull(this.getTopic());
         return this.getTopic() + "-" + getTag();
     }
 
-    public String getOriginal() {
+    public final String getOriginal() {
         return original;
     }
 
@@ -63,10 +63,6 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     protected void setOriginal(String original) {
         Objects.requireNonNull(original);
         this.original = original;
-    }
-
-    protected void setIndustryByCorpNo(IHandle handle, String corpNo) {
-        throw new RuntimeException("从数据库取得相应的产业代码");
     }
 
     /**
