@@ -52,7 +52,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         return this.getTopic() + "-" + getTag();
     }
 
-    public final String getOriginal() {
+    public String getOriginal() {
         return original;
     }
 
