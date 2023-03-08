@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -439,6 +440,10 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     public boolean isNull(String field) {
         Object obj = current().getValue(field);
         return obj == null || "".equals(obj);
+    }
+
+    public Stream<DataRow> stream() {
+        return records.stream();
     }
 
     @Override
