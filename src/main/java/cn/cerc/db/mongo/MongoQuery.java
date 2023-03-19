@@ -70,7 +70,7 @@ public class MongoQuery extends DataSet implements IHandle {
             return this;
 
         for (Document doc : list) {
-            DataRow record = append().currentRow().get();
+            DataRow record = append().current();
             for (String field : doc.keySet()) {
                 if ("_id".equals(field)) {
                     Object uid = doc.get(field);
@@ -276,7 +276,7 @@ public class MongoQuery extends DataSet implements IHandle {
         List<Map<String, Object>> items = (List<Map<String, Object>>) value;
         DataSet dataSet = new DataSet();
         for (Map<String, Object> item : items) {
-            DataRow record = dataSet.append().currentRow().get();
+            DataRow record = dataSet.append().current();
             for (String key : item.keySet()) {
                 record.setValue(key, item.get(key));
             }

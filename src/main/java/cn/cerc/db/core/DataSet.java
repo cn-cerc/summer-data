@@ -237,12 +237,12 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
         if (item instanceof EntityEvent entity) {
             entity.beforePost();
             this.append();
-            this.currentRow().get().loadFromEntity(item);
+            this.current().loadFromEntity(item);
             this.post();
             entity.afterPost();
         } else {
             this.append();
-            this.currentRow().get().loadFromEntity(item);
+            this.current().loadFromEntity(item);
             this.post();
         }
     }
@@ -257,12 +257,12 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
         if (item instanceof EntityEvent entity) {
             entity.beforePost();
             this.edit();
-            this.currentRow().get().loadFromEntity(item);
+            this.current().loadFromEntity(item);
             this.post();
             entity.afterPost();
         } else {
             this.edit();
-            this.currentRow().get().loadFromEntity(item);
+            this.current().loadFromEntity(item);
             this.post();
         }
     }

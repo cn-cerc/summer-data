@@ -41,7 +41,7 @@ public class DynamicColumns {
 
         if (!dataSet.locate(keyField, rowKey))
             dataSet.append().setValue(keyField, rowKey);
-        return dataSet.currentRow().get().bind(column.code());
+        return dataSet.current().bind(column.code());
     }
 
     public List<FieldMeta> columns() {

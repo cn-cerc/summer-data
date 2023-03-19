@@ -237,7 +237,7 @@ public class PgsqlDatabase implements IHandle, ISqlDatabase {
             DataSet dataIn = items.get(keyName);
             if (dataIn == null && !Utils.isEmpty(keyName)) {
                 dataIn = new DataSet();
-                dataIn.head().copyValues(ds.currentRow().get(), "ix_unique", "ix_name", "is_primary_key");
+                dataIn.head().copyValues(ds.current(), "ix_unique", "ix_name", "is_primary_key");
                 items.put(keyName, dataIn);
                 oldKeyName = keyName;
                 if (ds.getBoolean("is_primary_key"))

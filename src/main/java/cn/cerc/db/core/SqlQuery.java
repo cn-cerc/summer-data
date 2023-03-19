@@ -134,7 +134,7 @@ public class SqlQuery extends DataSet implements IHandle {
             // 再执行增加、修改
             this.first();
             while (this.fetch()) {
-                DataRow record = this.currentRow().get();
+                DataRow record = this.current();
                 if (record.state().equals(DataRowState.Insert)) {
                     doBeforePost(record);
                     if (this.storage())
