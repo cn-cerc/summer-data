@@ -28,12 +28,12 @@ public class DaoQuery<T extends EntityImpl> extends MysqlQuery {
     }
 
     public T currentEntity() {
-        return this.getEntity(clazz).orElseThrow();
+        return this.asEntity(clazz).orElseThrow();
     }
 
     @Deprecated
     public final T read() {
-        return this.getEntity(clazz).orElseThrow();
+        return this.asEntity(clazz).orElseThrow();
     }
 
     @Override
