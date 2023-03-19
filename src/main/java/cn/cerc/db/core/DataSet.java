@@ -343,19 +343,9 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
         return records;
     }
 
-//    @Deprecated
-//    public final List<DataRow> getRecords() {
-//        return records();
-//    }
-
     public int recNo() {
         return recNo;
     }
-
-//    @Deprecated
-//    public final int getRecNo() {
-//        return recNo();
-//    }
 
     public DataSet setRecNo(int recNo) {
         if (recNo > this.records.size()) {
@@ -380,11 +370,6 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
     public FieldMeta fields(String fieldCode) {
         return this.fields.get(fieldCode);
     }
-
-//    @Deprecated
-//    public final FieldDefs getFieldDefs() {
-//        return fields();
-//    }
 
     // 仅用于查找一次时，调用此函数，速度最快
     public boolean locateOnlyOne(String fields, Object... values) {
@@ -671,19 +656,9 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
         }
     }
 
-//    @Deprecated
-//    public final void close() {
-//        clear();
-//    }
-
     public final DataRow head() {
         return head;
     }
-
-//    @Deprecated
-//    public final DataRow getHead() {
-//        return head();
-//    }
 
     @Override
     public final String toString() {
@@ -694,11 +669,6 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
         return new DataSetGson<>(this).encode();
     }
 
-//    @Deprecated
-//    public final String toJson() {
-//        return json();
-//    }
-
     public DataSet setJson(String json) {
         this.clear();
         if (!Utils.isEmpty(json))
@@ -706,11 +676,6 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
         this.first();
         return this;
     }
-
-//    @Deprecated
-//    public final DataSet fromJson(String json) {
-//        return setJson(json);
-//    }
 
     /**
      * @param source      要复制的数据源
@@ -766,11 +731,6 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
         return state;
     }
 
-//    @Deprecated
-//    public final int getState() {
-//        return state();
-//    }
-
     public DataSet setState(int state) {
         this.state = state;
         return this;
@@ -788,11 +748,6 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
         return message;
     }
 
-//    @Deprecated
-//    public final String getMessage() {
-//        return message();
-//    }
-
     public DataSet setMessage(String message) {
         this.message = message;
         return this;
@@ -805,11 +760,6 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
     public void setStorage(boolean storage) {
         this.storage = storage;
     }
-
-//    @Deprecated
-//    public final boolean isStorage() {
-//        return storage();
-//    }
 
     protected boolean isBatchSave() {
         return batchSave;
@@ -836,29 +786,9 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
         return search;
     }
 
-//    @Deprecated
-//    public final SearchDataSet getSearch() {
-//        return search;
-//    }
-
     public boolean meta() {
         return meta;
     }
-
-//    @Deprecated
-//    public final boolean metaInfo() {
-//        return meta();
-//    }
-
-//    @Deprecated
-//    public final boolean isMetaInfo() {
-//        return metaInfo();
-//    }
-
-//    @Deprecated
-//    public final DataSet setMetaInfo(boolean value) {
-//        return this.setMeta(value);
-//    }
 
     public final DataSet setMeta(boolean value) {
         this.meta = value;
@@ -879,25 +809,9 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
         return garbage;
     }
 
-//    @Deprecated
-//    protected final List<DataRow> getDelList() {
-//        return garbage();
-//    }
-
-//    @Deprecated
-//    public final boolean curd() {
-//        return crud();
-//    }
-
     public boolean crud() {
         return crud;
     }
-
-//    @Deprecated
-//    public final DataSet setCurd(boolean value) {
-//        crud = value;
-//        return this;
-//    }
 
     public DataSet setCrud(boolean value) {
         crud = value;
