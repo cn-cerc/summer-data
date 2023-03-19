@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
@@ -20,8 +21,9 @@ import org.slf4j.LoggerFactory;
 import cn.cerc.db.SummerDB;
 import cn.cerc.db.core.FieldMeta.FieldKind;
 import cn.cerc.db.core.SqlOperator.ResultSetReader;
+import cn.cerc.db.dao.EntityEvent;
 
-public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRecord, ResultSetReader {
+public class DataSet implements Serializable, DataSetSource, Iterable<DataRow>, IRecord, ResultSetReader {
     // 执行成功
     public static final int OK = 1;
     // 以下为普通错误
@@ -75,6 +77,11 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return row;
     }
 
+    /**
+     * 于内存增加一条空记录，注意在赋值后还需要调用post才能真正保存
+     * 
+     * @return this
+     */
     public DataSet append() {
         if (this.readonly)
             throw new UnsupportedOperationException("DataSet is readonly");
@@ -87,7 +94,12 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this;
     }
 
-    // 在指定的位置插入记录，位置编号从0开始
+    /**
+     * 在指定的位置插入记录，位置编号从0开始
+     * 
+     * @param site
+     * @return this
+     */
     public final DataSet insert(int site) {
         if (this.readonly)
             throw new UnsupportedOperationException("DataSet is readonly");
@@ -103,12 +115,22 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this;
     }
 
-    // 增加到指定的位置，请改使用insert
+    /**
+     * 增加到指定的位置，请改使用insert
+     * 
+     * @param site
+     * @return this
+     */
     @Deprecated
     public final DataSet append(int site) {
         return this.insert(site);
     }
 
+    /**
+     * 将当前记录标识为修改状态
+     * 
+     * @return this
+     */
     public DataSet edit() {
         if (this.readonly)
             throw new UnsupportedOperationException("DataSet is readonly");
@@ -120,6 +142,11 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this;
     }
 
+    /**
+     * 删除一条记录并在非批次更新时，自动存入数据库，同时令fetchNo指针减1
+     * 
+     * @return 返回自身
+     */
     public DataSet delete() {
         if (this.readonly)
             throw new UnsupportedOperationException("DataSet is readonly");
@@ -189,6 +216,46 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         }
     }
 
+    /**
+     * 将Entity的值插入到当前数据集并立即执行保存post函数
+     * 
+     * @param <T>
+     * @param item
+     */
+    public <T extends EntityImpl> void insert(T item) {
+        if (item instanceof EntityEvent entity) {
+            entity.beforePost();
+            this.append();
+            this.currentRow().get().loadFromEntity(item);
+            this.post();
+            entity.afterPost();
+        } else {
+            this.append();
+            this.currentRow().get().loadFromEntity(item);
+            this.post();
+        }
+    }
+
+    /**
+     * 以Entity的值替换当前记录的值并立即执行保存post函数
+     * 
+     * @param <T>
+     * @param item
+     */
+    public <T extends EntityImpl> void update(T item) {
+        if (item instanceof EntityEvent entity) {
+            entity.beforePost();
+            this.edit();
+            this.currentRow().get().loadFromEntity(item);
+            this.post();
+            entity.afterPost();
+        } else {
+            this.edit();
+            this.currentRow().get().loadFromEntity(item);
+            this.post();
+        }
+    }
+
     protected void insertStorage(DataRow row) throws Exception {
         row.setState(DataRowState.None);
     }
@@ -240,9 +307,20 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this.records.size() == 0 || this.recNo > this.records.size();
     }
 
+    /**
+     * 返回当前记录行
+     */
     @Override
+    public Optional<DataRow> currentRow() {
+        return (eof() || bof()) ? Optional.empty() : Optional.ofNullable(records.get(recNo - 1));
+    }
+
+    /**
+     * 返回当前记录行，注意可能会返回值为空。 请改为语义更清晰的currentRow函数
+     */
+    @Deprecated
     public DataRow current() {
-        return (eof() || bof()) ? null : records.get(recNo - 1);
+        return currentRow().orElse(null);
     }
 
     /**
@@ -349,6 +427,17 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this.current().getValue(field);
     }
 
+    /**
+     * 
+     * @param <T>
+     * @param clazz 数据实体类
+     * @return 返回当前数据集的一条记录，并转化为指定的数据实体
+     */
+    public <T extends EntityImpl> Optional<T> getEntity(Class<T> clazz) {
+        var entity = this.currentRow().map(row -> row.asEntity(clazz)).orElse(null);
+        return Optional.ofNullable(entity);
+    }
+
     // 排序
     public DataSet setSort(String... fields) {
         Collections.sort(this.records(), new RecordComparator(fields));
@@ -383,14 +472,20 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
 //        return setValue(field, null);
 //    }
 
-    public boolean fetch() {
+    public boolean fetch(Consumer<DataRow> function) {
         boolean result = false;
         if (this.fetchNo < (this.records.size() - 1)) {
             this.fetchNo++;
             this.setRecNo(this.fetchNo + 1);
+            if (function != null)
+                function.accept(records.get(recNo - 1));
             result = true;
         }
         return result;
+    }
+
+    public boolean fetch() {
+        return fetch(null);
     }
 
     public void copyRecord(DataRow source, FieldDefs defs) {
@@ -850,7 +945,20 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return new DataColumn(this, fieldCode);
     }
 
+    /**
+     * 返回 this
+     */
     @Override
+    public Optional<DataSet> source() {
+        return Optional.of(this);
+    }
+
+    /**
+     * 请改使用语义更清晰的 source 函数
+     * 
+     * @return 返回 this
+     */
+    @Deprecated
     public DataSet dataSet() {
         return this;
     }
