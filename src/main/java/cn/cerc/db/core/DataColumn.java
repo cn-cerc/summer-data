@@ -15,23 +15,19 @@ public class DataColumn extends Variant {
 
     @Override
     public Object value() {
-        return current().getValue(key());
+        return dataSet.current().getValue(key());
     }
 
     @Override
     public DataColumn setValue(Object value) {
-        current().setValue(key(), value);
+        dataSet.current().setValue(key(), value);
         setModified(true);
         return this;
     }
 
     @Override
     public boolean hasValue() {
-        return current().hasValue(key());
-    }
-
-    private DataRow current() {
-        return dataSet.current();
+        return dataSet.current().hasValue(key());
     }
 
 }
