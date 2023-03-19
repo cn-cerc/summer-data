@@ -947,7 +947,7 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
     }
 
     /**
-     * 请改使用语义更清晰的 source 函数
+     * 此函数没有意义，不需要自己返回自己
      * 
      * @return 返回 this
      */
