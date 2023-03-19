@@ -217,6 +217,17 @@ public class DataSet implements Serializable, DataSetSource, Iterable<DataRow>, 
     }
 
     /**
+     * 
+     * @param <T>
+     * @param clazz 数据实体类
+     * @return 返回当前数据集的一条记录，并转化为指定的数据实体
+     */
+    public <T extends EntityImpl> Optional<T> asEntity(Class<T> clazz) {
+        var entity = this.currentRow().map(row -> row.asEntity(clazz)).orElse(null);
+        return Optional.ofNullable(entity);
+    }
+
+    /**
      * 将Entity的值插入到当前数据集并立即执行保存post函数
      * 
      * @param <T>
@@ -427,17 +438,6 @@ public class DataSet implements Serializable, DataSetSource, Iterable<DataRow>, 
         return this.current().getValue(field);
     }
 
-    /**
-     * 
-     * @param <T>
-     * @param clazz 数据实体类
-     * @return 返回当前数据集的一条记录，并转化为指定的数据实体
-     */
-    public <T extends EntityImpl> Optional<T> getEntity(Class<T> clazz) {
-        var entity = this.currentRow().map(row -> row.asEntity(clazz)).orElse(null);
-        return Optional.ofNullable(entity);
-    }
-
     // 排序
     public DataSet setSort(String... fields) {
         Collections.sort(this.records(), new RecordComparator(fields));
@@ -472,20 +472,24 @@ public class DataSet implements Serializable, DataSetSource, Iterable<DataRow>, 
 //        return setValue(field, null);
 //    }
 
-    public boolean fetch(Consumer<DataRow> function) {
+    public boolean fetch() {
         boolean result = false;
         if (this.fetchNo < (this.records.size() - 1)) {
             this.fetchNo++;
             this.setRecNo(this.fetchNo + 1);
-            if (function != null)
-                function.accept(records.get(recNo - 1));
             result = true;
         }
         return result;
     }
 
-    public boolean fetch() {
-        return fetch(null);
+    public <T extends EntityImpl> Optional<T> fetch(Class<T> clazz) {
+        if (this.fetchNo < (this.records.size() - 1)) {
+            this.fetchNo++;
+            this.setRecNo(this.fetchNo + 1);
+            return Optional.of(this.records.get(recNo - 1).asEntity(clazz));
+        } else {
+            return Optional.empty();
+        }
     }
 
     public void copyRecord(DataRow source, FieldDefs defs) {
