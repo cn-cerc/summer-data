@@ -31,7 +31,7 @@ public class DataColumn extends Variant {
     }
 
     private DataRow current() {
-        return source.currentRow().orElseThrow();
+        return source.getDataSet().map(ds -> ds.current()).orElse(null);
     }
 
 }
