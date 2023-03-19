@@ -99,7 +99,7 @@ public class SqlWhere {
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
-        if (dataRow.has(field))
+        if (dataRow.hasValue(field))
             return this.eq(dbField, dataRow.getValue(field));
         else
             return this;

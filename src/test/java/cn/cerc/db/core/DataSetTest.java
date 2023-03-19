@@ -123,7 +123,7 @@ public class DataSetTest extends TestCase {
         String json = "{\"head\":{\"Discount_\":0.91,\"MaxCouponAmount_\":-1},\"body\":[[\"PartCode_\",\"Desc_\",\"Spec_\",\"Unit_\"],[\"21CJ7H1009-1\",\"鲇竿,长江七号,10091\",\"专卖,碳素,40T,565g,1009,OFF.CC\",\"PCS\"],[\"21CJ7H1110-1\",\"鲇竿,长江七号,11101\",\"专卖,碳素,40T,665g,1110,OFF.CC\",\"PCS\"],[\"21CJ7H1210-1\",\"鲇竿,长江七号,1210\",\"专卖,碳素,40T,720g,1210,OFF.CC\",\"PCS\"],[\"21CJ7H9008-1\",\"鲇竿,长江七号,90081\",\"专卖,碳素,40T,450g,9008,OFF.CC\",\"PCS\"],[\"21ADF4505-1\",\"鼎风,4501\",\"专卖\\u0027碳素,40T,127g,4501\",\"PCS\"]]}";
         DataSet dataSet = new DataSet().setJson(json);
         assertEquals(json, dataSet.toString());
-        assertTrue(dataSet.head().has("Discount_"));
+        assertTrue(dataSet.head().hasValue("Discount_"));
         assertEquals("0.91", dataSet.head().getString("Discount_"));
         assertEquals(0.91, dataSet.head().getDouble("Discount_"));
     }
@@ -135,7 +135,7 @@ public class DataSetTest extends TestCase {
     public void test_2() {
         String json = "{\"head\":{\"Discount_\":1,\"MaxCouponAmount_\":-1},\"dataset\":[[\"PartCode_\",\"Desc_\",\"Spec_\",\"Unit_\"],[\"21CJ7H1009-1\",\"鲇竿,长江七号,10091\",\"专卖,碳素,40T,565g,1009,OFF.CC\",\"PCS\"],[\"21CJ7H1110-1\",\"鲇竿,长江七号,11101\",\"专卖,碳素,40T,665g,1110,OFF.CC\",\"PCS\"],[\"21CJ7H1210-1\",\"鲇竿,长江七号,1210\",\"专卖,碳素,40T,720g,1210,OFF.CC\",\"PCS\"],[\"21CJ7H9008-1\",\"鲇竿,长江七号,90081\",\"专卖,碳素,40T,450g,9008,OFF.CC\",\"PCS\"],[\"21ADF4505-1\",\"鼎风,4501\",\"专卖\\u0027碳素,40T,127g,4501\",\"PCS\"]]}";
         DataSet dataSet = new DataSet().setJson(json);
-        assertTrue(dataSet.head().has("Discount_"));
+        assertTrue(dataSet.head().hasValue("Discount_"));
         assertEquals("1", dataSet.head().getString("Discount_"));
         assertTrue(dataSet.head().getValue("Discount_") instanceof Integer);
         assertEquals(1, dataSet.head().getInt("Discount_"));

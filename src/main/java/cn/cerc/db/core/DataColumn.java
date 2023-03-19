@@ -27,7 +27,7 @@ public class DataColumn extends Variant {
 
     @Override
     public boolean hasValue() {
-        return source.current().has(key());
+        return source.current().hasValue(key());
     }
 
 }
