@@ -1,33 +1,37 @@
 package cn.cerc.db.core;
 
 public class DataColumn extends Variant {
-    private DataSource source;
+    private DataSetSource source;
 
-    public DataColumn(DataSource source, String field) {
+    public DataColumn(DataSetSource source, String field) {
         super();
         this.source = source;
         this.setKey(field);
     }
 
-    public DataSource source() {
+    public DataSetSource source() {
         return source;
     }
 
     @Override
     public Object value() {
-        return source.current().getValue(key());
+        return current().getValue(key());
     }
 
     @Override
     public DataColumn setValue(Object value) {
-        source.current().setValue(key(), value);
+        current().setValue(key(), value);
         setModified(true);
         return this;
     }
 
     @Override
     public boolean hasValue() {
-        return source.current().hasValue(key());
+        return current().hasValue(key());
+    }
+
+    private DataRow current() {
+        return source.currentRow().orElseThrow();
     }
 
 }
