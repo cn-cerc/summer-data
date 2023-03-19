@@ -19,16 +19,6 @@ public class Variant {
         this.setValue(data);
     }
 
-//    @Deprecated
-//    public final String tag() {
-//        return this.key();
-//    }
-
-//    @Deprecated
-//    public final Object data() {
-//        return this.value();
-//    }
-
     public final String key() {
         return this.key;
     }
@@ -36,11 +26,6 @@ public class Variant {
     public Object value() {
         return value;
     }
-
-//    @Deprecated
-//    public final Variant setData(Object data) {
-//        return this.setValue(data);
-//    }
 
     public Variant setValue(Object value) {
         if (this.value == value)
@@ -54,11 +39,6 @@ public class Variant {
         this.value = value;
         return this;
     }
-
-//    @Deprecated
-//    public final Variant setTag(String tag) {
-//        return setKey(tag);
-//    }
 
     public Variant setKey(String key) {
         this.key = key;
@@ -349,7 +329,7 @@ public class Variant {
         ds.append().setValue("code", 1);
         ds.append().setValue("code", 2);
         var code1 = ds.bindColumn("code");
-        var code2 = ds.currentRow().orElseThrow().bind("code");
+        var code2 = ds.current().bind("code");
         System.out.println(code1);
         System.out.println(code2);
         ds.first();
