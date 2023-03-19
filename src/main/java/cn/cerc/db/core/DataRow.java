@@ -235,7 +235,7 @@ public class DataRow implements Serializable, IRecord {
     public FieldDefs fields() {
         return fields;
     }
-    
+
     public FieldMeta fields(String fieldCode) {
         return fields.get(fieldCode);
     }
@@ -377,6 +377,14 @@ public class DataRow implements Serializable, IRecord {
             fields.clear();
     }
 
+    @Deprecated
+    public boolean has(String field) {
+        return hasValue(field);
+    }
+
+    /**
+     * 判断是否有此栏位，但不管这个栏位是否有值
+     */
     @Override
     public boolean exists(String field) {
         return this.fields.exists(field);
@@ -386,14 +394,9 @@ public class DataRow implements Serializable, IRecord {
      * @param field 字段代码
      * @return 判断是否有此栏位，以及此栏位是否有值
      */
-    public boolean has(String field) {
+    public final boolean hasValue(String field) {
         return fields.exists(field) && !"".equals(getString(field));
     }
-
-//    @Deprecated
-//    public final boolean hasValue(String field) {
-//        return has(field);
-//    }
 
     public DataSet dataSet() {
         return dataSet;
