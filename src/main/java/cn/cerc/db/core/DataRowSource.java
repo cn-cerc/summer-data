@@ -16,10 +16,7 @@ public interface DataRowSource extends DataSource {
      */
     @Override
     default boolean readonly() {
-        var dataRow = currentRow().orElse(null);
-        if (dataRow == null)
-            return true;
-        return dataRow.readonly();
+        return currentRow().map(row -> row.readonly()).orElse(true);
     }
 
 }
