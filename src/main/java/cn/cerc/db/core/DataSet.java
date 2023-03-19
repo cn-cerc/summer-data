@@ -482,16 +482,6 @@ public class DataSet implements Serializable, DataSetSource, Iterable<DataRow>, 
         return result;
     }
 
-    public <T extends EntityImpl> Optional<T> fetch(Class<T> clazz) {
-        if (this.fetchNo < (this.records.size() - 1)) {
-            this.fetchNo++;
-            this.setRecNo(this.fetchNo + 1);
-            return Optional.of(this.records.get(recNo - 1).asEntity(clazz));
-        } else {
-            return Optional.empty();
-        }
-    }
-
     public void copyRecord(DataRow source, FieldDefs defs) {
         if (this.readonly)
             throw new UnsupportedOperationException("DataSet is readonly");
