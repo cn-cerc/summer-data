@@ -146,8 +146,7 @@ public class SqliteServer implements ISqlServer {
         SqliteQuery query = new SqliteQuery();
         query.add("select * from " + table);
         query.open();
-        while (query.fetch())
-            System.out.println(query.current());
+        query.forEach(row -> System.out.println(row));
     }
 
     public String getPath() {
