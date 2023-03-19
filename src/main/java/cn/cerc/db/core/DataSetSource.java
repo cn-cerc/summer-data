@@ -16,10 +16,7 @@ public interface DataSetSource extends DataSource {
      */
     @Override
     default boolean readonly() {
-        var dataSet = getDataSet().orElse(null);
-        if (dataSet == null)
-            return true;
-        return dataSet.getDataRow().map(item -> item.readonly()).orElse(true);
+        return getDataSet().map(ds -> ds.readonly()).orElse(true);
     }
 
 }
