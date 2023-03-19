@@ -23,7 +23,7 @@ import cn.cerc.db.core.FieldMeta.FieldKind;
 import cn.cerc.db.core.SqlOperator.ResultSetReader;
 import cn.cerc.db.dao.EntityEvent;
 
-public class DataSet implements Serializable, Iterable<DataRow>, IRecord, ResultSetReader {
+public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, IRecord, ResultSetReader {
     // 执行成功
     public static final int OK = 1;
     // 以下为普通错误
@@ -322,6 +322,7 @@ public class DataSet implements Serializable, Iterable<DataRow>, IRecord, Result
      * 
      * @return 返回当前记录行
      */
+    @Override
     public Optional<DataRow> currentRow() {
         return Optional.ofNullable(this.current());
     }
@@ -750,6 +751,7 @@ public class DataSet implements Serializable, Iterable<DataRow>, IRecord, Result
         return this;
     }
 
+    @Override
     public boolean readonly() {
         return readonly;
     }

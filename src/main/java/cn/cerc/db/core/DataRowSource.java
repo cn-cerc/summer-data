@@ -8,7 +8,7 @@ public interface DataRowSource extends DataSource {
      * 
      * @return 返回当前记录 dataRow
      */
-    Optional<DataRow> getDataRow();
+    Optional<DataRow> currentRow();
 
     /**
      * 
@@ -16,7 +16,7 @@ public interface DataRowSource extends DataSource {
      */
     @Override
     default boolean readonly() {
-        var dataRow = getDataRow().orElse(null);
+        var dataRow = currentRow().orElse(null);
         if (dataRow == null)
             return true;
         return dataRow.readonly();
