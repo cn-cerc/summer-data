@@ -1,16 +1,16 @@
 package cn.cerc.db.core;
 
 public class DataColumn extends Variant {
-    private DataSetSource source;
+    private DataSet dataSet;
 
-    public DataColumn(DataSetSource source, String field) {
+    public DataColumn(DataSet dataSet, String field) {
         super();
-        this.source = source;
+        this.dataSet = dataSet;
         this.setKey(field);
     }
 
-    public DataSetSource source() {
-        return source;
+    public DataSet source() {
+        return dataSet;
     }
 
     @Override
@@ -31,7 +31,7 @@ public class DataColumn extends Variant {
     }
 
     private DataRow current() {
-        return source.getDataSet().map(ds -> ds.current()).orElse(null);
+        return dataSet.current();
     }
 
 }

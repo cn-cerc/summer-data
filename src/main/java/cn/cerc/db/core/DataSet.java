@@ -850,14 +850,7 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
     }
 
     public DataColumn bindColumn(String fieldCode) {
-        var self = this;
-        return new DataColumn(new DataSetSource() {
-            @Override
-            public Optional<DataSet> getDataSet() {
-                return Optional.of(self);
-            }
-
-        }, fieldCode);
+        return new DataColumn(this, fieldCode);
     }
 
     /**
