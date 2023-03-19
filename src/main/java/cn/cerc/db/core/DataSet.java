@@ -23,7 +23,7 @@ import cn.cerc.db.core.FieldMeta.FieldKind;
 import cn.cerc.db.core.SqlOperator.ResultSetReader;
 import cn.cerc.db.dao.EntityEvent;
 
-public class DataSet implements Serializable, DataSetSource, Iterable<DataRow>, IRecord, ResultSetReader {
+public class DataSet implements Serializable, Iterable<DataRow>, IRecord, ResultSetReader {
     // 执行成功
     public static final int OK = 1;
     // 以下为普通错误
@@ -319,19 +319,18 @@ public class DataSet implements Serializable, DataSetSource, Iterable<DataRow>, 
     }
 
     /**
-     * 返回当前记录行
+     * 
+     * @return 返回当前记录行
      */
-    @Override
     public Optional<DataRow> currentRow() {
-        return (eof() || bof()) ? Optional.empty() : Optional.ofNullable(records.get(recNo - 1));
+        return Optional.ofNullable(this.current());
     }
 
     /**
-     * 返回当前记录行，注意可能会返回值为空。 请改为语义更清晰的currentRow函数
+     * 返回当前记录行，注意可能会返回值为空。 尽可能改为语义更清晰的currentRow函数
      */
-    @Deprecated
     public DataRow current() {
-        return currentRow().orElse(null);
+        return (eof() || bof()) ? null : records.get(recNo - 1);
     }
 
     /**
@@ -751,7 +750,6 @@ public class DataSet implements Serializable, DataSetSource, Iterable<DataRow>, 
         return this;
     }
 
-    @Override
     public boolean readonly() {
         return readonly;
     }
@@ -936,15 +934,14 @@ public class DataSet implements Serializable, DataSetSource, Iterable<DataRow>, 
     }
 
     public DataColumn bindColumn(String fieldCode) {
-        return new DataColumn(this, fieldCode);
-    }
+        var self = this;
+        return new DataColumn(new DataSetSource() {
+            @Override
+            public Optional<DataSet> getDataSet() {
+                return Optional.of(self);
+            }
 
-    /**
-     * 返回 this
-     */
-    @Override
-    public Optional<DataSet> source() {
-        return Optional.of(this);
+        }, fieldCode);
     }
 
     /**
