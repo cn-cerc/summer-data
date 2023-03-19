@@ -41,7 +41,7 @@ public class RecordFilter {
         if (processor.getWhere().size() > 0) {
             dataOut.first();
             while (dataOut.fetch()) {
-                DataRow src = dataOut.current();
+                DataRow src = dataOut.currentRow().get();
                 if (processor.filter(src))
                     dataOut.next();
                 else
