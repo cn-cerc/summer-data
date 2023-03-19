@@ -22,7 +22,7 @@ public class SyncDataSet {
             for (int i = 0; i < fields.length; i++) {
                 values[i] = src.getValue(fields[i]);
             }
-            DataRow tar = target.locate(keyFields, values) ? target.currentRow().orElse(null) : null;
+            DataRow tar = target.locate(keyFields, values) ? target.current() : null;
             sync.process(src, tar);
         }
         target.first();
