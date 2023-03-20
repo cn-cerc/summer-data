@@ -17,28 +17,9 @@ public class DaoQuery<T extends EntityImpl> extends MysqlQuery {
         this.setSql(new SqlText(this.clazz));
     }
 
-    // 将对象追加到数据表中
-    public void insert(T item) {
-        if (item instanceof DaoEvent) {
-            ((DaoEvent) item).beforePost();
-        }
-        this.append();
-        this.current().loadFromEntity(item);
-        this.post();
-    }
-
     @Deprecated
     public final void append(T item) {
         insert(item);
-    }
-
-    public void update(T item) {
-        if (item instanceof DaoEvent) {
-            ((DaoEvent) item).beforePost();
-        }
-        this.edit();
-        this.current().loadFromEntity(item);
-        this.post();
     }
 
     @Deprecated
@@ -47,12 +28,12 @@ public class DaoQuery<T extends EntityImpl> extends MysqlQuery {
     }
 
     public T currentEntity() {
-        return this.current().asEntity(clazz);
+        return this.asEntity(clazz).orElseThrow();
     }
 
     @Deprecated
     public final T read() {
-        return currentEntity();
+        return this.asEntity(clazz).orElseThrow();
     }
 
     @Override

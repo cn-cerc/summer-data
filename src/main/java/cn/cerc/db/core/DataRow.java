@@ -181,9 +181,8 @@ public class DataRow implements Serializable, IRecord {
 
     @Override
     public Object getValue(String field) {
-        if (field == null || "".equals(field)) {
+        if (field == null || "".equals(field))
             throw new RuntimeException("field is null!");
-        }
         return this.items.get(field);
     }
 
