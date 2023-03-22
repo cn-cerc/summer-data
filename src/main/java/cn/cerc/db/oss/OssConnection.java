@@ -103,6 +103,24 @@ public class OssConnection implements IConnection {
         getClient().putObject(bucket, fileName, inputStream);
     }
 
+    /**
+     * @param fileName    原文件
+     * @param newFileName 目标文件
+     */
+    public void copy(String fileName, String newFileName) {
+        copy(getBucket(), fileName, getBucket(), newFileName);
+    }
+
+    /**
+     * @param bucket      原bucket
+     * @param newBucket   目标bucket
+     * @param fileName    原文件
+     * @param newFileName 目标文件
+     */
+    public void copy(String bucket, String fileName, String newBucket, String newFileName) {
+        getClient().copyObject(bucket, fileName, bucket, newFileName);
+    }
+
     // 下载文件
     public boolean download(String fileName, String localFile) {
         GetObjectRequest param = new GetObjectRequest(getBucket(), fileName);
