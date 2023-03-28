@@ -118,7 +118,7 @@ public class OssConnection implements IConnection {
      * @param newFileName 目标文件
      */
     public void copy(String bucket, String fileName, String newBucket, String newFileName) {
-        getClient().copyObject(bucket, fileName, bucket, newFileName);
+        getClient().copyObject(bucket, fileName, newBucket, newFileName);
     }
 
     // 下载文件
