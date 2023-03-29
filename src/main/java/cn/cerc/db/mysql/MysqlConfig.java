@@ -147,7 +147,7 @@ public class MysqlConfig {
             throw new RuntimeException("mysql connection config is null");
 
         return String.format(
-                "jdbc:mysql://%s/%s?useSSL=false&autoReconnect=true&autoCommit=false&useUnicode=true&characterEncoding=utf8&serverTimezone=%s",
+                "jdbc:mysql://%s/%s?useSSL=false&autoReconnect=true&autoCommit=false&useUnicode=true&characterEncoding=utf8&serverTimezone=%s&zeroDateTimeBehavior=CONVERT_TO_NULL",
                 site(), database(), serverTimezone());
     }
 
@@ -169,7 +169,7 @@ public class MysqlConfig {
             throw new RuntimeException("mysql connection config is null");
 
         var jdbcUrl = String.format(
-                "jdbc:mysql://%s/%s?useSSL=false&autoReconnect=true&autoCommit=false&useUnicode=true&characterEncoding=utf8&serverTimezone=%s",
+                "jdbc:mysql://%s/%s?useSSL=false&autoReconnect=true&autoCommit=false&useUnicode=true&characterEncoding=utf8&serverTimezone=%s&zeroDateTimeBehavior=CONVERT_TO_NULL",
                 host, database, timezone);
 
         dataSource.setJdbcUrl(jdbcUrl);
@@ -198,7 +198,7 @@ public class MysqlConfig {
         if (Utils.isEmpty(host) || Utils.isEmpty(database) || Utils.isEmpty(timezone))
             throw new RuntimeException("mysql connection config is null");
         var jdbcUrl = String.format(
-                "jdbc:mysql://%s/%s?useSSL=false&autoReconnect=true&autoCommit=false&useUnicode=true&characterEncoding=utf8&serverTimezone=%s",
+                "jdbc:mysql://%s/%s?useSSL=false&autoReconnect=true&autoCommit=false&useUnicode=true&characterEncoding=utf8&serverTimezone=%s&zeroDateTimeBehavior=CONVERT_TO_NULL",
                 host, database, timezone);
         try {
             Class.forName(MysqlConfig.JdbcDriver);
