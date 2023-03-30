@@ -352,6 +352,9 @@ public class Utils {
         return "".equals(text) ? def : text;
     }
 
+    /**
+     * 若无特殊定制的情况，建议改为使用 Utils.roundTo() 方法
+     */
     // 兼容 delphi 代码
     public static String formatFloat(String fmt, double value) {
         DecimalFormat df = new DecimalFormat(fmt);
