@@ -488,12 +488,4 @@ public class Curl {
         return this;
     }
 
-    public static void main(String[] args) throws IOException {
-        String string = new Curl().setIgnoreSSL()
-                .doPost("https://zhiyunopenapi.95155.com/save/apis/drivingLicenseOCRV2");
-        System.out.println(string);
-        String string2 = new Curl().doPost("https://zhiyunopenapi.95155.com/save/apis/drivingLicenseOCRV2");
-        System.out.println(string2);
-    }
-
 }
