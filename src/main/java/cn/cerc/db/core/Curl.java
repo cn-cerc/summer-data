@@ -11,10 +11,18 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.zip.GZIPInputStream;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -65,6 +73,8 @@ public class Curl {
      */
     private String responseContent = null;
     private static final Logger log = LoggerFactory.getLogger(Curl.class);
+
+    private boolean ignoreSSL = false;
 
     public String sendGet(String reqUrl) {
         StringBuilder result = new StringBuilder();
@@ -147,6 +157,9 @@ public class Curl {
             }
 
             URL url = new URL(reqUrl);
+
+            initHttpsCertificates();
+
             final HttpURLConnection fcon = url_con = (HttpURLConnection) url.openConnection();
             headers.forEach((k, v) -> fcon.setRequestProperty(k, (String) v));
             fcon.setRequestMethod("GET");
@@ -289,7 +302,11 @@ public class Curl {
             reqUrl = new String(reqUrl.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
 
             URL url = new URL(reqUrl);
+
+            initHttpsCertificates();
+
             final HttpURLConnection fcon = url_con = (HttpURLConnection) url.openConnection();
+
             fcon.setRequestMethod("POST");
             headers.forEach((k, v) -> fcon.setRequestProperty(k, (String) v));
             // System.setProperty("sun.net.client.defaultConnectTimeout",
@@ -355,6 +372,43 @@ public class Curl {
         return responseContent;
     }
 
+    private void initHttpsCertificates() {
+        HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> isIgnoreSSL());
+        if (!isIgnoreSSL()) {
+            HttpsURLConnection.setDefaultSSLSocketFactory((SSLSocketFactory) SSLSocketFactory.getDefault());
+        } else {
+            TrustManager[] trustAllCerts = new TrustManager[] { new MyTrustManager() };
+            try {
+                SSLContext sc = SSLContext.getInstance("SSL");
+                sc.init(null, trustAllCerts, null);
+                HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+            } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static class MyTrustManager implements X509TrustManager {
+
+        @Override
+        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            return null;
+        }
+
+        @Override
+        public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType)
+                throws java.security.cert.CertificateException {
+            return;
+        }
+
+        @Override
+        public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType)
+                throws java.security.cert.CertificateException {
+            return;
+        }
+
+    }
+
     public int getConnectTimeOut() {
         return this.connectTimeOut;
     }
@@ -417,6 +471,20 @@ public class Curl {
 
     public Curl putHeader(String key, Object value) {
         this.headers.put(key, value);
+        return this;
+    }
+
+    public boolean isIgnoreSSL() {
+        return ignoreSSL;
+    }
+
+    public Curl setIgnoreSSL(boolean ignoreSSL) {
+        this.ignoreSSL = ignoreSSL;
+        return this;
+    }
+
+    public Curl setIgnoreSSL() {
+        this.ignoreSSL = true;
         return this;
     }
 
