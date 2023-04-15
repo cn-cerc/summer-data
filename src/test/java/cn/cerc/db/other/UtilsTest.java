@@ -14,6 +14,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -119,4 +121,16 @@ public class UtilsTest {
         assertEquals(0, strToDoubleDef("1.03a", 0), 0);
         assertEquals(-1.03, strToDoubleDef("-1.03", 0), 0);
     }
+
+    @Test
+    public void test_groupList() {
+        List<String> original = new ArrayList<>();
+        for (int i = 1; i <= 33; i++) {
+            original.add(String.valueOf(i));
+        }
+        int num = 16;
+        List<List<String>> groupList = Utils.groupList(original, num);
+        assertEquals(3, groupList.size());
+    }
+
 }
