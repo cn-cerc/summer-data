@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import org.junit.Test;
 
@@ -212,4 +213,25 @@ public class DatetimeTest {
         assertEquals("AAA", item.getString("String"));
         assertEquals(jsonStr, item.toString());
     }
+
+    public static void main(String[] args) {
+        int year = Integer.parseInt(new Datetime().inc(DateType.Year, -1).getYear());
+        toYearStart(year);
+        toYearEnd(year);
+    }
+
+    private static void toYearEnd(int year) {
+        LocalDateTime ldt = LocalDateTime.of(year, 12, 31, 23, 59, 59);
+        Datetime result = new Datetime(ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+        result.setOptions(Datetime.yyyyMMdd_HHmmss);
+        System.out.println(result);
+    }
+
+    private static void toYearStart(int year) {
+        LocalDateTime ldt = LocalDateTime.of(year, 1, 1, 0, 0, 0);
+        Datetime result = new Datetime(ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+        result.setOptions(Datetime.yyyyMMdd_HHmmss);
+        System.out.println(result);
+    }
+
 }
