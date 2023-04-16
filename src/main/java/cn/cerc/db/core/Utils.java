@@ -1,5 +1,7 @@
 package cn.cerc.db.core;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -710,10 +712,24 @@ public class Utils {
         int group = (length + num - 1) / num;
         for (int i = 0; i < group; i++) {
             int start = i * num;
-            int end = (i + 1) * num < length ? (i + 1) * num : length;
+//            int end = (i + 1) * num < length ? (i + 1) * num : length;
+            int end = Math.min(start + num, length);
             list.add(original.subList(start, end));
         }
         return list;
+    }
+
+    public static void main(String[] args) {
+        List<String> original = new ArrayList<>();
+        for (int i = 1; i <= 33; i++) {
+            original.add(String.valueOf(i));
+        }
+        int num = 16;
+        long start = System.nanoTime();
+        List<List<String>> groupList = Utils.groupList(original, num);
+        long end = System.nanoTime();
+        System.out.println(end - start);
+        assertEquals(3, groupList.size());
     }
 
 }
