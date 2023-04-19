@@ -697,24 +697,23 @@ public class Utils {
     /**
      * 按数量对List进行分组
      * 
-     * @param original 原始组List
-     * @param num      每组数量单位
+     * @param sourceList 原始组List
+     * @param groupSize  每组数量单位
      */
-    public static <T> List<List<T>> groupList(List<T> original, int num) {
-        List<List<T>> list = new ArrayList<>(num);
-        if (original == null || original.size() == 0)
+    public static <T> List<List<T>> divideList(List<T> sourceList, int groupSize) {
+        List<List<T>> list = new ArrayList<>(groupSize);
+        if (sourceList == null || sourceList.size() == 0)
             return list;
-        if (num <= 0)
+        if (groupSize <= 0)
             return list;
 
         // 先算出分组的数量再按照分组进行切割
-        int length = original.size();
-        int group = (length + num - 1) / num;
-        for (int i = 0; i < group; i++) {
-            int start = i * num;
-//            int end = (i + 1) * num < length ? (i + 1) * num : length;
-            int end = Math.min(start + num, length);
-            list.add(original.subList(start, end));
+        int listSize = sourceList.size();
+        int num = (listSize + groupSize - 1) / groupSize;
+        for (int i = 0; i < num; i++) {
+            int startIndex = i * groupSize;
+            int endIndex = Math.min(startIndex + groupSize, listSize);
+            list.add(sourceList.subList(startIndex, endIndex));
         }
         return list;
     }
@@ -725,10 +724,10 @@ public class Utils {
             original.add(String.valueOf(i));
         }
         int num = 16;
-        long start = System.nanoTime();
-        List<List<String>> groupList = Utils.groupList(original, num);
-        long end = System.nanoTime();
-        System.out.println(end - start);
+        long startTime = System.nanoTime();
+        List<List<String>> groupList = Utils.divideList(original, num);
+        long endTime = System.nanoTime();
+        System.out.println(endTime - startTime);
         assertEquals(3, groupList.size());
     }
 

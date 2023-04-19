@@ -130,7 +130,7 @@ public class UtilsTest {
         }
         int num = 16;
         long start = System.nanoTime();
-        List<List<String>> groupList = Utils.groupList(original, num);
+        List<List<String>> groupList = Utils.divideList(original, num);
         long end = System.nanoTime();
         System.out.println(end - start);
         assertEquals(3, groupList.size());
