@@ -95,7 +95,17 @@ public enum ServerConfig implements IConfig {
             return true;
         if ("main".equals(value))
             return true;
+        if ("gray".equals(value))
+            return true;
         return "master".equals(value);
+    }
+
+    // 灰度更新环境
+    public static boolean isServerGray() {
+        String value = config.getString("version", "develop");
+        if ("gray".equals(value))
+            return true;
+        return false;
     }
 
     // 测试环境
