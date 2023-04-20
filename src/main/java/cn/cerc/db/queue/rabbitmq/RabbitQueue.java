@@ -67,21 +67,28 @@ public class RabbitQueue implements AutoCloseable {
     // 读取work队列中的一条消息，ack = false 需要手动确认消息已被读取
     public void pop(OnStringMessage resume) {
         initChannel();
-        try {
-            for (int i = 0; i < maximum; i++) {
-                GetResponse response = channel.basicGet(this.queueId, false);
-                if (response == null)
-                    return;
-                String msg = new String(response.getBody());
-                // 手动设置消息已被读取
-                Envelope envelope = response.getEnvelope();
+        for (int i = 0; i < maximum; i++) {
+            GetResponse response = null;
+            try {
+                response = channel.basicGet(this.queueId, false);
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+                return;
+            }
+            if (response == null)
+                return;
+
+            // 手动设置消息已被读取
+            String msg = new String(response.getBody());
+            Envelope envelope = response.getEnvelope();
+            try {
                 if (resume.consume(msg, true))
-                    channel.basicAck(envelope.getDeliveryTag(), false); // 通知服务端删除消息
+                    channel.basicAck(envelope.getDeliveryTag(), false);// 通知服务端删除消息
                 else
                     channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
             }
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
         }
     }
 
