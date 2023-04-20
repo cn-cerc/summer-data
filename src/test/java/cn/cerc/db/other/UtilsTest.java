@@ -129,7 +129,10 @@ public class UtilsTest {
             original.add(String.valueOf(i));
         }
         int num = 16;
-        List<List<String>> groupList = Utils.groupList(original, num);
+        long start = System.nanoTime();
+        List<List<String>> groupList = Utils.divideList(original, num);
+        long end = System.nanoTime();
+        System.out.println(end - start);
         assertEquals(3, groupList.size());
     }
 
