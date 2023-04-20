@@ -2,6 +2,8 @@ package cn.cerc.db.queue.rabbitmq;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +20,7 @@ import cn.cerc.db.queue.OnStringMessage;
 public class RabbitQueue implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(RabbitQueue.class);
     private String consumerTag = null;
-    private int maximum = 1;
+    private int maximum;
     private Channel channel;
     private String queueId;
 
@@ -40,6 +42,24 @@ public class RabbitQueue implements AutoCloseable {
         }
     }
 
+    private final ExecutorService pool = Executors.newCachedThreadPool();
+
+    public static record QueueConsumeThread(Channel channel, Envelope envelope, OnStringMessage consumer, byte[] body)
+            implements Runnable {
+        @Override
+        public void run() {
+            String msg = new String(body);
+            try {
+                if (consumer.consume(msg, true))
+                    channel.basicAck(envelope.getDeliveryTag(), false);
+                else
+                    channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+    }
+
     public void watch(OnStringMessage consumer) {
         initChannel();
         try {
@@ -48,11 +68,11 @@ public class RabbitQueue implements AutoCloseable {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties,
                             byte[] body) throws IOException {
-                        String msg = new String(body);
-                        if (consumer.consume(msg, true))
-                            channel.basicAck(envelope.getDeliveryTag(), false); // 通知服务端删除消息
+                        QueueConsumeThread consume = new QueueConsumeThread(channel, envelope, consumer, body);
+                        if (maximum > 1)
+                            pool.submit(consume);
                         else
-                            channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
+                            consume.run();
                     }
                 });
             } else if (consumerTag != null) {
@@ -78,17 +98,8 @@ public class RabbitQueue implements AutoCloseable {
             if (response == null)
                 return;
 
-            // 手动设置消息已被读取
-            String msg = new String(response.getBody());
             Envelope envelope = response.getEnvelope();
-            try {
-                if (resume.consume(msg, true))
-                    channel.basicAck(envelope.getDeliveryTag(), false);// 通知服务端删除消息
-                else
-                    channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-            }
+            pool.submit(new QueueConsumeThread(channel, envelope, resume, response.getBody()));
         }
     }
 

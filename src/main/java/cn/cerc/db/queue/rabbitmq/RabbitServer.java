@@ -39,7 +39,8 @@ public class RabbitServer implements AutoCloseable, ApplicationListener<Applicat
     // 创建连接
     private RabbitServer() {
         try {
-            final String prefix = String.format("/%s/%s/rabbitmq/", ServerConfig.getAppProduct(), ServerConfig.getAppVersion());
+            final String prefix = String.format("/%s/%s/rabbitmq/", ServerConfig.getAppProduct(),
+                    ServerConfig.getAppVersion());
             var host = ZkNode.get().getNodeValue(prefix + "host", () -> "rabbitmq.local.top");
             var port = ZkNode.get().getNodeValue(prefix + "port", () -> "5672");
             var username = ZkNode.get().getNodeValue(prefix + "username", () -> "admin");
@@ -84,6 +85,7 @@ public class RabbitServer implements AutoCloseable, ApplicationListener<Applicat
                 queues.forEach((queueId, bean) -> {
                     if (bean.isPushMode() && bean.getService() == QueueServiceEnum.RabbitMQ) {
                         var queue = new RabbitQueue(bean.getId());
+                        queue.setMaximum(bean.getQos());
                         queue.watch(bean);
                         startItems.add(queue);
                     }

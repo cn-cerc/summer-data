@@ -31,6 +31,9 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     private String original;
     private String order;
 
+    /** 消息队列同时并发数量，读取的消息会丢入线程池进行处理 */
+    private int qos = 1;
+
     public AbstractQueue() {
         super();
         // 配置消息服务方式：redis/mns/rocketmq
@@ -57,7 +60,8 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     }
 
     /**
-     *  切换消息队列所指向的机群，如FPL/OBM/CSM等
+     * 切换消息队列所指向的机群，如FPL/OBM/CSM等
+     * 
      * @param original
      */
     protected void setOriginal(String original) {
@@ -223,6 +227,14 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
 
     protected void setPushMode(boolean pushMode) {
         this.pushMode = pushMode;
+    }
+
+    public int getQos() {
+        return qos;
+    }
+
+    protected void setQos(int qos) {
+        this.qos = qos;
     }
 
     protected void pushToSqlmq(String message) {
