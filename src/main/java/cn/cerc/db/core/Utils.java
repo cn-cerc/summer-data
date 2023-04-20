@@ -693,12 +693,27 @@ public class Utils {
     }
 
     /**
-     * 按数量对List进行分组
+     * 按数量对List进行分组，分组结果形如：[[0, 1, 2], [3, 4, 5]]
      * 
      * @param sourceList 原始组List
      * @param groupSize  每组数量单位
      */
     public static <T> List<List<T>> divideList(List<T> sourceList, int groupSize) {
+        return divideList(sourceList, groupSize, false);
+    }
+
+    /**
+     * <pre>
+     * 按数量对List进行分组，overlaps控制是否允许分组重叠
+     * 1、overlaps为true时，表示允许重叠，则分组的结果形如：[[0, 1, 2],[2, 3, 4], [4, 5]]
+     * 2、overlaps为false时，表示不允许重叠，则分组的结果形如：[[0, 1, 2], [3, 4, 5]]
+     * </pre>
+     * 
+     * @param sourceList 原始组List
+     * @param groupSize  每组数量单位
+     * @param overlaps   分组中是否首尾重叠
+     */
+    public static <T> List<List<T>> divideList(List<T> sourceList, int groupSize, boolean overlaps) {
         List<List<T>> list = new ArrayList<>(groupSize);
         if (sourceList == null || sourceList.size() == 0)
             return list;
@@ -707,11 +722,13 @@ public class Utils {
 
         // 先算出分组的数量再按照分组进行切割
         int listSize = sourceList.size();
-        int num = (listSize + groupSize - 1) / groupSize;
-        for (int i = 0; i < num; i++) {
-            int startIndex = i * groupSize;
+        int startIndex = 0;
+        while (startIndex < sourceList.size()) {
+            if (startIndex > 0 && groupSize > 1 && overlaps)
+                startIndex -= 1;
             int endIndex = Math.min(startIndex + groupSize, listSize);
             list.add(sourceList.subList(startIndex, endIndex));
+            startIndex += groupSize;
         }
         return list;
     }
