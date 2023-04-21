@@ -44,8 +44,20 @@ public class RabbitQueue implements AutoCloseable {
 
     private final ExecutorService pool = Executors.newCachedThreadPool();
 
-    public static record QueueConsumeThread(Channel channel, Envelope envelope, OnStringMessage consumer, byte[] body)
-            implements Runnable {
+    public static class QueueConsumeThread extends Thread {
+
+        private Channel channel;
+        private Envelope envelope;
+        private OnStringMessage consumer;
+        private byte[] body;
+
+        public QueueConsumeThread(Channel channel, Envelope envelope, OnStringMessage consumer, byte[] body) {
+            this.channel = channel;
+            this.envelope = envelope;
+            this.consumer = consumer;
+            this.body = body;
+        }
+
         @Override
         public void run() {
             String msg = new String(body);
