@@ -82,11 +82,11 @@ public class SqlQuery extends DataSet implements IHandle {
         this.setFetchFinish(true);
         String sql = sql().getCommand();
         String userCode = getUserCode();
-        if(userCode != null && userCode.length() > 0) {
+        if (!Utils.isEmpty(userCode)) {
             ZkServer zkServer = ZkNode.get().server();
-            String node = String.format("/%s/%s/debug", ServerConfig.getAppProduct(), ServerConfig.getAppVersion())
-                    + "/" + userCode;
-            if(zkServer.exists(node)) {
+            String node = String.format("/%s/%s/debug/%s", ServerConfig.getAppProduct(), ServerConfig.getAppVersion(),
+                    userCode);
+            if (zkServer.exists(node)) {
                 boolean isDebug = !Utils.isEmpty(zkServer.getValue(node));
                 if (isDebug) {
                     log.warn(sql.replaceAll("\r\n", " "));
