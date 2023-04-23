@@ -22,6 +22,9 @@ public class RabbitQueue implements AutoCloseable {
     private Channel channel;
     private String queueId;
 
+//    private static final String accessKeyId = ServerConfig.getInstance().getProperty("oss.accessKeyId");
+//    private static final String accessSecret = ServerConfig.getInstance().getProperty("oss.accessKeySecret");
+
     public RabbitQueue(String queueId) {
         this.queueId = queueId;
     }
@@ -49,10 +52,25 @@ public class RabbitQueue implements AutoCloseable {
                     public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties,
                             byte[] body) throws IOException {
                         String msg = new String(body);
-                        if (consumer.consume(msg, true))
-                            channel.basicAck(envelope.getDeliveryTag(), false); // 通知服务端删除消息
-                        else
+                        try {
+                            if (consumer.consume(msg, true))
+                                channel.basicAck(envelope.getDeliveryTag(), false); // 通知服务端删除消息
+                            else
+                                channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
+                        } catch (Exception e) {
+                            log.error("消费消息异常", e);
                             channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
+//                            Redis jedis = new Redis();
+//                            String lastTime = jedis.get("queue:time");
+//                            if (StringUtils.isEmpty(lastTime)
+//                                    || System.currentTimeMillis() - Long.valueOf(lastTime) > (60 * 60 * 1000 * 2)) {
+//                                Aliyundysms sms = new Aliyundysms("地藤管家", accessKeyId, accessSecret);
+//                                sms.setPhoneNumbers("13017338522");
+//                                sms.setTemplateCode("SMS_164830009");
+//                                sms.send("", String.format("{code:'%s'}", "444444"));
+//                                jedis.set("queue:time", String.valueOf(System.currentTimeMillis()));
+//                            }
+                        }
                     }
                 });
             } else if (consumerTag != null) {
