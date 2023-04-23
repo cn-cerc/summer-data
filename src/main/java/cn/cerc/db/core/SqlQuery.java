@@ -15,6 +15,8 @@ import cn.cerc.db.mysql.MysqlServerMaster;
 import cn.cerc.db.mysql.MysqlServerSlave;
 import cn.cerc.db.pgsql.PgsqlServer;
 import cn.cerc.db.sqlite.SqliteServer;
+import cn.cerc.db.zk.ZkNode;
+import cn.cerc.db.zk.ZkServer;
 
 public class SqlQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = -6671201813972797639L;
@@ -79,7 +81,18 @@ public class SqlQuery extends DataSet implements IHandle {
         this.setStorage(masterServer);
         this.setFetchFinish(true);
         String sql = sql().getCommand();
-        log.debug(sql.replaceAll("\r\n", " "));
+        String userCode = getUserCode();
+        if(userCode != null && userCode.length() > 0) {
+            ZkServer zkServer = ZkNode.get().server();
+            String node = String.format("/%s/%s/debug", ServerConfig.getAppProduct(), ServerConfig.getAppVersion())
+                    + "/" + userCode;
+            if(zkServer.exists(node)) {
+                boolean isDebug = !Utils.isEmpty(zkServer.getValue(node));
+                if (isDebug) {
+                    log.warn(sql.replaceAll("\r\n", " "));
+                }
+            }
+        }
         try (ServerClient client = getConnectionClient()) {
             this.operator().select(this, client.getConnection(), sql);
             if (this.maximum() > -1)
