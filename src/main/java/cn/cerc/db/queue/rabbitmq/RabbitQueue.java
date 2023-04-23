@@ -59,6 +59,7 @@ public class RabbitQueue implements AutoCloseable {
                                 channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
                         } catch (Exception e) {
                             log.error(e.getMessage(), e);
+                            channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
                         }
                     }
                 });
@@ -98,6 +99,11 @@ public class RabbitQueue implements AutoCloseable {
                     channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+                try {
+                    channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
+                } catch (IOException e1) {
+                    log.error(e1.getMessage(), e1);
+                }
             }
         }
     }
