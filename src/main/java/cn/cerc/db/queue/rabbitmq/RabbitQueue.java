@@ -22,9 +22,6 @@ public class RabbitQueue implements AutoCloseable {
     private Channel channel;
     private String queueId;
 
-//    private static final String accessKeyId = ServerConfig.getInstance().getProperty("oss.accessKeyId");
-//    private static final String accessSecret = ServerConfig.getInstance().getProperty("oss.accessKeySecret");
-
     public RabbitQueue(String queueId) {
         this.queueId = queueId;
     }
