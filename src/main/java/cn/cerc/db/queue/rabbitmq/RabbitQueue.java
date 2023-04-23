@@ -40,6 +40,9 @@ public class RabbitQueue implements AutoCloseable {
         }
     }
 
+    /**
+     * push 模式使用
+     */
     public void watch(OnStringMessage consumer) {
         initChannel();
         try {
@@ -55,8 +58,7 @@ public class RabbitQueue implements AutoCloseable {
                             else
                                 channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
                         } catch (Exception e) {
-                            log.error("消费消息异常", e);
-                            channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
+                            log.error(e.getMessage(), e);
                         }
                     }
                 });
@@ -69,6 +71,9 @@ public class RabbitQueue implements AutoCloseable {
         }
     }
 
+    /**
+     * pull 模式使用
+     */
     // 读取work队列中的一条消息，ack = false 需要手动确认消息已被读取
     public void pop(OnStringMessage resume) {
         initChannel();
