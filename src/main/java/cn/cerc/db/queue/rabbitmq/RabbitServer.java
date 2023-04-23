@@ -77,10 +77,10 @@ public class RabbitServer implements AutoCloseable, ApplicationListener<Applicat
         if (event instanceof ContextRefreshedEvent) {
             ApplicationContext context = event.getApplicationContext();
             if (context.getParent() == null) {
-//                if (!ServerConfig.enableTaskService()) {
-//                    log.info("当前应用未启动消息服务与定时任务");
-//                    return;
-//                }
+                if (!ServerConfig.enableTaskService()) {
+                    log.info("当前应用未启动消息服务与定时任务");
+                    return;
+                }
                 Map<String, AbstractQueue> queues = context.getBeansOfType(AbstractQueue.class);
                 queues.forEach((queueId, bean) -> {
                     if (bean.isPushMode() && bean.getService() == QueueServiceEnum.RabbitMQ) {
