@@ -51,6 +51,8 @@ public class JedisFactory {
             return items.get(configId);
         }
         synchronized (JedisFactory.class) {
+            if (items.containsKey(configId))
+                return items.get(configId);
             JedisFactory item = new JedisFactory(configId);
             items.put(configId, item);
             return item;
