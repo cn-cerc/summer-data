@@ -89,7 +89,7 @@ public class SqlQuery extends DataSet implements IHandle {
             if (zkServer.exists(node)) {
                 boolean isDebug = !Utils.isEmpty(zkServer.getValue(node));
                 if (isDebug) {
-                    log.warn(sql.replaceAll("\r\n", " "));
+                    log.info(sql.replaceAll("\r\n", " "));
                 }
             }
         }
