@@ -309,10 +309,10 @@ public class SqlWhere {
     }
 
     public final SqlWhere in(String field, Collection<?> values) {
+        if (values == null || values.size() == 0)
+            throw new RuntimeException("sql command IN conditions can not be empty");
         if (field.contains("'"))
             throw new RuntimeException("field contains error character[']");
-        if (values.size() == 0)
-            return this;
         if (this.size++ > 0)
             sb.append(joinMode == JoinDirectionEnum.And ? " and " : " or ");
         sb.append(field).append(" in (");
