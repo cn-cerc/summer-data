@@ -34,7 +34,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
 
     private boolean pushMode = false; // 默认为拉模式
     /** 是否为单机运行队列 */
-    private boolean singleRun = true;// 默认为单机运行队列
+    private boolean parallel = false;// 并行模式运行
     private QueueServiceEnum service;
     private int delayTime = 60; // 单位：秒
     private String original;
@@ -105,6 +105,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             ZkServer.get().watch(path, this);
             return;
         }
+
         // 通知ZooKeeper
         ZkServer.get().asyncSetValue(path, hostName, CreateMode.EPHEMERAL, (status, nodePath, ctx, name) -> {
             if (status == KeeperException.Code.OK.intValue()) {
@@ -122,7 +123,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         String path = config.path(queueId);
         if (event.getPath().equals(path)) {
             if (event.getType() == Watcher.Event.EventType.NodeDeleted) {
-                if (isSingleRun()) {
+                if (!isParallel()) {
                     log.debug("重新注册消息服务 {}", queueId);
                     registerQueue();
                 }
@@ -131,7 +132,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     }
 
     public final boolean allowRun() {
-        if (!isSingleRun())
+        if (isParallel())
             return true;
         String queueId = this.getId();
         if (config.exists(queueId)) {
@@ -248,8 +249,8 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         this.pushMode = pushMode;
     }
 
-    public boolean isSingleRun() {
-        return singleRun;
+    public boolean isParallel() {
+        return parallel;
     }
 
     protected void pushToSqlmq(String message) {
