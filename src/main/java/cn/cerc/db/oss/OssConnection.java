@@ -123,6 +123,10 @@ public class OssConnection implements IConnection {
 
     // 下载文件
     public boolean download(String fileName, String localFile) {
+        if (Utils.isEmpty(fileName))
+            return false;
+        if (Utils.isEmpty(localFile))
+            return false;
         GetObjectRequest param = new GetObjectRequest(getBucket(), fileName);
         File file = new File(localFile);
         ObjectMetadata metadata = getClient().getObject(param, file);
@@ -175,6 +179,8 @@ public class OssConnection implements IConnection {
      * @return 若存在则返回true
      */
     public boolean existsFile(String fileName) {
+        if (Utils.isEmpty(fileName))
+            return false;
         try {
             OSSObject obj = getClient().getObject(getBucket(), fileName);
             return obj.getObjectMetadata().getContentLength() > 0;
