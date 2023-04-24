@@ -135,7 +135,10 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             return true;
         String queueId = this.getId();
         if (config.exists(queueId)) {
-            return config.getString(queueId, "").equals(hostName);
+            String value = ZkServer.get().getValue(config.path(queueId));
+            if (value == null)
+                return false;
+            return value.equals(hostName);
         }
         return false;
     }
