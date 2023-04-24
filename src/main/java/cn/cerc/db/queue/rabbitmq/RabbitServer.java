@@ -83,7 +83,9 @@ public class RabbitServer implements AutoCloseable, ApplicationListener<Applicat
                 }
                 Map<String, AbstractQueue> queues = context.getBeansOfType(AbstractQueue.class);
                 queues.forEach((queueId, bean) -> {
-                    if (bean.isPushMode() && bean.getService() == QueueServiceEnum.RabbitMQ) {
+                    if (bean.isSingleRun())
+                        bean.registerQueue();
+                    else if (bean.isPushMode() && bean.getService() == QueueServiceEnum.RabbitMQ) {
                         var queue = new RabbitQueue(bean.getId());
                         queue.watch(bean);
                         startItems.add(queue);
