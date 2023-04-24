@@ -108,7 +108,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         // 通知ZooKeeper
         ZkServer.get().asyncSetValue(path, hostName, CreateMode.EPHEMERAL, (status, nodePath, ctx, name) -> {
             if (status == KeeperException.Code.OK.intValue()) {
-                log.info("消息服务注册成功 {}", queueId);
+                log.debug("消息服务注册成功 {}", queueId);
                 if (this.isPushMode() && this.getService() == QueueServiceEnum.RabbitMQ) {
                     new RabbitQueue(queueId).watch(this);
                 }
@@ -123,7 +123,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         if (event.getPath().equals(path)) {
             if (event.getType() == Watcher.Event.EventType.NodeDeleted) {
                 if (isSingleRun()) {
-                    log.info("重新注册消息服务 {}", queueId);
+                    log.debug("重新注册消息服务 {}", queueId);
                     registerQueue();
                 }
             }
