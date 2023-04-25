@@ -33,7 +33,6 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     private static String hostName;
 
     private boolean pushMode = false; // 默认为拉模式
-    /** 是否为单机运行队列 */
     private boolean parallel = false;// 并行模式运行
     private QueueServiceEnum service;
     private int delayTime = 60; // 单位：秒
