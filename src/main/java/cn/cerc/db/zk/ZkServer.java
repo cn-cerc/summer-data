@@ -219,7 +219,7 @@ public class ZkServer implements AutoCloseable, Watcher {
                 this.create(parent, "", CreateMode.PERSISTENT);
         }
 
-        log.info("async create node: " + node);
+        log.info("async create node {}", node);
         client.create(node, value.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, createMode, callBack, null);
         return this;
     }
