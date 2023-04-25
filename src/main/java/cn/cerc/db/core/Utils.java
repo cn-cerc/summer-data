@@ -626,6 +626,16 @@ public class Utils {
     }
 
     /**
+     * 判断Map为空
+     * 
+     * @param values 目标Map
+     * @return 判断目标Map是否为空，为NULL或键值对个数为0
+     */
+    public static final boolean isEmpty(Map<?, ?> map) {
+        return map == null || map.size() == 0;
+    }
+
+    /**
      * <pre>
      * Utils.isNotEmpty(null)      = false
      * Utils.isNotEmpty("")        = false
