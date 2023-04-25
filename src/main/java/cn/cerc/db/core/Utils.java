@@ -626,6 +626,16 @@ public class Utils {
     }
 
     /**
+     * 判断集合是否为空
+     * 
+     * @param values 目标数组
+     * @return 判断目标数组是否为空
+     */
+    public static boolean isEmpty(Object[] values) {
+        return values == null || values.length == 0;
+    }
+
+    /**
      * 判断Map为空
      * 
      * @param values 目标Map
