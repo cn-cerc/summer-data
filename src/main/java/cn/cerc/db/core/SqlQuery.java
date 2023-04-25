@@ -84,13 +84,12 @@ public class SqlQuery extends DataSet implements IHandle {
         if (log.isDebugEnabled()) {
             log.debug(sql.replaceAll("\r\n", " "));
         } else {
-            String userCode = getUserCode();
-            if (!Utils.isEmpty(userCode)) {
+            if (getSession() != null && !Utils.isEmpty(getUserCode())) {
                 var config = ServerConfig.getInstance();
                 if (!Utils.isEmpty(config.getProperty("zookeeper.host"))) {
                     ZkServer zkServer = ZkNode.get().server();
                     String node = String.format("/%s/%s/debug/%s", ServerConfig.getAppProduct(),
-                            ServerConfig.getAppVersion(), userCode);
+                            ServerConfig.getAppVersion(), getUserCode());
                     if (zkServer.exists(node)) {
                         boolean isDebug = !Utils.isEmpty(zkServer.getValue(node));
                         if (isDebug) 
