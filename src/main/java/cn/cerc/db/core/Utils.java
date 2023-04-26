@@ -16,6 +16,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -612,6 +613,36 @@ public class Utils {
      */
     public static final boolean isEmpty(String str) {
         return str == null || str.length() == 0;
+    }
+
+    /**
+     * 判断集合为空
+     * 
+     * @param values 目标集合
+     * @return 判断目标集合是否为空
+     */
+    public static final boolean isEmpty(Collection<?> values) {
+        return values == null || values.size() == 0;
+    }
+
+    /**
+     * 判断集合是否为空
+     * 
+     * @param values 目标数组
+     * @return 判断目标数组是否为空
+     */
+    public static boolean isEmpty(Object[] values) {
+        return values == null || values.length == 0;
+    }
+
+    /**
+     * 判断Map为空
+     * 
+     * @param values 目标Map
+     * @return 判断目标Map是否为空，为NULL或键值对个数为0
+     */
+    public static final boolean isEmpty(Map<?, ?> map) {
+        return map == null || map.size() == 0;
     }
 
     /**
