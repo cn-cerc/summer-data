@@ -56,7 +56,7 @@ public class Utils {
      * @return 经过处理后的值
      */
     public static String safeString(String value) {
-        return value == null ? "" : value.replaceAll("'", "''");
+        return value == null ? "" : value.replaceAll("'", "''").replace("\\", "\\\\");
     }
 
     public static String serializeToString(Object obj) throws IOException {
