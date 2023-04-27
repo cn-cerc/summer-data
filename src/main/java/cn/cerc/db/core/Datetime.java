@@ -494,7 +494,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
                 throw new DateFormatErrorException(text);
             }
 
-            String value = text;
+            String value = text.replace("T", " ");
             // 防止年月日均为0
             if ("0000-00-00".equals(text.substring(0, 10)))
                 value = "0001-01-01" + text.substring(10, text.length());
