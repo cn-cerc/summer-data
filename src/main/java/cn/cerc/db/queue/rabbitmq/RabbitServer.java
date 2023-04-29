@@ -1,6 +1,7 @@
 package cn.cerc.db.queue.rabbitmq;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,8 @@ public class RabbitServer implements AutoCloseable, ApplicationListener<Applicat
 
             this.connection = factory.newConnection();
             this.connection.addShutdownListener(cause -> log.info("RabbitMQ connection closed."));
+        } catch (UnknownHostException e) {
+            log.error(e.getMessage());
         } catch (IOException | TimeoutException e) {
             log.error(e.getMessage(), e);
         }
@@ -82,14 +85,18 @@ public class RabbitServer implements AutoCloseable, ApplicationListener<Applicat
                     return;
                 }
                 Map<String, AbstractQueue> queues = context.getBeansOfType(AbstractQueue.class);
-                queues.forEach((queueId, bean) -> {
-                    if (bean.isPushMode() && bean.getService() == QueueServiceEnum.RabbitMQ) {
-                        var queue = new RabbitQueue(bean.getId());
-                        queue.watch(bean);
-                        startItems.add(queue);
-                    }
-                });
-                log.info("成功注册的推送消息数量：" + startItems.size());
+                try {
+                    queues.forEach((queueId, bean) -> {
+                        if (bean.isPushMode() && bean.getService() == QueueServiceEnum.RabbitMQ) {
+                            var queue = new RabbitQueue(bean.getId());
+                            queue.watch(bean);
+                            startItems.add(queue);
+                        }
+                    });
+                    log.info("成功注册的推送消息数量：" + startItems.size());
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
             }
         } else if (event instanceof ContextClosedEvent) {
             for (var queue : startItems)

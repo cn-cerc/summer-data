@@ -29,11 +29,16 @@ public class RabbitQueue implements AutoCloseable {
     private void initChannel() {
         if (channel == null) {
             try {
-                channel = RabbitServer.get().getConnection().createChannel();
-                channel.addShutdownListener(
-                        cause -> log.debug("RabbitMQ channel {} closed.", channel.getChannelNumber()));
-                channel.basicQos(this.maximum);
-                channel.queueDeclare(queueId, true, false, false, null);
+                var conn = RabbitServer.get().getConnection();
+                if (conn != null) {
+                    channel = conn.createChannel();
+                    channel.addShutdownListener(
+                            cause -> log.debug("RabbitMQ channel {} closed.", channel.getChannelNumber()));
+                    channel.basicQos(this.maximum);
+                    channel.queueDeclare(queueId, true, false, false, null);
+                } else {
+                    log.error("无法创建 RabbitServer 连接");
+                }
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
             }
@@ -46,7 +51,7 @@ public class RabbitQueue implements AutoCloseable {
     public void watch(OnStringMessage consumer) {
         initChannel();
         try {
-            if (consumer != null) {
+            if (consumer != null && channel != null) {
                 consumerTag = channel.basicConsume(queueId, false, new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties,
