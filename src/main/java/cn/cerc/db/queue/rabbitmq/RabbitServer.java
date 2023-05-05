@@ -53,6 +53,8 @@ public class RabbitServer implements AutoCloseable, ApplicationListener<Applicat
             factory.setPort(Integer.parseInt(port));
             factory.setUsername(username);
             factory.setPassword(password);
+            factory.setConnectionTimeout(5000);
+            factory.setRequestedHeartbeat(60);
 
             this.connection = factory.newConnection();
             this.connection.addShutdownListener(cause -> log.info("RabbitMQ connection closed."));
