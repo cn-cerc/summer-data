@@ -1,5 +1,6 @@
 package cn.cerc.db.mongo;
 
+import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -7,6 +8,8 @@ import org.springframework.stereotype.Component;
 import com.mongodb.ConnectionString;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
@@ -71,6 +74,12 @@ public class MongoConfig {
         if (Utils.isEmpty(database))
             throw new RuntimeException("MongoDB database name is empty.");
         return database;
+    }
+
+    public static MongoCollection<Document> getCollection(String collectionName) {
+        MongoClient mongoClient = MongoConfig.getClient();
+        MongoDatabase database = mongoClient.getDatabase(MongoConfig.database());
+        return database.getCollection(collectionName);
     }
 
 }
