@@ -261,6 +261,19 @@ public class MongoOSS {
     }
 
     /**
+     * 从Mongo中删除OSS文件
+     * 
+     * @param fileName 文件名
+     */
+    public static void delete(String fileName) {
+        Optional<GridFSFile> result = findByName(fileName);
+        if (result.isPresent()) {
+            var objectId = result.get().getObjectId();
+            bucket().delete(objectId);
+        }
+    }
+
+    /**
      * 
      * @return 列出所有的文件
      */
