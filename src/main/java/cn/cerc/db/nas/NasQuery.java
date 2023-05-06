@@ -18,6 +18,7 @@ import cn.cerc.db.core.SqlText;
 import cn.cerc.db.core.Utils;
 import cn.cerc.db.queue.QueueOperator;
 
+@Deprecated
 public class NasQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = 8879520916623870766L;
     private static final Logger log = LoggerFactory.getLogger(NasQuery.class);
