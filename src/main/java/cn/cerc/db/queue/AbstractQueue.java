@@ -1,8 +1,9 @@
 package cn.cerc.db.queue;
 
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -22,7 +23,10 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
 
     // 创建一个缓存线程池，在必要的时候在创建线程，若线程空闲60秒则终止该线程
-    public static final ExecutorService pool = Executors.newCachedThreadPool();
+//    public static final ExecutorService pool = Executors.newCachedThreadPool();
+
+    public static final ThreadPoolExecutor pool = new ThreadPoolExecutor(8, 16, 60, TimeUnit.SECONDS,
+            new ArrayBlockingQueue<>(100), new ThreadPoolExecutor.AbortPolicy());
 
     private static ZkConfig config;
     private boolean pushMode = false; // 默认为拉模式
@@ -57,7 +61,8 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     }
 
     /**
-     *  切换消息队列所指向的机群，如FPL/OBM/CSM等
+     * 切换消息队列所指向的机群，如FPL/OBM/CSM等
+     * 
      * @param original
      */
     protected void setOriginal(String original) {
