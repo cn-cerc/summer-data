@@ -44,26 +44,28 @@ public class MongoConfig {
                         "mongodb.local.top:27018,mongodb.local.top:27019,mongodb.local.top:27020"));
 
         synchronized (MongoConfig.class) {
-            StringBuilder builder = new StringBuilder();
-            builder.append("mongodb://")
-                    .append(username)
-                    .append(":")
-                    .append(password)
-                    .append("@")
-                    .append(hosts)
-                    .append("/")
-                    .append(database);
+            if (client == null) {
+                StringBuilder builder = new StringBuilder();
+                builder.append("mongodb://")
+                        .append(username)
+                        .append(":")
+                        .append(password)
+                        .append("@")
+                        .append(hosts)
+                        .append("/")
+                        .append(database);
 
-            // 是否启用集群模式
-            if ("true".equals(enablerep)) {
-                builder.append("?").append("maxPoolSize=").append(maxpoolsize);
-                builder.append("&").append("connectTimeoutMS=").append("3000");
-                builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
-                log.info("Connect to the MongoDB sharded cluster {}", builder);
+                // 是否启用集群模式
+                if ("true".equals(enablerep)) {
+                    builder.append("?").append("maxPoolSize=").append(maxpoolsize);
+                    builder.append("&").append("connectTimeoutMS=").append("3000");
+                    builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
+                    log.info("Connect to the MongoDB sharded cluster {}", builder);
+                }
+
+                ConnectionString connection = new ConnectionString(builder.toString());
+                client = MongoClients.create(connection);
             }
-
-            ConnectionString connection = new ConnectionString(builder.toString());
-            client = MongoClients.create(connection);
         }
         return client;
     }
