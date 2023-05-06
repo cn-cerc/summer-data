@@ -2,12 +2,14 @@ package cn.cerc.db.queue.rabbitmq;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.GetResponse;
@@ -20,6 +22,7 @@ public class RabbitQueue implements AutoCloseable {
     private String consumerTag = null;
     private int maximum = 1;
     private Channel channel;
+    private Connection connection;
     private String queueId;
 
     public RabbitQueue(String queueId) {
@@ -27,21 +30,21 @@ public class RabbitQueue implements AutoCloseable {
     }
 
     private void initChannel() {
-        if (channel == null) {
-            try {
-                var conn = RabbitServer.get().getConnection();
-                if (conn != null) {
-                    channel = conn.createChannel();
-                    channel.addShutdownListener(
-                            cause -> log.debug("RabbitMQ channel {} closed.", channel.getChannelNumber()));
-                    channel.basicQos(this.maximum);
-                    channel.queueDeclare(queueId, true, false, false, null);
-                } else {
-                    log.error("无法创建 RabbitServer 连接");
-                }
-            } catch (IOException e) {
-                log.error(e.getMessage(), e);
-            }
+        try {
+            connection = RabbitServer.INSTANCE.getFactory().newConnection();
+//            connection.addShutdownListener(cause -> log.info("RabbitMQ connection closed."));
+            if (connection == null)
+                throw new RuntimeException("rabbitmq connection 创建失败，请立即检查 mq 的服务状态");
+
+            channel = connection.createChannel();
+            if (channel == null)
+                throw new RuntimeException("rabbitmq channel 创建失败，请立即检查 mq 的服务状态");
+
+            channel.addShutdownListener(cause -> log.debug("RabbitMQ channel {} closed.", channel.getChannelNumber()));
+            channel.basicQos(this.maximum);
+            channel.queueDeclare(queueId, true, false, false, null);
+        } catch (IOException | TimeoutException e) {
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -139,6 +142,10 @@ public class RabbitQueue implements AutoCloseable {
             if (channel != null) {
                 channel.close();
                 channel = null;
+            }
+            if (connection != null) {
+                connection.close();
+                connection = null;
             }
         } catch (Exception e) {
             e.printStackTrace();
