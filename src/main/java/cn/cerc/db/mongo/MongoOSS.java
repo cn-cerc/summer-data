@@ -266,6 +266,8 @@ public class MongoOSS {
      * @param fileName 文件名
      */
     public static void delete(String fileName) {
+        if (!fileName.startsWith("/"))
+            fileName = "/" + fileName;
         Optional<GridFSFile> result = findByName(fileName);
         if (result.isPresent()) {
             var objectId = result.get().getObjectId();
