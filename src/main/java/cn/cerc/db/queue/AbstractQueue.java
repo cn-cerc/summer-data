@@ -26,7 +26,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
 //    public static final ExecutorService pool = Executors.newCachedThreadPool();
 
     public static final ThreadPoolExecutor pool = new ThreadPoolExecutor(8, 16, 60, TimeUnit.SECONDS,
-            new ArrayBlockingQueue<>(300), new ThreadPoolExecutor.AbortPolicy());
+            new ArrayBlockingQueue<>(500), new ThreadPoolExecutor.CallerRunsPolicy());
 
     private static ZkConfig config;
     private boolean pushMode = false; // 默认为拉模式
