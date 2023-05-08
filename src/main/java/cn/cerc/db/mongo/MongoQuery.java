@@ -37,6 +37,7 @@ import cn.cerc.db.core.SqlServerType;
 import cn.cerc.db.core.SqlText;
 import cn.cerc.db.core.Utils;
 
+@Deprecated
 public class MongoQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = -1262005194419604476L;
     private static final ClassResource res = new ClassResource(MongoQuery.class, SummerDB.ID);
