@@ -314,6 +314,16 @@ public class MongoOSS {
      * @param fileName 文件名
      */
     public static void delete(String fileName) {
+        // 兼容本地开发
+        if (fileName.startsWith("http")) {
+            if (fileName.contains("top/")) {
+                fileName = fileName.substring(fileName.indexOf("top/") + 3);
+            } else if (fileName.contains("com/")) {
+                fileName = fileName.substring(fileName.indexOf("com/") + 3);
+            } else {
+                fileName = fileName.substring(fileName.indexOf("site/") + 4);
+            }
+        }
         if (!fileName.startsWith("/"))
             fileName = "/" + fileName;
         Optional<GridFSFile> result = findByName(fileName);
