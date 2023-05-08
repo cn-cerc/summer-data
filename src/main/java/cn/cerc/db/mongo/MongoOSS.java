@@ -2,6 +2,8 @@ package cn.cerc.db.mongo;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -188,10 +190,56 @@ public class MongoOSS {
      * @return 返回 gridfs 文件对象
      */
     public static Optional<GridFSFile> findByName(String filename) {
+        if (!filename.startsWith("/"))
+            filename = "/" + filename;
         var result = MongoOSS.bucket().find(new BasicDBObject("filename", filename)).first();
         return Optional.ofNullable(result);
     }
 
+    /**
+     * 
+     * @param filename hoss的存储文件名称
+     * @return 返回 filename 文件对象是否在mongodb文件库里存在
+     */
+    public static boolean exist(String filename) {
+        Optional<GridFSFile> fsFile = findByName(filename);
+        return !fsFile.isEmpty();
+    }
+
+    /**
+     * 
+     * @param fileNameSource hoss的存储文件源文件名称
+     * @param fileNameTarget hoss的存储文件目标文件名称
+     * @return 返回 filename 文件对象是否复制成功
+     */
+    public static boolean copy(String fileNameSource, String fileNameTarget) {
+        Optional<GridFSFile> fsFile = findByName(fileNameSource);
+        if (fsFile.isEmpty())
+            return false;
+            
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        bucket().downloadToStream(fileNameSource, outputStream);
+        
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        upload(fileNameTarget, inputStream, null);
+        return true;
+    }
+    
+    /**
+     * 下载mongodb文件为输入流
+     * 
+     * @param fileName
+     * @throws IOException
+     */
+    public static InputStream download(String fileName) throws IOException {
+        if (!fileName.startsWith("/"))
+            fileName = "/" + fileName;
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        MongoOSS.bucket().downloadToStream(fileName, outputStream);
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        return inputStream;
+    }
+    
     /**
      * 下载web文件到指定的本地文件
      * 
@@ -266,6 +314,8 @@ public class MongoOSS {
      * @param fileName 文件名
      */
     public static void delete(String fileName) {
+        if (!fileName.startsWith("/"))
+            fileName = "/" + fileName;
         Optional<GridFSFile> result = findByName(fileName);
         if (result.isPresent()) {
             var objectId = result.get().getObjectId();
