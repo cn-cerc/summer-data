@@ -80,21 +80,23 @@ public class RabbitServer implements AutoCloseable, ApplicationListener<Applicat
         if (event instanceof ContextRefreshedEvent) {
             ApplicationContext context = event.getApplicationContext();
             if (context.getParent() == null) {
-                if (!ServerConfig.enableTaskService()) {
-                    log.info("当前应用未启动消息服务与定时任务");
-                    return;
-                }
-                Map<String, AbstractQueue> queues = context.getBeansOfType(AbstractQueue.class);
-                queues.forEach((queueId, bean) -> {
-                    if (!bean.isParallel())
-                        bean.registerQueue();// 单机模式注册到 zookeeper
-                    else if (bean.isPushMode() && bean.getService() == QueueServiceEnum.RabbitMQ) {
-                        // 多机模式开启多个消费者
-                        var queue = new RabbitQueue(bean.getId());
-                        queue.watch(bean);
-                        startItems.add(queue);
+                new Thread(() -> {
+                    if (!ServerConfig.enableTaskService()) {
+                        log.info("当前应用未启动消息服务与定时任务");
+                        return;
                     }
-                });
+                    Map<String, AbstractQueue> queues = context.getBeansOfType(AbstractQueue.class);
+                    queues.forEach((queueId, bean) -> {
+                        if (!bean.isParallel())
+                            bean.registerQueue();// 单机模式注册到 zookeeper
+                        else if (bean.isPushMode() && bean.getService() == QueueServiceEnum.RabbitMQ) {
+                            // 多机模式开启多个消费者
+                            var queue = new RabbitQueue(bean.getId());
+                            queue.watch(bean);
+                            startItems.add(queue);
+                        }
+                    });
+                }).start();
                 log.info("成功注册的推送消息数量 {}", startItems.size());
             }
         } else if (event instanceof ContextClosedEvent) {
