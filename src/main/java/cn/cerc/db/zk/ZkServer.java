@@ -58,12 +58,6 @@ public class ZkServer implements AutoCloseable, Watcher {
         if (!host.contains(":"))
             host = host + ":" + this.port;
 
-        if (Utils.isEmpty(host)) {
-            return;
-        }
-        if (!host.contains(":"))
-            host = host + ":" + this.port;
-
         try {
             cdl = new CountDownLatch(1);
             System.setProperty("zookeeper.sasl.client", "false");
