@@ -1,9 +1,12 @@
 package cn.cerc.db.queue;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -12,11 +15,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.core.Utils;
 import cn.cerc.db.queue.mns.MnsServer;
 import cn.cerc.db.queue.rabbitmq.RabbitQueue;
 import cn.cerc.db.queue.sqlmq.SqlmqServer;
 import cn.cerc.db.redis.Redis;
 import cn.cerc.db.zk.ZkConfig;
+import cn.cerc.db.zk.ZkServer;
 
 public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnable {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
@@ -24,12 +29,25 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     // 创建一个缓存线程池，在必要的时候在创建线程，若线程空闲60秒则终止该线程
     public static final ExecutorService pool = Executors.newCachedThreadPool();
 
-    private static ZkConfig config;
+    private static final ZkConfig config = new ZkConfig("/queues");
+    private static String hostName;
+
     private boolean pushMode = false; // 默认为拉模式
+    private boolean parallel = false;// 并行模式运行
     private QueueServiceEnum service;
     private int delayTime = 60; // 单位：秒
     private String original;
     private String order;
+
+    static {
+        try {
+            InetAddress addr = InetAddress.getLocalHost();
+            hostName = addr.getHostName() + ":" + Utils.newGuid();
+        } catch (UnknownHostException e) {
+            log.error(e.getMessage(), e);
+            hostName = Utils.newGuid();
+        }
+    }
 
     public AbstractQueue() {
         super();
@@ -57,7 +75,8 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     }
 
     /**
-     *  切换消息队列所指向的机群，如FPL/OBM/CSM等
+     * 切换消息队列所指向的机群，如FPL/OBM/CSM等
+     * 
      * @param original
      */
     protected void setOriginal(String original) {
@@ -78,46 +97,50 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         return this.delayTime;
     }
 
-    public void startService() {
-        // 通知ZooKeeper
-        try {
-            ZkConfig host = new ZkConfig(String.format("/app/%s", ServerConfig.getAppName()));
-            String child = host.path("status");
-            var stat = host.client().exists(child, this);
-            if (stat == null) {
-                host.setValue("status", "running");
-                stat = host.client().exists(child, this);
-                if (stat == null) {
-                    log.warn("配置有误，无法启动消息队列");
-                    return;
-                }
-            }
-        } catch (KeeperException | InterruptedException e) {
-            log.error(e.getMessage());
-            e.printStackTrace();
+    public final void registerQueue() {
+        String queueId = this.getId();
+        String path = config.path(queueId);
+        if (config.exists(queueId)) {
+            ZkServer.get().watch(path, this);
             return;
         }
-        config().setTempNode(this.getClass().getSimpleName(), "running");
-        log.info("注册消息服务：{} from {}", this.getId(), this.getService().name());
+
+        // 通知ZooKeeper
+        ZkServer.get().asyncSetValue(path, hostName, CreateMode.EPHEMERAL, (status, nodePath, ctx, name) -> {
+            if (status == KeeperException.Code.OK.intValue()) {
+                log.debug("消息服务注册成功 {}", queueId);
+                if (this.isPushMode() && this.getService() == QueueServiceEnum.RabbitMQ) {
+                    new RabbitQueue(queueId).watch(this);
+                }
+            }
+        }).watch(path, this);
     }
 
     @Override
     public void process(WatchedEvent event) {
-        if (event.getType() == Watcher.Event.EventType.DataWatchRemoved) {
-            log.info("此主机运行状态被移除");
-            this.stopService();
+        String queueId = this.getId();
+        String path = config.path(queueId);
+        if (event.getPath().equals(path)) {
+            if (event.getType() == Watcher.Event.EventType.NodeDeleted) {
+                if (!isParallel()) {
+                    log.debug("重新注册消息服务 {}", queueId);
+                    registerQueue();
+                }
+            }
         }
     }
 
-    public void stopService() {
-        log.info("{} 关闭了消息推送服务", this.getTopic());
-        config().delete(this.getClass().getSimpleName());
-    }
-
-    private ZkConfig config() {
-        if (config == null)
-            config = new ZkConfig(String.format("/app/%s/task", ServerConfig.getAppName()));
-        return config;
+    public final boolean allowRun() {
+        if (isParallel())
+            return true;
+        String queueId = this.getId();
+        if (config.exists(queueId)) {
+            String value = ZkServer.get().getValue(config.path(queueId));
+            if (value == null)
+                return false;
+            return value.equals(hostName);
+        }
+        return false;
     }
 
     protected String push(String data) {
@@ -189,7 +212,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         if (this.isPushMode())
             return;
 
-        if (ServerConfig.enableTaskService()) {
+        if (ServerConfig.enableTaskService() && this.allowRun()) {
             switch (this.getService()) {
             case Redis, AliyunMNS, RabbitMQ:
                 log.debug("thread pool add {} job {}", Thread.currentThread(), this.getClass().getSimpleName());
@@ -223,6 +246,10 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
 
     protected void setPushMode(boolean pushMode) {
         this.pushMode = pushMode;
+    }
+
+    public boolean isParallel() {
+        return parallel;
     }
 
     protected void pushToSqlmq(String message) {
