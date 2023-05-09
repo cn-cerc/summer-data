@@ -26,8 +26,8 @@ public class ZkServer implements AutoCloseable, Watcher {
     private static final ZkServer server;
     private CountDownLatch cdl;
     private ZooKeeper client;
-    private String host;
-    private String port;
+    private final String host;
+    private final String port;
 
     static {
         server = new ZkServer();
@@ -41,6 +41,10 @@ public class ZkServer implements AutoCloseable, Watcher {
         var config = ServerConfig.getInstance();
         this.host = config.getProperty("zookeeper.host");
         this.port = config.getProperty("zookeeper.port", "2181");
+        if (Utils.isEmpty(host)) {
+            log.error("严重错误：读取不到 zookeeper.host 配置项！");
+            return;
+        }
         this.init(host, port);
     }
 
@@ -51,18 +55,14 @@ public class ZkServer implements AutoCloseable, Watcher {
     }
 
     private void init(String host, String port) {
-        if (Utils.isEmpty(host)) {
-            log.error("严重错误：读取不到 zookeeper.host 配置项！");
-            return;
-        }
         if (!host.contains(":"))
-            host = host + ":" + this.port;
+            host = host + ":" + port;
 
         try {
-            cdl = new CountDownLatch(1);
+            this.cdl = new CountDownLatch(1);
             System.setProperty("zookeeper.sasl.client", "false");
             this.client = new ZooKeeper(host, 50000, this);
-            cdl.await(60, TimeUnit.SECONDS); // 等待zk联接成功
+            this.cdl.await(60, TimeUnit.SECONDS); // 等待zk联接成功
         } catch (IOException | InterruptedException e) {
             log.error(e.getMessage(), e);
         }
