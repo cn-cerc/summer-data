@@ -1,6 +1,7 @@
 package cn.cerc.db.queue.rabbitmq;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,8 @@ public class RabbitServer implements AutoCloseable, ApplicationListener<Applicat
 
             this.connection = factory.newConnection();
             this.connection.addShutdownListener(cause -> log.info("RabbitMQ connection closed."));
+        } catch (UnknownHostException e) {
+            log.error(e.getMessage());
         } catch (IOException | TimeoutException e) {
             log.error(e.getMessage(), e);
         }

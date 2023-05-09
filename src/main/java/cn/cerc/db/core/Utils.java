@@ -14,13 +14,13 @@ import java.math.RoundingMode;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -372,7 +372,7 @@ public class Utils {
      * @return 随机数
      */
     public static String getNumRandom(int len) {
-        Random random = new Random();
+        SecureRandom random = new SecureRandom();
         String verify = "";
         for (int i = 0; i < len; i++) {
             verify = verify + random.nextInt(10);
@@ -389,7 +389,7 @@ public class Utils {
         if (max < min) {
             throw new RuntimeException("max must > min");
         }
-        Random random = new Random();
+        SecureRandom random = new SecureRandom();
         return random.nextInt((max - min) + 1) + min;
     }
 
@@ -564,10 +564,9 @@ public class Utils {
      */
     public static String getStrRandom(int length) {
         StringBuilder result = new StringBuilder();
-        Random random = new Random();
+        SecureRandom random = new SecureRandom();
         for (int i = 0; i < length; i++) {
             String symbol = random.nextInt(2) % 2 == 0 ? "char" : "num";
-
             if ("char".equalsIgnoreCase(symbol)) {
                 // 随机获取大小写字母
                 int letterIndex = random.nextInt(2) % 2 == 0 ? 65 : 97;
