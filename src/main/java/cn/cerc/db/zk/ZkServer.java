@@ -39,8 +39,8 @@ public class ZkServer implements AutoCloseable, Watcher {
 
     public ZkServer() {
         var config = ServerConfig.getInstance();
-        String host = config.getProperty("zookeeper.host");
-        String port = config.getProperty("zookeeper.port", "2181");
+        this.host = config.getProperty("zookeeper.host");
+        this.port = config.getProperty("zookeeper.port", "2181");
         this.init(host, port);
     }
 
