@@ -62,7 +62,6 @@ public class ZkServer implements AutoCloseable, Watcher {
         this.host = host;
         this.port = port;
         if (Utils.isEmpty(host)) {
-            log.error("严重错误：读取不到 zookeeper.host 配置项！");
             return;
         }
         if (!host.contains(":"))
