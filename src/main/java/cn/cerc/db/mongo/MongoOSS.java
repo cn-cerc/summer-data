@@ -216,15 +216,15 @@ public class MongoOSS {
         Optional<GridFSFile> fsFile = findByName(fileNameSource);
         if (fsFile.isEmpty())
             return false;
-            
+
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         bucket().downloadToStream(fileNameSource, outputStream);
-        
+
         ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
         upload(fileNameTarget, inputStream, null);
         return true;
     }
-    
+
     /**
      * 下载mongodb文件为输入流
      * 
@@ -239,7 +239,7 @@ public class MongoOSS {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
         return inputStream;
     }
-    
+
     /**
      * 下载web文件到指定的本地文件
      * 
