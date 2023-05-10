@@ -229,9 +229,8 @@ public class MongoOSS {
      * 下载mongodb文件为输入流
      * 
      * @param fileName
-     * @throws IOException
      */
-    public static InputStream download(String fileName) throws IOException {
+    public static InputStream download(String fileName) {
         if (!fileName.startsWith("/"))
             fileName = "/" + fileName;
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
