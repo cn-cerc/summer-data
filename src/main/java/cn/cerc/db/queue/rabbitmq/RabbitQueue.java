@@ -15,6 +15,8 @@ import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.GetResponse;
 import com.rabbitmq.client.MessageProperties;
 
+import cn.cerc.db.core.Curl;
+import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.queue.OnStringMessage;
 
 public class RabbitQueue implements AutoCloseable {
@@ -45,6 +47,16 @@ public class RabbitQueue implements AutoCloseable {
             channel.queueDeclare(queueId, true, false, false, null);
         } catch (IOException | TimeoutException e) {
             log.error(e.getMessage(), e);
+            Curl curl = new Curl();
+            ServerConfig config = ServerConfig.getInstance();
+            String site = config.getProperty("qc.api.checkMQ.site", "");
+            String project = ServerConfig.getAppProduct();
+            String version = ServerConfig.getAppVersion();
+            try {
+                curl.doPost(site, project + version);
+            } catch (Exception ex) {
+                log.warn("{} {} MQ连接超时，qc监控MQ接口异常", project, version);
+            }
         }
     }
 
