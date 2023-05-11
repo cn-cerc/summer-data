@@ -24,12 +24,7 @@ public class MongoConfig {
     private static final String prefix = String.format("/%s/%s/mongodb/", ServerConfig.getAppProduct(),
             ServerConfig.getAppVersion());
 
-    private static volatile MongoClient client;
-
     public static MongoClient getClient() {
-        if (client != null)
-            return client;
-
         var username = ZkNode.get()
                 .getNodeValue(prefix + "username", () -> config.getProperty("mgdb.username", "mongodb_user"));
         var password = ZkNode.get()
@@ -43,30 +38,26 @@ public class MongoConfig {
                 .getNodeValue(prefix + "hosts", () -> config.getProperty("mgdb.ipandport",
                         "mongodb.local.top:27018,mongodb.local.top:27019,mongodb.local.top:27020"));
 
-        synchronized (MongoConfig.class) {
-            if (client == null) {
-                StringBuilder builder = new StringBuilder();
-                builder.append("mongodb://")
-                        .append(username)
-                        .append(":")
-                        .append(password)
-                        .append("@")
-                        .append(hosts)
-                        .append("/")
-                        .append(database);
+        StringBuilder builder = new StringBuilder();
+        builder.append("mongodb://")
+                .append(username)
+                .append(":")
+                .append(password)
+                .append("@")
+                .append(hosts)
+                .append("/")
+                .append(database);
 
-                // 是否启用集群模式
-                if ("true".equals(enablerep)) {
-                    builder.append("?").append("maxPoolSize=").append(maxpoolsize);
-                    builder.append("&").append("connectTimeoutMS=").append("3000");
-                    builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
-                    log.info("Connect to the MongoDB sharded cluster {}", builder);
-                }
-
-                ConnectionString connection = new ConnectionString(builder.toString());
-                client = MongoClients.create(connection);
-            }
+        // 是否启用集群模式
+        if ("true".equals(enablerep)) {
+            builder.append("?").append("maxPoolSize=").append(maxpoolsize);
+            builder.append("&").append("connectTimeoutMS=").append("3000");
+            builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
+            log.info("Connect to the MongoDB sharded cluster {}", builder);
         }
+
+        ConnectionString connection = new ConnectionString(builder.toString());
+        MongoClient client = MongoClients.create(connection);
         return client;
     }
 
