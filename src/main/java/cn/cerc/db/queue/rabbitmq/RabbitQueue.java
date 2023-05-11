@@ -16,6 +16,7 @@ import com.rabbitmq.client.GetResponse;
 import com.rabbitmq.client.MessageProperties;
 
 import cn.cerc.db.core.Curl;
+import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.queue.OnStringMessage;
 
@@ -52,8 +53,9 @@ public class RabbitQueue implements AutoCloseable {
             String site = config.getProperty("qc.api.checkMQ.site", "");
             String project = ServerConfig.getAppProduct();
             String version = ServerConfig.getAppVersion();
+            String message = String.join(".", project, version, new Datetime().toString());
             try {
-                curl.doPost(site, project + version);
+                curl.doPost(site, message);
             } catch (Exception ex) {
                 log.warn("{} {} MQ连接超时，qc监控MQ接口异常", project, version);
             }
