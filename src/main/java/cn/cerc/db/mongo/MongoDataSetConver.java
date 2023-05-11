@@ -44,17 +44,17 @@ public class MongoDataSetConver {
     }
 
     public DataSet dataSet() {
-        if (isConverDone)
-            return dataSet;
-        synchronized (this) {
-            if (isConverDone)
-                return dataSet;
-            for (Document document : documents) {
-                DataRow dataRow = this.dataSet.append().current();
-                document.forEach((key, value) -> dataRow.setValue(key,
-                        converFunction.getOrDefault(key, DefaultConver.INSTANCE).apply(value)));
+        if (!isConverDone) {
+            synchronized (this) {
+                if (!isConverDone) {
+                    for (Document document : documents) {
+                        DataRow dataRow = this.dataSet.append().current();
+                        document.forEach((key, value) -> dataRow.setValue(key,
+                                converFunction.getOrDefault(key, DefaultConver.INSTANCE).apply(value)));
+                    }
+                    isConverDone = true;
+                }
             }
-            isConverDone = true;
         }
         dataSet.first();
         return dataSet;
