@@ -56,6 +56,7 @@ public class MongoDataSetConver {
             }
             isConverDone = true;
         }
+        dataSet.first();
         return dataSet;
     }
 
