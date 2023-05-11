@@ -18,6 +18,7 @@ import com.rabbitmq.client.MessageProperties;
 import cn.cerc.db.core.Curl;
 import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.core.Utils;
 import cn.cerc.db.queue.OnStringMessage;
 
 public class RabbitQueue implements AutoCloseable {
@@ -50,7 +51,9 @@ public class RabbitQueue implements AutoCloseable {
             log.error(e.getMessage(), e);
             Curl curl = new Curl();
             ServerConfig config = ServerConfig.getInstance();
-            String site = config.getProperty("qc.api.checkMQ.site", "");
+            String site = config.getProperty("qc.api.rabbitmq.heartbeat.site");
+            if (Utils.isEmpty(site))
+                log.error("未配置rabbitmq心跳监测地址");
             String project = ServerConfig.getAppProduct();
             String version = ServerConfig.getAppVersion();
             String message = String.join(".", project, version, new Datetime().toString());
