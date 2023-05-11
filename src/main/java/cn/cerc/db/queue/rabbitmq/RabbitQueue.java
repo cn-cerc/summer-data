@@ -15,7 +15,11 @@ import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.GetResponse;
 import com.rabbitmq.client.MessageProperties;
 
+import cn.cerc.db.core.Curl;
+import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.core.Utils;
 import cn.cerc.db.queue.OnStringMessage;
+import cn.cerc.db.queue.entity.CheckMQEntity;
 
 public class RabbitQueue implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(RabbitQueue.class);
@@ -45,6 +49,24 @@ public class RabbitQueue implements AutoCloseable {
             channel.queueDeclare(queueId, true, false, false, null);
         } catch (IOException | TimeoutException e) {
             log.error(e.getMessage(), e);
+            Curl curl = new Curl();
+            ServerConfig config = ServerConfig.getInstance();
+            String site = config.getProperty("qc.api.rabbitmq.heartbeat.site");
+            if (Utils.isEmpty(site)) {
+                log.error("未配置rabbitmq心跳监测地址");
+                return;
+            }
+            String project = ServerConfig.getAppProduct();
+            String version = ServerConfig.getAppVersion();
+            CheckMQEntity entity = new CheckMQEntity();
+            entity.setProjcet(project);
+            entity.setVersion(version);
+            entity.setAlive(false);
+            try {
+                curl.doPost(site, entity);
+            } catch (Exception ex) {
+                log.warn("{} {} MQ连接超时，qc监控MQ接口异常", project, version);
+            }
         }
     }
 
