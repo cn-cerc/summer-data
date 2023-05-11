@@ -1,8 +1,9 @@
 package cn.cerc.db.mongo;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 import org.bson.Document;
 
@@ -20,11 +21,11 @@ public class MongoDataSetConver {
     /**
      * 时间字段集合：在进行转换时集合内的字段将会被转换为 {@link cn.cerc.db.core.Datetime} 类型
      */
-    private Set<String> timeFields;
+    private Map<String, Function<Object, Object>> converFunction;
 
     public MongoDataSetConver(Collection<Document> documents) {
         this.dataSet = new DataSet();
-        this.timeFields = new HashSet<>();
+        this.converFunction = new HashMap<>();
         this.documents = documents;
     }
 
@@ -32,8 +33,13 @@ public class MongoDataSetConver {
         if (fields == null)
             return this;
         for (String field : fields) {
-            this.timeFields.add(field);
+            this.addConverFunction(field, DatetimeConver.INSTANCE);
         }
+        return this;
+    }
+
+    public MongoDataSetConver addConverFunction(String field, Function<Object, Object> func) {
+        this.converFunction.put(field, func);
         return this;
     }
 
@@ -45,16 +51,30 @@ public class MongoDataSetConver {
                 return dataSet;
             for (Document document : documents) {
                 DataRow dataRow = this.dataSet.append().current();
-                document.keySet().forEach(key -> {
-                    if (timeFields.contains(key))
-                        dataRow.setValue(key, new Datetime(document.getLong(key)));
-                    else
-                        dataRow.setValue(key, document.get(key));
-                });
+                document.forEach((key, value) -> dataRow.setValue(key,
+                        converFunction.getOrDefault(key, DefaultConver.INSTANCE).apply(value)));
             }
             isConverDone = true;
         }
         return dataSet;
+    }
+
+    protected enum DatetimeConver implements Function<Object, Object> {
+        INSTANCE;
+
+        @Override
+        public Object apply(Object t) {
+            return new Datetime((Long) t);
+        }
+    }
+
+    protected enum DefaultConver implements Function<Object, Object> {
+        INSTANCE;
+
+        @Override
+        public Object apply(Object t) {
+            return t;
+        }
     }
 
 }
