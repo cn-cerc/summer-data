@@ -35,6 +35,8 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+
 /**
  * HTTP请求代理类
  *
@@ -351,6 +353,19 @@ public class Curl {
             }
         }
         return responseContent;
+    }
+
+    /**
+     * 传入对象并将对象转换为 JSON 数据请求
+     */
+    public String doPost(String url, Object obj) {
+        try {
+            String json = new Gson().toJson(obj);
+            return this.doPost(url, json);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     public String doPost(String url, String json) {
