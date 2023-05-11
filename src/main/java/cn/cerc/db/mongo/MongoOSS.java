@@ -334,6 +334,21 @@ public class MongoOSS {
 
     /**
      * 
+     * @param url https://4plc.oss-cn-hangzhou.aliyuncs.com/abc.jpg
+     * @return /abc.jpg
+     */
+    public static Optional<String> getChildUrl(String url) {
+        if (!url.startsWith("http"))
+            return Optional.empty();
+        var start = url.indexOf("//");
+        var str = url.substring(start + 2);
+        var point = str.indexOf("/");
+        var result = str.substring(point);
+        return Optional.ofNullable(result);
+    }
+
+    /**
+     * 
      * @return 列出所有的文件
      */
     public static ArrayList<GridFSFile> list() {
