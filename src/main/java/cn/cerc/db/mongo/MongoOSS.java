@@ -313,7 +313,6 @@ public class MongoOSS {
      * @param fileName 文件名
      */
     public static void delete(String fileName) {
-        // 兼容本地开发
         if (fileName.startsWith("http")) {
             Optional<String> childUrl = getChildUrl(fileName);
             if (childUrl.isPresent())
