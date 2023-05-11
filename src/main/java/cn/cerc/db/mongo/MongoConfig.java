@@ -1,15 +1,10 @@
 package cn.cerc.db.mongo;
 
-import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.mongodb.ConnectionString;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
@@ -24,37 +19,45 @@ public class MongoConfig {
     private static final String prefix = String.format("/%s/%s/mongodb/", ServerConfig.getAppProduct(),
             ServerConfig.getAppVersion());
 
-    public static MongoClient getClient() {
-        var username = ZkNode.get()
-                .getNodeValue(prefix + "username", () -> config.getProperty("mgdb.username", "mongodb_user"));
-        var password = ZkNode.get()
-                .getNodeValue(prefix + "password", () -> config.getProperty("mgdb.password", "mongodb_password"));
-        var database = MongoConfig.database();
-        var maxpoolsize = ZkNode.get()
-                .getNodeValue(prefix + "maxpoolsize", () -> config.getProperty("mgdb.maxpoolsize", "100"));// 单客户端默认最大100个连接
-        var hosts = ZkNode.get()
-                .getNodeValue(prefix + "hosts", () -> config.getProperty("mgdb.ipandport",
-                        "mongodb.local.top:27018,mongodb.local.top:27019,mongodb.local.top:27020"));
+    private volatile static ConnectionString connection;
 
-        StringBuilder builder = new StringBuilder();
-        builder.append("mongodb://")
-                .append(username)
-                .append(":")
-                .append(password)
-                .append("@")
-                .append(hosts)
-                .append("/")
-                .append(database);
+    public static ConnectionString connection() {
+        if (connection != null)
+            return connection;
 
-        // 是否启用集群模式
-        builder.append("?").append("maxPoolSize=").append(maxpoolsize);
-        builder.append("&").append("connectTimeoutMS=").append("3000");
-        builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
-        log.info("Connect to the MongoDB sharded cluster {}", builder);
+        synchronized (MongoConfig.class) {
+            if (connection == null) {
+                var username = ZkNode.get()
+                        .getNodeValue(prefix + "username", () -> config.getProperty("mgdb.username", "mongodb_user"));
+                var password = ZkNode.get()
+                        .getNodeValue(prefix + "password",
+                                () -> config.getProperty("mgdb.password", "mongodb_password"));
+                var database = MongoConfig.database();
+                var maxpoolsize = ZkNode.get()
+                        .getNodeValue(prefix + "maxpoolsize", () -> config.getProperty("mgdb.maxpoolsize", "100"));// 单客户端默认最大100个连接
+                var hosts = ZkNode.get()
+                        .getNodeValue(prefix + "hosts", () -> config.getProperty("mgdb.ipandport",
+                                "mongodb.local.top:27018,mongodb.local.top:27019,mongodb.local.top:27020"));
 
-        ConnectionString connection = new ConnectionString(builder.toString());
-        MongoClient client = MongoClients.create(connection);
-        return client;
+                StringBuilder builder = new StringBuilder();
+                builder.append("mongodb://")
+                        .append(username)
+                        .append(":")
+                        .append(password)
+                        .append("@")
+                        .append(hosts)
+                        .append("/")
+                        .append(database);
+
+                // 是否启用集群模式
+                builder.append("?").append("maxPoolSize=").append(maxpoolsize);
+                builder.append("&").append("connectTimeoutMS=").append("3000");
+                builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
+                log.info("Connect to the MongoDB sharded cluster {}", builder);
+                connection = new ConnectionString(builder.toString());
+            }
+        }
+        return connection;
     }
 
     public static String database() {
@@ -63,12 +66,6 @@ public class MongoConfig {
         if (Utils.isEmpty(database))
             throw new RuntimeException("MongoDB database name is empty.");
         return database;
-    }
-
-    public static MongoCollection<Document> getCollection(String collectionName) {
-        MongoClient mongoClient = MongoConfig.getClient();
-        MongoDatabase database = mongoClient.getDatabase(MongoConfig.database());
-        return database.getCollection(collectionName);
     }
 
 }
