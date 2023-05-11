@@ -7,6 +7,7 @@ import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -16,10 +17,10 @@ import com.rabbitmq.client.GetResponse;
 import com.rabbitmq.client.MessageProperties;
 
 import cn.cerc.db.core.Curl;
-import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
 import cn.cerc.db.queue.OnStringMessage;
+import cn.cerc.db.queue.entity.CheckMQEntity;
 
 public class RabbitQueue implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(RabbitQueue.class);
@@ -58,9 +59,12 @@ public class RabbitQueue implements AutoCloseable {
             }
             String project = ServerConfig.getAppProduct();
             String version = ServerConfig.getAppVersion();
-            String message = String.join(".", project, version, new Datetime().toString());
+            CheckMQEntity entity = new CheckMQEntity();
+            entity.setProjcet(project);
+            entity.setVersion(version);
+            entity.setAlive(false);
             try {
-                curl.doPost(site, message);
+                curl.doPost(site, new Gson().toJson(entity));
             } catch (Exception ex) {
                 log.warn("{} {} MQ连接超时，qc监控MQ接口异常", project, version);
             }
