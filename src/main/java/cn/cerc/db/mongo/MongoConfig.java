@@ -35,8 +35,6 @@ public class MongoConfig {
         var password = ZkNode.get()
                 .getNodeValue(prefix + "password", () -> config.getProperty("mgdb.password", "mongodb_password"));
         var database = MongoConfig.database();
-        var enablerep = ZkNode.get()
-                .getNodeValue(prefix + "enablerep", () -> config.getProperty("mgdb.enablerep", "false"));
         var maxpoolsize = ZkNode.get()
                 .getNodeValue(prefix + "maxpoolsize", () -> config.getProperty("mgdb.maxpoolsize", "100"));// 单客户端默认最大100个连接
         var hosts = ZkNode.get()
@@ -56,12 +54,10 @@ public class MongoConfig {
                         .append(database);
 
                 // 是否启用集群模式
-                if ("true".equals(enablerep)) {
-                    builder.append("?").append("maxPoolSize=").append(maxpoolsize);
-                    builder.append("&").append("connectTimeoutMS=").append("3000");
-                    builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
-                    log.info("Connect to the MongoDB sharded cluster {}", builder);
-                }
+                builder.append("?").append("maxPoolSize=").append(maxpoolsize);
+                builder.append("&").append("connectTimeoutMS=").append("3000");
+                builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
+                log.info("Connect to the MongoDB sharded cluster {}", builder);
 
                 ConnectionString connection = new ConnectionString(builder.toString());
                 client = MongoClients.create(connection);
