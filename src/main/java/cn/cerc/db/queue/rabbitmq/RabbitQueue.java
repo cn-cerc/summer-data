@@ -52,8 +52,10 @@ public class RabbitQueue implements AutoCloseable {
             Curl curl = new Curl();
             ServerConfig config = ServerConfig.getInstance();
             String site = config.getProperty("qc.api.rabbitmq.heartbeat.site");
-            if (Utils.isEmpty(site))
+            if (Utils.isEmpty(site)) {
                 log.error("未配置rabbitmq心跳监测地址");
+                return;
+            }
             String project = ServerConfig.getAppProduct();
             String version = ServerConfig.getAppVersion();
             String message = String.join(".", project, version, new Datetime().toString());
