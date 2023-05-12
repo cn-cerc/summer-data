@@ -146,7 +146,7 @@ public enum ServerConfig implements IConfig {
         }
     }
 
-    public Properties loadAll() {
+    public static Properties loadAll() {
         return config.getProperties();
     }
 
