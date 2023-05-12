@@ -39,6 +39,8 @@ import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 
+import cn.cerc.db.core.Utils;
+
 /**
  * 使用MongoDB的 GridFS Bucket 存储二进制文件
  */
@@ -71,8 +73,13 @@ public class MongoOSS {
 
     public static Optional<String> upload(String url) {
         var readStream = getWebfile(url);
-        if (readStream.isPresent())
+        if (readStream.isPresent()) {
+            Optional<String> childUrl = getChildUrl(url);
+            if (childUrl.isPresent())
+                url = childUrl.get();
+            url = Utils.decode(url, StandardCharsets.UTF_8.name());
             return Optional.ofNullable(upload(url, readStream.get(), null));
+        }
         else
             return Optional.empty();
     }
