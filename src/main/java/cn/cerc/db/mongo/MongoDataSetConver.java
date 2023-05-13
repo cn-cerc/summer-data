@@ -49,8 +49,12 @@ public class MongoDataSetConver {
                 if (!isConverDone) {
                     for (Document document : documents) {
                         DataRow dataRow = this.dataSet.append().current();
-                        document.forEach((key, value) -> dataRow.setValue(key,
-                                converFunction.getOrDefault(key, DefaultConver.INSTANCE).apply(value)));
+                        document.forEach((key, value) -> {
+                            if ("_id".equals(key))
+                                return;
+                            dataRow.setValue(key,
+                                    converFunction.getOrDefault(key, DefaultConver.INSTANCE).apply(value));
+                        });
                     }
                     isConverDone = true;
                 }
