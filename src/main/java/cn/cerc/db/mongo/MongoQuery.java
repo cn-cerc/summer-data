@@ -16,9 +16,7 @@ import org.bson.types.ObjectId;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
@@ -56,9 +54,7 @@ public class MongoQuery extends DataSet implements IHandle {
     public MongoQuery open() {
         this.setStorage(true);
         // 查找业务ID对应的数据
-        MongoClient client = MongoConfig.getClient();
-        MongoDatabase database = client.getDatabase(MongoConfig.database());
-        MongoCollection<Document> collection = database.getCollection(collectionName());
+        MongoCollection<Document> collection = MongoConfig.database().getCollection(collectionName());
         // 增加查询条件
         BasicDBObject filter = decodeWhere(this.sql().text());
         // 增加排序条件
@@ -231,18 +227,14 @@ public class MongoQuery extends DataSet implements IHandle {
     @Override
     protected final void insertStorage(DataRow record) {
         String collectionName = collectionName();
-        MongoClient client = MongoConfig.getClient();
-        MongoDatabase database = client.getDatabase(MongoConfig.database());
-        MongoCollection<Document> collection = database.getCollection(collectionName);
+        MongoCollection<Document> collection = MongoConfig.database().getCollection(collectionName);
         Document doc = getValue(record);
         collection.insertOne(doc);
     }
 
     @Override
     protected final void updateStorage(DataRow record) {
-        MongoClient client = MongoConfig.getClient();
-        MongoDatabase database = client.getDatabase(MongoConfig.database());
-        MongoCollection<Document> collection = database.getCollection(collectionName());
+        MongoCollection<Document> collection = MongoConfig.database().getCollection(collectionName());
         Document doc = getValue(record);
         String uid = record.getString("_id");
         Object key = "".equals(uid) ? "null" : new ObjectId(uid);
@@ -253,9 +245,7 @@ public class MongoQuery extends DataSet implements IHandle {
 
     @Override
     protected final void deleteStorage(DataRow record) {
-        MongoClient client = MongoConfig.getClient();
-        MongoDatabase database = client.getDatabase(MongoConfig.database());
-        MongoCollection<Document> collection = database.getCollection(collectionName());
+        MongoCollection<Document> collection = MongoConfig.database().getCollection(collectionName());
 
         String uid = record.getString("_id");
         Object key = "".equals(uid) ? "null" : new ObjectId(uid);

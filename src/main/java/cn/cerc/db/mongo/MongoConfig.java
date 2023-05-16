@@ -1,6 +1,8 @@
 package cn.cerc.db.mongo;
 
-import org.bson.Document;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -8,7 +10,6 @@ import org.springframework.stereotype.Component;
 import com.mongodb.ConnectionString;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
 import cn.cerc.db.core.ServerConfig;
@@ -24,60 +25,74 @@ public class MongoConfig {
     private static final String prefix = String.format("/%s/%s/mongodb/", ServerConfig.getAppProduct(),
             ServerConfig.getAppVersion());
 
-    private static volatile MongoClient client;
+    private static final Map<String, MongoClient> clients = new HashMap<>();
 
-    public static MongoClient getClient() {
-        if (client != null)
-            return client;
+    /**
+     * 不同数据库的客户端
+     */
+    private static MongoClient getClient(String databaseName) {
+        if (clients.containsKey(databaseName))
+            return clients.get(databaseName);
 
         var username = ZkNode.get()
                 .getNodeValue(prefix + "username", () -> config.getProperty("mgdb.username", "mongodb_user"));
         var password = ZkNode.get()
                 .getNodeValue(prefix + "password", () -> config.getProperty("mgdb.password", "mongodb_password"));
-        var database = MongoConfig.database();
         var maxpoolsize = ZkNode.get()
                 .getNodeValue(prefix + "maxpoolsize", () -> config.getProperty("mgdb.maxpoolsize", "100"));// 单客户端默认最大100个连接
         var hosts = ZkNode.get()
                 .getNodeValue(prefix + "hosts", () -> config.getProperty("mgdb.ipandport",
                         "mongodb.local.top:27018,mongodb.local.top:27019,mongodb.local.top:27020"));
 
+        MongoClient client;
         synchronized (MongoConfig.class) {
-            if (client == null) {
-                StringBuilder builder = new StringBuilder();
-                builder.append("mongodb://")
-                        .append(username)
-                        .append(":")
-                        .append(password)
-                        .append("@")
-                        .append(hosts)
-                        .append("/")
-                        .append(database);
+            if (clients.containsKey(databaseName))
+                return clients.get(databaseName);
 
-                // 是否启用集群模式
-                builder.append("?").append("maxPoolSize=").append(maxpoolsize);
-                builder.append("&").append("connectTimeoutMS=").append("3000");
-                builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
-                log.info("Connect to the MongoDB sharded cluster {}", builder);
+            StringBuilder builder = new StringBuilder();
+            builder.append("mongodb://")
+                    .append(username)
+                    .append(":")
+                    .append(password)
+                    .append("@")
+                    .append(hosts)
+                    .append("/")
+                    .append(databaseName);
 
-                ConnectionString connection = new ConnectionString(builder.toString());
-                client = MongoClients.create(connection);
-            }
+            // 是否启用集群模式
+            builder.append("?").append("maxPoolSize=").append(maxpoolsize);
+            builder.append("&").append("connectTimeoutMS=").append("3000");
+            builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
+            log.info("Connect to the MongoDB sharded cluster {}", builder);
+
+            ConnectionString connection = new ConnectionString(builder.toString());
+            client = MongoClients.create(connection);
+            clients.put(databaseName, client);
         }
         return client;
     }
 
-    public static String database() {
-        String database = ZkNode.get()
-                .getNodeValue(prefix + "database", () -> config.getProperty("mgdb.dbname", "mongodb_database"));
-        if (Utils.isEmpty(database))
-            throw new RuntimeException("MongoDB database name is empty.");
-        return database;
+    /**
+     * 获取默认的数据库名称 databaseName
+     */
+    public static MongoDatabase database() {
+        return MongoConfig.database("");
     }
 
-    public static MongoCollection<Document> getCollection(String collectionName) {
-        MongoClient mongoClient = MongoConfig.getClient();
-        MongoDatabase database = mongoClient.getDatabase(MongoConfig.database());
-        return database.getCollection(collectionName);
+    /**
+     * 获取指定的数据库名称
+     * 
+     * @param suffix 业务类型后缀，例如 _gps<br>
+     *               组合以后变成 4plc_gps
+     */
+    public static MongoDatabase database(String suffix) {
+        String databaseName = ZkNode.get()
+                .getNodeValue(prefix + "database", () -> config.getProperty("mgdb.dbname", "mongodb_database"));
+        if (Utils.isEmpty(databaseName))
+            throw new RuntimeException("MongoDB database name is empty.");
+        if (!Utils.isEmpty(suffix))
+            databaseName = String.join("_", databaseName, suffix);
+        return MongoConfig.getClient(databaseName).getDatabase(databaseName);
     }
 
 }
