@@ -1,8 +1,5 @@
 package cn.cerc.db.mongo;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -25,14 +22,14 @@ public class MongoConfig {
     private static final String prefix = String.format("/%s/%s/mongodb/", ServerConfig.getAppProduct(),
             ServerConfig.getAppVersion());
 
-    private static final Map<String, MongoClient> clients = new HashMap<>();
+    private static volatile MongoClient client;
 
     /**
      * 不同数据库的客户端
      */
-    private static MongoClient getClient(String databaseName) {
-        if (clients.containsKey(databaseName))
-            return clients.get(databaseName);
+    private static MongoClient getClient() {
+        if (client != null)
+            return client;
 
         var username = ZkNode.get()
                 .getNodeValue(prefix + "username", () -> config.getProperty("mgdb.username", "mongodb_user"));
@@ -44,30 +41,26 @@ public class MongoConfig {
                 .getNodeValue(prefix + "hosts", () -> config.getProperty("mgdb.ipandport",
                         "mongodb.local.top:27018,mongodb.local.top:27019,mongodb.local.top:27020"));
 
-        MongoClient client;
         synchronized (MongoConfig.class) {
-            if (clients.containsKey(databaseName))
-                return clients.get(databaseName);
+            if (client == null) {
+                StringBuilder builder = new StringBuilder();
+                builder.append("mongodb://")
+                        .append(username)
+                        .append(":")
+                        .append(password)
+                        .append("@")
+                        .append(hosts)
+                        .append("/");
 
-            StringBuilder builder = new StringBuilder();
-            builder.append("mongodb://")
-                    .append(username)
-                    .append(":")
-                    .append(password)
-                    .append("@")
-                    .append(hosts)
-                    .append("/")
-                    .append(databaseName);
+                // 是否启用集群模式
+                builder.append("?").append("maxPoolSize=").append(maxpoolsize);
+                builder.append("&").append("connectTimeoutMS=").append("3000");
+                builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
+                log.info("Connect to the MongoDB sharded cluster {}", builder);
 
-            // 是否启用集群模式
-            builder.append("?").append("maxPoolSize=").append(maxpoolsize);
-            builder.append("&").append("connectTimeoutMS=").append("3000");
-            builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
-            log.info("Connect to the MongoDB sharded cluster {}", builder);
-
-            ConnectionString connection = new ConnectionString(builder.toString());
-            client = MongoClients.create(connection);
-            clients.put(databaseName, client);
+                ConnectionString connection = new ConnectionString(builder.toString());
+                client = MongoClients.create(connection);
+            }
         }
         return client;
     }
@@ -92,7 +85,7 @@ public class MongoConfig {
             throw new RuntimeException("MongoDB database name is empty.");
         if (!Utils.isEmpty(suffix))
             databaseName = String.join("_", databaseName, suffix);
-        return MongoConfig.getClient(databaseName).getDatabase(databaseName);
+        return MongoConfig.getClient().getDatabase(databaseName);
     }
 
 }
