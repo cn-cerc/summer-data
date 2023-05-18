@@ -52,7 +52,7 @@ public class MongoOSS {
         if (bucket == null)
             synchronized (MongoOSS.class) {
                 if (bucket == null) {
-                    var mgdb = MongoConfig.database();
+                    var mgdb = MongoConfig.getDatabase();
                     bucket = GridFSBuckets.create(mgdb, BucketName);
                 }
             }

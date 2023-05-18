@@ -13,7 +13,7 @@ public class MongoUtils {
     private MongoDatabase database;
 
     public MongoUtils() {
-        database = MongoConfig.database();
+        database = MongoConfig.getDatabase();
     }
 
     // 获取Collection by name

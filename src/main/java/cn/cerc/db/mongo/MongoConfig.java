@@ -68,8 +68,8 @@ public class MongoConfig {
     /**
      * 获取默认的数据库名称 databaseName
      */
-    public static MongoDatabase database() {
-        return MongoConfig.database("");
+    public static MongoDatabase getDatabase() {
+        return MongoConfig.getDatabase("");
     }
 
     /**
@@ -78,7 +78,7 @@ public class MongoConfig {
      * @param suffix 业务类型后缀，例如 _gps<br>
      *               组合以后变成 4plc_gps
      */
-    public static MongoDatabase database(String suffix) {
+    public static MongoDatabase getDatabase(String suffix) {
         String databaseName = ZkNode.get()
                 .getNodeValue(prefix + "database", () -> config.getProperty("mgdb.dbname", "mongodb_database"));
         if (Utils.isEmpty(databaseName))

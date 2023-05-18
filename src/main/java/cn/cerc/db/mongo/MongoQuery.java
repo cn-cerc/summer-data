@@ -54,7 +54,7 @@ public class MongoQuery extends DataSet implements IHandle {
     public MongoQuery open() {
         this.setStorage(true);
         // 查找业务ID对应的数据
-        MongoCollection<Document> collection = MongoConfig.database().getCollection(collectionName());
+        MongoCollection<Document> collection = MongoConfig.getDatabase().getCollection(collectionName());
         // 增加查询条件
         BasicDBObject filter = decodeWhere(this.sql().text());
         // 增加排序条件
@@ -227,14 +227,14 @@ public class MongoQuery extends DataSet implements IHandle {
     @Override
     protected final void insertStorage(DataRow record) {
         String collectionName = collectionName();
-        MongoCollection<Document> collection = MongoConfig.database().getCollection(collectionName);
+        MongoCollection<Document> collection = MongoConfig.getDatabase().getCollection(collectionName);
         Document doc = getValue(record);
         collection.insertOne(doc);
     }
 
     @Override
     protected final void updateStorage(DataRow record) {
-        MongoCollection<Document> collection = MongoConfig.database().getCollection(collectionName());
+        MongoCollection<Document> collection = MongoConfig.getDatabase().getCollection(collectionName());
         Document doc = getValue(record);
         String uid = record.getString("_id");
         Object key = "".equals(uid) ? "null" : new ObjectId(uid);
@@ -245,7 +245,7 @@ public class MongoQuery extends DataSet implements IHandle {
 
     @Override
     protected final void deleteStorage(DataRow record) {
-        MongoCollection<Document> collection = MongoConfig.database().getCollection(collectionName());
+        MongoCollection<Document> collection = MongoConfig.getDatabase().getCollection(collectionName());
 
         String uid = record.getString("_id");
         Object key = "".equals(uid) ? "null" : new ObjectId(uid);
