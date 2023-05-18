@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.model.GridFSFile;
@@ -53,8 +52,7 @@ public class MongoOSS {
         if (bucket == null)
             synchronized (MongoOSS.class) {
                 if (bucket == null) {
-                    MongoClient client = MongoConfig.getClient();
-                    var mgdb = client.getDatabase(MongoConfig.database());
+                    var mgdb = MongoConfig.getDatabase();
                     bucket = GridFSBuckets.create(mgdb, BucketName);
                 }
             }
@@ -79,8 +77,7 @@ public class MongoOSS {
                 url = childUrl.get();
             url = Utils.decode(url, StandardCharsets.UTF_8.name());
             return Optional.ofNullable(upload(url, readStream.get(), null));
-        }
-        else
+        } else
             return Optional.empty();
     }
 
