@@ -69,6 +69,8 @@ public class MongoDataSetConver {
 
         @Override
         public Object apply(Object t) {
+            if (t == null)
+                return null;
             return new Datetime((Long) t);
         }
     }
