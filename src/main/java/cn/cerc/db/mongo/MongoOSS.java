@@ -222,7 +222,7 @@ public class MongoOSS {
             return false;
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        bucket().downloadToStream(fileNameSource, outputStream);
+        bucket().downloadToStream(fsFile.get().getObjectId(), outputStream);
 
         ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
         upload(fileNameTarget, inputStream, null);
