@@ -206,7 +206,7 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
                 try {
                     updateStorage(row);
                 } catch (Exception e) {
-                    log.error(e.getMessage());
+                    log.error(e.getMessage(), e);
                     throw new RuntimeException(e.getMessage());
                 }
             } else {
