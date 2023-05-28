@@ -21,13 +21,11 @@ import org.slf4j.LoggerFactory;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
 
-public class ZkServer implements AutoCloseable, Watcher {
+public class ZkServer implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(ZkServer.class);
     private static final ZkServer server;
-    private CountDownLatch cdl;
+    private CountDownLatch connectionLatch;
     private ZooKeeper client;
-    private final String host;
-    private final String port;
 
     static {
         server = new ZkServer();
@@ -39,30 +37,38 @@ public class ZkServer implements AutoCloseable, Watcher {
 
     public ZkServer() {
         var config = ServerConfig.getInstance();
-        this.host = config.getProperty("zookeeper.host");
-        this.port = config.getProperty("zookeeper.port", "2181");
+        String host = config.getProperty("zookeeper.host");
+        String port = config.getProperty("zookeeper.port", "2181");
         if (Utils.isEmpty(host)) {
             log.error("严重错误：读取不到 zookeeper.host 配置项！");
             return;
         }
-        this.init(host, port);
-    }
-
-    public ZkServer(String host, String port) {
-        this.host = host;
-        this.port = port;
-        this.init(host, port);
-    }
-
-    private void init(String host, String port) {
         if (!host.contains(":"))
             host = host + ":" + port;
+        this.init(host);
+    }
 
+    public ZkServer(String host) {
+        this.init(host);
+    }
+
+    public void init(String host) {
         try {
-            this.cdl = new CountDownLatch(1);
+            this.connectionLatch = new CountDownLatch(1);
             System.setProperty("zookeeper.sasl.client", "false");
-            this.client = new ZooKeeper(host, 50000, this);
-            this.cdl.await(60, TimeUnit.SECONDS); // 等待zk联接成功
+
+            this.client = new ZooKeeper(host, 50000, event -> {
+                if (event.getType() == EventType.None) {
+                    connectionLatch.countDown();
+                    if (event.getState() == KeeperState.SyncConnected) {
+                        log.info("ZooKeeper 已接入 {}", host);
+                    } else if (event.getState() == KeeperState.Closed) {
+                        log.info("ZooKeeper 已断开 {}", host);
+                    } else
+                        log.error("未处理事件 {}", event.getState().name());
+                }
+            });
+            this.connectionLatch.await(60, TimeUnit.SECONDS); // 等待zk联接成功
         } catch (IOException | InterruptedException e) {
             log.error(e.getMessage(), e);
         }
@@ -73,26 +79,13 @@ public class ZkServer implements AutoCloseable, Watcher {
     }
 
     @Override
-    public void process(WatchedEvent event) {
-        if (event.getType() == EventType.None) {
-            cdl.countDown();
-            if (event.getState() == KeeperState.SyncConnected) {
-                log.info("ZooKeeper 成功联接到 " + this.getHost());
-            } else if (event.getState() == KeeperState.Closed) {
-                log.info("ZooKeeper 关闭联接 " + this.getHost());
-            } else
-                log.error("未处理事件：" + event.getState().name());
-        }
-    }
-
-    @Override
     public void close() {
         if (this.client != null) {
             try {
-                cdl = new CountDownLatch(1);
+                connectionLatch = new CountDownLatch(1);
                 client.close();
                 client = null;
-                cdl.await();
+                connectionLatch.await();
                 Thread.sleep(300);
             } catch (InterruptedException e) {
                 log.error(e.getMessage(), e);
@@ -101,7 +94,6 @@ public class ZkServer implements AutoCloseable, Watcher {
     }
 
     /**
-     * 
      * @param path
      * @param value
      * @return 返回创建的节点名称
@@ -126,7 +118,7 @@ public class ZkServer implements AutoCloseable, Watcher {
 
     /**
      * 删除节点
-     * 
+     *
      * @param path
      * @return 成功否
      */
@@ -146,7 +138,7 @@ public class ZkServer implements AutoCloseable, Watcher {
 
     /**
      * 判断节点是否存在
-     * 
+     *
      * @param node
      * @return 存在否
      */
@@ -167,7 +159,6 @@ public class ZkServer implements AutoCloseable, Watcher {
     }
 
     /**
-     * 
      * @param node
      * @return 返回所有的子节点
      */
@@ -181,7 +172,6 @@ public class ZkServer implements AutoCloseable, Watcher {
     }
 
     /**
-     * 
      * @param node
      * @return 取得指点节点的值，若不存在则为null
      */
@@ -201,7 +191,6 @@ public class ZkServer implements AutoCloseable, Watcher {
     }
 
     /**
-     * 
      * @param node
      * @param value
      * @return 设置指定节点的值
@@ -218,10 +207,6 @@ public class ZkServer implements AutoCloseable, Watcher {
             e.printStackTrace();
         }
         return this;
-    }
-
-    public String getHost() {
-        return host;
     }
 
 }
