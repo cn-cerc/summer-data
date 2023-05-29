@@ -93,9 +93,6 @@ public class RabbitQueue implements AutoCloseable {
                         }
                     }
                 });
-            } else if (consumerTag != null) {
-                channel.basicCancel(consumerTag);
-                consumerTag = null;
             }
         } catch (IOException e) {
             log.error(e.getMessage(), e);
