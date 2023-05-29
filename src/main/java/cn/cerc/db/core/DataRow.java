@@ -167,10 +167,10 @@ public class DataRow implements Serializable, IRecord {
         }
         // 都不为空
         if (value != null && compareValue != null) {
-            if ((value instanceof Integer) && (compareValue instanceof Double)) {
-                Integer v1 = (Integer) value;
-                Double v2 = (Double) compareValue;
+            if ((value instanceof Integer v1) && (compareValue instanceof Double v2)) {
                 return v2 - v1 == 0;
+            } else if ((value instanceof Long v1) && (compareValue instanceof Integer v2)) {
+                return v1 - v2 == 0;
             } else {
                 return value.equals(compareValue);
             }
