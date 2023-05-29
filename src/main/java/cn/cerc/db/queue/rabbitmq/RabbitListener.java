@@ -47,7 +47,7 @@ public class RabbitListener implements ApplicationListener<ApplicationContextEve
             }
         } else if (event instanceof ContextClosedEvent) {
             for (var queue : startItems)
-                queue.watch(null);
+                queue.close();
             log.info("关闭注册的推送消息数量 {}", startItems.size());
             startItems.clear();
         }
