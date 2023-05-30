@@ -2,13 +2,13 @@ package cn.cerc.db.zk;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event.EventType;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
@@ -70,7 +70,7 @@ public class ZkServer implements AutoCloseable {
             });
             this.connectionLatch.await(60, TimeUnit.SECONDS); // 等待zk联接成功
         } catch (IOException | InterruptedException e) {
-            log.error(e.getMessage(), e);
+            log.error("{} {}", host, e.getMessage(), e);
         }
     }
 
@@ -107,11 +107,11 @@ public class ZkServer implements AutoCloseable {
         }
 
         try {
-            log.info("create node: " + path);
+            log.info("create node {}", path);
             // 参数：1，节点路径； 2，要存储的数据； 3，节点的权限； 4，节点的类型
             return client.create(path, value.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, createMode);
         } catch (KeeperException | InterruptedException e) {
-            log.error(e.getMessage(), e);
+            log.error("{} {}", path, e.getMessage(), e);
             return null;
         }
     }
@@ -131,7 +131,7 @@ public class ZkServer implements AutoCloseable {
             } else
                 return false;
         } catch (KeeperException | InterruptedException e) {
-            log.error(e.getMessage(), e);
+            log.error("{} {}", path, e.getMessage(), e);
             return false;
         }
     }
@@ -153,7 +153,7 @@ public class ZkServer implements AutoCloseable {
             else
                 return client.exists(node, watcher);
         } catch (KeeperException | InterruptedException e) {
-            log.error(e.getMessage(), e);
+            log.error("{} {}", node, e.getMessage(), e);
             return null;
         }
     }
@@ -166,7 +166,7 @@ public class ZkServer implements AutoCloseable {
         try {
             return client.getChildren(node, false);
         } catch (KeeperException | InterruptedException e) {
-            log.error(e.getMessage(), e);
+            log.error("{} {}", node, e.getMessage(), e);
             return List.of();
         }
     }
@@ -179,13 +179,13 @@ public class ZkServer implements AutoCloseable {
         try {
             Stat stat = client.exists(node, false);
             if (stat != null)
-                return new String(client.getData(node, false, stat), "UTF-8");
+                return new String(client.getData(node, false, stat), StandardCharsets.UTF_8);
             else {
-                log.warn("not find node: {} ", node);
+                log.warn("not find node {} ", node);
                 return null;
             }
-        } catch (KeeperException | InterruptedException | UnsupportedEncodingException e) {
-            log.error(e.getMessage(), e);
+        } catch (KeeperException | InterruptedException e) {
+            log.error("{} {}", node, e.getMessage(), e);
             return null;
         }
     }
@@ -203,7 +203,7 @@ public class ZkServer implements AutoCloseable {
             } else
                 this.create(node, value, createMode);
         } catch (KeeperException | InterruptedException e) {
-            log.error(e.getMessage());
+            log.error("{} {}", node, e.getMessage());
             e.printStackTrace();
         }
         return this;
