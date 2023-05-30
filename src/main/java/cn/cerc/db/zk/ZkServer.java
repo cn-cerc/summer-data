@@ -1,7 +1,6 @@
 package cn.cerc.db.zk;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -26,6 +25,7 @@ public class ZkServer implements AutoCloseable {
     private static final ZkServer server;
     private CountDownLatch connectionLatch;
     private ZooKeeper client;
+    private String host;
 
     static {
         server = new ZkServer();
@@ -46,10 +46,12 @@ public class ZkServer implements AutoCloseable {
         if (!host.contains(":"))
             host = host + ":" + port;
         this.init(host);
+        this.host = host;
     }
 
     public ZkServer(String host) {
         this.init(host);
+        this.host = host;
     }
 
     public void init(String host) {
@@ -88,7 +90,7 @@ public class ZkServer implements AutoCloseable {
                 connectionLatch.await();
                 Thread.sleep(300);
             } catch (InterruptedException e) {
-                log.error(e.getMessage(), e);
+                log.error("{} {}", this.getHost(), e.getMessage(), e);
             }
         }
     }
@@ -110,8 +112,8 @@ public class ZkServer implements AutoCloseable {
             log.info("create node {}", path);
             // 参数：1，节点路径； 2，要存储的数据； 3，节点的权限； 4，节点的类型
             return client.create(path, value.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, createMode);
-        } catch (KeeperException | InterruptedException e) {
-            log.error("{} {}", path, e.getMessage(), e);
+        } catch (KeeperException | InterruptedException | IllegalArgumentException e) {
+            log.error("{} {} {}", this.getHost(), path, e.getMessage(), e);
             return null;
         }
     }
@@ -130,8 +132,8 @@ public class ZkServer implements AutoCloseable {
                 return true;
             } else
                 return false;
-        } catch (KeeperException | InterruptedException e) {
-            log.error("{} {}", path, e.getMessage(), e);
+        } catch (KeeperException | InterruptedException | IllegalArgumentException e) {
+            log.error("{} {} {}", this.getHost(), path, e.getMessage(), e);
             return false;
         }
     }
@@ -152,8 +154,8 @@ public class ZkServer implements AutoCloseable {
                 return client.exists(node, false);
             else
                 return client.exists(node, watcher);
-        } catch (KeeperException | InterruptedException e) {
-            log.error("{} {}", node, e.getMessage(), e);
+        } catch (KeeperException | InterruptedException | IllegalArgumentException e) {
+            log.error("{} {} {}", this.getHost(), node, e.getMessage(), e);
             return null;
         }
     }
@@ -165,8 +167,8 @@ public class ZkServer implements AutoCloseable {
     public List<String> getNodes(String node) {
         try {
             return client.getChildren(node, false);
-        } catch (KeeperException | InterruptedException e) {
-            log.error("{} {}", node, e.getMessage(), e);
+        } catch (KeeperException | InterruptedException | IllegalArgumentException e) {
+            log.error("{} {} {}", this.getHost(), node, e.getMessage(), e);
             return List.of();
         }
     }
@@ -184,8 +186,8 @@ public class ZkServer implements AutoCloseable {
                 log.warn("not find node {} ", node);
                 return null;
             }
-        } catch (KeeperException | InterruptedException e) {
-            log.error("{} {}", node, e.getMessage(), e);
+        } catch (KeeperException | InterruptedException | IllegalArgumentException e) {
+            log.error("{} {} {}", this.getHost(), node, e.getMessage(), e);
             return null;
         }
     }
@@ -202,11 +204,15 @@ public class ZkServer implements AutoCloseable {
                 client.setData(node, value.getBytes(), stat.getVersion());
             } else
                 this.create(node, value, createMode);
-        } catch (KeeperException | InterruptedException e) {
-            log.error("{} {}", node, e.getMessage());
+        } catch (KeeperException | InterruptedException | IllegalArgumentException e) {
+            log.error("{} {} {}", this.getHost(), node, e.getMessage());
             e.printStackTrace();
         }
         return this;
+    }
+
+    public String getHost() {
+        return host;
     }
 
 }
