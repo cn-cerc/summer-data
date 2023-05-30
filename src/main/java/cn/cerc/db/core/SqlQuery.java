@@ -92,7 +92,7 @@ public class SqlQuery extends DataSet implements IHandle {
                             ServerConfig.getAppVersion(), getUserCode());
                     if (zkServer.exists(node)) {
                         boolean isDebug = !Utils.isEmpty(zkServer.getValue(node));
-                        if (isDebug) 
+                        if (isDebug)
                             log.warn(sql.replaceAll("\r\n", " "));
                     }
                 } else {
@@ -108,7 +108,7 @@ public class SqlQuery extends DataSet implements IHandle {
             this.doAfterOpen();
             this.first();
         } catch (Exception e) {
-            log.error("sql command {}, {}", sql, e.getMessage());
+            log.error("sql command {}, {}", sql, e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
