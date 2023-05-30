@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -513,6 +514,18 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
     public boolean isNull(String field) {
         Object obj = current().getValue(field);
         return obj == null || "".equals(obj);
+    }
+    
+    public <T extends EntityImpl> Stream<T> stream(Class<T> classz) {
+        return records.stream().map(row -> {
+            DataRow newRow = new DataRow();
+            newRow.copyValues(row, new FieldDefs(classz));
+            return newRow.asEntity(classz);
+        });
+    }
+
+    public Stream<DataRow> stream() {
+        return records.stream();
     }
 
     @Override
