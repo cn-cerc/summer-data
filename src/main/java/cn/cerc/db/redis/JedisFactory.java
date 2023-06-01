@@ -50,7 +50,7 @@ public class JedisFactory {
         if (items.containsKey(configId))
             return items.get(configId).build();
 
-        JedisBuilder builder = new JedisBuilder(configId);
+        JedisBuilder builder = JedisBuilder.getInstance(configId);
         items.put(configId, builder);
         return builder.build();
     }

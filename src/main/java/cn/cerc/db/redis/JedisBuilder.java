@@ -34,7 +34,7 @@ public class JedisBuilder {
         return builders.computeIfAbsent(configId, JedisBuilder::new);
     }
 
-    public JedisBuilder(String configId) {
+    private JedisBuilder(String configId) {
         RedisConfig config = new RedisConfig(configId);
         this.host = config.host();
         this.port = config.port();
