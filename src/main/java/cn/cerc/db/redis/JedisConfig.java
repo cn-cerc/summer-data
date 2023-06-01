@@ -12,9 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class JedisFactory {
-    private static final Logger log = LoggerFactory.getLogger(JedisFactory.class);
-    private static final Map<String, JedisFactory> items = new HashMap<>();
+public class JedisConfig {
+    private static final Logger log = LoggerFactory.getLogger(JedisConfig.class);
+    private static final Map<String, JedisConfig> items = new HashMap<>();
     // 如果赋值为-1，则表示不限制；如果pool已经分配了maxActive个jedis实例，则此时pool的状态为exhausted(耗尽)。
     private static final int MAX_ACTIVE = 1024;
     // 控制一个pool最多有多少个状态为idle(空闲的)的jedis实例，默认值也是8。
@@ -35,7 +35,7 @@ public class JedisFactory {
      *
      * @return JedisFactory
      */
-    public static JedisFactory create() {
+    public static JedisConfig create() {
         return create(null);
     }
 
@@ -45,14 +45,14 @@ public class JedisFactory {
      * @param configId 用于在配置文件中区分不同的redis服务器的连接参数，取值如：sync，若为 null 则返回缺省配置
      * @return JedisFactory
      */
-    public static JedisFactory create(String configId) {
+    public static JedisConfig create(String configId) {
         if (items.containsKey(configId)) {
             return items.get(configId);
         }
-        synchronized (JedisFactory.class) {
+        synchronized (JedisConfig.class) {
             if (items.containsKey(configId))
                 return items.get(configId);
-            JedisFactory item = new JedisFactory(configId);
+            JedisConfig item = new JedisConfig(configId);
             items.put(configId, item);
             return item;
         }
@@ -85,7 +85,7 @@ public class JedisFactory {
         return new Redis();
     }
 
-    private JedisFactory(String configId) {
+    private JedisConfig(String configId) {
         RedisConfig config = new RedisConfig(configId);
         this.host = config.host();
         this.port = config.port();
