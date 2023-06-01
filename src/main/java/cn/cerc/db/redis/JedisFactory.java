@@ -1,5 +1,7 @@
 package cn.cerc.db.redis;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 
 import java.util.Map;
@@ -9,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Jedis 工厂调度类，支持项目加载不同的配置
  */
 public class JedisFactory {
+    private static final Logger log = LoggerFactory.getLogger(JedisFactory.class);
     private static final Map<String, JedisBuilder> items = new ConcurrentHashMap<>();
     private static final JedisFactory instance = new JedisFactory();
 
@@ -17,7 +20,7 @@ public class JedisFactory {
     }
 
     /**
-     * 返回默认RedisServer的Jedis
+     * 返回默认的 Jedis
      *
      * @return Jedis
      */
@@ -26,7 +29,7 @@ public class JedisFactory {
     }
 
     /**
-     * 返回 RedisServer 的 Jedis
+     * 返回指定的 Jedis
      *
      * @param configId 用于在配置文件中区分不同的redis服务器的连接参数，取值如：sync，若为 null 则返回缺省配置
      * @return Jedis
@@ -44,10 +47,9 @@ public class JedisFactory {
     }
 
     /**
-     * 创建 JedisFactory
+     * 从缓存池中获取 JedisBuilder，并从 JedisPool 获取 Jedis 实列
      *
-     * @param configId 用于在配置文件中区分不同的redis服务器的连接参数，取值如：sync，若为 null 则返回缺省配置
-     * @return JedisFactory
+     * @return Jedis
      */
     private Jedis get(String configId) {
         if (items.containsKey(configId))
@@ -62,7 +64,11 @@ public class JedisFactory {
      * 销毁所有的 redis 连接
      */
     public static void destroy() {
+        // 关闭连接池
         items.values().forEach(JedisBuilder::close);
+        // 释放缓存池
+        items.clear();
+        log.info("redis 线程池已销毁");
     }
 
 }

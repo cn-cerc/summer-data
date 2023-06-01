@@ -116,7 +116,6 @@ public class JedisBuilder {
     }
 
     public void close() {
-        log.info("redis 线程池正在销毁");
         this.jedisPool.close();
     }
 
