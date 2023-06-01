@@ -1,16 +1,17 @@
 package cn.cerc.db.redis;
 
-import cn.cerc.db.core.Utils;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import cn.cerc.db.core.Utils;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class JedisBuilder {
     private static final Logger log = LoggerFactory.getLogger(JedisBuilder.class);
@@ -112,6 +113,7 @@ public class JedisBuilder {
     }
 
     public void close() {
+        log.info("redis 线程池正在销毁");
         this.jedisPool.close();
     }
 
