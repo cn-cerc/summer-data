@@ -61,14 +61,12 @@ public class JedisFactory {
     }
 
     /**
-     * 销毁所有的 redis 连接
+     * 关闭所有的 redis 连接池 <br>
+     * 关闭连接池不等于销毁，连接池依旧存在，只不过不分配 Jedis
      */
-    public static void destroy() {
-        // 关闭连接池
+    public static void close() {
         items.values().forEach(JedisBuilder::close);
-        // 释放缓存池
-        items.clear();
-        log.info("redis 线程池已销毁");
+        log.info("redis 线程池已关闭");
     }
 
 }
