@@ -5,6 +5,9 @@ import redis.clients.jedis.Jedis;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Jedis 工厂调度类，支持项目加载不同的配置
+ */
 public class JedisFactory {
     private static final Map<String, JedisBuilder> items = new ConcurrentHashMap<>();
     private static final JedisFactory instance = new JedisFactory();
@@ -48,11 +51,11 @@ public class JedisFactory {
      */
     private Jedis get(String configId) {
         if (items.containsKey(configId))
-            return items.get(configId).build();
+            return items.get(configId).getResource();
 
         JedisBuilder builder = JedisBuilder.getInstance(configId);
         items.put(configId, builder);
-        return builder.build();
+        return builder.getResource();
     }
 
     /**

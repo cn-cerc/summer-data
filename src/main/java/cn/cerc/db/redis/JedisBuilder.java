@@ -13,6 +13,9 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
+/**
+ * 不同配置的 redis 连接池构造器
+ */
 public class JedisBuilder {
     private static final Logger log = LoggerFactory.getLogger(JedisBuilder.class);
     // 如果赋值为-1，则表示不限制；如果pool已经分配了maxActive个jedis实例，则此时pool的状态为exhausted(耗尽)。
@@ -27,7 +30,7 @@ public class JedisBuilder {
     private JedisPool jedisPool;
     private final String host;
     private final int port;
-    private final AtomicInteger error = new AtomicInteger();
+    private final AtomicInteger atomic = new AtomicInteger();
 
     private static final Map<String, JedisBuilder> builders = new ConcurrentHashMap<>();
 
@@ -82,7 +85,7 @@ public class JedisBuilder {
      *
      * @return jedis
      */
-    public Jedis build() {
+    public Jedis getResource() {
         // 连接池未创建返回空
         if (jedisPool == null) {
             log.error("{}:{} jedis pool is empty", host, port);
@@ -96,17 +99,17 @@ public class JedisBuilder {
         }
 
         // 达3次时，不再重试
-        if (this.error.get() >= 3) {
-            log.error("redis {}:{} 尝试连接 {} 次失败，不在进行尝试", this.host, this.port, this.error.get());
+        if (this.atomic.get() >= 3) {
+            log.error("{}:{} redis 尝试连接 {} 次失败，不在进行尝试", this.host, this.port, this.atomic.get());
             return null;
         }
 
         try {
             return jedisPool.getResource();
         } catch (JedisConnectionException e) {
-            if (this.error.get() < 3) {
+            if (this.atomic.get() < 3) {
                 log.error("redis {}:{} 无法联接，原因：{}", this.host, this.port, e.getMessage());
-                this.error.incrementAndGet();
+                this.atomic.incrementAndGet();
             }
             return null;
         }
