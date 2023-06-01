@@ -19,7 +19,7 @@ public class JedisFactory {
      * @return Jedis
      */
     public static Jedis getJedis() {
-        return instance.get(null);
+        return instance.get("");
     }
 
     /**
