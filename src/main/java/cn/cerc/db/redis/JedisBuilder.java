@@ -8,6 +8,8 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class JedisBuilder {
@@ -21,18 +23,23 @@ public class JedisBuilder {
     // 在borrow一个jedis实例时，是否提前进行validate操作；如果为true，则得到的jedis实例均是可用的；
     private static final boolean TEST_ON_BORROW = true;
 
-    // redis pool
     private JedisPool jedisPool;
     private final String host;
     private final int port;
     private final AtomicInteger error = new AtomicInteger();
+
+    private static final Map<String, JedisBuilder> builders = new ConcurrentHashMap<>();
+
+    public static JedisBuilder getInstance(String configId) {
+        return builders.computeIfAbsent(configId, JedisBuilder::new);
+    }
 
     public JedisBuilder(String configId) {
         RedisConfig config = new RedisConfig(configId);
         this.host = config.host();
         this.port = config.port();
         if (Utils.isEmpty(this.host)) {
-            log.warn("当前项目没有配置redis.host，系统将运行于单机模式");
+            log.warn("{} 项目节点没有配置 redis.host，系统将运行于单机模式", config.getFullPath());
             return;
         }
 
@@ -59,11 +66,11 @@ public class JedisBuilder {
         }
 
         String password = config.password();
-        if ("".equals(password))
+        if (Utils.isEmpty(password))
             password = null;
         int timeout = config.timeout();
 
-        // 建立连接池
+        // 创建 JedisPool 连接池
         jedisPool = new JedisPool(poolConfig, host, port, timeout, password);
         log.info("{}:{} redis server connected", host, port);
     }
