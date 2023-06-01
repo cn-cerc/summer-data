@@ -50,6 +50,7 @@ public class JedisBuilder {
         poolConfig.setTestOnBorrow(TEST_ON_BORROW);
         poolConfig.setTestOnBorrow(true);
         poolConfig.setTestOnReturn(true);
+
         // Idle时进行连接扫描
         poolConfig.setTestWhileIdle(true);
         // 表示idle object evitor两次扫描之间要sleep的毫秒数
