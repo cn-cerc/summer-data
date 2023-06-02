@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.GetResponse;
@@ -23,32 +24,33 @@ import cn.cerc.db.queue.entity.CheckMQEntity;
 
 public class RabbitQueue implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(RabbitQueue.class);
-    private String consumerTag = null;
     private int maximum = 1;
     private Channel channel;
     private Connection connection;
-    private String queueId;
+    private final String queueId;
 
     public RabbitQueue(String queueId) {
         this.queueId = queueId;
     }
 
     private void initChannel() {
+        ConnectionFactory factory = RabbitServer.INSTANCE.getFactory();
         try {
-            connection = RabbitServer.INSTANCE.getFactory().newConnection();
-//            connection.addShutdownListener(cause -> log.info("RabbitMQ connection closed."));
+            connection = factory.newConnection();
             if (connection == null)
                 throw new RuntimeException("rabbitmq connection 创建失败，请立即检查 mq 的服务状态");
+            connection.addShutdownListener(
+                    cause -> log.debug("{}:{} rabbitmq connection closed", factory.getHost(), factory.getPort()));
 
             channel = connection.createChannel();
             if (channel == null)
                 throw new RuntimeException("rabbitmq channel 创建失败，请立即检查 mq 的服务状态");
 
-            channel.addShutdownListener(cause -> log.debug("RabbitMQ channel {} closed.", channel.getChannelNumber()));
+            channel.addShutdownListener(cause -> log.debug("{} rabbitmq channel closed", channel.getChannelNumber()));
             channel.basicQos(this.maximum);
             channel.queueDeclare(queueId, true, false, false, null);
         } catch (IOException | TimeoutException e) {
-            log.error(e.getMessage(), e);
+            log.error("{}:{} {}", factory.getHost(), factory.getPort(), e.getMessage(), e);
             Curl curl = new Curl();
             ServerConfig config = ServerConfig.getInstance();
             String site = config.getProperty("qc.api.rabbitmq.heartbeat.site");
@@ -65,7 +67,7 @@ public class RabbitQueue implements AutoCloseable {
             try {
                 curl.doPost(site, entity);
             } catch (Exception ex) {
-                log.warn("{} {} MQ连接超时，qc监控MQ接口异常", project, version);
+                log.warn("{} {} MQ连接超时，qc监控MQ接口异常", project, version, ex);
             }
         }
     }
@@ -77,7 +79,7 @@ public class RabbitQueue implements AutoCloseable {
         initChannel();
         try {
             if (consumer != null && channel != null) {
-                consumerTag = channel.basicConsume(queueId, false, new DefaultConsumer(channel) {
+                channel.basicConsume(queueId, false, new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties,
                             byte[] body) throws IOException {
@@ -166,6 +168,7 @@ public class RabbitQueue implements AutoCloseable {
                 connection.close();
                 connection = null;
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
