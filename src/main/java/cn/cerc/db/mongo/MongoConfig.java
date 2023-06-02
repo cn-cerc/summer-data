@@ -74,7 +74,7 @@ public class MongoConfig {
 
     /**
      * 获取指定的数据库名称
-     * 
+     *
      * @param suffix 业务类型后缀，例如 _gps<br>
      *               组合以后变成 4plc_gps
      */
@@ -86,6 +86,11 @@ public class MongoConfig {
         if (!Utils.isEmpty(suffix))
             databaseName = String.join("_", databaseName, suffix);
         return MongoConfig.getClient().getDatabase(databaseName);
+    }
+
+    public static void close() {
+        MongoConfig.client.close();
+        log.warn("mongodb client 已关闭");
     }
 
 }
