@@ -176,6 +176,10 @@ public class Utils {
         return String.valueOf(value);
     }
 
+    public static String intToStr(long value) {
+        return String.valueOf(value);
+    }
+
     // 兼容 delphi 代码
     public static String intToStr(double value) {
         return String.valueOf(value);
