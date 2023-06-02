@@ -94,7 +94,7 @@ public class JedisBuilder {
 
         // 连接池若关闭返回空
         if (jedisPool.isClosed()) {
-            log.error("{}:{} jedis pool is closed", host, port);
+            log.info("{}:{} jedis pool is closed", host, port);
             return null;
         }
 
