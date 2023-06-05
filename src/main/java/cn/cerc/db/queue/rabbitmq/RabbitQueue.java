@@ -151,7 +151,7 @@ public class RabbitQueue implements AutoCloseable {
         if (result)
             return "ok";
         else {
-            log.error("{} 消息发送失败 {}", this.getClass().getSimpleName(), msg);
+            log.error("{} 消息 {} 发送失败", this.getClass().getSimpleName(), msg);
             String error = String.format("%s 消息发送失败", this.getClass().getSimpleName());
             throw new RuntimeException(error);
         }

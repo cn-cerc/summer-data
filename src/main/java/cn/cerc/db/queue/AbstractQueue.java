@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.queue.mns.MnsServer;
 import cn.cerc.db.queue.rabbitmq.RabbitQueue;
+import cn.cerc.db.queue.sqlmq.SqlmqQueue;
 import cn.cerc.db.queue.sqlmq.SqlmqServer;
 import cn.cerc.db.redis.Redis;
 import cn.cerc.db.zk.ZkConfig;
@@ -25,8 +26,18 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     // 创建一个缓存线程池，在必要的时候在创建线程，若线程空闲60秒则终止该线程
 //    public static final ExecutorService pool = Executors.newCachedThreadPool();
 
-    public static final ThreadPoolExecutor pool = new ThreadPoolExecutor(8, 16, 60, TimeUnit.SECONDS,
-            new ArrayBlockingQueue<>(500), new ThreadPoolExecutor.CallerRunsPolicy());
+    /**
+     * 获取当前JVM运行环境可调用的处理器线程数
+     */
+    public static final int processors = Runtime.getRuntime().availableProcessors();
+    /**
+     * 核心的线程数 -> CPU 全核心 <br>
+     * 最大的线程数 -> CPU 全核心 * 4 <br>
+     * 线程存活时间 -> 60秒 <br>
+     * 工作队列大小 -> 1024 <br>
+     */
+    public static final ThreadPoolExecutor executor = new ThreadPoolExecutor(processors, processors * 4, 60,
+            TimeUnit.SECONDS, new ArrayBlockingQueue<>(1024), new ThreadPoolExecutor.CallerRunsPolicy());
 
     private static ZkConfig config;
     private boolean pushMode = false; // 默认为拉模式
@@ -62,7 +73,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
 
     /**
      * 切换消息队列所指向的机群，如FPL/OBM/CSM等
-     * 
+     *
      * @param original
      */
     protected void setOriginal(String original) {
@@ -71,7 +82,6 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     }
 
     /**
-     * 
      * @param delayTime 设置延迟时间，单位：秒
      */
     protected void setDelayTime(int delayTime) {
@@ -127,54 +137,52 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
 
     protected String push(String data) {
         switch (getService()) {
-        case Redis:
+        case Redis -> {
             try (Redis redis = new Redis()) {
                 redis.lpush(this.getId(), data);
                 return "push redis ok";
             }
-        case AliyunMNS:
+        }
+        case AliyunMNS -> {
             return MnsServer.getQueue(this.getId()).push(data);
-        case Sqlmq:
-            var sqlQueue = SqlmqServer.getQueue(this.getId());
+        }
+        case Sqlmq -> {
+            SqlmqQueue sqlQueue = SqlmqServer.getQueue(this.getId());
             sqlQueue.setDelayTime(delayTime);
             sqlQueue.setService(service);
             sqlQueue.setQueueClass(this.getClass().getSimpleName());
             return sqlQueue.push(data, this.order);
-        case RabbitMQ: {
+        }
+        case RabbitMQ -> {
             try (var queue = new RabbitQueue(this.getId())) {
                 return queue.push(data);
             }
         }
-        default:
+        default -> {
             return null;
+        }
         }
     }
 
     @Override
     public void run() {
         switch (getService()) {
-        case Redis:
+        case Redis -> {
             try (Redis redis = new Redis()) {
                 var data = redis.rpop(this.getId());
                 if (data != null)
                     this.consume(data, true);
             }
-            break;
-        case AliyunMNS:
-            MnsServer.getQueue(getId()).pop(100, this);
-            break;
-        case Sqlmq:
-            SqlmqServer.getQueue(getId()).pop(100, this);
-            break;
-        case RabbitMQ: {
+        }
+        case AliyunMNS -> MnsServer.getQueue(getId()).pop(100, this);
+        case Sqlmq -> SqlmqServer.getQueue(getId()).pop(100, this);
+        case RabbitMQ -> {
             try (var queue = new RabbitQueue(this.getId())) {
                 queue.setMaximum(100);
                 queue.pop(this);
             }
         }
-            break;
-        default:
-            log.error("{} 不支持消息拉取模式:", getService().name());
+        default -> log.error("{} 不支持消息拉取模式:", getService().name());
         }
     }
 
@@ -196,16 +204,16 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
 
         if (ServerConfig.enableTaskService()) {
             switch (this.getService()) {
-            case Redis, AliyunMNS, RabbitMQ:
+            case Redis, AliyunMNS, RabbitMQ -> {
                 log.debug("thread pool add {} job {}", Thread.currentThread(), this.getClass().getSimpleName());
-                pool.submit(this);// 使用线程池
-                break;
-            case Sqlmq:
+                executor.submit(this);// 使用线程池
+            }
+            case Sqlmq -> {
                 log.debug("{} sqlmq add job {}", Thread.currentThread(), this.getClass().getSimpleName());
                 this.run();
-                break;
-            default:
-                break;
+            }
+            default -> {
+            }
             }
         }
     }
@@ -219,7 +227,6 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     }
 
     /**
-     * 
      * @return 为true表示为推模式
      */
     public boolean isPushMode() {
@@ -238,6 +245,31 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         queue.setDelayTime(this.delayTime);
         queue.setQueueClass(this.getClass().getSimpleName());
         queue.push(message, this.order);
+    }
+
+    public static void close() {
+        executor.shutdown();
+        try {
+            boolean awaited = executor.awaitTermination(5, TimeUnit.MINUTES);
+            if (!awaited)
+                log.error("队列线程池等待关闭失败");
+        } catch (InterruptedException e) {
+            log.error("等待线程池关闭超时了 {}", e.getMessage(), e);
+        }
+
+        if (executor.isTerminated()) {
+            // 所有任务已完成
+            log.info("队列线程池中的任务已全部执行完毕");
+        } else {
+            // 仍有任务在执行
+            log.warn("仍有线程任务执行 ->");
+            log.warn("当前的核心线程数 {}", executor.getCorePoolSize());
+            log.warn("当前的线程池大小 {}", executor.getPoolSize());
+            log.warn("当前的活动线程数 {}", executor.getActiveCount());
+            log.warn("等待执行的任务数 {}", executor.getQueue().size());
+            log.warn("已完成的任务数量 {}", executor.getCompletedTaskCount());
+            log.warn("累计的总任务数量 {}", executor.getTaskCount());
+        }
     }
 
 }
