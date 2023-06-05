@@ -34,7 +34,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
      * 核心的线程数 -> CPU 全核心 <br>
      * 最大的线程数 -> CPU 全核心 * 4 <br>
      * 线程存活时间 -> 60秒 <br>
-     * 工作队列大小 -> 1024<br>
+     * 工作队列大小 -> 1024 <br>
      */
     public static final ThreadPoolExecutor executor = new ThreadPoolExecutor(processors, processors * 4, 60,
             TimeUnit.SECONDS, new ArrayBlockingQueue<>(1024), new ThreadPoolExecutor.CallerRunsPolicy());
