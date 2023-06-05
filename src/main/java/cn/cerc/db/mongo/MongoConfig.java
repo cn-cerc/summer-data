@@ -89,7 +89,8 @@ public class MongoConfig {
     }
 
     public static void close() {
-        MongoConfig.client.close();
+        if (client != null)
+            MongoConfig.client.close();
         log.warn("mongodb client 已关闭");
     }
 
