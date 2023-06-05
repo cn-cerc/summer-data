@@ -262,6 +262,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             log.info("队列线程池中的任务已全部执行完毕");
         } else {
             // 仍有任务在执行
+            log.warn("仍有线程任务执行 ->");
             log.warn("当前的核心线程数 {}", executor.getCorePoolSize());
             log.warn("当前的线程池大小 {}", executor.getPoolSize());
             log.warn("当前的活动线程数 {}", executor.getActiveCount());
