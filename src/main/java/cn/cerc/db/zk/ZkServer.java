@@ -20,22 +20,19 @@ import org.slf4j.LoggerFactory;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
 
-public class ZkServer implements AutoCloseable {
+public class ZkServer {
     private static final Logger log = LoggerFactory.getLogger(ZkServer.class);
-    private static final ZkServer server;
+    private static final ZkServer instance = new ZkServer();
     private CountDownLatch connectionLatch;
     private ZooKeeper client;
     private String host;
 
-    static {
-        server = new ZkServer();
-    }
-
     public static ZkServer get() {
-        return server;
+        return instance;
     }
 
-    public ZkServer() {
+    private ZkServer() {
+        // 私有构造函数，防止外部实例化
         var config = ServerConfig.getInstance();
         String host = config.getProperty("zookeeper.host");
         String port = config.getProperty("zookeeper.port", "2181");
@@ -49,6 +46,7 @@ public class ZkServer implements AutoCloseable {
         this.host = host;
     }
 
+    // TODO 此方法应该去掉，应用应该自己将注册信息发送给 jayun 进行记录
     public ZkServer(String host) {
         this.init(host);
         this.host = host;
@@ -78,21 +76,6 @@ public class ZkServer implements AutoCloseable {
 
     public ZooKeeper client() {
         return this.client;
-    }
-
-    @Override
-    public void close() {
-        if (this.client != null) {
-            try {
-                connectionLatch = new CountDownLatch(1);
-                client.close();
-                client = null;
-                connectionLatch.await();
-                Thread.sleep(300);
-            } catch (InterruptedException e) {
-                log.error("{} {}", this.getHost(), e.getMessage(), e);
-            }
-        }
     }
 
     /**
@@ -213,6 +196,17 @@ public class ZkServer implements AutoCloseable {
 
     public String getHost() {
         return host;
+    }
+
+    public void close() {
+        if (this.client != null) {
+            try {
+                this.client.close();
+            } catch (InterruptedException e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+        log.warn("zookeeper client 已关闭");
     }
 
 }
