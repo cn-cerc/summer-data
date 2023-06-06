@@ -277,4 +277,15 @@ public class Redis implements AutoCloseable {
             redis.del(key);
         }
     }
+
+    public boolean automicLock(String key, String value, String expireSeconds) {
+        String lua_scripts = "if redis.call('setnx',KEYS[1],ARGV[1]) == 1 then redis.call('expire',KEYS[1],ARGV[2]) return 1 else return 0 end";
+        Object result = jedis.eval(lua_scripts, 1, key, value, expireSeconds);
+        return result.equals(1L);
+    }
+
+    public boolean automicUnlock(String key) {
+        String lua_scripts = "return redis.call('del', KEYS[1])";
+        return jedis.eval(lua_scripts, 1, key).equals(1L);
+    }
 }
