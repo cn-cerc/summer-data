@@ -154,7 +154,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             return sqlQueue.push(data, this.order);
         }
         case RabbitMQ -> {
-            try (var queue = new RabbitQueue(this.getId())) {
+            try (RabbitQueue queue = new RabbitQueue(this.getId())) {
                 return queue.push(data);
             }
         }
