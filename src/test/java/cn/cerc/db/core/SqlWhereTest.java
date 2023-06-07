@@ -110,4 +110,29 @@ public class SqlWhereTest {
         where.eq("code", 1).or().eq("code", 2).AND().eq("name", "A").or().eq("name", "B");
         assertEquals("(code=1 or code=2) AND (name='A' or name='B')", where.toString());
     }
+
+    @Test
+    public void test_fn() {
+        long s1 = System.nanoTime();
+        where.eq(Car::getName, "宝马");
+        long s2 = System.nanoTime();
+        where.clear();
+        long s3 = System.nanoTime();
+        where.eq("Name_", "宝马");
+        long s4 = System.nanoTime();
+        System.out.println(s2 - s1);
+        System.out.println(s4 - s3);
+    }
+
+    public static class Car {
+        private String name_;
+
+        public String getName() {
+            return name_;
+        }
+
+        public void setName_(String name_) {
+            this.name_ = name_;
+        }
+    }
 }

@@ -1,7 +1,10 @@
 package cn.cerc.db.core;
 
 import java.io.Serializable;
+import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.function.Function;
 
 import javax.persistence.Column;
 import javax.persistence.EnumType;
@@ -44,7 +47,9 @@ public final class FieldMeta implements Serializable {
     private OnSetText onSetText;
 
     public enum FieldKind {
-        Memory, Storage, Calculated;
+        Memory,
+        Storage,
+        Calculated;
     }
 
     public FieldMeta(String code) {
@@ -368,4 +373,31 @@ public final class FieldMeta implements Serializable {
             this.setNullable(false);
     }
 
+    @FunctionalInterface
+    public interface FieldFn<T, R> extends Function<T, R>, Serializable {
+    }
+
+    public static <T> String code(FieldFn<T, ?> fieldFn) {
+        try {
+            Method wrMethod = fieldFn.getClass().getDeclaredMethod("writeReplace");
+            boolean isInaccessible = !wrMethod.isAccessible();
+            if (isInaccessible)
+                wrMethod.setAccessible(true);
+
+            SerializedLambda sLambda = (SerializedLambda) wrMethod.invoke(fieldFn);
+            if (isInaccessible)
+                wrMethod.setAccessible(false);
+
+            String methodName = sLambda.getImplMethodName();
+            if (methodName.startsWith("get") && methodName.length() > 3)
+                return Utils.firstCharToLowerCase(methodName.substring(3));
+
+            if (methodName.startsWith("is") && methodName.length() > 2)
+                return Utils.firstCharToLowerCase(methodName.substring(2));
+
+            throw new IllegalStateException("Can not resolve the name of method: " + methodName);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Can not resolve the name of " + fieldFn, e);
+        }
+    }
 }

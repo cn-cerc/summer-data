@@ -403,7 +403,7 @@ public class Utils {
         try {
             obj = clazz.getDeclaredConstructor().newInstance();
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                 | NoSuchMethodException | SecurityException e) {
+                | NoSuchMethodException | SecurityException e) {
             throw new RuntimeException(e.getMessage());
         }
         for (Field method : clazz.getDeclaredFields()) {
@@ -473,7 +473,7 @@ public class Utils {
                         set.invoke(obj, value);
                     }
                 } catch (NoSuchMethodException | SecurityException | IllegalArgumentException
-                         | InvocationTargetException | IllegalAccessException e) {
+                        | InvocationTargetException | IllegalAccessException e) {
                     log.warn(e.getMessage());
                 }
             }
@@ -507,7 +507,7 @@ public class Utils {
                 Object value = get.invoke(object);
                 record.setValue(dbField, value);
             } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-                     | InvocationTargetException e) {
+                    | InvocationTargetException e) {
                 // e.printStackTrace();
             }
         }
@@ -745,6 +745,18 @@ public class Utils {
             list.add(sourceList.subList(startIndex, endIndex));
         }
         return list;
+    }
+
+    public static String firstCharToLowerCase(String str) {
+        if (Utils.isEmpty(str))
+            return str;
+        return Character.toLowerCase(str.charAt(0)) + str.substring(1);
+    }
+
+    public static String firstCharToUpperCase(String str) {
+        if (Utils.isEmpty(str))
+            return str;
+        return Character.toUpperCase(str.charAt(0)) + str.substring(1);
     }
 
 }

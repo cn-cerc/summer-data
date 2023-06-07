@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+import cn.cerc.db.core.FieldMeta.FieldFn;
+
 public class SqlWhere {
     private final JoinDirectionEnum joinGroup;
     private JoinDirectionEnum joinMode = JoinDirectionEnum.And;
@@ -82,6 +84,14 @@ public class SqlWhere {
      * @return this
      */
     public SqlWhere eq(String field, Object value) {
+        if (value != null)
+            return this.appendField(field, value, "=");
+        else
+            return this.isNull(field, true);
+    }
+
+    public <T> SqlWhere eq(FieldFn<T, ?> fieldFn, Object value) {
+        String field = FieldMeta.code(fieldFn);
         if (value != null)
             return this.appendField(field, value, "=");
         else
