@@ -158,6 +158,19 @@ public class ZkServer {
 
     /**
      * @param node
+     * @return 返回所有的子节点
+     */
+    public List<String> getNodes(String node, Watcher watcher) {
+        try {
+            return client.getChildren(node, watcher, new Stat());
+        } catch (KeeperException | InterruptedException | IllegalArgumentException e) {
+            log.error("{} {} {}", this.getHost(), node, e.getMessage(), e);
+            return List.of();
+        }
+    }
+
+    /**
+     * @param node
      * @return 取得指点节点的值，若不存在则为null
      */
     public String getValue(String node) {
