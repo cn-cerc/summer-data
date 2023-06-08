@@ -40,18 +40,7 @@ public class RabbitServer {
      * @return connection
      */
     public Connection getConnection() {
-        int index = next();
-        Connection connection = connections.get(index);
-        if (!connection.isOpen()) {
-            try {
-                connection.close();
-                connection = RabbitFactory.getInstance().newConnection();
-                connections.set(index, connection);
-            } catch (IOException | TimeoutException e) {
-                log.error("index {} 重建 rabbitmq 连接失败 {}", e.getMessage(), e);
-            }
-        }
-        return connection;
+        return connections.get(next());
     }
 
     /**
@@ -81,6 +70,7 @@ public class RabbitServer {
                 }
             }
         }
+        log.info("RabbitMQ 连接已关闭");
     }
 
 }
