@@ -162,7 +162,7 @@ public class RabbitQueue implements AutoCloseable {
             try {
                 channel.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
             }
             channel = null;
         }
