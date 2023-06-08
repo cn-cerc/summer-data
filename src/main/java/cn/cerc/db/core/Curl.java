@@ -295,7 +295,29 @@ public class Curl {
 
     }
 
-    public String doPost(String reqUrl, StringBuffer params) throws IOException {
+    public String doPost(String reqUrl, StringBuffer params) {
+        String content = null;
+        int i = 0;
+        while (true) {
+            try {
+                content = this.post(reqUrl, params);
+            } catch (IOException e) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    log.error(ex.getMessage(), ex);
+                }
+                if (i > 4) {// 可以重试4次
+                    return content;
+                }
+                i++;
+                log.error("调用服务异常！", e);
+            }
+            return content;
+        }
+    }
+
+    public String post(String reqUrl, StringBuffer params) throws IOException {
         if (Utils.isEmpty(reqUrl)) {
             return null;
         }
