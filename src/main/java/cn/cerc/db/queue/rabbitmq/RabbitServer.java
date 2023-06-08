@@ -13,8 +13,8 @@ import com.rabbitmq.client.Connection;
 
 public class RabbitServer {
     private static final Logger log = LoggerFactory.getLogger(RabbitServer.class);
-    private static final int processors = Runtime.getRuntime().availableProcessors();
-    private static final List<Connection> connections = new ArrayList<>(processors);
+    private static final int poolSize = Runtime.getRuntime().availableProcessors();
+    private static final List<Connection> connections = new ArrayList<>(poolSize);
     private static final AtomicInteger loader = new AtomicInteger();
 
     private static final RabbitServer instance = new RabbitServer();
@@ -24,7 +24,7 @@ public class RabbitServer {
     }
 
     private RabbitServer() {
-        for (int i = 0; i < processors; i++) {
+        for (int i = 0; i < poolSize; i++) {
             try {
                 Connection connection = RabbitFactory.getInstance().newConnection();
                 connections.add(connection);
@@ -42,13 +42,14 @@ public class RabbitServer {
     public Connection getConnection() {
         int index = next();
         Connection connection = connections.get(index);
-        try {
-            if (connection == null || !connection.isOpen()) {
+        if (!connection.isOpen()) {
+            try {
+                connection.close();
                 connection = RabbitFactory.getInstance().newConnection();
                 connections.set(index, connection);
+            } catch (IOException | TimeoutException e) {
+                log.error("index {} 重建 rabbitmq 连接失败 {}", e.getMessage(), e);
             }
-        } catch (IOException | TimeoutException e) {
-            log.error("{} 连接池游标异常 -> {}", e.getMessage(), e);
         }
         return connection;
     }
@@ -60,7 +61,7 @@ public class RabbitServer {
      */
     private int next() {
         int index = loader.getAndIncrement();
-        if (loader.get() > processors) {
+        if (loader.get() > poolSize) {
             loader.set(0);
             index = 0;
         }
@@ -79,7 +80,6 @@ public class RabbitServer {
                     log.error(e.getMessage(), e);
                 }
             }
-            connection = null;
         }
     }
 

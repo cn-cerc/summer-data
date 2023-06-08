@@ -34,10 +34,10 @@ public enum RabbitFactory {
             if (factory == null) {
                 final String prefix = String.format("/%s/%s/rabbitmq/", ServerConfig.getAppProduct(),
                         ServerConfig.getAppVersion());
-                var host = ZkNode.get().getNodeValue(prefix + "host", () -> "rabbitmq.local.top");
-                var port = ZkNode.get().getNodeValue(prefix + "port", () -> "5672");
-                var username = ZkNode.get().getNodeValue(prefix + "username", () -> "admin");
-                var password = ZkNode.get().getNodeValue(prefix + "password", () -> "admin");
+                String host = ZkNode.get().getNodeValue(prefix + "host", () -> "rabbitmq.local.top");
+                String port = ZkNode.get().getNodeValue(prefix + "port", () -> "5672");
+                String username = ZkNode.get().getNodeValue(prefix + "username", () -> "admin");
+                String password = ZkNode.get().getNodeValue(prefix + "password", () -> "admin");
 
                 // 创建连接工厂
                 factory = new ConnectionFactory();
@@ -57,7 +57,7 @@ public enum RabbitFactory {
         if (connection == null)
             throw new RuntimeException("rabbitmq connection 创建失败，请立即检查 RabbitMQ 的服务状态");
         connection.addShutdownListener(
-                cause -> log.debug("{}:{} rabbitmq connection closed", factory.getHost(), factory.getPort()));
+                cause -> log.info("{}:{} rabbitmq connection closed", factory.getHost(), factory.getPort()));
         return connection;
     }
 
