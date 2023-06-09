@@ -34,6 +34,7 @@ public class RabbitServer {
             if (this.connection == null) {
                 try {
                     this.connection = RabbitFactory.getInstance().newConnection();
+                    log.info("创建了新的 rabbitmq 连接");
                 } catch (IOException | TimeoutException e) {
                     e.printStackTrace();
                 }
