@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.GetResponse;
@@ -23,6 +24,7 @@ public class RabbitQueue implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(RabbitQueue.class);
     private int maximum = 1;
     private Channel channel;
+    private Connection connection;
     private final String queueId;
 
     public RabbitQueue(String queueId) {
@@ -31,14 +33,16 @@ public class RabbitQueue implements AutoCloseable {
 
     private void initChannel() {
         try {
-            channel = RabbitServer.getInstance().getConnection().createChannel();
-            if (channel == null)
+            this.connection = RabbitServer.getInstance().getConnection();
+            this.channel = connection.createChannel();
+            if (this.channel == null)
                 throw new RuntimeException("rabbitmq channel 创建失败，请立即检查 mq 的服务状态");
 
-            channel.addShutdownListener(cause -> log.debug("{} rabbitmq channel closed", channel.getChannelNumber()));
-            channel.basicQos(this.maximum);
-            channel.queueDeclare(queueId, true, false, false, null);
-        } catch (IOException e) {
+            this.channel
+                    .addShutdownListener(cause -> log.debug("{} rabbitmq channel closed", channel.getChannelNumber()));
+            this.channel.basicQos(this.maximum);
+            this.channel.queueDeclare(queueId, true, false, false, null);
+        } catch (IOException | InterruptedException e) {
             Curl curl = new Curl();
             ServerConfig config = ServerConfig.getInstance();
             String site = config.getProperty("qc.api.rabbitmq.heartbeat.site");
@@ -87,6 +91,7 @@ public class RabbitQueue implements AutoCloseable {
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         }
+        RabbitServer.getInstance().releaseConnection(this.connection);
     }
 
     /**
@@ -123,6 +128,7 @@ public class RabbitQueue implements AutoCloseable {
                 }
             }
         }
+        RabbitServer.getInstance().releaseConnection(this.connection);
     }
 
     /**
@@ -139,6 +145,8 @@ public class RabbitQueue implements AutoCloseable {
         } catch (IOException | InterruptedException e) {
             log.error(e.getMessage(), e);
         }
+        RabbitServer.getInstance().releaseConnection(this.connection);
+
         if (result)
             return "ok";
         else {

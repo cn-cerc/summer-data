@@ -1,12 +1,5 @@
 package cn.cerc.db.queue.rabbitmq;
 
-import java.io.IOException;
-import java.util.concurrent.TimeoutException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
 import cn.cerc.db.core.ServerConfig;
@@ -19,14 +12,13 @@ public enum RabbitFactory {
 
     instance;
 
-    private static final Logger log = LoggerFactory.getLogger(RabbitFactory.class);
     private ConnectionFactory factory;
 
     public static RabbitFactory getInstance() {
         return instance;
     }
 
-    public ConnectionFactory getFactory() {
+    public ConnectionFactory build() {
         if (factory != null)
             return factory;
 
@@ -50,15 +42,6 @@ public enum RabbitFactory {
             }
         }
         return factory;
-    }
-
-    public Connection newConnection() throws IOException, TimeoutException {
-        Connection connection = RabbitFactory.getInstance().getFactory().newConnection();
-        if (connection == null)
-            throw new RuntimeException("rabbitmq connection 创建失败，请立即检查 RabbitMQ 的服务状态");
-        connection.addShutdownListener(
-                cause -> log.info("{}:{} rabbitmq connection closed", factory.getHost(), factory.getPort()));
-        return connection;
     }
 
 }
