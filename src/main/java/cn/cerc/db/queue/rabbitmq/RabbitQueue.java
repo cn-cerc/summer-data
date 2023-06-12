@@ -2,6 +2,7 @@ package cn.cerc.db.queue.rabbitmq;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -169,7 +170,7 @@ public class RabbitQueue implements AutoCloseable {
         if (channel != null) {
             try {
                 channel.close();
-            } catch (Exception e) {
+            } catch (IOException | TimeoutException e) {
                 log.error(e.getMessage(), e);
             }
             channel = null;
