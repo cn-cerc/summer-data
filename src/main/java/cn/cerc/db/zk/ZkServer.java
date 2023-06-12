@@ -206,7 +206,7 @@ public class ZkServer {
                 log.error(e.getMessage(), e);
             }
         }
-        log.info("zookeeper client 已关闭");
+        log.warn("zookeeper client 已关闭");
     }
 
 }
