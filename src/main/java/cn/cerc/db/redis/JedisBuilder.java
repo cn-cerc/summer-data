@@ -100,7 +100,7 @@ public class JedisBuilder {
 
         // 达3次时，不再重试
         if (this.atomic.get() >= 3) {
-            log.error("{}:{} redis 尝试连接 {} 次失败，不在进行尝试", this.host, this.port, this.atomic.get());
+            log.error("{}:{} redis 尝试连接 {} 次失败，不再进行尝试", this.host, this.port, this.atomic.get());
             return null;
         }
 

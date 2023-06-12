@@ -77,7 +77,8 @@ public interface IRecord {
             if (tmp < Integer.MIN_VALUE || tmp > Integer.MAX_VALUE)
                 throw new ClassCastException("Double to Integer is out of range");
             if (tmp != tmp.intValue())
-                throw new ClassCastException("Double to Integer fail, value: " + tmp);
+                throw new ClassCastException(
+                        String.format("Double to Integer fail, original %s -> %s ", tmp, tmp.intValue()));
             return tmp.intValue();
         } else if (value instanceof String) {
             String str = (String) value;
@@ -106,14 +107,16 @@ public interface IRecord {
             if (tmp < Long.MIN_VALUE || tmp > Long.MAX_VALUE)
                 throw new ClassCastException("Float to Long is out of range");
             if (tmp != tmp.longValue())
-                throw new ClassCastException("Float to Long fail, value: " + tmp);
+                throw new ClassCastException(
+                        String.format("Float to Long fail, original %s -> %s ", tmp, tmp.longValue()));
             return tmp.longValue();
         } else if (value instanceof Double) {
             Double tmp = (Double) value;
             if (tmp < Long.MIN_VALUE || tmp > Long.MAX_VALUE)
                 throw new ClassCastException("Double to Long is out of range");
             if (tmp != tmp.longValue())
-                throw new ClassCastException("Double to Long fail, value: " + tmp);
+                throw new ClassCastException(
+                        String.format("Double to Long fail, original %s -> %s ", tmp, tmp.longValue()));
             return tmp.longValue();
         } else if (value instanceof String) {
             String str = (String) value;
