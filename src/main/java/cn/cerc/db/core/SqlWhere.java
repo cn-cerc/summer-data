@@ -1,5 +1,8 @@
 package cn.cerc.db.core;
 
+import java.beans.Introspector;
+import java.lang.invoke.SerializedLambda;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -88,6 +91,10 @@ public class SqlWhere {
             return this.isNull(field, true);
     }
 
+    public <T> SqlWhere eq(MyFunction<T> func, Object value) {
+        return eq(getFeild(func), value);
+    }
+
     /**
      * 设置条件：相等，条件值从params中取
      * 
@@ -105,6 +112,10 @@ public class SqlWhere {
             return this;
     }
 
+    public <T> SqlWhere eq(MyFunction<T> func) {
+        return eq(getFeild(func));
+    }
+
     /**
      * 设置条件：不相等
      * 
@@ -117,6 +128,10 @@ public class SqlWhere {
             return this.appendField(field, value, "<>");
         else
             return this.isNull(field, false);
+    }
+
+    public <T> SqlWhere neq(MyFunction<T> func, Object value) {
+        return neq(getFeild(func), value);
     }
 
     /**
@@ -133,6 +148,10 @@ public class SqlWhere {
         return this.neq(dbField, dataRow.getValue(field));
     }
 
+    public <T> SqlWhere neq(MyFunction<T> func) {
+        return neq(getFeild(func));
+    }
+
     /**
      * 设置条件：大于
      * 
@@ -142,6 +161,10 @@ public class SqlWhere {
      */
     public SqlWhere gt(String field, Object value) {
         return this.appendField(field, value, ">");
+    }
+
+    public <T> SqlWhere gt(MyFunction<T> func, Object value) {
+        return gt(getFeild(func), value);
     }
 
     /**
@@ -158,6 +181,10 @@ public class SqlWhere {
         return this.gt(dbField, dataRow.getValue(field));
     }
 
+    public <T> SqlWhere gt(MyFunction<T> func) {
+        return gt(getFeild(func));
+    }
+
     /**
      * 设置条件：大于等于
      * 
@@ -167,6 +194,10 @@ public class SqlWhere {
      */
     public SqlWhere gte(String field, Object value) {
         return this.appendField(field, value, ">=");
+    }
+
+    public <T> SqlWhere gte(MyFunction<T> func, Object value) {
+        return gte(getFeild(func), value);
     }
 
     /**
@@ -183,6 +214,10 @@ public class SqlWhere {
         return this.gte(dbField, dataRow.getValue(field));
     }
 
+    public <T> SqlWhere gte(MyFunction<T> func) {
+        return gte(getFeild(func));
+    }
+
     /**
      * 设置条件：小于
      * 
@@ -192,6 +227,10 @@ public class SqlWhere {
      */
     public SqlWhere lt(String field, Object value) {
         return this.appendField(field, value, "<");
+    }
+
+    public <T> SqlWhere lt(MyFunction<T> func, Object value) {
+        return lt(getFeild(func), value);
     }
 
     /**
@@ -208,6 +247,10 @@ public class SqlWhere {
         return this.lt(dbField, dataRow.getValue(field));
     }
 
+    public <T> SqlWhere lt(MyFunction<T> func) {
+        return lt(getFeild(func));
+    }
+
     /**
      * 设置条件：小于等于
      * 
@@ -217,6 +260,10 @@ public class SqlWhere {
      */
     public SqlWhere lte(String field, Object value) {
         return this.appendField(field, value, "<=");
+    }
+
+    public <T> SqlWhere lte(MyFunction<T> func, Object value) {
+        return lte(getFeild(func), value);
     }
 
     /**
@@ -231,6 +278,10 @@ public class SqlWhere {
         if (field.contains("."))
             field = field.split("\\.")[1];
         return this.lte(dbField, dataRow.getValue(field));
+    }
+
+    public <T> SqlWhere lte(MyFunction<T> func) {
+        return lte(getFeild(func));
     }
 
     /**
@@ -253,6 +304,10 @@ public class SqlWhere {
         return this;
     }
 
+    public <T> SqlWhere isNull(MyFunction<T> func, boolean value) {
+        return isNull(getFeild(func), value);
+    }
+
     /**
      * 设置条件：是否为null，条件值从params中取
      * 
@@ -265,6 +320,10 @@ public class SqlWhere {
         if (field.contains("."))
             field = field.split("\\.")[1];
         return this.isNull(dbField, dataRow.getBoolean(field));
+    }
+
+    public <T> SqlWhere isNull(MyFunction<T> func) {
+        return isNull(getFeild(func));
     }
 
     public final SqlWhere like(String field, String value) {
@@ -282,12 +341,20 @@ public class SqlWhere {
             return like(field, value, LinkOptionEnum.Right);
     }
 
+    public <T> SqlWhere like(MyFunction<T> func, String value) {
+        return like(getFeild(func), value);
+    }
+
     public final SqlWhere like(String field) {
         Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
         return like(dbField, dataRow.getString(field));
+    }
+
+    public <T> SqlWhere like(MyFunction<T> func) {
+        return like(getFeild(func));
     }
 
     public final SqlWhere like(String field, String value, LinkOptionEnum linkOption) {
@@ -308,6 +375,10 @@ public class SqlWhere {
         return this;
     }
 
+    public <T> SqlWhere like(MyFunction<T> func, String value, LinkOptionEnum linkOption) {
+        return like(getFeild(func), value, linkOption);
+    }
+
     public final SqlWhere in(String field, Collection<?> values) {
         if (values == null || values.size() == 0)
             throw new RuntimeException("sql command IN conditions can not be empty");
@@ -324,6 +395,10 @@ public class SqlWhere {
         }
         sb.append(")");
         return this;
+    }
+
+    public <T> SqlWhere in(MyFunction<T> func, Collection<?> values) {
+        return in(getFeild(func), values);
     }
 
     /**
@@ -375,6 +450,10 @@ public class SqlWhere {
         return this;
     }
 
+    public <T> SqlWhere in(MyFunction<T> func, String sqlText) {
+        return in(getFeild(func), sqlText);
+    }
+
     public final SqlWhere between(String field, Object value1, Object value2) {
         if (field.contains("'"))
             throw new RuntimeException("field contains error character[']");
@@ -389,12 +468,20 @@ public class SqlWhere {
         return this;
     }
 
+    public <T> SqlWhere between(MyFunction<T> func, Object value1, Object value2) {
+        return between(getFeild(func), value1, value2);
+    }
+
     public final SqlWhere between(String field) {
         Objects.requireNonNull(dataRow);
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
         return between(dbField, dataRow.getValue(field + "_from"), dataRow.getValue(field + "_to"));
+    }
+
+    public <T> SqlWhere between(MyFunction<T> func) {
+        return between(getFeild(func));
     }
 
     public SqlText build() {
@@ -535,21 +622,50 @@ public class SqlWhere {
         return where;
     }
 
+    /**
+     * 
+     * @param func 调用
+     * @return 比对多个字段是否一致，形如：(f1=v1 and f2=v2) or (f1=v1 and f2=v2)
+     */
+    public <T> String getFeild(MyFunction<T> func) {
+        String feild = "";
+        try {
+            Method method = func.getClass().getDeclaredMethod("writeReplace");
+            method.setAccessible(true);
+            // 反射调用
+            SerializedLambda lambda = (SerializedLambda) method.invoke(func);
+            feild = Introspector.decapitalize(lambda.getImplMethodName());
+            // 判断是get开头去掉get 否则去掉 is
+            feild = feild.replaceFirst(feild.indexOf("get") == 0 ? "get" : "is", "");
+        } catch (Exception e) {
+            throw new RuntimeException("get class field error");
+        }
+        return feild.toLowerCase();
+    }
+
     public static void main(String[] args) {
         // code is null
-        System.out.println(new SqlWhere().eq("code", null));
+//        System.out.println(new SqlWhere().eq("code", null));
+//
+//        // code in (1,3,4)
+//        System.out.println(new SqlWhere().in("code", List.of(1, 3, 4)));
+//
+//        // code in (select code_ from xxx)
+//        System.out.println(new SqlWhere().in("code", "select code_ from xxx"));
+//
+//        // ((WHCode='A01' and PartCode='P01') or (WHCode='A01' and PartCode='P02'))
+//        List<Object[]> items = new ArrayList<>();
+//        items.add(new Object[] { "A01", "P01" });
+//        items.add(new Object[] { "A01", "P02" });
+//        System.out.println(new SqlWhere().inGroup(List.of("WHCode", "PartCode"), items));
 
-        // code in (1,3,4)
-        System.out.println(new SqlWhere().in("code", List.of(1, 3, 4)));
-
-        // code in (select code_ from xxx)
-        System.out.println(new SqlWhere().in("code", "select code_ from xxx"));
-
-        // ((WHCode='A01' and PartCode='P01') or (WHCode='A01' and PartCode='P02'))
-        List<Object[]> items = new ArrayList<>();
-        items.add(new Object[] { "A01", "P01" });
-        items.add(new Object[] { "A01", "P02" });
-        System.out.println(new SqlWhere().inGroup(List.of("WHCode", "PartCode"), items));
+        SqlWhere where = new SqlWhere();
+        where.eq(MysqlTableTest::getColoum1_, "测试")
+                .gte(MysqlTableTest::getColoum2_, 1d)
+                .lte(MysqlTableTest::getColoum3_, 1)
+                .neq(MysqlTableTest::getColoum4_, true)
+                .between(MysqlTableTest::getColoum4_, "2023-01-01", "2023-01-31");
+        System.out.println(where.toString());
     }
 
 }
