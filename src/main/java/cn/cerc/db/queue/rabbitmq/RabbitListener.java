@@ -20,7 +20,7 @@ import cn.cerc.db.queue.QueueServiceEnum;
 @Component
 public class RabbitListener implements ApplicationListener<ApplicationContextEvent> {
     private static final Logger log = LoggerFactory.getLogger(RabbitListener.class);
-    private List<RabbitQueue> startItems = new ArrayList<>();
+    private final List<RabbitQueue> startItems = new ArrayList<>();
 
     @Override
     public void onApplicationEvent(ApplicationContextEvent event) {
@@ -46,11 +46,19 @@ public class RabbitListener implements ApplicationListener<ApplicationContextEve
                 }
             }
         } else if (event instanceof ContextClosedEvent) {
-            for (var queue : startItems)
-                queue.close();
-            log.info("关闭注册的推送消息数量 {}", startItems.size());
-            startItems.clear();
+            close();
         }
+    }
+
+    /**
+     * 消费者关闭监听，不再接收消息
+     */
+    public void close() {
+        for (var item : startItems) {
+            item.close();
+        }
+        log.info("关闭注册的推送消息数量 {}", startItems.size());
+        startItems.clear();
     }
 
 }
