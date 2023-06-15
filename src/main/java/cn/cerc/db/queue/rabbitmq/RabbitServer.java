@@ -52,9 +52,10 @@ public class RabbitServer {
      * @throws InterruptedException
      */
     public Connection getConnection() throws InterruptedException {
+        Connection connection = connections.take();
         log.warn("取出连接，剩余个数 {}", connections.size());
 //        return connections.poll(5, TimeUnit.SECONDS);
-        return connections.take();
+        return connection;
     }
 
     /**
@@ -63,8 +64,8 @@ public class RabbitServer {
      * @param connection
      */
     public void releaseConnection(Connection connection) {
-        log.warn("归还连接，剩余个数 {}", connections.size());
         connections.add(connection);
+        log.warn("归还连接，剩余个数 {}", connections.size());
     }
 
     /**
