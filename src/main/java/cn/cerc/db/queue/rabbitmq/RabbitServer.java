@@ -34,12 +34,12 @@ public class RabbitServer {
                 connection.addShutdownListener(
                         cause -> log.info("{}:{} rabbitmq connection closed", factory.getHost(), factory.getPort()));
                 connections.add(connection);
-                log.warn("初始化连接 {}", i);
+                log.info("初始化连接 {}", i);
             } catch (IOException | TimeoutException e) {
                 throw new RuntimeException(e.getMessage());
             }
         }
-        log.warn("初始化连接完成 {}", capacity);
+        log.info("初始化连接完成 {}", capacity);
     }
 
     /**
@@ -51,8 +51,9 @@ public class RabbitServer {
      * @throws InterruptedException
      */
     public Connection getConnection() throws InterruptedException {
+        log.info("准备取出，剩余个数 {}", connections.size());
         Connection connection = connections.take();
-        log.warn("取出连接，剩余个数 {}", connections.size());
+        log.info("取出连接，剩余个数 {}", connections.size());
 //        return connections.poll(5, TimeUnit.SECONDS);
         return connection;
     }
@@ -64,7 +65,7 @@ public class RabbitServer {
      */
     public void releaseConnection(Connection connection) {
         connections.add(connection);
-        log.warn("归还连接，剩余个数 {}", connections.size());
+        log.info("归还连接，剩余个数 {}", connections.size());
     }
 
     /**
