@@ -90,11 +90,28 @@ public interface EntityImpl {
     }
 
     /**
+     * 指定锁的状态是解锁还是锁定
      * 
-     * @return 当前记录是否有被锁定
+     * @param flag
+     */
+    default void setLocked(boolean flag) {
+
+    }
+
+    /**
+     * 取得当前锁的启用状态，默认为true
+     * 
+     * @return boolean
      */
     default boolean isLocked() {
-        return false;
+        return true;
+    }
+
+    /**
+     * 锁定后先进行解锁操作
+     */
+    default void unlock() {
+        setLocked(false);
     }
 
 }
