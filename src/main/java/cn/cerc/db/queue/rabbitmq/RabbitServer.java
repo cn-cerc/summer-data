@@ -39,7 +39,7 @@ public class RabbitServer {
                 throw new RuntimeException(e.getMessage());
             }
         }
-        log.info("初始完成 {}", capacity);
+        log.info("初始化完成 {}", capacity);
     }
 
     /**
@@ -48,7 +48,6 @@ public class RabbitServer {
      * 从连接池中获取连接，如果池为空则阻塞等待
      *
      * @return connection
-     * @throws InterruptedException
      */
     public Connection getConnection() throws InterruptedException {
         log.debug("准备取出，剩余个数 {}", connections.size());
@@ -60,8 +59,6 @@ public class RabbitServer {
 
     /**
      * 将连接放回连接池
-     *
-     * @param connection
      */
     public void releaseConnection(Connection connection) {
         connections.add(connection);
