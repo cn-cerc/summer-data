@@ -21,6 +21,7 @@ public class EntityHelper<T> {
     private Class<T> clazz;
     private String table;
     private Optional<Field> idField = Optional.empty();
+    private Optional<Field> lockedField = Optional.empty();
     private Optional<Field> versionField = Optional.empty();
     private SqlServerType sqlServerType = SqlServerType.Mysql;
     // 找出所有可用的的数据字段
@@ -76,6 +77,12 @@ public class EntityHelper<T> {
                     throw new RuntimeException("暂不支持多个Version字段");
                 this.versionField = Optional.of(field);
             }
+            var locked = field.getDeclaredAnnotation(Locked.class);
+            if (locked != null) {
+                if (lockedField.isPresent())
+                    throw new RuntimeException("暂不支持多个Locked字段");
+                this.lockedField = Optional.of(field);
+            }
             // 加入字段列表
             String name = field.getName();
             if (column != null && !"".equals(column.name()))
@@ -94,6 +101,10 @@ public class EntityHelper<T> {
 
     public Optional<Field> idField() {
         return this.idField;
+    }
+
+    public Optional<Field> lockedField() {
+        return this.lockedField;
     }
 
     public String idFieldCode() {
