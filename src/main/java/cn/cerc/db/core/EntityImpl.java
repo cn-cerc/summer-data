@@ -89,4 +89,12 @@ public interface EntityImpl {
         entityHome.post(this);
     }
 
+    /**
+     * 
+     * @return 当前记录是否有被锁定
+     */
+    default boolean isLocked() {
+        return false;
+    }
+
 }
