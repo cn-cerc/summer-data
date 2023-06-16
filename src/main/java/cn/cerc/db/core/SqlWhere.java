@@ -91,11 +91,7 @@ public class SqlWhere {
     }
 
     public <T> SqlWhere eq(FieldFn<T, ?> fieldFn, Object value) {
-        String field = FieldMeta.code(fieldFn);
-        if (value != null)
-            return this.appendField(field, value, "=");
-        else
-            return this.isNull(field, true);
+        return eq(FieldMeta.code(fieldFn), value);
     }
 
     /**
@@ -129,6 +125,10 @@ public class SqlWhere {
             return this.isNull(field, false);
     }
 
+    public <T> SqlWhere neq(FieldFn<T, ?> fieldFn, Object value) {
+        return neq(FieldMeta.code(fieldFn), value);
+    }
+
     /**
      * 设置条件：不相等，条件值从params中取
      * 
@@ -152,6 +152,10 @@ public class SqlWhere {
      */
     public SqlWhere gt(String field, Object value) {
         return this.appendField(field, value, ">");
+    }
+
+    public <T> SqlWhere gt(FieldFn<T, ?> fieldFn, Object value) {
+        return gt(FieldMeta.code(fieldFn), value);
     }
 
     /**
@@ -179,6 +183,10 @@ public class SqlWhere {
         return this.appendField(field, value, ">=");
     }
 
+    public <T> SqlWhere gte(FieldFn<T, ?> fieldFn, Object value) {
+        return gte(FieldMeta.code(fieldFn), value);
+    }
+
     /**
      * 设置条件：大于等于，条件值从params中取
      * 
@@ -204,6 +212,10 @@ public class SqlWhere {
         return this.appendField(field, value, "<");
     }
 
+    public <T> SqlWhere lt(FieldFn<T, ?> fieldFn, Object value) {
+        return lt(FieldMeta.code(fieldFn), value);
+    }
+
     /**
      * 设置条件：小于，条件值从params中取
      * 
@@ -227,6 +239,10 @@ public class SqlWhere {
      */
     public SqlWhere lte(String field, Object value) {
         return this.appendField(field, value, "<=");
+    }
+
+    public <T> SqlWhere lte(FieldFn<T, ?> fieldFn, Object value) {
+        return lte(FieldMeta.code(fieldFn), value);
     }
 
     /**
@@ -263,6 +279,10 @@ public class SqlWhere {
         return this;
     }
 
+    public <T> SqlWhere isNull(FieldFn<T, ?> fieldFn, boolean value) {
+        return isNull(FieldMeta.code(fieldFn), value);
+    }
+
     /**
      * 设置条件：是否为null，条件值从params中取
      * 
@@ -290,6 +310,14 @@ public class SqlWhere {
             return like(field, value.substring(0, value.length() - 1), LinkOptionEnum.Right);
         else
             return like(field, value, LinkOptionEnum.Right);
+    }
+
+    public <T> SqlWhere like(FieldFn<T, ?> fieldFn, String value) {
+        return like(FieldMeta.code(fieldFn), value);
+    }
+
+    public <T> SqlWhere like(FieldFn<T, ?> fieldFn, String value, LinkOptionEnum linkOption) {
+        return like(FieldMeta.code(fieldFn), value, linkOption);
     }
 
     public final SqlWhere like(String field) {
@@ -334,6 +362,10 @@ public class SqlWhere {
         }
         sb.append(")");
         return this;
+    }
+
+    public <T> SqlWhere in(FieldFn<T, ?> fieldFn, Collection<?> values) {
+        return in(FieldMeta.code(fieldFn), values);
     }
 
     /**
@@ -385,6 +417,10 @@ public class SqlWhere {
         return this;
     }
 
+    public <T> SqlWhere in(FieldFn<T, ?> fieldFn, String sqlText) {
+        return in(FieldMeta.code(fieldFn), sqlText);
+    }
+
     public final SqlWhere between(String field, Object value1, Object value2) {
         if (field.contains("'"))
             throw new RuntimeException("field contains error character[']");
@@ -397,6 +433,10 @@ public class SqlWhere {
         sb.append(" and ");
         appendValue(value2);
         return this;
+    }
+
+    public <T> SqlWhere between(FieldFn<T, ?> fieldFn, Object value1, Object value2) {
+        return between(FieldMeta.code(fieldFn), value1, value2);
     }
 
     public final SqlWhere between(String field) {

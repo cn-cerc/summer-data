@@ -4,6 +4,9 @@ import java.io.Serializable;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import javax.persistence.Column;
@@ -51,6 +54,8 @@ public final class FieldMeta implements Serializable {
         Storage,
         Calculated;
     }
+
+    private static Map<String, Map<String, String>> fieldCache = new ConcurrentHashMap<>();
 
     public FieldMeta(String code) {
         super();
@@ -377,25 +382,37 @@ public final class FieldMeta implements Serializable {
     public interface FieldFn<T, R> extends Function<T, R>, Serializable {
     }
 
-    public static <T> String code(FieldFn<T, ?> fieldFn) {
+    public static <T, R> String code(FieldFn<T, R> fieldFn) {
         try {
-            Method wrMethod = fieldFn.getClass().getDeclaredMethod("writeReplace");
-            boolean isInaccessible = !wrMethod.isAccessible();
-            if (isInaccessible)
-                wrMethod.setAccessible(true);
+            Method method = fieldFn.getClass().getDeclaredMethod("writeReplace");
+            boolean canAccess = !method.canAccess(fieldFn);
+            if (canAccess)
+                method.setAccessible(true);
 
-            SerializedLambda sLambda = (SerializedLambda) wrMethod.invoke(fieldFn);
-            if (isInaccessible)
-                wrMethod.setAccessible(false);
+            SerializedLambda sLambda = (SerializedLambda) method.invoke(fieldFn);
+            if (canAccess)
+                method.setAccessible(false);
 
             String methodName = sLambda.getImplMethodName();
             if (methodName.startsWith("get") && methodName.length() > 3)
-                return Utils.firstCharToLowerCase(methodName.substring(3));
+                methodName = methodName.substring(3).toLowerCase();
 
             if (methodName.startsWith("is") && methodName.length() > 2)
-                return Utils.firstCharToLowerCase(methodName.substring(2));
+                methodName = methodName.substring(2).toLowerCase();
 
-            throw new IllegalStateException("Can not resolve the name of method: " + methodName);
+            String clazz = sLambda.getImplClass().replaceAll("/", ".");
+            if (fieldCache.containsKey(clazz)) {
+                if (fieldCache.get(clazz).containsKey(methodName))
+                    return fieldCache.get(clazz).get(methodName);
+            }
+            Field[] fields = Class.forName(clazz).getDeclaredFields();
+            Map<String, String> map = new HashMap<>();
+            for (Field field : fields) {
+                String fieldName = field.getName();
+                map.put(fieldName.toLowerCase(), fieldName);
+            }
+            fieldCache.put(clazz, map);
+            return fieldCache.get(clazz).get(methodName);
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("Can not resolve the name of " + fieldFn, e);
         }
