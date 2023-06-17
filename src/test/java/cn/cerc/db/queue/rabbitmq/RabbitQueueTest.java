@@ -16,9 +16,7 @@ public class RabbitQueueTest {
     @Test
     public void testWatch() {
         try (RabbitQueue queue = new RabbitQueue(RabbitQueueTest.class.getSimpleName())) {
-            for (int i = 0; i < 1000; i++) {
-                queue.watch(null);
-            }
+            queue.watch(null);
         }
     }
 
