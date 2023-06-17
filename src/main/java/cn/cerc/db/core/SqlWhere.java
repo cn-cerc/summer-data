@@ -8,7 +8,7 @@ import java.util.Objects;
 public class SqlWhere {
     private final JoinDirectionEnum joinGroup;
     private JoinDirectionEnum joinMode = JoinDirectionEnum.And;
-    private StringBuffer sb = new StringBuffer();
+    private final StringBuffer sb = new StringBuffer();
     private SqlText sqlText;
     // 统计加入了多少个条件
     private int size;

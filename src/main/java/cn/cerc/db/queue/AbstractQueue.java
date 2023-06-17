@@ -29,7 +29,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     /**
      * 获取当前JVM运行环境可调用的处理器线程数
      */
-    public static final int processors = Runtime.getRuntime().availableProcessors();
+    private static final int processors = Runtime.getRuntime().availableProcessors();
     /**
      * 核心的线程数 -> CPU 全核心 <br>
      * 最大的线程数 -> CPU 全核心 * 4 <br>
@@ -154,7 +154,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             return sqlQueue.push(data, this.order);
         }
         case RabbitMQ -> {
-            try (var queue = new RabbitQueue(this.getId())) {
+            try (RabbitQueue queue = new RabbitQueue(this.getId())) {
                 return queue.push(data);
             }
         }

@@ -2,7 +2,6 @@ package cn.cerc.db.queue.rabbitmq;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.GetResponse;
@@ -34,23 +32,17 @@ public class RabbitQueue implements AutoCloseable {
     }
 
     private void initChannel() {
-        ConnectionFactory factory = RabbitServer.INSTANCE.getFactory();
         try {
-            connection = factory.newConnection();
-            if (connection == null)
-                throw new RuntimeException("rabbitmq connection 创建失败，请立即检查 mq 的服务状态");
-            connection.addShutdownListener(
-                    cause -> log.debug("{}:{} rabbitmq connection closed", factory.getHost(), factory.getPort()));
-
-            channel = connection.createChannel();
-            if (channel == null)
+            this.connection = RabbitServer.getInstance().getConnection();
+            this.channel = connection.createChannel();
+            if (this.channel == null)
                 throw new RuntimeException("rabbitmq channel 创建失败，请立即检查 mq 的服务状态");
 
-            channel.addShutdownListener(cause -> log.debug("{} rabbitmq channel closed", channel.getChannelNumber()));
-            channel.basicQos(this.maximum);
-            channel.queueDeclare(queueId, true, false, false, null);
-        } catch (IOException | TimeoutException e) {
-            log.error("{}:{} {}", factory.getHost(), factory.getPort(), e.getMessage(), e);
+            this.channel
+                    .addShutdownListener(cause -> log.debug("{} rabbitmq channel closed", channel.getChannelNumber()));
+            this.channel.basicQos(this.maximum);
+            this.channel.queueDeclare(queueId, true, false, false, null);
+        } catch (IOException | InterruptedException e) {
             Curl curl = new Curl();
             ServerConfig config = ServerConfig.getInstance();
             String site = config.getProperty("qc.api.rabbitmq.heartbeat.site");
@@ -82,7 +74,7 @@ public class RabbitQueue implements AutoCloseable {
                 channel.basicConsume(queueId, false, new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties,
-                            byte[] body) throws IOException {
+                                               byte[] body) throws IOException {
                         String msg = new String(body);
                         try {
                             if (consumer.consume(msg, true))
@@ -98,6 +90,8 @@ public class RabbitQueue implements AutoCloseable {
             }
         } catch (IOException e) {
             log.error(e.getMessage(), e);
+        } finally {
+            RabbitServer.getInstance().releaseConnection(this.connection);
         }
     }
 
@@ -108,15 +102,18 @@ public class RabbitQueue implements AutoCloseable {
     public void pop(OnStringMessage resume) {
         initChannel();
         for (int i = 0; i < maximum; i++) {
-            GetResponse response = null;
+            GetResponse response;
             try {
                 response = channel.basicGet(this.queueId, false);
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
+                RabbitServer.getInstance().releaseConnection(this.connection);
                 return;
             }
-            if (response == null)
+            if (response == null) {
+                RabbitServer.getInstance().releaseConnection(this.connection);
                 return;
+            }
 
             // 手动设置消息已被读取
             String msg = new String(response.getBody());
@@ -133,13 +130,18 @@ public class RabbitQueue implements AutoCloseable {
                 } catch (IOException e1) {
                     log.error(e1.getMessage(), e1);
                 }
+            } finally {
+                RabbitServer.getInstance().releaseConnection(this.connection);
             }
         }
     }
 
+    /**
+     * 生产者发送消息
+     */
     public String push(String msg) {
         initChannel();
-        var result = false;
+        boolean result = false;
         try {
             channel.confirmSelect();
             channel.basicPublish("", this.queueId, MessageProperties.PERSISTENT_TEXT_PLAIN,
@@ -147,30 +149,16 @@ public class RabbitQueue implements AutoCloseable {
             result = channel.waitForConfirms();
         } catch (IOException | InterruptedException e) {
             log.error(e.getMessage(), e);
+        } finally {
+            RabbitServer.getInstance().releaseConnection(this.connection);
         }
-        if (result)
+
+        if (result) {
             return "ok";
-        else {
+        } else {
             log.error("{} 消息 {} 发送失败", this.getClass().getSimpleName(), msg);
             String error = String.format("%s 消息发送失败", this.getClass().getSimpleName());
             throw new RuntimeException(error);
-        }
-    }
-
-    @Override
-    public void close() {
-        try {
-            if (channel != null) {
-                channel.close();
-                channel = null;
-            }
-            if (connection != null) {
-                connection.close();
-                connection = null;
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -180,6 +168,18 @@ public class RabbitQueue implements AutoCloseable {
 
     public void setMaximum(int maximum) {
         this.maximum = maximum;
+    }
+
+    @Override
+    public void close() {
+        if (channel != null) {
+            try {
+                channel.close();
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+            channel = null;
+        }
     }
 
 }
