@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +21,7 @@ public class RabbitServer {
     private static final int capacity = Runtime.getRuntime().availableProcessors();
     private static final BlockingQueue<Connection> connections = new ArrayBlockingQueue<>(capacity);
     private static final RabbitServer instance = new RabbitServer();
+    private static final AtomicBoolean shutdown = new AtomicBoolean(false);
 
     public static RabbitServer getInstance() {
         return instance;
@@ -61,6 +64,15 @@ public class RabbitServer {
      * 将连接放回连接池
      */
     public void releaseConnection(Connection connection) {
+        if (shutdown.get()) {
+            log.info("rabbitmq 线程池已关闭，不再接收连接归还");
+            try {
+                connection.close();
+            } catch (IOException e) {
+                log.error("rabbitmq 归还时关闭异常 {}", e.getMessage(), e);
+            }
+            return;
+        }
         connections.add(connection);
         log.debug("归还连接，剩余个数 {}", connections.size());
     }
@@ -73,6 +85,7 @@ public class RabbitServer {
         for (Connection connection : connections) {
             connection.close();
         }
+        shutdown.set(true);
     }
 
 }

@@ -40,7 +40,7 @@ public class RabbitListener implements ApplicationListener<ApplicationContextEve
                             startItems.add(queue);
                         }
                     });
-                    log.info("成功注册的推送消息数量 {}", startItems.size());
+                    log.info("rabbitmq 成功注册的推送消息数量 {}", startItems.size());
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
                 }
@@ -57,7 +57,7 @@ public class RabbitListener implements ApplicationListener<ApplicationContextEve
         for (var item : startItems) {
             item.close();
         }
-        log.info("关闭注册的推送消息数量 {}", startItems.size());
+        log.info("rabbitmq 关闭注册的推送消息数量 {}", startItems.size());
         startItems.clear();
     }
 
