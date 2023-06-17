@@ -46,7 +46,7 @@ import cn.cerc.db.core.Utils;
 public class MongoOSS {
     private static final Logger log = LoggerFactory.getLogger(MongoOSS.class);
     private static final String BucketName = "moss";
-    private static GridFSBucket bucket;
+    private static volatile GridFSBucket bucket;
 
     public static GridFSBucket bucket() {
         if (bucket == null)
@@ -62,8 +62,6 @@ public class MongoOSS {
     public static void writeFile(String filename) {
         try (InputStream streamToUploadFrom = new FileInputStream(filename)) {
             upload(filename, streamToUploadFrom, null);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -76,14 +74,14 @@ public class MongoOSS {
             if (childUrl.isPresent())
                 url = childUrl.get();
             url = Utils.decode(url, StandardCharsets.UTF_8.name());
-            return Optional.ofNullable(upload(url, readStream.get(), null));
+            return Optional.of(upload(url, readStream.get(), null));
         } else
             return Optional.empty();
     }
 
     /**
      * 迁移使用
-     * 
+     *
      * @param url
      * @param fileStream
      * @param onsumer
@@ -115,7 +113,7 @@ public class MongoOSS {
 
     /**
      * 接收用户上传使用
-     * 
+     *
      * @param request
      * @param fields
      * @param output
@@ -131,8 +129,7 @@ public class MongoOSS {
             if (uploadFiles.size() > 0) {
                 // 先读取参数
                 HashMap<String, String> names = new HashMap<>();
-                for (int i = 0; i < uploadFiles.size(); i++) {
-                    FileItem fileItem = uploadFiles.get(i);
+                for (FileItem fileItem : uploadFiles) {
                     if (fileItem.isFormField()) {
                         if (fields.contains(fileItem.getFieldName())) {
                             var value = new String(fileItem.getString().getBytes(StandardCharsets.ISO_8859_1),
@@ -142,8 +139,7 @@ public class MongoOSS {
                     }
                 }
                 // 再读取文件
-                for (int i = 0; i < uploadFiles.size(); i++) {
-                    FileItem fileItem = uploadFiles.get(i);
+                for (FileItem fileItem : uploadFiles) {
                     if (!fileItem.isFormField()) {
                         if (fileItem.getSize() != 0L) {
                             var filename = fileItem.getName().toLowerCase();
@@ -151,7 +147,7 @@ public class MongoOSS {
                             try {
                                 Consumer<Document> onsumer = doc -> {
                                     doc.append("suffix", suffix);
-                                    names.forEach((key, value) -> doc.append(key, value));
+                                    names.forEach(doc::append);
                                 };
                                 var url = "/temp/" + filename;
                                 if (MongoOSS.findByName(url).isEmpty()) {
@@ -178,7 +174,6 @@ public class MongoOSS {
     }
 
     /**
-     * 
      * @param hossFileId hoss的存储文件id
      * @return 返回 gridFs 文件对象
      */
@@ -189,7 +184,6 @@ public class MongoOSS {
     }
 
     /**
-     * 
      * @param filename hoss的存储文件名称
      * @return 返回 gridfs 文件对象
      */
@@ -201,17 +195,15 @@ public class MongoOSS {
     }
 
     /**
-     * 
      * @param filename hoss的存储文件名称
      * @return 返回 filename 文件对象是否在mongodb文件库里存在
      */
     public static boolean exist(String filename) {
         Optional<GridFSFile> fsFile = findByName(filename);
-        return !fsFile.isEmpty();
+        return fsFile.isPresent();
     }
 
     /**
-     * 
      * @param fileNameSource hoss的存储文件源文件名称
      * @param fileNameTarget hoss的存储文件目标文件名称
      * @return 返回 filename 文件对象是否复制成功
@@ -231,7 +223,7 @@ public class MongoOSS {
 
     /**
      * 下载mongodb文件为输入流
-     * 
+     *
      * @param fileName
      */
     public static InputStream download(String fileName) {
@@ -245,7 +237,7 @@ public class MongoOSS {
 
     /**
      * 下载web文件到指定的本地文件
-     * 
+     *
      * @param localFilename
      * @throws IOException
      */
@@ -267,30 +259,23 @@ public class MongoOSS {
 
     /**
      * 传送数据流
-     * 
+     *
      * @param readStream
      * @param writeStream
      * @throws IOException
      */
     private void transmitStream(InputStream readStream, FileOutputStream writeStream) throws IOException {
-        BufferedInputStream out = new BufferedInputStream(readStream);
-        BufferedOutputStream bos = new BufferedOutputStream(writeStream);
-        try {
-            int bytes = 0;
+        try (BufferedInputStream out = new BufferedInputStream(readStream);
+             BufferedOutputStream bos = new BufferedOutputStream(writeStream)) {
+            int bytes;
             byte[] bufferOut = new byte[1024];
             while ((bytes = out.read(bufferOut)) != -1) {
                 bos.write(bufferOut, 0, bytes);
             }
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            out.close();
-            bos.close();
         }
     }
 
     /**
-     * 
      * @param webfileUrl
      * @return 取得网络文件流
      * @throws IOException
@@ -313,7 +298,7 @@ public class MongoOSS {
 
     /**
      * 从Mongo中删除OSS文件
-     * 
+     *
      * @param fileName 文件名
      */
     public static void delete(String fileName) {
@@ -332,7 +317,6 @@ public class MongoOSS {
     }
 
     /**
-     * 
      * @param url https://4plc.oss-cn-hangzhou.aliyuncs.com/abc.jpg
      * @return /abc.jpg
      */
@@ -343,11 +327,10 @@ public class MongoOSS {
         var str = url.substring(start + 2);
         var point = str.indexOf("/");
         var result = str.substring(point);
-        return Optional.ofNullable(result);
+        return Optional.of(result);
     }
 
     /**
-     * 
      * @return 列出所有的文件
      */
     public static ArrayList<GridFSFile> list() {
