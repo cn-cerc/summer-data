@@ -24,7 +24,6 @@ public class RabbitQueue implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(RabbitQueue.class);
     private int maximum = 1;
     private Channel channel;
-    private Connection connection;
     private final String queueId;
 
     public RabbitQueue(String queueId) {
@@ -32,8 +31,9 @@ public class RabbitQueue implements AutoCloseable {
     }
 
     private void initChannel() {
+        Connection connection = null;
         try {
-            this.connection = RabbitServer.getInstance().getConnection();
+            connection = RabbitServer.getInstance().getConnection();
             this.channel = connection.createChannel();
             if (this.channel == null)
                 throw new RuntimeException("rabbitmq channel 创建失败，请立即检查 mq 的服务状态");
@@ -61,6 +61,9 @@ public class RabbitQueue implements AutoCloseable {
             } catch (Exception ex) {
                 log.warn("{} {} MQ连接超时，qc监控MQ接口异常", project, version, ex);
             }
+        } finally {
+            if (connection != null)
+                RabbitServer.getInstance().releaseConnection(connection);
         }
     }
 
@@ -74,7 +77,7 @@ public class RabbitQueue implements AutoCloseable {
                 channel.basicConsume(queueId, false, new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties,
-                                               byte[] body) throws IOException {
+                            byte[] body) throws IOException {
                         String msg = new String(body);
                         try {
                             if (consumer.consume(msg, true))
@@ -90,8 +93,6 @@ public class RabbitQueue implements AutoCloseable {
             }
         } catch (IOException e) {
             log.error(e.getMessage(), e);
-        } finally {
-            RabbitServer.getInstance().releaseConnection(this.connection);
         }
     }
 
@@ -107,11 +108,9 @@ public class RabbitQueue implements AutoCloseable {
                 response = channel.basicGet(this.queueId, false);
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
-                RabbitServer.getInstance().releaseConnection(this.connection);
                 return;
             }
             if (response == null) {
-                RabbitServer.getInstance().releaseConnection(this.connection);
                 return;
             }
 
@@ -130,8 +129,6 @@ public class RabbitQueue implements AutoCloseable {
                 } catch (IOException e1) {
                     log.error(e1.getMessage(), e1);
                 }
-            } finally {
-                RabbitServer.getInstance().releaseConnection(this.connection);
             }
         }
     }
@@ -149,8 +146,6 @@ public class RabbitQueue implements AutoCloseable {
             result = channel.waitForConfirms();
         } catch (IOException | InterruptedException e) {
             log.error(e.getMessage(), e);
-        } finally {
-            RabbitServer.getInstance().releaseConnection(this.connection);
         }
 
         if (result) {
