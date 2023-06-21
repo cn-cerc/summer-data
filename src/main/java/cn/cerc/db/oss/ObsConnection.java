@@ -12,7 +12,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.OSSException;
 import com.obs.services.model.ListBucketsRequest;
 import com.obs.services.model.ObsBucket;
@@ -50,22 +49,33 @@ public class ObsConnection implements IConnection {
     // IHandle 标识
     public static final String sessionId = "ossSession";
     private static final IConfig config = ServerConfig.getInstance();
-    private static volatile OSSClient client;
+    private static volatile IOssAction client;
 
     @Override
     public OSSConfig getClient() {
         this.setOssType(ServerConfig.getOSSTypeConfig());
 
-        OSSConfig ossConfig = null;
-        if (OSSTypeEnum.Aliyun_OSS == getOssType())
-            ossConfig = new AliyunOSSConfig();
-        else if (OSSTypeEnum.Huawei_OBS == getOssType())
-            ossConfig = new HuaweiOBSConfig();
-
         if (client == null) {
             synchronized (ObsConnection.class) {
                 if (client == null) {
-                    client = (OSSClient) new AliyunOBSClient();
+                    OSSConfig ossConfig = null;
+                    
+                    switch (key) {
+                    case value: {
+                        
+                        yield type;
+                    }
+                    default:
+                        throw new IllegalArgumentException("Unexpected value: " + key);
+                    }
+                    if (OSSTypeEnum.Aliyun_OSS == getOssType()) {
+                        ossConfig = new AliyunOSSConfig();
+                        client = new AliyunOBSClient(ossConfig);
+                    } else if (OSSTypeEnum.Huawei_OBS == getOssType()) {
+                        ossConfig = new HuaweiOBSConfig();
+                        client = new AliyunOBSClient(ossConfig);
+                    }
+
                 }
             }
         }
