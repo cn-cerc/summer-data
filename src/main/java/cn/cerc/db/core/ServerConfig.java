@@ -3,6 +3,7 @@ package cn.cerc.db.core;
 import java.util.Properties;
 
 import cn.cerc.db.SummerDB;
+import cn.cerc.db.oss.OSSTypeEnum;
 import cn.cerc.db.queue.QueueServiceEnum;
 
 public enum ServerConfig implements IConfig {
@@ -39,6 +40,21 @@ public enum ServerConfig implements IConfig {
             return QueueServiceEnum.Sqlmq;
         else
             return QueueServiceEnum.RabbitMQ;
+    }
+
+    /**
+     * @return 配置使用的OSS，阿里云/华为云
+     */
+    public static OSSTypeEnum getOSSTypeConfig() {
+        String value = config.getString("oss.client", "");
+        var result = value.toLowerCase();
+
+        if ("aliyun-oss".equals(result))
+            return OSSTypeEnum.Aliyun_OSS;
+        else if ("huawei-obs".equals(result))
+            return OSSTypeEnum.Huawei_OBS;
+        else
+            return OSSTypeEnum.Huawei_OBS;
     }
 
     /**
