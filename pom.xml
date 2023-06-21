@@ -124,6 +124,7 @@
         <dependency>
             <groupId>com.huaweicloud</groupId>
             <artifactId>esdk-obs-java-bundle</artifactId>
+            <version>3.23.3</version>
         </dependency>
         <!-- redis -->
         <dependency>
