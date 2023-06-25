@@ -7,7 +7,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.aliyun.oss.OSS;
 import com.obs.services.ObsClient;
 import com.obs.services.exception.ObsException;
 import com.obs.services.model.ListBucketsRequest;
@@ -19,7 +18,7 @@ import cn.cerc.db.core.Datetime;
 
 public class ObsClientTest {
 
-    private volatile OSS oss = null;
+    private volatile ObsConnection oss = null;
 
     String endPoint = "https://obs.cn-east-3.myhuaweicloud.com";
     String ak = "QDONBE4CTM7Q77O5KM4V";

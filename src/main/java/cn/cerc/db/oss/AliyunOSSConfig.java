@@ -1,19 +1,16 @@
 package cn.cerc.db.oss;
 
-import org.springframework.stereotype.Component;
-
-import com.obs.services.ObsConfiguration;
+import com.aliyun.oss.ClientBuilderConfiguration;
 
 import cn.cerc.db.core.IConfig;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
 
-@Component
 public class AliyunOSSConfig extends OSSConfig {
 
     private static final IConfig config = ServerConfig.getInstance();
 
-    ObsConfiguration oss_config;
+    ClientBuilderConfiguration oss_config;
 
     public AliyunOSSConfig() {
         String endpoint = "oss.endpoint";
@@ -46,7 +43,8 @@ public class AliyunOSSConfig extends OSSConfig {
 
     }
 
-    private ObsConfiguration setConfig(int maxConn, int timeout, int reTryTimes) {
+    private ClientBuilderConfiguration setConfig(int maxConn, int timeout, int reTryTimes) {
+        oss_config = new ClientBuilderConfiguration();
         oss_config.setMaxConnections(maxConn);
         oss_config.setSocketTimeout(timeout);
         oss_config.setMaxErrorRetry(reTryTimes);
