@@ -1,105 +1,90 @@
 package cn.cerc.db.queue.rabbitmq;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ApplicationContextEvent;
-import org.springframework.context.event.ContextClosedEvent;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.stereotype.Component;
 
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
-import cn.cerc.db.core.ServerConfig;
-import cn.cerc.db.queue.AbstractQueue;
-import cn.cerc.db.queue.QueueServiceEnum;
-import cn.cerc.db.zk.ZkNode;
-
-@Component
-public class RabbitServer implements AutoCloseable, ApplicationListener<ApplicationContextEvent> {
+/**
+ * rabbitMQ 连接管理
+ */
+public class RabbitServer {
     private static final Logger log = LoggerFactory.getLogger(RabbitServer.class);
-    private static RabbitServer instance;
-    private List<RabbitQueue> startItems = new ArrayList<>();
-    private Connection connection;
+    private static final int capacity = Runtime.getRuntime().availableProcessors();
+    private static final BlockingQueue<Connection> connections = new ArrayBlockingQueue<>(capacity);
+    private static final RabbitServer instance = new RabbitServer();
+    private static final AtomicBoolean shutdown = new AtomicBoolean(false);
 
-    public synchronized static RabbitServer get() {
-        if (instance == null)
-            instance = new RabbitServer();
+    public static RabbitServer getInstance() {
         return instance;
     }
 
-    // 创建连接
     private RabbitServer() {
-        try {
-            final String prefix = String.format("/%s/%s/rabbitmq/", ServerConfig.getAppProduct(), ServerConfig.getAppVersion());
-            var host = ZkNode.get().getNodeValue(prefix + "host", () -> "rabbitmq.local.top");
-            var port = ZkNode.get().getNodeValue(prefix + "port", () -> "5672");
-            var username = ZkNode.get().getNodeValue(prefix + "username", () -> "admin");
-            var password = ZkNode.get().getNodeValue(prefix + "password", () -> "admin");
-
-            // 创建连接工厂
-            ConnectionFactory factory = new ConnectionFactory();
-            factory.setHost(host);
-            factory.setPort(Integer.parseInt(port));
-            factory.setUsername(username);
-            factory.setPassword(password);
-
-            this.connection = factory.newConnection();
-            this.connection.addShutdownListener(cause -> log.info("RabbitMQ connection closed."));
-        } catch (IOException | TimeoutException e) {
-            log.error(e.getMessage(), e);
+        ConnectionFactory factory = RabbitFactory.getInstance().build();
+        for (int i = 0; i < capacity; i++) {
+            try {
+                Connection connection = factory.newConnection();
+                if (connection == null)
+                    throw new RuntimeException("rabbitmq connection 创建失败，请立即检查 RabbitMQ 的服务状态");
+                connection.addShutdownListener(
+                        cause -> log.info("{}:{} rabbitmq connection closed", factory.getHost(), factory.getPort()));
+                connections.add(connection);
+                log.debug("初始化连接 {}", i);
+            } catch (IOException | TimeoutException e) {
+                throw new RuntimeException(e.getMessage());
+            }
         }
+        log.info("初始化完成 {}", capacity);
     }
 
-    @Override
-    public void close() {
-        try {
-            if (connection != null) {
+    /**
+     * 获取连接，自动重连
+     * <p>
+     * 从连接池中获取连接，如果池为空则阻塞等待
+     *
+     * @return connection
+     */
+    public Connection getConnection() throws InterruptedException {
+        log.debug("准备取出，剩余个数 {}", connections.size());
+        Connection connection = connections.take();
+        log.debug("取出连接，剩余个数 {}", connections.size());
+//        return connections.poll(5, TimeUnit.SECONDS);
+        return connection;
+    }
+
+    /**
+     * 将连接放回连接池
+     */
+    public void releaseConnection(Connection connection) {
+        if (shutdown.get()) {
+            log.info("rabbitmq 线程池已关闭，不再接收连接归还");
+            try {
                 connection.close();
-                connection = null;
+            } catch (IOException e) {
+                log.error("rabbitmq 归还时关闭异常 {}", e.getMessage(), e);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            return;
         }
+        connections.add(connection);
+        log.debug("归还连接，剩余个数 {}", connections.size());
     }
 
-    @Override
-    public void onApplicationEvent(ApplicationContextEvent event) {
-        if (event instanceof ContextRefreshedEvent) {
-            ApplicationContext context = event.getApplicationContext();
-            if (context.getParent() == null) {
-                if (!ServerConfig.enableTaskService()) {
-                    log.info("当前应用未启动消息服务与定时任务");
-                    return;
-                }
-                Map<String, AbstractQueue> queues = context.getBeansOfType(AbstractQueue.class);
-                queues.forEach((queueId, bean) -> {
-                    if (bean.isPushMode() && bean.getService() == QueueServiceEnum.RabbitMQ) {
-                        var queue = new RabbitQueue(bean.getId());
-                        queue.watch(bean);
-                        startItems.add(queue);
-                    }
-                });
-                log.info("成功注册的推送消息数量：" + startItems.size());
-            }
-        } else if (event instanceof ContextClosedEvent) {
-            for (var queue : startItems)
-                queue.watch(null);
-            log.info("关闭注册的推送消息数量：" + startItems.size());
-            startItems.clear();
+    /**
+     * 关闭所有连接
+     */
+    public void close() throws IOException {
+        log.debug("关闭连接，剩余个数 {}", connections.size());
+        for (Connection connection : connections) {
+            connection.close();
         }
-    }
-
-    public Connection getConnection() {
-        return this.connection;
+        shutdown.set(true);
     }
 
 }

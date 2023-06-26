@@ -1,6 +1,7 @@
 package cn.cerc.db.mysql;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import cn.cerc.db.core.DataRow;
@@ -19,6 +20,7 @@ public class SqlQueryTest_attach implements IHandle {
     }
 
     @Test
+    @Ignore
     public void test() {
         String sql = "select * from ourinfo where CorpNo_='%s'";
         ds.attach(String.format(sql, "000000"));

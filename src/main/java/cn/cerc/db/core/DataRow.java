@@ -167,10 +167,10 @@ public class DataRow implements Serializable, IRecord {
         }
         // 都不为空
         if (value != null && compareValue != null) {
-            if ((value instanceof Integer) && (compareValue instanceof Double)) {
-                Integer v1 = (Integer) value;
-                Double v2 = (Double) compareValue;
+            if ((value instanceof Integer v1) && (compareValue instanceof Double v2)) {
                 return v2 - v1 == 0;
+            } else if ((value instanceof Long v1) && (compareValue instanceof Integer v2)) {
+                return v1 - v2 == 0;
             } else {
                 return value.equals(compareValue);
             }
@@ -181,9 +181,8 @@ public class DataRow implements Serializable, IRecord {
 
     @Override
     public Object getValue(String field) {
-        if (field == null || "".equals(field)) {
+        if (field == null || "".equals(field))
             throw new RuntimeException("field is null!");
-        }
         return this.items.get(field);
     }
 
@@ -235,7 +234,7 @@ public class DataRow implements Serializable, IRecord {
     public FieldDefs fields() {
         return fields;
     }
-    
+
     public FieldMeta fields(String fieldCode) {
         return fields.get(fieldCode);
     }
@@ -340,6 +339,7 @@ public class DataRow implements Serializable, IRecord {
         return this;
     }
 
+    @Override
     public double getDouble(String field, int scale) {
         double value = this.getDouble(field);
         return Utils.roundTo(value, scale);
@@ -376,6 +376,20 @@ public class DataRow implements Serializable, IRecord {
             fields.clear();
     }
 
+    /**
+     * 请改使用语义更清晰的 hasValue
+     * 
+     * @param field 字段代码
+     * @return 判断是否有此栏位，以及此栏位是否有值
+     */
+    @Deprecated
+    public boolean has(String field) {
+        return hasValue(field);
+    }
+
+    /**
+     * 判断是否有此栏位，但不管这个栏位是否有值
+     */
     @Override
     public boolean exists(String field) {
         return this.fields.exists(field);
@@ -385,14 +399,9 @@ public class DataRow implements Serializable, IRecord {
      * @param field 字段代码
      * @return 判断是否有此栏位，以及此栏位是否有值
      */
-    public boolean has(String field) {
+    public final boolean hasValue(String field) {
         return fields.exists(field) && !"".equals(getString(field));
     }
-
-//    @Deprecated
-//    public final boolean hasValue(String field) {
-//        return has(field);
-//    }
 
     public DataSet dataSet() {
         return dataSet;

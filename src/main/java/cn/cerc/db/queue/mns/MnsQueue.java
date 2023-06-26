@@ -45,7 +45,7 @@ public class MnsQueue {
         var item = this.pop();
         var total = 0;
         while (item != null && total < batchMax) {
-            if (msg.consume(item.getString())) {
+            if (msg.consume(item.getString(), true)) {
                 this.delete(item);
                 log.info("delete message key {}, {}", item.key(), item.getString());
             }

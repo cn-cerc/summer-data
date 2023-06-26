@@ -494,7 +494,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
                 throw new DateFormatErrorException(text);
             }
 
-            String value = text;
+            String value = text.replace("T", " ");
             // 防止年月日均为0
             if ("0000-00-00".equals(text.substring(0, 10)))
                 value = "0001-01-01" + text.substring(10, text.length());
@@ -526,6 +526,17 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
      */
     public boolean before(Datetime target) {
         return this.getTimestamp() < target.getTimestamp();
+    }
+
+    /**
+     * 判断当前对象是否在指定的时间区间内
+     * 
+     * @param start 区间开始
+     * @param end   区间结束
+     * @return 是否在区间内
+     */
+    public boolean between(Datetime start, Datetime end) {
+        return this.getTimestamp() >= start.getTimestamp() && this.getTimestamp() <= end.getTimestamp();
     }
 
     /**

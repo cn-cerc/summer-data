@@ -1,13 +1,14 @@
 package cn.cerc.db.core;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
 public class SqlWhere {
     private final JoinDirectionEnum joinGroup;
     private JoinDirectionEnum joinMode = JoinDirectionEnum.And;
-    private StringBuffer sb = new StringBuffer();
+    private final StringBuffer sb = new StringBuffer();
     private SqlText sqlText;
     // 统计加入了多少个条件
     private int size;
@@ -98,7 +99,7 @@ public class SqlWhere {
         String dbField = field;
         if (field.contains("."))
             field = field.split("\\.")[1];
-        if (dataRow.has(field))
+        if (dataRow.hasValue(field))
             return this.eq(dbField, dataRow.getValue(field));
         else
             return this;
@@ -307,17 +308,18 @@ public class SqlWhere {
         return this;
     }
 
-    public final SqlWhere in(String field, List<Object> values) {
+    public final SqlWhere in(String field, Collection<?> values) {
+        if (values == null || values.size() == 0)
+            throw new RuntimeException("sql command IN conditions can not be empty");
         if (field.contains("'"))
             throw new RuntimeException("field contains error character[']");
-        if (values.size() == 0)
-            return this;
         if (this.size++ > 0)
             sb.append(joinMode == JoinDirectionEnum.And ? " and " : " or ");
         sb.append(field).append(" in (");
-        for (int i = 0; i < values.size(); i++) {
-            appendValue(values.get(i));
-            if (i < values.size() - 1)
+        int i = 0;
+        for (Object obj : values) {
+            appendValue(obj);
+            if (i++ < values.size() - 1)
                 sb.append(",");
         }
         sb.append(")");
@@ -484,6 +486,8 @@ public class SqlWhere {
             sb.append(value);
         else if (value instanceof Boolean)
             sb.append((Boolean) value ? 1 : 0);
+        else if (value instanceof Enum)
+            sb.append(((Enum<?>) value).ordinal());
         else
             throw new RuntimeException(String.format("value type not support: %s", value.getClass().getName()));
     }

@@ -27,7 +27,7 @@ public class DataCell extends Variant {
 
     @Override
     public boolean hasValue() {
-        return source.has(key());
+        return source.hasValue(key());
     }
 
 }

@@ -24,7 +24,7 @@ public class BuildQueryTest {
         bs.add("x");
         bs.byParam("x");
         bs.byField("x", "y");
-        bs.setOrder("ok");
+        bs.setOrder("order by ok");
         bs.clear();
         assertEquals("", bs.sqlText());
     }

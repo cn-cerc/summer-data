@@ -236,7 +236,7 @@ public class SqlOperator implements IHandle {
 
             return result > 0;
         } catch (SQLException e) {
-            log.error(lastCommand);
+            log.error(lastCommand, e);
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
@@ -269,8 +269,10 @@ public class SqlOperator implements IHandle {
                     }
                 }
             }
-            if (i == 0)
+            if (i == 0) {
+                log.error("update table {} error，record is {}", this.table(), record);
                 throw new RuntimeException("no field is update");
+            }
 
             // 加入 where 条件
             i = 0;
@@ -327,7 +329,7 @@ public class SqlOperator implements IHandle {
             }
             return true;
         } catch (SQLException e) {
-            log.error(lastCommand);
+            log.error(lastCommand, e);
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
@@ -365,7 +367,7 @@ public class SqlOperator implements IHandle {
             }
             return ps.execute();
         } catch (SQLException e) {
-            log.error(lastCommand);
+            log.error(lastCommand, e);
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }

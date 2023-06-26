@@ -21,7 +21,7 @@ public class ClassConfig implements IConfig {
     private static final Properties applicationConfig = new Properties();
     private static final Map<String, Properties> buffer = new ConcurrentHashMap<>();
     private final String classPath;
-    private Properties config;
+    private final Properties config;
 
     static {
         // 加载本地文件配置
@@ -35,9 +35,9 @@ public class ClassConfig implements IConfig {
                 log.warn("{} doesn't exist.", localFile);
             }
         } catch (FileNotFoundException e) {
-            log.error("The settings file does not exist: {}'", localFile);
+            log.error("The settings file does not exist: {}'", localFile, e);
         } catch (IOException e) {
-            log.error("Failed to load the settings from the file: {}", localFile);
+            log.error("Failed to load the settings from the file: {}", localFile, e);
         }
 
         // 加载项目文件配置
@@ -51,7 +51,7 @@ public class ClassConfig implements IConfig {
                 log.warn("{} doesn't exist.", appFile);
             }
         } catch (IOException e) {
-            log.error("Failed to load the settings from the file: {}", appFile);
+            log.error("Failed to load the settings from the file: {}", appFile, e);
         }
     }
 
@@ -101,7 +101,7 @@ public class ClassConfig implements IConfig {
 
     /**
      * 读取配置文件数据，不会自动追加class路径，否则请使用 getClassValue
-     * 
+     *
      * @param key          例如 app.language
      * @param defaultValue 定义默认值
      * @return 返回值，可为null
@@ -130,7 +130,7 @@ public class ClassConfig implements IConfig {
 
     /**
      * 读取以自动加上类名开头的数据
-     * 
+     *
      * @param key          例如 cn.cerc.core.ClassConfig.1
      * @param defaultValue 定义默认值
      * @return 返回值，可为null

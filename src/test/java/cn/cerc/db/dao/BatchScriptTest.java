@@ -1,7 +1,6 @@
 package cn.cerc.db.dao;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -34,8 +33,8 @@ public class BatchScriptTest {
         bs = new BatchScript(new Handle(handle));
         bs.add("select * from Account where Code_='%s';", "admin");
         bs.add("select * from Account where Code_='%s';", "99900101");
-        bs.exec();
-        assertTrue(bs.exists());
+        assertEquals("select * from Account where Code_='admin'; select * from Account where Code_='99900101'; ",
+                bs.toString());
     }
 
     @Test
