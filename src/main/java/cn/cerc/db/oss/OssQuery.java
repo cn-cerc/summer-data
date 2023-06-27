@@ -33,7 +33,7 @@ public class OssQuery extends DataSet implements IHandle {
         try {
             this.fileName = SqlText.findTableName(this.sql().text());
             if (ossMode == OssMode.readWrite) {
-                String value = connection.getClient().getContent(this.fileName);
+                String value = connection.getContent(this.fileName);
                 if (value != null) {
                     this.setJson(value);
                     this.setActive(true);
@@ -49,12 +49,12 @@ public class OssQuery extends DataSet implements IHandle {
      * 删除文件
      */
     public void remove() {
-        connection.getClient().delete(this.fileName);
+        connection.delete(this.fileName);
     }
 
     public void save() {
         String content = this.json();
-        connection.getClient().upload(fileName, new ByteArrayInputStream(content.getBytes()));
+        connection.upload(fileName, new ByteArrayInputStream(content.getBytes()));
     }
 
     public OssOperator getOperator() {
