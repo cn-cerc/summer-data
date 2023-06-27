@@ -1,6 +1,5 @@
 package cn.cerc.db.mysql;
 
-import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -8,7 +7,8 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
@@ -151,17 +151,10 @@ public class MysqlConfig {
                 site(), database(), serverTimezone());
     }
 
-    public final ComboPooledDataSource createDataSource() {
-        log.info("create pool to: " + site());
-        // 使用线程池创建
-        ComboPooledDataSource dataSource = new ComboPooledDataSource();
-        try {
-            dataSource.setDriverClass(MysqlConfig.JdbcDriver);
-        } catch (PropertyVetoException e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
-
+    /**
+     * 创建连接池
+     */
+    public final HikariDataSource createDataSource() {
         var host = site();
         var database = database();
         var timezone = serverTimezone();
@@ -172,25 +165,19 @@ public class MysqlConfig {
                 "jdbc:mysql://%s/%s?useSSL=false&autoReconnect=true&autoCommit=false&useUnicode=true&characterEncoding=utf8&serverTimezone=%s&zeroDateTimeBehavior=CONVERT_TO_NULL",
                 host, database, timezone);
 
-        dataSource.setJdbcUrl(jdbcUrl);
-        dataSource.setUser(username());
-        dataSource.setPassword(password());
-        // 连接池大小设置
-        dataSource.setMaxPoolSize(maxPoolSize());
-        dataSource.setMinPoolSize(minPoolSize());
-        dataSource.setInitialPoolSize(initialPoolSize());
-        // 连接池断开控制
-        dataSource.setCheckoutTimeout(checkoutTimeout()); // 单位毫秒
-        dataSource.setMaxIdleTime(maxIdleTime()); // 空闲自动断开时间
-        // 每隔多少时间（时间请小于 数据库的 timeout）,测试一下链接，防止失效，会损失小部分性能
-        dataSource.setIdleConnectionTestPeriod(idleConnectionTestPeriod()); // 单位秒
-        dataSource.setTestConnectionOnCheckin(true);
-        dataSource.setTestConnectionOnCheckout(false);
+        HikariConfig config = new HikariConfig();
+        config.setDriverClassName(MysqlConfig.JdbcDriver);
+        config.setJdbcUrl(jdbcUrl);
+        config.setUsername(username());
+        config.setPassword(password());
+//        config.setMaximumPoolSize(maxPoolSize()); // 连接池的最大连接数
+//        config.setMinimumIdle(minPoolSize()); // 连接池的最小空闲连接数
+//        config.setIdleTimeout(maxIdleTime());// 连接在池中闲置的最长时间
+//        config.addDataSourceProperty("cachePrepStmts", "true");// 启用缓存PreparedStatement对象
+//        config.addDataSourceProperty("prepStmtCacheSize", "250"); // 连接池中可以缓存的PreparedStatement对象的最大数量
+//        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048"); // 允许缓存的SQL语句的最大长度
+        HikariDataSource dataSource = new HikariDataSource(config);
         return dataSource;
-    }
-
-    public Connection createConnection() {
-        return this.createConnection(site(), database(), username(), password());
     }
 
     public Connection createConnection(String host, String database, String username, String password) {

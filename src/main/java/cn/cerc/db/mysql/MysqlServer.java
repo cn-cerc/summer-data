@@ -12,8 +12,7 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.mchange.v2.c3p0.ComboPooledDataSource;
-import com.mchange.v2.resourcepool.TimeoutException;
+import com.zaxxer.hikari.HikariDataSource;
 
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISqlServer;
@@ -68,19 +67,14 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
         this.tag = tag;
     }
 
-    protected static final Connection getPoolConnection(ComboPooledDataSource dataSource) {
+    protected static final Connection getPoolConnection(HikariDataSource dataSource) {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
-            log.debug("dataSource connection count:" + dataSource.getNumConnections());
+            log.debug("dataSource connection maxPoolSize {}", dataSource.getMaximumPoolSize());
         } catch (SQLException e) {
             log.error("jdbc url {}", dataSource.getJdbcUrl());
-            if (e.getCause() instanceof InterruptedException)
-                log.error(e.getMessage(), e);
-            else if (e.getCause() instanceof TimeoutException)
-                log.error(e.getMessage(), e);
-            else
-                log.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         }
         return connection;
     }
