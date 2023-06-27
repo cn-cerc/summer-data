@@ -6,7 +6,9 @@ import java.io.InputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSException;
+import com.aliyun.oss.model.CopyObjectResult;
 import com.aliyun.oss.model.ObjectMetadata;
 
 import cn.cerc.db.SummerDB;
@@ -18,7 +20,7 @@ public class OssDisk {
     private static final Logger log = LoggerFactory.getLogger(OssDisk.class);
 
     private OssConnection connection;
-    private IOssAction client;
+    private OSS client;
     private String localPath;
 
     public OssDisk(IHandle handle) {
@@ -28,12 +30,12 @@ public class OssDisk {
 
     // 默认Bucket上传文件流
     public void upload(String fileName, InputStream inputStream) {
-        connection.getClient().upload(fileName, inputStream);
+        connection.upload(fileName, inputStream);
     }
 
     // 指定Bucket上传文件流
     public void upload(String bucket, String fileName, InputStream inputStream) {
-        connection.getClient().upload(bucket, fileName, inputStream);
+        connection.upload(bucket, fileName, inputStream);
     }
 
     // 上传文件
@@ -45,8 +47,7 @@ public class OssDisk {
             throw new RuntimeException(String.format(res.getString(1, "文件不存在：%s"), localFile));
         }
         try {
-            ObjectMetadata summary = (ObjectMetadata) client.getObjectMetadata(connection.getClient().getBucket(),
-                    remoteFile);
+            ObjectMetadata summary = client.getObjectMetadata(connection.getBucket(), remoteFile);
             if (summary != null && summary.getContentLength() == file.length()) {
                 log.info("ignore upload, because the local file has the same size as cloud file");
                 return true;
@@ -55,9 +56,8 @@ public class OssDisk {
             log.info("there is no such file on the server, start uploading ...");
         }
 
-        client.upload(connection.getClient().getBucket(), remoteFile, file);
-        ObjectMetadata metadata = (ObjectMetadata) client.getObjectMetadata(connection.getClient().getBucket(),
-                remoteFile);
+        client.putObject(connection.getBucket(), remoteFile, file);
+        ObjectMetadata metadata = client.getObjectMetadata(connection.getBucket(), remoteFile);
         return file.exists() && metadata.getContentLength() == file.length();
     }
 
@@ -71,17 +71,17 @@ public class OssDisk {
         String localFile = localPath + fileName.replace('/', '\\');
         createFolder(localFile);
 
-        return connection.getClient().download(fileName, localFile);
+        return connection.download(fileName, localFile);
     }
 
     // 默认Bucket删除文件
     public void delete(String fileName) {
-        connection.getClient().delete(fileName);
+        connection.delete(fileName);
     }
 
     // 指定Bucket删除文件
     public void delete(String bucket, String fileName) {
-        connection.getClient().delete(bucket, fileName);
+        connection.delete(bucket, fileName);
     }
 
     // 拷贝Object
@@ -90,10 +90,13 @@ public class OssDisk {
          * sample: srcBucketName = "scmfiles" srcKey = "Products\010001\钻石.jpg";
          * destBucketName = "vinefiles"; destKey = "131001\product\0100001\钻石.jpg";
          */
-        client.copy(srcBucketName, srcKey, destBucketName, destKey);
+        CopyObjectResult result = client.copyObject(srcBucketName, srcKey, destBucketName, destKey);
+
+        // 打印结果
+        log.info("ETag: {}, LastModified: {}", result.getETag(), result.getLastModified());
     }
 
-    public IOssAction getClient() {
+    public OSS getClient() {
         return client;
     }
 
