@@ -22,6 +22,9 @@ public class ObsConnection implements IConnection {
     public static final String sessionId = "ossSession";
     private static volatile IOssAction client;
 
+    /**
+     * new ObsConnection().getClient.download();
+     */
     @Override
     public IOssAction getClient() {
         this.setOssType(ServerConfig.getOSSTypeConfig());
