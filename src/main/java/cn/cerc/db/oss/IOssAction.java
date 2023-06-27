@@ -2,7 +2,10 @@ package cn.cerc.db.oss;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.List;
+
+import cn.cerc.db.core.Datetime;
 
 public interface IOssAction {
 
@@ -39,4 +42,18 @@ public interface IOssAction {
     String getBucket();
 
     String getSite();
+
+    /**
+     * 获取文件元数据
+     * 
+     * @param bucket     桶名
+     * @param remoteFile 文件名
+     * @return 阿里客户端返回 com.aliyun.oss.model.ObjectMetadata; <br>
+     *         华为客户端返回 com.obs.services.model.ObjectMetadata;
+     */
+    Object getObjectMetadata(String bucket, String remoteFile);
+
+    URL generatePresignedUrl(String bucket, String fileName, Datetime expireTime, String ImageParam);
+
+    List<String> listFiles(String bucket);
 }

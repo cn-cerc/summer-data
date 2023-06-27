@@ -17,6 +17,7 @@ import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.common.auth.DefaultCredentialProvider;
 import com.aliyun.oss.model.OSSObject;
+import com.aliyun.oss.model.ObjectListing;
 
 public class OssClientTest {
 
@@ -72,5 +73,13 @@ public class OssClientTest {
         String targetFile = "temp/220701/002428a3c57544519bea297e37b85b10.jpg";
         client.copyObject(bucket, sourceFile, bucket, targetFile);
         assertTrue(client.doesObjectExist(bucket, targetFile));
+    }
+
+    @Test
+    public void test_listFiles() {
+        String bucket = "vinetest";
+        OSSClient client = (OSSClient) oss;
+        ObjectListing listObjects = client.listObjects(bucket);
+        System.out.println(listObjects.getObjectSummaries());
     }
 }

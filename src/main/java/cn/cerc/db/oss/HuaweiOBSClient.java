@@ -5,16 +5,25 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.aliyun.oss.OSSException;
 import com.obs.services.ObsClient;
+import com.obs.services.model.HttpMethodEnum;
 import com.obs.services.model.ListBucketsRequest;
+import com.obs.services.model.ObjectMetadata;
 import com.obs.services.model.ObsObject;
+import com.obs.services.model.TemporarySignatureRequest;
 
+import cn.cerc.db.core.Datetime;
+import cn.cerc.db.core.Datetime.DateType;
 import cn.cerc.db.core.Utils;
 
 public class HuaweiOBSClient implements IOssAction {
@@ -195,6 +204,42 @@ public class HuaweiOBSClient implements IOssAction {
     @Override
     public String getSite() {
         return config.oss_site;
+    }
+
+    /**
+     * @return 华为的 com.obs.services.model.ObjectMetadata;
+     */
+    @Override
+    public ObjectMetadata getObjectMetadata(String bucket, String remoteFile) {
+        return getOssClient().getObjectMetadata(bucket, remoteFile);
+    }
+
+    /**
+     * @param expireTime 过期时间
+     * @param imageParam 转码参数
+     */
+    @Override
+    public URL generatePresignedUrl(String bucket, String fileName, Datetime expireTime, String imageParam) {
+        TemporarySignatureRequest request = new TemporarySignatureRequest(HttpMethodEnum.GET,
+                expireTime.subtract(DateType.Second, new Datetime()));
+        request.setBucketName(bucket);
+        request.setObjectKey(fileName);
+
+        Map<String, Object> queryParams = new HashMap<String, Object>();
+        queryParams.put("x-image-process", imageParam);
+        request.setQueryParams(queryParams);
+
+        String url = getOssClient().createTemporarySignature(request).getSignedUrl();
+        try {
+            return new URL(url);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(String.format("链接 %s 生成URL失败", url));
+        }
+    }
+
+    @Override
+    public List<String> listFiles(String bucket) {
+        return getOssClient().listObjects(bucket).getObjects().stream().map(item -> item.getObjectKey()).toList();
     }
 
 }

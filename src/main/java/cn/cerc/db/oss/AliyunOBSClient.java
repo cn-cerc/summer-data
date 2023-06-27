@@ -5,15 +5,18 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.List;
 
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.OSSException;
+import com.aliyun.oss.model.GeneratePresignedUrlRequest;
 import com.aliyun.oss.model.GetObjectRequest;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.ObjectMetadata;
 
+import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.Utils;
 
 public class AliyunOBSClient implements IOssAction {
@@ -198,6 +201,31 @@ public class AliyunOBSClient implements IOssAction {
     @Override
     public String getSite() {
         return config.oss_site;
+    }
+
+    /**
+     * @return 阿里的 com.aliyun.oss.model.ObjectMetadata;
+     */
+    @Override
+    public ObjectMetadata getObjectMetadata(String bucket, String remoteFile) {
+        return getOssClient().getObjectMetadata(bucket, remoteFile);
+    }
+
+    /**
+     * @param expireTime 过期时间
+     * @param ImageParam 转码参数
+     */
+    @Override
+    public URL generatePresignedUrl(String bucket, String fileName, Datetime expireTime, String ImageParam) {
+        GeneratePresignedUrlRequest req = new GeneratePresignedUrlRequest(bucket, fileName);
+        req.setExpiration(expireTime.asBaseDate());
+        req.setProcess(ImageParam);
+        return getOssClient().generatePresignedUrl(req);
+    }
+
+    @Override
+    public List<String> listFiles(String bucket) {
+        return getOssClient().listObjects(bucket).getObjectSummaries().stream().map(item -> item.getKey()).toList();
     }
 
 }
