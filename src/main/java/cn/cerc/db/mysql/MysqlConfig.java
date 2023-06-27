@@ -155,8 +155,6 @@ public class MysqlConfig {
      * 创建线程池
      */
     public final HikariDataSource createDataSource() {
-        log.info("mysql create pool to {}", site());
-
         var host = site();
         var database = database();
         var timezone = serverTimezone();
