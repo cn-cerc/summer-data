@@ -14,10 +14,23 @@ public interface IHandle {
 
     void setSession(ISession session);
 
+    /**
+     * 获取行业代码
+     */
+    default String getIndustry() {
+        return getSession().getIndustry();
+    }
+
+    /**
+     * 获取帐套代码
+     */
     default String getCorpNo() {
         return getSession().getCorpNo();
     }
 
+    /**
+     * 获取用户代码
+     */
     default String getUserCode() {
         return getSession().getUserCode();
     }

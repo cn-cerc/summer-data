@@ -83,7 +83,7 @@ public class SqlmqQueue implements IHandle {
                 query.setValue("consume_times_", query.getInt("consume_times_") + 1);
                 query.setValue("version_", query.getInt("version_") + 1);
                 query.post();
-                result = onConsume.consume(row.getString("message_"));
+                result = onConsume.consume(row.getString("message_"), true);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 content = e.getMessage();
@@ -96,7 +96,7 @@ public class SqlmqQueue implements IHandle {
             } else {
                 query.edit();
                 query.setValue("status_", StatusEnum.Next.ordinal());
-                query.setValue("show_time_", new Datetime().inc(DateType.Second, this.delayTime));
+                query.setValue("show_time_", new Datetime().inc(DateType.Second, query.getInt("delayTime_")));
             }
             query.setValue("version_", query.getInt("version_") + 1);
             query.post();
@@ -122,7 +122,7 @@ public class SqlmqQueue implements IHandle {
         query.setValue("delayTime_", delayTime);
         query.setValue("service_", service.ordinal());
         query.setValue("product_", ServerConfig.getAppProduct());
-        query.setValue("industry_", ServerConfig.getAppIndustry());
+        query.setValue("industry_", ServerConfig.getAppOriginal());
         query.setValue("queue_class_", this.queueClass);
         query.setValue("version_", 0);
         query.setValue("create_user_", getUserCode());

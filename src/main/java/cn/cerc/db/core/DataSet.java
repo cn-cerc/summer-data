@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
@@ -20,8 +21,14 @@ import org.slf4j.LoggerFactory;
 import cn.cerc.db.SummerDB;
 import cn.cerc.db.core.FieldMeta.FieldKind;
 import cn.cerc.db.core.SqlOperator.ResultSetReader;
+import cn.cerc.db.dao.EntityEvent;
 
-public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRecord, ResultSetReader {
+public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, IRecord, ResultSetReader {
+    // 执行成功
+    public static final int OK = 1;
+    // 以下为普通错误
+    public static final int ERROR = 0;
+
     private static final Logger log = LoggerFactory.getLogger(DataSet.class);
     private static final long serialVersionUID = 873159747066855363L;
     private static final ClassResource res = new ClassResource(DataSet.class, SummerDB.ID);
@@ -70,6 +77,11 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return row;
     }
 
+    /**
+     * 于内存增加一条空记录，注意在赋值后还需要调用post才能真正保存
+     * 
+     * @return this
+     */
     public DataSet append() {
         if (this.readonly)
             throw new UnsupportedOperationException("DataSet is readonly");
@@ -82,7 +94,12 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this;
     }
 
-    // 在指定的位置插入记录，位置编号从0开始
+    /**
+     * 在指定的位置插入记录，位置编号从0开始
+     * 
+     * @param site
+     * @return this
+     */
     public final DataSet insert(int site) {
         if (this.readonly)
             throw new UnsupportedOperationException("DataSet is readonly");
@@ -98,12 +115,22 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this;
     }
 
-    // 增加到指定的位置，请改使用insert
+    /**
+     * 增加到指定的位置，请改使用insert
+     * 
+     * @param site
+     * @return this
+     */
     @Deprecated
     public final DataSet append(int site) {
         return this.insert(site);
     }
 
+    /**
+     * 将当前记录标识为修改状态
+     * 
+     * @return this
+     */
     public DataSet edit() {
         if (this.readonly)
             throw new UnsupportedOperationException("DataSet is readonly");
@@ -115,6 +142,11 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this;
     }
 
+    /**
+     * 删除一条记录并在非批次更新时，自动存入数据库，同时令fetchNo指针减1
+     * 
+     * @return 返回自身
+     */
     public DataSet delete() {
         if (this.readonly)
             throw new UnsupportedOperationException("DataSet is readonly");
@@ -174,13 +206,64 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
                 try {
                     updateStorage(row);
                 } catch (Exception e) {
-                    log.error(e.getMessage());
+                    log.error(e.getMessage(), e);
                     throw new RuntimeException(e.getMessage());
                 }
             } else {
                 row.setState(DataRowState.None);
             }
             doAfterPost(row);
+        }
+    }
+
+    /**
+     * 
+     * @param <T>
+     * @param clazz 数据实体类
+     * @return 返回当前数据集的一条记录，并转化为指定的数据实体
+     */
+    public <T extends EntityImpl> Optional<T> asEntity(Class<T> clazz) {
+        var entity = this.currentRow().map(row -> row.asEntity(clazz)).orElse(null);
+        return Optional.ofNullable(entity);
+    }
+
+    /**
+     * 将Entity的值插入到当前数据集并立即执行保存post函数
+     * 
+     * @param <T>
+     * @param item
+     */
+    public <T extends EntityImpl> void insert(T item) {
+        if (item instanceof EntityEvent entity) {
+            entity.beforePost();
+            this.append();
+            this.current().loadFromEntity(item);
+            this.post();
+            entity.afterPost();
+        } else {
+            this.append();
+            this.current().loadFromEntity(item);
+            this.post();
+        }
+    }
+
+    /**
+     * 以Entity的值替换当前记录的值并立即执行保存post函数
+     * 
+     * @param <T>
+     * @param item
+     */
+    public <T extends EntityImpl> void update(T item) {
+        if (item instanceof EntityEvent entity) {
+            entity.beforePost();
+            this.edit();
+            this.current().loadFromEntity(item);
+            this.post();
+            entity.afterPost();
+        } else {
+            this.edit();
+            this.current().loadFromEntity(item);
+            this.post();
         }
     }
 
@@ -235,7 +318,18 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return this.records.size() == 0 || this.recNo > this.records.size();
     }
 
+    /**
+     * 
+     * @return 返回当前记录行
+     */
     @Override
+    public Optional<DataRow> currentRow() {
+        return Optional.ofNullable(this.current());
+    }
+
+    /**
+     * 返回当前记录行，注意可能会返回值为空。 尽可能改为语义更清晰的currentRow函数
+     */
     public DataRow current() {
         return (eof() || bof()) ? null : records.get(recNo - 1);
     }
@@ -249,19 +343,9 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return records;
     }
 
-//    @Deprecated
-//    public final List<DataRow> getRecords() {
-//        return records();
-//    }
-
     public int recNo() {
         return recNo;
     }
-
-//    @Deprecated
-//    public final int getRecNo() {
-//        return recNo();
-//    }
 
     public DataSet setRecNo(int recNo) {
         if (recNo > this.records.size()) {
@@ -286,11 +370,6 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     public FieldMeta fields(String fieldCode) {
         return this.fields.get(fieldCode);
     }
-
-//    @Deprecated
-//    public final FieldDefs getFieldDefs() {
-//        return fields();
-//    }
 
     // 仅用于查找一次时，调用此函数，速度最快
     public boolean locateOnlyOne(String fields, Object... values) {
@@ -577,19 +656,9 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         }
     }
 
-//    @Deprecated
-//    public final void close() {
-//        clear();
-//    }
-
     public final DataRow head() {
         return head;
     }
-
-//    @Deprecated
-//    public final DataRow getHead() {
-//        return head();
-//    }
 
     @Override
     public final String toString() {
@@ -600,11 +669,6 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return new DataSetGson<>(this).encode();
     }
 
-//    @Deprecated
-//    public final String toJson() {
-//        return json();
-//    }
-
     public DataSet setJson(String json) {
         this.clear();
         if (!Utils.isEmpty(json))
@@ -612,11 +676,6 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         this.first();
         return this;
     }
-
-//    @Deprecated
-//    public final DataSet fromJson(String json) {
-//        return setJson(json);
-//    }
 
     /**
      * @param source      要复制的数据源
@@ -672,24 +731,22 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return state;
     }
 
-//    @Deprecated
-//    public final int getState() {
-//        return state();
-//    }
-
     public DataSet setState(int state) {
         this.state = state;
         return this;
     }
 
+    public DataSet setOk() {
+        return this.setState(OK);
+    }
+
+    public DataSet setError() {
+        return this.setState(ERROR);
+    }
+
     public String message() {
         return message;
     }
-
-//    @Deprecated
-//    public final String getMessage() {
-//        return message();
-//    }
 
     public DataSet setMessage(String message) {
         this.message = message;
@@ -703,11 +760,6 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
     public void setStorage(boolean storage) {
         this.storage = storage;
     }
-
-//    @Deprecated
-//    public final boolean isStorage() {
-//        return storage();
-//    }
 
     protected boolean isBatchSave() {
         return batchSave;
@@ -734,29 +786,9 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return search;
     }
 
-//    @Deprecated
-//    public final SearchDataSet getSearch() {
-//        return search;
-//    }
-
     public boolean meta() {
         return meta;
     }
-
-//    @Deprecated
-//    public final boolean metaInfo() {
-//        return meta();
-//    }
-
-//    @Deprecated
-//    public final boolean isMetaInfo() {
-//        return metaInfo();
-//    }
-
-//    @Deprecated
-//    public final DataSet setMetaInfo(boolean value) {
-//        return this.setMeta(value);
-//    }
 
     public final DataSet setMeta(boolean value) {
         this.meta = value;
@@ -777,25 +809,9 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return garbage;
     }
 
-//    @Deprecated
-//    protected final List<DataRow> getDelList() {
-//        return garbage();
-//    }
-
-//    @Deprecated
-//    public final boolean curd() {
-//        return crud();
-//    }
-
     public boolean crud() {
         return crud;
     }
-
-//    @Deprecated
-//    public final DataSet setCurd(boolean value) {
-//        crud = value;
-//        return this;
-//    }
 
     public DataSet setCrud(boolean value) {
         crud = value;
@@ -837,7 +853,12 @@ public class DataSet implements Serializable, DataSource, Iterable<DataRow>, IRe
         return new DataColumn(this, fieldCode);
     }
 
-    @Override
+    /**
+     * 此函数没有意义，不需要自己返回自己
+     * 
+     * @return 返回 this
+     */
+    @Deprecated
     public DataSet dataSet() {
         return this;
     }

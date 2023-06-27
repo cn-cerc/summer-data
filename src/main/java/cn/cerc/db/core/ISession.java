@@ -14,6 +14,7 @@ public interface ISession extends AutoCloseable {
 
     String CLIENT_DEVICE = "device"; // client device
     String CLIENT_ID = "CLIENTID";// deviceId, machineCode 表示同一个设备码栏位
+    String PKG_ID = "pkgId";// pkgId, 手机APP包名
     //
     String COOKIE_ID = "cookie_id"; // cookie id 参数变量
     String LOGIN_SERVER = "login_server";

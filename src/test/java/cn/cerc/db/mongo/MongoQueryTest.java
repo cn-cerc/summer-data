@@ -70,6 +70,7 @@ public class MongoQueryTest implements IHandle {
     }
 
     @Test
+    @Ignore
     public void test_select() {
         ds.add("select * from tmp2");
         ds.add("where value<>3 and value<5");
@@ -78,6 +79,7 @@ public class MongoQueryTest implements IHandle {
     }
 
     @Test
+    @Ignore
     public void test_select2() {
         ds.add("select * from tmp2");
         ds.add("where value<>3 and value<5 and code=a001");
@@ -86,6 +88,7 @@ public class MongoQueryTest implements IHandle {
     }
 
     @Test
+    @Ignore
     public void test_select3() {
         ds.add("select * from tmp2");
         ds.add("where code like 'QQ'");

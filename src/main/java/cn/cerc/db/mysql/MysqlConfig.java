@@ -20,8 +20,8 @@ public class MysqlConfig {
     public static final String JdbcDriver;
     private static MysqlConfig instanceMaster;
     private static MysqlConfig instanceSalve;
-    private static ServerConfig config;
-    private ZkNode node = ZkNode.get();
+    private static final ServerConfig config;
+    private final ZkNode node = ZkNode.get();
     private String slaveFlag = "";
 
     static {
@@ -81,7 +81,7 @@ public class MysqlConfig {
 
     /**
      * 连接池最大连接数，默认为0（不启用），建议设置为最大并发请求数量
-     * 
+     *
      * @return maxPoolSize
      */
     public int maxPoolSize() {
@@ -90,7 +90,7 @@ public class MysqlConfig {
 
     /**
      * 连接池最小连接数，默认为9，即CPU核心数*2+1
-     * 
+     *
      * @return minPoolSize
      */
     public int minPoolSize() {
@@ -99,7 +99,7 @@ public class MysqlConfig {
 
     /**
      * 连接池在建立时即初始化的连接数量
-     * 
+     *
      * @return initialPoolSize
      */
     public int initialPoolSize() {
@@ -108,7 +108,7 @@ public class MysqlConfig {
 
     /**
      * 设置创建连接超时时间，单位为毫秒，默认为0.5秒，此值建议设置为不良体验值（当前为超出1秒即警告）的一半
-     * 
+     *
      * @return checkoutTimeout
      */
     public int checkoutTimeout() {
@@ -118,7 +118,7 @@ public class MysqlConfig {
     /**
      * 检查连接池中所有连接的空闲，单位为秒。注意MySQL空闲超过8小时连接自动关闭） 默认为空闲2小时即自动断开，建议其值为
      * tomcat.session的生存时长(一般设置为120分钟) 加10分钟，即130 * 60 = 7800
-     * 
+     *
      * @return maxIdleTime
      */
     public int maxIdleTime() {
@@ -127,7 +127,7 @@ public class MysqlConfig {
 
     /**
      * 检查连接池中所有空闲连接的间隔时间，单位为秒。默认为9秒，其值应比 mysql 的connect_timeout默认为10秒少1秒，即9秒
-     * 
+     *
      * @return idleConnectionTestPeriod
      */
     public int idleConnectionTestPeriod() {
@@ -147,7 +147,7 @@ public class MysqlConfig {
             throw new RuntimeException("mysql connection config is null");
 
         return String.format(
-                "jdbc:mysql://%s/%s?useSSL=false&autoReconnect=true&autoCommit=false&useUnicode=true&characterEncoding=utf8&serverTimezone=%s",
+                "jdbc:mysql://%s/%s?useSSL=false&autoReconnect=true&autoCommit=false&useUnicode=true&characterEncoding=utf8&serverTimezone=%s&zeroDateTimeBehavior=CONVERT_TO_NULL",
                 site(), database(), serverTimezone());
     }
 
@@ -164,7 +164,7 @@ public class MysqlConfig {
             throw new RuntimeException("mysql connection config is null");
 
         var jdbcUrl = String.format(
-                "jdbc:mysql://%s/%s?useSSL=false&autoReconnect=true&autoCommit=false&useUnicode=true&characterEncoding=utf8&serverTimezone=%s",
+                "jdbc:mysql://%s/%s?useSSL=false&autoReconnect=true&autoCommit=false&useUnicode=true&characterEncoding=utf8&serverTimezone=%s&zeroDateTimeBehavior=CONVERT_TO_NULL",
                 host, database, timezone);
         // config.setJdbcUrl("jdbc:mysql://localhost:3306/simpsons");
 
@@ -209,13 +209,13 @@ public class MysqlConfig {
         if (Utils.isEmpty(host) || Utils.isEmpty(database) || Utils.isEmpty(timezone))
             throw new RuntimeException("mysql connection config is null");
         var jdbcUrl = String.format(
-                "jdbc:mysql://%s/%s?useSSL=false&autoReconnect=true&autoCommit=false&useUnicode=true&characterEncoding=utf8&serverTimezone=%s",
+                "jdbc:mysql://%s/%s?useSSL=false&autoReconnect=true&autoCommit=false&useUnicode=true&characterEncoding=utf8&serverTimezone=%s&zeroDateTimeBehavior=CONVERT_TO_NULL",
                 host, database, timezone);
         try {
             Class.forName(MysqlConfig.JdbcDriver);
             return DriverManager.getConnection(jdbcUrl, username, password);
         } catch (SQLException | ClassNotFoundException e) {
-            log.error("mysql connection {} database {}", jdbcUrl, database);
+            log.error("connection {}, database {}", jdbcUrl, database, e);
             throw new RuntimeException(e);
         }
     }

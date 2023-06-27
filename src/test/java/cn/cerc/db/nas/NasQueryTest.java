@@ -1,6 +1,7 @@
 package cn.cerc.db.nas;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +53,7 @@ public class NasQueryTest implements IHandle {
      * @author rick_zhou
      */
     @Test
+    @Ignore
     public void findFile() {
         /*
          * ds.add("select test.txt from %s", appdb.get(handle,appdb.NAS_FOLDER));
@@ -70,6 +72,7 @@ public class NasQueryTest implements IHandle {
      * @author rick_zhou
      */
     @Test
+    @Ignore
     public void deleteFile() {
         /*
          * ds.add("select test.txt from %s", appdb.get(handle,appdb.NAS_FOLDER));

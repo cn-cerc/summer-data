@@ -27,6 +27,10 @@ public class MysqlSession implements ISession {
     private HttpServletResponse response;
     private MysqlConfigImpl config;
 
+    public MysqlSession() {
+        super();
+    }
+
     public MysqlSession(MysqlConfigImpl config) {
         super();
         this.config = config;

@@ -103,8 +103,30 @@ public class OssConnection implements IConnection {
         getClient().putObject(bucket, fileName, inputStream);
     }
 
+    /**
+     * @param fileName    原文件
+     * @param newFileName 目标文件
+     */
+    public void copy(String fileName, String newFileName) {
+        copy(getBucket(), fileName, getBucket(), newFileName);
+    }
+
+    /**
+     * @param bucket      原bucket
+     * @param newBucket   目标bucket
+     * @param fileName    原文件
+     * @param newFileName 目标文件
+     */
+    public void copy(String bucket, String fileName, String newBucket, String newFileName) {
+        getClient().copyObject(bucket, fileName, newBucket, newFileName);
+    }
+
     // 下载文件
     public boolean download(String fileName, String localFile) {
+        if (Utils.isEmpty(fileName))
+            return false;
+        if (Utils.isEmpty(localFile))
+            return false;
         GetObjectRequest param = new GetObjectRequest(getBucket(), fileName);
         File file = new File(localFile);
         ObjectMetadata metadata = getClient().getObject(param, file);
@@ -157,6 +179,8 @@ public class OssConnection implements IConnection {
      * @return 若存在则返回true
      */
     public boolean existsFile(String fileName) {
+        if (Utils.isEmpty(fileName))
+            return false;
         try {
             OSSObject obj = getClient().getObject(getBucket(), fileName);
             return obj.getObjectMetadata().getContentLength() > 0;
