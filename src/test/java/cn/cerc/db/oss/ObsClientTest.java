@@ -1,5 +1,7 @@
 package cn.cerc.db.oss;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -18,12 +20,11 @@ import cn.cerc.db.core.Datetime;
 
 public class ObsClientTest {
 
-    private volatile ObsConnection oss = null;
-
-    String endPoint = "https://obs.cn-east-3.myhuaweicloud.com";
-    String ak = "QDONBE4CTM7Q77O5KM4V";
-    String sk = "2z2GeIVVpHjEAAoBbnOQbcC8QhuWzR11vM8K0yJJ";
-    String bucket = "4plc-alpha";
+    // 地藤
+    private static final String endPoint = "";
+    private static final String ak = "";
+    private static final String sk = "";
+    private static final String bucket = "";
 
     @Before
     public void before() {
@@ -33,10 +34,9 @@ public class ObsClientTest {
     public void test_listBuckets() throws IOException {
         // 创建ObsClient实例
         try (ObsClient obsClient = new ObsClient(ak, sk, endPoint)) {
-
-            // 列举桶
             ListBucketsRequest request = new ListBucketsRequest();
-            request.setQueryLocation(true);
+//            request.setQueryLocation(true);
+            // 列举桶
             List<ObsBucket> buckets = obsClient.listBuckets(request);
             for (ObsBucket bucket : buckets) {
                 System.out.printf("===== 桶名称:%s =====\n", bucket.getBucketName());
@@ -49,19 +49,10 @@ public class ObsClientTest {
     @Test
     public void test_upload() {
         try (ObsClient obsClient = new ObsClient(ak, sk, endPoint)) {
-            // 方式1: localfile为待上传的本地文件路径，需要指定到具体的文件名
-            PutObjectResult putResult1 = obsClient.putObject(bucket, "/test/firstFile",
+            PutObjectResult putResult1 = obsClient.putObject(bucket, "/test/firstFile1",
                     new File("/home/admin/Pictures/Wallpapers/desktop.jpg"));
 
-            System.out.println(putResult1.getStatusCode());
-
-            // 方式2: localfile2 为待上传的本地文件路径，需要指定到具体的文件名
-//        PutObjectRequest request = new PutObjectRequest();
-//        request.setBucketName(bucket);
-//        request.setObjectKey("objectkey2");
-//        request.setFile(new File("localfile2"));
-//        PutObjectResult putResult2 = obsClient.putObject(request);
-//        System.out.println(putResult2.getStatusCode());
+            assertEquals(putResult1.getStatusCode(), 200);
         } catch (ObsException | IOException e) {
             e.printStackTrace();
         }
