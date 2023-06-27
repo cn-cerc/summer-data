@@ -170,18 +170,14 @@ public class MysqlConfig {
         config.setJdbcUrl(jdbcUrl);
         config.setUsername(username());
         config.setPassword(password());
-        config.setMaximumPoolSize(maxPoolSize()); // 连接池的最大连接数
-        config.setMinimumIdle(minPoolSize()); // 连接池的最小空闲连接数
-        config.setIdleTimeout(maxIdleTime());// 连接在池中闲置的最长时间
+//        config.setMaximumPoolSize(maxPoolSize()); // 连接池的最大连接数
+//        config.setMinimumIdle(minPoolSize()); // 连接池的最小空闲连接数
+//        config.setIdleTimeout(maxIdleTime());// 连接在池中闲置的最长时间
 //        config.addDataSourceProperty("cachePrepStmts", "true");// 启用缓存PreparedStatement对象
 //        config.addDataSourceProperty("prepStmtCacheSize", "250"); // 连接池中可以缓存的PreparedStatement对象的最大数量
 //        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048"); // 允许缓存的SQL语句的最大长度
         HikariDataSource dataSource = new HikariDataSource(config);
         return dataSource;
-    }
-
-    public Connection createConnection() {
-        return this.createConnection(site(), database(), username(), password());
     }
 
     public Connection createConnection(String host, String database, String username, String password) {

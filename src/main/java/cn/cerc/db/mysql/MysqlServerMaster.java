@@ -17,24 +17,17 @@ public class MysqlServerMaster extends MysqlServer {
 
     static {
         MysqlConfig config = MysqlConfig.getMaster();
-        if (config.maxPoolSize() > 0)
-            dataSource = config.createDataSource();
+        dataSource = config.createDataSource();
     }
 
     @Override
     public Connection createConnection() {
-        if (isPool()) // 使用线程池创建
-            return MysqlServer.getPoolConnection(dataSource);
-
-        // 不使用线程池直接创建
-        if (getConnection() == null)
-            setConnection(MysqlConfig.getMaster().createConnection());
-        return getConnection();
+        return MysqlServer.getPoolConnection(dataSource);
     }
 
     @Override
     public final boolean isPool() {
-        return dataSource != null;
+        return true;
     }
 
     @Override
