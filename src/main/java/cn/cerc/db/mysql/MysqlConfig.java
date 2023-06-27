@@ -152,7 +152,7 @@ public class MysqlConfig {
     }
 
     /**
-     * 创建线程池
+     * 创建连接池
      */
     public final HikariDataSource createDataSource() {
         var host = site();
