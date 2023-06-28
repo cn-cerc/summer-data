@@ -1,5 +1,6 @@
 package cn.cerc.db.oss;
 
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
@@ -21,9 +22,9 @@ public class OssClientTest {
 
     private volatile ObsClient oss = null;
 
-    String endpoint = "";
-    String accessKeyId = "";
-    String accessKeySecret = "";
+    String endPoint = "";
+    String ak = "";
+    String sk = "";
 
     @Before
     public void before() {
@@ -34,10 +35,10 @@ public class OssClientTest {
         conf.setSocketTimeout(3 * 1000);
         // 设置失败请求重试次数，默认3次
         conf.setMaxErrorRetry(3);
-        conf.setEndPoint(endpoint);
+        conf.setEndPoint(endPoint);
 
         // 创建OSSClient实例
-        oss = new ObsClient(accessKeyId, accessKeySecret, conf);
+        oss = new ObsClient(ak, sk, conf);
     }
 
     @Test
@@ -80,6 +81,7 @@ public class OssClientTest {
         String bucket = "vinetest";
         ObsClient client = oss;
         ObjectListing listObjects = client.listObjects(bucket);
-        System.out.println(listObjects.getObjectSummaries());
+        listObjects.getObjects().forEach(item -> System.out.println(item));
+        assertNotEquals(listObjects.getObjects().size(), 0);
     }
 }
