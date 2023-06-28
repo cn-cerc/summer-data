@@ -2,9 +2,9 @@ package cn.cerc.db.pgsql;
 
 import java.sql.Connection;
 
-import cn.cerc.db.core.ServerClient;
+import cn.cerc.db.core.ISqlClient;
 
-public class PgsqlClient implements ServerClient {
+public class PgsqlClient implements ISqlClient {
     private final Connection connection;
 
     public PgsqlClient(Connection connection) {
