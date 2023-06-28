@@ -4,9 +4,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import cn.cerc.db.core.ServerClient;
+import cn.cerc.db.core.ISqlClient;
 
-public class MysqlClient implements ServerClient {
+public class MysqlClient implements ISqlClient {
     private AtomicInteger count = new AtomicInteger();
     private final MysqlServer mysql;
     private Connection connection;

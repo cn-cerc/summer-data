@@ -16,7 +16,7 @@ import com.zaxxer.hikari.HikariDataSource;
 
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISqlServer;
-import cn.cerc.db.core.ServerClient;
+import cn.cerc.db.core.ISqlClient;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -37,7 +37,7 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
     @Override
     public final MysqlClient getClient() {
         if (client == null) {
-            synchronized (this) {
+            synchronized (MysqlServer.class) {
                 if (client == null)
                     client = new MysqlClient(this, this.isPool());
             }
@@ -52,7 +52,7 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
     @Override
     public final boolean execute(String sql) {
         log.debug(sql);
-        try (ServerClient client = getClient()) {
+        try (ISqlClient client = getClient()) {
             try (Statement st = client.getConnection().createStatement()) {
                 st.execute(sql);
                 return true;
