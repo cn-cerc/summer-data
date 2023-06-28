@@ -85,7 +85,7 @@ public class MysqlConfig {
      * @return maxPoolSize
      */
     public int maxPoolSize() {
-        return node.getInt(getNodePath("MaxPoolSize"), 0);
+        return node.getInt(getNodePath("MaxPoolSize"), 100);
     }
 
     /**
@@ -94,7 +94,7 @@ public class MysqlConfig {
      * @return minPoolSize
      */
     public int minPoolSize() {
-        return node.getInt(getNodePath("MinPoolSize"), 9);
+        return node.getInt(getNodePath("MinPoolSize"), 10);
     }
 
     /**
@@ -117,12 +117,12 @@ public class MysqlConfig {
 
     /**
      * 检查连接池中所有连接的空闲，单位为秒。注意MySQL空闲超过8小时连接自动关闭） 默认为空闲2小时即自动断开，建议其值为
-     * tomcat.session的生存时长(一般设置为120分钟) 加10分钟，即130 * 60 = 7800
+     * tomcat.session的生存时长(一般设置为120分钟) 加10分钟，即120 * 60 = 7800
      *
      * @return maxIdleTime
      */
     public int maxIdleTime() {
-        return node.getInt(getNodePath("MaxIdleTime"), 7800);
+        return node.getInt(getNodePath("MaxIdleTime"), 7200);
     }
 
     /**
@@ -170,9 +170,9 @@ public class MysqlConfig {
         config.setJdbcUrl(jdbcUrl);
         config.setUsername(username());
         config.setPassword(password());
-//        config.setMaximumPoolSize(maxPoolSize()); // 连接池的最大连接数
-//        config.setMinimumIdle(minPoolSize()); // 连接池的最小空闲连接数
-//        config.setIdleTimeout(maxIdleTime());// 连接在池中闲置的最长时间
+        config.setMaximumPoolSize(maxPoolSize()); // 连接池的最大连接数
+        config.setMinimumIdle(minPoolSize()); // 连接池的最小空闲连接数
+        config.setIdleTimeout(maxIdleTime());// 连接在池中闲置的最长时间
 //        config.addDataSourceProperty("cachePrepStmts", "true");// 启用缓存PreparedStatement对象
 //        config.addDataSourceProperty("prepStmtCacheSize", "250"); // 连接池中可以缓存的PreparedStatement对象的最大数量
 //        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048"); // 允许缓存的SQL语句的最大长度
