@@ -2,9 +2,9 @@ package cn.cerc.db.sqlite;
 
 import java.sql.Connection;
 
-import cn.cerc.db.core.ServerClient;
+import cn.cerc.db.core.ISqlClient;
 
-public class SqliteClient implements ServerClient {
+public class SqliteClient implements ISqlClient {
     private final Connection connection;
 
     public SqliteClient(Connection connection) {
