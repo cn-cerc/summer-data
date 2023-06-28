@@ -36,8 +36,12 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
 
     @Override
     public final MysqlClient getClient() {
-        if (client == null)
-            client = new MysqlClient(this, this.isPool());
+        if (client == null) {
+            synchronized (this) {
+                if (client == null)
+                    client = new MysqlClient(this, this.isPool());
+            }
+        }
         return client.incReferenced();
     }
 
