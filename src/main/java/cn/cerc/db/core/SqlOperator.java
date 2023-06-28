@@ -269,8 +269,10 @@ public class SqlOperator implements IHandle {
                     }
                 }
             }
-            if (i == 0)
+            if (i == 0) {
+                log.error("update table {} error，record is {}", this.table(), record);
                 throw new RuntimeException("no field is update");
+            }
 
             // 加入 where 条件
             i = 0;

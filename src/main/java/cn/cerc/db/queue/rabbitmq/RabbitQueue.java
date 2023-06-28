@@ -8,40 +8,62 @@ import org.slf4j.LoggerFactory;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.GetResponse;
 import com.rabbitmq.client.MessageProperties;
 
+import cn.cerc.db.core.Curl;
+import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.core.Utils;
 import cn.cerc.db.queue.OnStringMessage;
+import cn.cerc.db.queue.entity.CheckMQEntity;
 
 public class RabbitQueue implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(RabbitQueue.class);
-    private String consumerTag = null;
     private int maximum = 1;
     private Channel channel;
-    private String queueId;
+    private final String queueId;
 
     public RabbitQueue(String queueId) {
         this.queueId = queueId;
     }
 
     private void initChannel() {
-        if (channel == null) {
-            try {
-                var conn = RabbitServer.get().getConnection();
-                if (conn != null) {
-                    channel = conn.createChannel();
-                    channel.addShutdownListener(
-                            cause -> log.debug("RabbitMQ channel {} closed.", channel.getChannelNumber()));
-                    channel.basicQos(this.maximum);
-                    channel.queueDeclare(queueId, true, false, false, null);
-                } else {
-                    log.error("无法创建 RabbitServer 连接");
-                }
-            } catch (IOException e) {
-                log.error(e.getMessage(), e);
+        Connection connection = null;
+        try {
+            connection = RabbitServer.getInstance().getConnection();
+            this.channel = connection.createChannel();
+            if (this.channel == null)
+                throw new RuntimeException("rabbitmq channel 创建失败，请立即检查 mq 的服务状态");
+
+            this.channel
+                    .addShutdownListener(cause -> log.debug("{} rabbitmq channel closed", channel.getChannelNumber()));
+            this.channel.basicQos(this.maximum);
+            this.channel.queueDeclare(queueId, true, false, false, null);
+        } catch (IOException | InterruptedException e) {
+            Curl curl = new Curl();
+            ServerConfig config = ServerConfig.getInstance();
+            String site = config.getProperty("qc.api.rabbitmq.heartbeat.site");
+            if (Utils.isEmpty(site)) {
+                log.error("未配置rabbitmq心跳监测地址");
+                return;
             }
+            String project = ServerConfig.getAppProduct();
+            String version = ServerConfig.getAppVersion();
+            CheckMQEntity entity = new CheckMQEntity();
+            entity.setProjcet(project);
+            entity.setVersion(version);
+            entity.setAlive(false);
+            try {
+                curl.doPost(site, entity);
+            } catch (Exception ex) {
+                log.warn("{} {} MQ连接超时，qc监控MQ接口异常", project, version, ex);
+            }
+        } finally {
+            if (connection != null)
+                RabbitServer.getInstance().releaseConnection(connection);
         }
     }
 
@@ -52,7 +74,7 @@ public class RabbitQueue implements AutoCloseable {
         initChannel();
         try {
             if (consumer != null && channel != null) {
-                consumerTag = channel.basicConsume(queueId, false, new DefaultConsumer(channel) {
+                channel.basicConsume(queueId, false, new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties,
                             byte[] body) throws IOException {
@@ -68,9 +90,6 @@ public class RabbitQueue implements AutoCloseable {
                         }
                     }
                 });
-            } else if (consumerTag != null) {
-                channel.basicCancel(consumerTag);
-                consumerTag = null;
             }
         } catch (IOException e) {
             log.error(e.getMessage(), e);
@@ -84,15 +103,16 @@ public class RabbitQueue implements AutoCloseable {
     public void pop(OnStringMessage resume) {
         initChannel();
         for (int i = 0; i < maximum; i++) {
-            GetResponse response = null;
+            GetResponse response;
             try {
                 response = channel.basicGet(this.queueId, false);
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
                 return;
             }
-            if (response == null)
+            if (response == null) {
                 return;
+            }
 
             // 手动设置消息已被读取
             String msg = new String(response.getBody());
@@ -113,9 +133,12 @@ public class RabbitQueue implements AutoCloseable {
         }
     }
 
+    /**
+     * 生产者发送消息
+     */
     public String push(String msg) {
         initChannel();
-        var result = false;
+        boolean result = false;
         try {
             channel.confirmSelect();
             channel.basicPublish("", this.queueId, MessageProperties.PERSISTENT_TEXT_PLAIN,
@@ -124,24 +147,13 @@ public class RabbitQueue implements AutoCloseable {
         } catch (IOException | InterruptedException e) {
             log.error(e.getMessage(), e);
         }
-        if (result)
+
+        if (result) {
             return "ok";
-        else {
-            log.error("{} 消息发送失败 {}", this.getClass().getSimpleName(), msg);
+        } else {
+            log.error("{} 消息 {} 发送失败", this.getClass().getSimpleName(), msg);
             String error = String.format("%s 消息发送失败", this.getClass().getSimpleName());
             throw new RuntimeException(error);
-        }
-    }
-
-    @Override
-    public void close() {
-        try {
-            if (channel != null) {
-                channel.close();
-                channel = null;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -151,6 +163,18 @@ public class RabbitQueue implements AutoCloseable {
 
     public void setMaximum(int maximum) {
         this.maximum = maximum;
+    }
+
+    @Override
+    public void close() {
+        if (channel != null) {
+            try {
+                channel.close();
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+            channel = null;
+        }
     }
 
 }

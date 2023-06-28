@@ -15,8 +15,6 @@ import cn.cerc.db.mysql.MysqlServerMaster;
 import cn.cerc.db.mysql.MysqlServerSlave;
 import cn.cerc.db.pgsql.PgsqlServer;
 import cn.cerc.db.sqlite.SqliteServer;
-import cn.cerc.db.zk.ZkNode;
-import cn.cerc.db.zk.ZkServer;
 
 public class SqlQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = -6671201813972797639L;
@@ -81,26 +79,7 @@ public class SqlQuery extends DataSet implements IHandle {
         this.setStorage(masterServer);
         this.setFetchFinish(true);
         String sql = sql().getCommand();
-        if (log.isDebugEnabled()) {
-            log.debug(sql.replaceAll("\r\n", " "));
-        } else {
-            if (getSession() != null && !Utils.isEmpty(getUserCode())) {
-                var config = ServerConfig.getInstance();
-                if (!Utils.isEmpty(config.getProperty("zookeeper.host"))) {
-                    ZkServer zkServer = ZkNode.get().server();
-                    String node = String.format("/%s/%s/debug/%s", ServerConfig.getAppProduct(),
-                            ServerConfig.getAppVersion(), getUserCode());
-                    if (zkServer.exists(node)) {
-                        boolean isDebug = !Utils.isEmpty(zkServer.getValue(node));
-                        if (isDebug) 
-                            log.warn(sql.replaceAll("\r\n", " "));
-                    }
-                } else {
-                    log.debug(sql.replaceAll("\r\n", " "));
-                }
-            }
-        }
-        try (ServerClient client = getConnectionClient()) {
+        try (ISqlClient client = getConnectionClient()) {
             this.operator().select(this, client.getConnection(), sql);
             if (this.maximum() > -1)
                 BigdataException.check(this, this.size());
@@ -108,7 +87,7 @@ public class SqlQuery extends DataSet implements IHandle {
             this.doAfterOpen();
             this.first();
         } catch (Exception e) {
-            log.error("sql command {}, {}", sql, e.getMessage());
+            log.error("sql command {}, {}", sql, e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
@@ -125,7 +104,7 @@ public class SqlQuery extends DataSet implements IHandle {
         }
 
         log.debug(sqlText.replaceAll("\r\n", " "));
-        try (ServerClient client = getConnectionClient()) {
+        try (ISqlClient client = getConnectionClient()) {
             int total = this.operator().select(this, client.getConnection(), sqlText);
             if (this.maximum() > -1)
                 BigdataException.check(this, this.size());
@@ -139,7 +118,7 @@ public class SqlQuery extends DataSet implements IHandle {
     public final void save() {
         if (!this.isBatchSave())
             throw new RuntimeException("batchSave is false");
-        ServerClient client = null;
+        ISqlClient client = null;
         try {
             if (this.storage())
                 client = getConnectionClient();
@@ -193,7 +172,7 @@ public class SqlQuery extends DataSet implements IHandle {
 
     @Override
     public final void insertStorage(DataRow record) throws Exception {
-        try (ServerClient client = getConnectionClient()) {
+        try (ISqlClient client = getConnectionClient()) {
             if (operator().insert(client.getConnection(), record))
                 record.setState(DataRowState.None);
         }
@@ -201,7 +180,7 @@ public class SqlQuery extends DataSet implements IHandle {
 
     @Override
     public final void updateStorage(DataRow record) throws Exception {
-        try (ServerClient client = getConnectionClient()) {
+        try (ISqlClient client = getConnectionClient()) {
             if (operator().update(client.getConnection(), record))
                 record.setState(DataRowState.None);
         }
@@ -209,7 +188,7 @@ public class SqlQuery extends DataSet implements IHandle {
 
     @Override
     public final void deleteStorage(DataRow record) throws Exception {
-        try (ServerClient client = getConnectionClient()) {
+        try (ISqlClient client = getConnectionClient()) {
             if (operator().delete(client.getConnection(), record))
                 garbage().remove(record);
         }
@@ -220,9 +199,9 @@ public class SqlQuery extends DataSet implements IHandle {
      * 
      * @return 返回 ConnectionClient 接口对象
      */
-    private final ServerClient getConnectionClient() {
+    private final ISqlClient getConnectionClient() {
         ISqlServer server = Objects.requireNonNull(server());
-        return (ServerClient) server.getClient();
+        return (ISqlClient) server.getClient();
     }
 
     public final SqlOperator operator() {

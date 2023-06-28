@@ -1,5 +1,6 @@
 package cn.cerc.db.redis;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,9 +17,9 @@ import redis.clients.jedis.JedisPubSub;
 
 public class Redis implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(Redis.class);
-    private static AtomicBoolean noRedis = new AtomicBoolean(false);
-    private static Map<String, RedisData> items = new ConcurrentHashMap<>();
-    private static LinkedBlockingDeque<String> queueServer = new LinkedBlockingDeque<>();
+    private static final AtomicBoolean noRedis = new AtomicBoolean(false);
+    private static final Map<String, RedisData> items = new ConcurrentHashMap<>();
+    private static final LinkedBlockingDeque<String> queueServer = new LinkedBlockingDeque<>();
     private redis.clients.jedis.Jedis jedis;
 
     public Redis() {
@@ -86,7 +87,7 @@ public class Redis implements AutoCloseable {
             if (item != null)
                 return item.hgetAll();
             else
-                return new HashMap<String, String>();
+                return new HashMap<>();
         }
     }
 
@@ -118,7 +119,7 @@ public class Redis implements AutoCloseable {
             if (item != null)
                 return item.hgetAll().keySet();
             else
-                return new HashSet<String>();
+                return new HashSet<>();
         }
     }
 
@@ -179,8 +180,7 @@ public class Redis implements AutoCloseable {
         if (jedis != null)
             jedis.lpush(key, strings);
         else {
-            for (String value : strings)
-                queueServer.add(value);
+            queueServer.addAll(Arrays.asList(strings));
         }
     }
 

@@ -6,35 +6,28 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.zaxxer.hikari.HikariDataSource;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MysqlServerSlave extends MysqlServer {
     // IHandle中识别码
     public static final String SessionId = "slaveSqlSession";
-    private static ComboPooledDataSource dataSource;
+    private static HikariDataSource dataSource;
 
     static {
         var config = MysqlConfig.getSlave();
-        if (config.maxPoolSize() > 0)
-            dataSource = config.createDataSource();
+        dataSource = config.createDataSource();
     }
 
     @Override
     public Connection createConnection() {
-        if (isPool()) // 使用线程池创建
-            return MysqlServer.getPoolConnection(dataSource);
-
-        // 不使用线程池直接创建
-        if (getConnection() == null)
-            setConnection(MysqlConfig.getSlave().createConnection());
-        return getConnection();
+        return MysqlServer.getPoolConnection(dataSource);
     }
 
     @Override
     public boolean isPool() {
-        return dataSource != null;
+        return true;
     }
 
     @Override

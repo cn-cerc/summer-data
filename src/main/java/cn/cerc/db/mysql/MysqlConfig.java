@@ -1,6 +1,5 @@
 package cn.cerc.db.mysql;
 
-import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -8,7 +7,8 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
@@ -20,8 +20,8 @@ public class MysqlConfig {
     public static final String JdbcDriver;
     private static MysqlConfig instanceMaster;
     private static MysqlConfig instanceSalve;
-    private static ServerConfig config;
-    private ZkNode node = ZkNode.get();
+    private static final ServerConfig config;
+    private final ZkNode node = ZkNode.get();
     private String slaveFlag = "";
 
     static {
@@ -81,34 +81,34 @@ public class MysqlConfig {
 
     /**
      * 连接池最大连接数，默认为0（不启用），建议设置为最大并发请求数量
-     * 
+     *
      * @return maxPoolSize
      */
     public int maxPoolSize() {
-        return node.getInt(getNodePath("MaxPoolSize"), 0);
+        return node.getInt(getNodePath("MaxPoolSize"), 100);
     }
 
     /**
      * 连接池最小连接数，默认为9，即CPU核心数*2+1
-     * 
+     *
      * @return minPoolSize
      */
     public int minPoolSize() {
-        return node.getInt(getNodePath("MinPoolSize"), 9);
+        return node.getInt(getNodePath("MinPoolSize"), 10);
     }
 
     /**
      * 连接池在建立时即初始化的连接数量
-     * 
+     *
      * @return initialPoolSize
      */
     public int initialPoolSize() {
-        return node.getInt(getNodePath("InitialPoolSize"), 3);
+        return node.getInt(getNodePath("InitialPoolSize"), 30);
     }
 
     /**
      * 设置创建连接超时时间，单位为毫秒，默认为0.5秒，此值建议设置为不良体验值（当前为超出1秒即警告）的一半
-     * 
+     *
      * @return checkoutTimeout
      */
     public int checkoutTimeout() {
@@ -117,17 +117,17 @@ public class MysqlConfig {
 
     /**
      * 检查连接池中所有连接的空闲，单位为秒。注意MySQL空闲超过8小时连接自动关闭） 默认为空闲2小时即自动断开，建议其值为
-     * tomcat.session的生存时长(一般设置为120分钟) 加10分钟，即130 * 60 = 7800
-     * 
+     * tomcat.session的生存时长(一般设置为120分钟) 加10分钟，即120 * 60 = 7800
+     *
      * @return maxIdleTime
      */
     public int maxIdleTime() {
-        return node.getInt(getNodePath("MaxIdleTime"), 7800);
+        return node.getInt(getNodePath("MaxIdleTime"), 7200);
     }
 
     /**
      * 检查连接池中所有空闲连接的间隔时间，单位为秒。默认为9秒，其值应比 mysql 的connect_timeout默认为10秒少1秒，即9秒
-     * 
+     *
      * @return idleConnectionTestPeriod
      */
     public int idleConnectionTestPeriod() {
@@ -151,17 +151,10 @@ public class MysqlConfig {
                 site(), database(), serverTimezone());
     }
 
-    public final ComboPooledDataSource createDataSource() {
-        log.info("create pool to: " + site());
-        // 使用线程池创建
-        ComboPooledDataSource dataSource = new ComboPooledDataSource();
-        try {
-            dataSource.setDriverClass(MysqlConfig.JdbcDriver);
-        } catch (PropertyVetoException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
-
+    /**
+     * 创建连接池
+     */
+    public final HikariDataSource createDataSource() {
         var host = site();
         var database = database();
         var timezone = serverTimezone();
@@ -172,25 +165,19 @@ public class MysqlConfig {
                 "jdbc:mysql://%s/%s?useSSL=false&autoReconnect=true&autoCommit=false&useUnicode=true&characterEncoding=utf8&serverTimezone=%s&zeroDateTimeBehavior=CONVERT_TO_NULL",
                 host, database, timezone);
 
-        dataSource.setJdbcUrl(jdbcUrl);
-        dataSource.setUser(username());
-        dataSource.setPassword(password());
-        // 连接池大小设置
-        dataSource.setMaxPoolSize(maxPoolSize());
-        dataSource.setMinPoolSize(minPoolSize());
-        dataSource.setInitialPoolSize(initialPoolSize());
-        // 连接池断开控制
-        dataSource.setCheckoutTimeout(checkoutTimeout()); // 单位毫秒
-        dataSource.setMaxIdleTime(maxIdleTime()); // 空闲自动断开时间
-        // 每隔多少时间（时间请小于 数据库的 timeout）,测试一下链接，防止失效，会损失小部分性能
-        dataSource.setIdleConnectionTestPeriod(idleConnectionTestPeriod()); // 单位秒
-        dataSource.setTestConnectionOnCheckin(true);
-        dataSource.setTestConnectionOnCheckout(false);
+        HikariConfig config = new HikariConfig();
+        config.setDriverClassName(MysqlConfig.JdbcDriver);
+        config.setJdbcUrl(jdbcUrl);
+        config.setUsername(username());
+        config.setPassword(password());
+        config.setMaximumPoolSize(maxPoolSize()); // 连接池的最大连接数
+        config.setMinimumIdle(minPoolSize()); // 连接池的最小空闲连接数
+        config.setIdleTimeout(maxIdleTime());// 连接在池中闲置的最长时间
+//        config.addDataSourceProperty("cachePrepStmts", "true");// 启用缓存PreparedStatement对象
+//        config.addDataSourceProperty("prepStmtCacheSize", "250"); // 连接池中可以缓存的PreparedStatement对象的最大数量
+//        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048"); // 允许缓存的SQL语句的最大长度
+        HikariDataSource dataSource = new HikariDataSource(config);
         return dataSource;
-    }
-
-    public Connection createConnection() {
-        return this.createConnection(site(), database(), username(), password());
     }
 
     public Connection createConnection(String host, String database, String username, String password) {
@@ -204,7 +191,7 @@ public class MysqlConfig {
             Class.forName(MysqlConfig.JdbcDriver);
             return DriverManager.getConnection(jdbcUrl, username, password);
         } catch (SQLException | ClassNotFoundException e) {
-            log.error("mysql connection {} database {}", jdbcUrl, database);
+            log.error("connection {}, database {}", jdbcUrl, database, e);
             throw new RuntimeException(e);
         }
     }

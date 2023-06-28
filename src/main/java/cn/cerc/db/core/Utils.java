@@ -66,7 +66,7 @@ public class Utils {
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
         ObjectOutputStream objOut = new ObjectOutputStream(byteOut);
         objOut.writeObject(obj);
-        return byteOut.toString(StandardCharsets.ISO_8859_1.name());// 此处只能是ISO-8859-1,但是不会影响中文使用;
+        return byteOut.toString(StandardCharsets.ISO_8859_1);// 此处只能是ISO-8859-1,但是不会影响中文使用;
     }
 
     public static Object deserializeToObject(String str) throws IOException, ClassNotFoundException {
@@ -116,7 +116,7 @@ public class Utils {
             ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
             ObjectOutputStream objOut = new ObjectOutputStream(byteOut);
             objOut.writeObject(obj);
-            return byteOut.toString("ISO-8859-1");// 此处只能是ISO-8859-1,但是不会影响中文使用;
+            return byteOut.toString(StandardCharsets.ISO_8859_1);// 此处只能是ISO-8859-1,但是不会影响中文使用;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -151,15 +151,12 @@ public class Utils {
      *              当scale = -2时，精确后为2351.25 <br>
      *              当scale = -1时，精确后为2351.3 正数表示小数向前的位数，例如：2351.2513 <br>
      *              当scale = 2时，精确后为2400.0 当scale = 3时，精确后为2000.0 <br>
-     * @return 指定小数点的四舍六入
+     * @return 指定小数点的四舍五入
      */
     public static double roundTo(double val, int scale) {
         try {
             BigDecimal bigDecimal = new BigDecimal(Double.toString(val));
-            if (LanguageResource.isLanguageTW())
-                return bigDecimal.setScale(-scale, RoundingMode.HALF_UP).doubleValue();
-            else
-                return bigDecimal.setScale(-scale, RoundingMode.HALF_EVEN).doubleValue();
+            return bigDecimal.setScale(-scale, RoundingMode.HALF_UP).doubleValue();
         } catch (NumberFormatException e) {
             log.error(e.getMessage(), e);
             return 0;
@@ -173,12 +170,16 @@ public class Utils {
 
     // 兼容 delphi 代码
     public static String intToStr(int value) {
-        return "" + value;
+        return String.valueOf(value);
+    }
+
+    public static String intToStr(long value) {
+        return String.valueOf(value);
     }
 
     // 兼容 delphi 代码
     public static String intToStr(double value) {
-        return "" + value;
+        return String.valueOf(value);
     }
 
     // 兼容 delphi 代码
@@ -205,7 +206,7 @@ public class Utils {
 
     // 兼容 delphi 代码
     public static String floatToStr(Double value) {
-        return value + "";
+        return String.valueOf(value);
     }
 
     // 兼容 delphi 代码
@@ -373,11 +374,11 @@ public class Utils {
      */
     public static String getNumRandom(int len) {
         SecureRandom random = new SecureRandom();
-        String verify = "";
+        StringBuilder verify = new StringBuilder();
         for (int i = 0; i < len; i++) {
-            verify = verify + random.nextInt(10);
+            verify.append(random.nextInt(10));
         }
-        return verify;
+        return verify.toString();
     }
 
     /**
@@ -549,10 +550,7 @@ public class Utils {
             throw new RuntimeException(res.getString(1, "字符串长度不符合要求"));
         }
         int len = mobile.length() - fromLength - endLength;
-        String star = "";
-        for (int i = 0; i < len; i++) {
-            star += "*";
-        }
+        String star = "*".repeat(Math.max(0, len));// 需要复制的*个数
         return mobile.substring(0, fromLength) + star + mobile.substring(mobile.length() - endLength);
     }
 
@@ -610,23 +608,23 @@ public class Utils {
      * @param str 目标字符串
      * @return 判断字符串是否为空
      */
-    public static final boolean isEmpty(String str) {
+    public static boolean isEmpty(String str) {
         return str == null || str.length() == 0;
     }
 
     /**
      * 判断集合为空
-     * 
+     *
      * @param values 目标集合
      * @return 判断目标集合是否为空
      */
-    public static final boolean isEmpty(Collection<?> values) {
+    public static boolean isEmpty(Collection<?> values) {
         return values == null || values.size() == 0;
     }
 
     /**
      * 判断集合是否为空
-     * 
+     *
      * @param values 目标数组
      * @return 判断目标数组是否为空
      */
@@ -636,11 +634,11 @@ public class Utils {
 
     /**
      * 判断Map为空
-     * 
-     * @param values 目标Map
+     *
+     * @param map 目标Map
      * @return 判断目标Map是否为空，为NULL或键值对个数为0
      */
-    public static final boolean isEmpty(Map<?, ?> map) {
+    public static boolean isEmpty(Map<?, ?> map) {
         return map == null || map.size() == 0;
     }
 
@@ -704,19 +702,19 @@ public class Utils {
     }
 
     @Deprecated
-    public final static String findTable(Class<? extends EntityImpl> clazz) {
+    public static String findTable(Class<? extends EntityImpl> clazz) {
         return EntityHelper.create(clazz).table();
     }
 
     @Deprecated
-    public final static String findOid(Class<? extends EntityImpl> clazz, String defaultUid) {
+    public static String findOid(Class<? extends EntityImpl> clazz, String defaultUid) {
         return EntityHelper.create(clazz).idFieldCode();
     }
 
     /**
      * 格式化输出JSON字符串
      */
-    public final static String formatJson(String json) {
+    public static String formatJson(String json) {
         JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         return gson.toJson(jsonObject);
@@ -724,7 +722,7 @@ public class Utils {
 
     /**
      * 按数量对List进行分组
-     * 
+     *
      * @param sourceList 原始组List
      * @param groupSize  每组数量单位
      */
