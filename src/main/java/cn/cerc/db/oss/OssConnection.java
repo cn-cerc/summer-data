@@ -27,15 +27,15 @@ import cn.cerc.db.core.Utils;
 public class OssConnection implements IConnection {
 
     // 设置连接地址
-    public static final String oss_endpoint = "oss.endpoint";
+    public static final String oss_endpoint = "huawei.oss.endpoint";
     // 连接区域
-    public static final String oss_bucket = "oss.bucket";
+    public static final String oss_bucket = "huawei.oss.bucket";
     // 对外访问地址
-    public static final String oss_site = "oss.site";
+    public static final String oss_site = "huawei.oss.site";
     // 连接id
-    public static final String oss_accessKeyId = "oss.accessKeyId";
+    public static final String oss_accessKeyId = "huawei.oss.accessKeyId";
     // 连接密码
-    public static final String oss_accessKeySecret = "oss.accessKeySecret";
+    public static final String oss_accessKeySecret = "huawei.oss.accessKeySecret";
 
     private static String bucket;
     private static String site;
