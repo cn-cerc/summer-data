@@ -59,7 +59,7 @@ public class OssClientTest {
                 break;
         }
         // 关闭OSSClient
-        client.shutdown();
+        client.close();
     }
 
     @Test
