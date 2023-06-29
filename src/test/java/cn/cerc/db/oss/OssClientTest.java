@@ -61,7 +61,6 @@ public class OssClientTest {
         }
         // 关闭OSSClient
         client.close();
-        ;
     }
 
     @Test
