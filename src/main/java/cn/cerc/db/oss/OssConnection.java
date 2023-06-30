@@ -9,6 +9,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.obs.services.ObsClient;
@@ -25,6 +27,7 @@ import cn.cerc.db.core.Utils;
 
 @Component
 public class OssConnection implements IConnection {
+    private static final Logger log = LoggerFactory.getLogger(OssConnection.class);
 
     // 设置连接地址
     public static final String oss_endpoint = "huawei.oss.endpoint";
@@ -133,7 +136,7 @@ public class OssConnection implements IConnection {
             Path path = Path.of(localFile);
             Files.copy(input, path, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return false;
         }
 
@@ -141,7 +144,7 @@ public class OssConnection implements IConnection {
             long fileSize = Files.size(Path.of(localFile));
             return fileSize > 0 && obsObject.getMetadata().getContentLength() == fileSize;
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return false;
         }
     }
@@ -177,7 +180,7 @@ public class OssConnection implements IConnection {
             }
             return sb.toString();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return null;
         }
     }
