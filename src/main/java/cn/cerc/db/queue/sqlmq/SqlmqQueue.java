@@ -115,7 +115,7 @@ public class SqlmqQueue implements IHandle {
         query.append();
         query.setValue("queue_", this.queue);
         query.setValue("order_", order);
-        query.setValue("show_time_", new Datetime().inc(DateType.Second, showTime));
+        query.setValue("show_time_", new Datetime().inc(DateType.Second, delayTime));
         query.setValue("message_", message);
         query.setValue("consume_times_", 0);
         query.setValue("status_", showTime == 0 ? StatusEnum.Waiting.ordinal() : StatusEnum.Next.ordinal());
