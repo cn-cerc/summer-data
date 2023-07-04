@@ -16,7 +16,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.Datetime.DateType;
 import cn.cerc.db.core.ServerConfig;
-import cn.cerc.db.core.Utils;
 import cn.cerc.db.queue.mns.MnsServer;
 import cn.cerc.db.queue.rabbitmq.RabbitQueue;
 import cn.cerc.db.queue.sqlmq.SqlmqQueue;
@@ -166,17 +165,14 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             return MnsServer.getQueue(this.getId()).push(data);
         }
         case Sqlmq -> {
+            if (this.priorId > 0)
+                this.setShowTime(new Datetime().inc(DateType.Year, 1));
             SqlmqQueue sqlQueue = SqlmqServer.getQueue(this.getId());
             sqlQueue.setDelayTime(delayTime);
             sqlQueue.setShowTime(showTime.orElseGet(Datetime::new));
             sqlQueue.setService(service);
             sqlQueue.setQueueClass(this.getClass().getSimpleName());
-            String messageId = sqlQueue.push(data, this.order, this.groupCode, this.priorId);
-            if (!Utils.isEmpty(this.groupCode)) {
-                this.setPriorId(Integer.parseInt(messageId));
-                this.setShowTime(new Datetime().inc(DateType.Year, 1));
-            }
-            return messageId;
+            return sqlQueue.push(data, this.order, this.groupCode, this.priorId);
         }
         case RabbitMQ -> {
             try (RabbitQueue queue = new RabbitQueue(this.getId())) {

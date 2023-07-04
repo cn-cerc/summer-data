@@ -119,7 +119,7 @@ public class SqlmqQueue implements IHandle {
             queryNext.add("where group_code_='%s'", groupCode);
             queryNext.add("and prior_id_=%s", currId);
             queryNext.open();
-            if (!queryNext.eof()) {
+            while (queryNext.fetch()) {
                 queryNext.edit();
                 queryNext.setValue("show_time_", new Datetime());
                 queryNext.post();
