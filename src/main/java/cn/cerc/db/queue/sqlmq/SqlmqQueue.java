@@ -189,8 +189,8 @@ public class SqlmqQueue implements IHandle {
         this.delayTime = delayTime;
     }
 
-    public Datetime getShowTime() {
-        return showTime.get();
+    public Optional<Datetime> getShowTime() {
+        return showTime;
     }
 
     public void setShowTime(Datetime showTime) {
