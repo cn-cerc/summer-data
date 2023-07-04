@@ -89,7 +89,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         this.delayTime = delayTime;
     }
 
-    public final long getDelayTime() {
+    public final int getDelayTime() {
         return this.delayTime;
     }
 
@@ -100,7 +100,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         this.showTime = showTime;
     }
 
-    public final long getShowTime() {
+    public final int getShowTime() {
         return this.showTime;
     }
 
