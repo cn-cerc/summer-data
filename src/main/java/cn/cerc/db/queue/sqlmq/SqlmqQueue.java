@@ -121,7 +121,7 @@ public class SqlmqQueue implements IHandle {
         query.setValue("status_", StatusEnum.Waiting);
 
         query.setValue("delayTime_", delayTime);
-        query.setValue("service_", service);
+        query.setValue("service_", service.ordinal());
         query.setValue("product_", ServerConfig.getAppProduct());
         query.setValue("industry_", ServerConfig.getAppOriginal());
         query.setValue("queue_class_", this.queueClass);
