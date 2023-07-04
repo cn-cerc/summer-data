@@ -23,6 +23,7 @@ public class SqlmqQueue implements IHandle {
 
     private String queue;
     private int delayTime = 0;
+    private int showTime = 0;
     private QueueServiceEnum service = QueueServiceEnum.Sqlmq;
     private ISession session;
     private String queueClass;
@@ -53,8 +54,8 @@ public class SqlmqQueue implements IHandle {
     public void pop(int maximum, OnStringMessage onConsume) {
         MysqlQuery query = new MysqlQuery(this);
         query.add("select * from %s", s_sqlmq_info);
-        query.add("where ((status_=%d)", StatusEnum.Waiting.ordinal());
-        query.add("or (status_=%d and show_time_ <= '%s'))", StatusEnum.Next.ordinal(), new Datetime());
+        query.add("where ((status_=%d", StatusEnum.Waiting.ordinal());
+        query.add("or status_=%d) and show_time_ <= '%s'))", StatusEnum.Next.ordinal(), new Datetime());
         query.add("and service_=%s", QueueServiceEnum.Sqlmq.ordinal());
         query.add("and queue_='%s'", this.queue);
         // FIXME 载入笔数需处理
@@ -114,10 +115,10 @@ public class SqlmqQueue implements IHandle {
         query.append();
         query.setValue("queue_", this.queue);
         query.setValue("order_", order);
-        query.setValue("show_time_", new Datetime().inc(DateType.Second, delayTime));
+        query.setValue("show_time_", new Datetime().inc(DateType.Second, showTime));
         query.setValue("message_", message);
         query.setValue("consume_times_", 0);
-        query.setValue("status_", delayTime == 0 ? StatusEnum.Waiting : StatusEnum.Next);
+        query.setValue("status_", StatusEnum.Waiting);
 
         query.setValue("delayTime_", delayTime);
         query.setValue("service_", service);
@@ -157,6 +158,14 @@ public class SqlmqQueue implements IHandle {
 
     public void setDelayTime(int delayTime) {
         this.delayTime = delayTime;
+    }
+
+    public int getShowTime() {
+        return showTime;
+    }
+
+    public void setShowTime(int showTime) {
+        this.showTime = showTime;
     }
 
     public void setService(QueueServiceEnum service) {

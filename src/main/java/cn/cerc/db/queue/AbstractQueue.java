@@ -42,7 +42,8 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     private static ZkConfig config;
     private boolean pushMode = false; // 默认为拉模式
     private QueueServiceEnum service;
-    private int delayTime = 60; // 单位：秒
+    private int delayTime = 60; // 失败重试时间 单位：秒
+    private int showTime = 0; // 队列延时时间 单位：秒
     private String original;
     private String order;
 
@@ -82,7 +83,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     }
 
     /**
-     * @param delayTime 设置延迟时间，单位：秒
+     * @param delayTime 设置失败重试时间，单位：秒
      */
     protected void setDelayTime(int delayTime) {
         this.delayTime = delayTime;
@@ -91,6 +92,17 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     // 创建延迟队列消息
     public final long getDelayTime() {
         return this.delayTime;
+    }
+
+    /**
+     * @param showTime 设置延迟时间，单位：秒
+     */
+    protected void setShowTime(int showTime) {
+        this.showTime = showTime;
+    }
+
+    public final long getShowTime() {
+        return this.showTime;
     }
 
     public void startService() {
@@ -149,6 +161,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         case Sqlmq -> {
             SqlmqQueue sqlQueue = SqlmqServer.getQueue(this.getId());
             sqlQueue.setDelayTime(delayTime);
+            sqlQueue.setShowTime(showTime);
             sqlQueue.setService(service);
             sqlQueue.setQueueClass(this.getClass().getSimpleName());
             return sqlQueue.push(data, this.order);
