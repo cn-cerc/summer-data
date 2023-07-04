@@ -23,7 +23,6 @@ public class SqlmqQueue implements IHandle {
 
     private String queue;
     private int delayTime = 0;
-    private int showTime = 0;
     private QueueServiceEnum service = QueueServiceEnum.Sqlmq;
     private ISession session;
     private String queueClass;
@@ -118,10 +117,10 @@ public class SqlmqQueue implements IHandle {
         query.setValue("show_time_", new Datetime().inc(DateType.Second, delayTime));
         query.setValue("message_", message);
         query.setValue("consume_times_", 0);
-        query.setValue("status_", showTime == 0 ? StatusEnum.Waiting.ordinal() : StatusEnum.Next.ordinal());
+        query.setValue("status_", delayTime == 0 ? StatusEnum.Waiting : StatusEnum.Next);
 
         query.setValue("delayTime_", delayTime);
-        query.setValue("service_", service.ordinal());
+        query.setValue("service_", service);
         query.setValue("product_", ServerConfig.getAppProduct());
         query.setValue("industry_", ServerConfig.getAppOriginal());
         query.setValue("queue_class_", this.queueClass);
@@ -158,14 +157,6 @@ public class SqlmqQueue implements IHandle {
 
     public void setDelayTime(int delayTime) {
         this.delayTime = delayTime;
-    }
-
-    public int getShowTime() {
-        return showTime;
-    }
-
-    public void setShowTime(int showTime) {
-        this.showTime = showTime;
     }
 
     public void setService(QueueServiceEnum service) {
