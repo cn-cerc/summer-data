@@ -55,8 +55,8 @@ public class SqlmqQueue implements IHandle {
     public void pop(int maximum, OnStringMessage onConsume) {
         MysqlQuery query = new MysqlQuery(this);
         query.add("select * from %s", s_sqlmq_info);
-        query.add("where ((status_=%d)", StatusEnum.Waiting.ordinal());
-        query.add("or (status_=%d and show_time_ <= '%s'))", StatusEnum.Next.ordinal(), new Datetime());
+        query.add("where (status_=%d or status_=%d)", StatusEnum.Waiting.ordinal(), StatusEnum.Next.ordinal());
+        query.add("and show_time_ <= '%s'", new Datetime());
         query.add("and service_=%s", QueueServiceEnum.Sqlmq.ordinal());
         query.add("and queue_='%s'", this.queue);
         // FIXME 载入笔数需处理
