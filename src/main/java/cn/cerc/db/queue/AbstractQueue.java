@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.core.Utils;
 import cn.cerc.db.queue.mns.MnsServer;
 import cn.cerc.db.queue.rabbitmq.RabbitQueue;
 import cn.cerc.db.queue.sqlmq.SqlmqQueue;
@@ -42,9 +43,11 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     private static ZkConfig config;
     private boolean pushMode = false; // 默认为拉模式
     private QueueServiceEnum service;
-    private int delayTime = 60; // 单位：秒
+    private int delayTime = 0; // 单位：秒
     private String original;
     private String order;
+    private String groupCode;
+    private int priorId;
 
     public AbstractQueue() {
         super();
@@ -151,7 +154,12 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             sqlQueue.setDelayTime(delayTime);
             sqlQueue.setService(service);
             sqlQueue.setQueueClass(this.getClass().getSimpleName());
-            return sqlQueue.push(data, this.order);
+            String messageId = sqlQueue.push(data, this.order, this.groupCode, this.priorId);
+            if (!Utils.isEmpty(this.groupCode)) {
+                priorId = Integer.parseInt(messageId);
+                delayTime = 3600 * 24 * 365;
+            }
+            return messageId;
         }
         case RabbitMQ -> {
             try (RabbitQueue queue = new RabbitQueue(this.getId())) {
@@ -270,6 +278,22 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             log.warn("已完成的任务数量 {}", executor.getCompletedTaskCount());
             log.warn("累计的总任务数量 {}", executor.getTaskCount());
         }
+    }
+
+    public String getGroupCode() {
+        return groupCode;
+    }
+
+    public void setGroupCode(String groupCode) {
+        this.groupCode = groupCode;
+    }
+
+    public int getPriorId() {
+        return priorId;
+    }
+
+    public void setPriorId(int priorId) {
+        this.priorId = priorId;
     }
 
 }
