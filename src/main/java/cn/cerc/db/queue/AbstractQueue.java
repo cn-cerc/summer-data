@@ -104,7 +104,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
      * 
      * @param showTime 设置延迟时间
      */
-    public void setShowTime(Datetime showTime) {
+    protected void setShowTime(Datetime showTime) {
         this.showTime = Optional.ofNullable(showTime);
     }
 
