@@ -168,7 +168,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         case Sqlmq -> {
             SqlmqQueue sqlQueue = SqlmqServer.getQueue(this.getId());
             sqlQueue.setDelayTime(delayTime);
-            sqlQueue.setShowTime(showTime.orElse(new Datetime()));
+            sqlQueue.setShowTime(showTime.orElseGet(Datetime::new));
             sqlQueue.setService(service);
             sqlQueue.setQueueClass(this.getClass().getSimpleName());
             String messageId = sqlQueue.push(data, this.order, this.groupCode, this.priorId);

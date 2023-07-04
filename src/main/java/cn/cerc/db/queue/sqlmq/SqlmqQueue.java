@@ -142,7 +142,7 @@ public class SqlmqQueue implements IHandle {
         query.append();
         query.setValue("queue_", this.queue);
         query.setValue("order_", order);
-        query.setValue("show_time_", showTime.orElse(new Datetime()));
+        query.setValue("show_time_", showTime.orElseGet(Datetime::new));
         query.setValue("message_", message);
         query.setValue("consume_times_", 0);
         query.setValue("group_code_", groupCode);
