@@ -169,7 +169,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             String messageId = sqlQueue.push(data, this.order, this.groupCode, this.priorId);
             if (!Utils.isEmpty(this.groupCode)) {
                 priorId = Integer.parseInt(messageId);
-                delayTime = 3600 * 24 * 365;
+                showTime = 3600 * 24 * 365;
             }
             return messageId;
         }
