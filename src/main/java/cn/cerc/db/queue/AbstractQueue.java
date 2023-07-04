@@ -1,6 +1,7 @@
 package cn.cerc.db.queue;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -12,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import cn.cerc.db.core.Datetime;
+import cn.cerc.db.core.Datetime.DateType;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
 import cn.cerc.db.queue.mns.MnsServer;
@@ -44,7 +47,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     private boolean pushMode = false; // 默认为拉模式
     private QueueServiceEnum service;
     private int delayTime = 60; // 失败重试时间 单位：秒
-    private int showTime = 0; // 队列延时时间 单位：秒
+    private Optional<Datetime> showTime = Optional.empty(); // 队列延时时间 默认当前时间
     private String original;
     private String order;
     private String groupCode;
@@ -97,13 +100,15 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     }
 
     /**
-     * @param showTime 设置延迟时间，单位：秒
+     * 不要在单例模式下使用该方法推送延时消息！单例模式下showTime可能会被其他线程更改！
+     * 
+     * @param showTime 设置延迟时间
      */
-    protected void setShowTime(int showTime) {
-        this.showTime = showTime;
+    public void setShowTime(Datetime showTime) {
+        this.showTime = Optional.ofNullable(showTime);
     }
 
-    public final int getShowTime() {
+    public final Optional<Datetime> getShowTime() {
         return this.showTime;
     }
 
@@ -163,13 +168,13 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         case Sqlmq -> {
             SqlmqQueue sqlQueue = SqlmqServer.getQueue(this.getId());
             sqlQueue.setDelayTime(delayTime);
-            sqlQueue.setShowTime(showTime);
+            sqlQueue.setShowTime(showTime.orElse(new Datetime()));
             sqlQueue.setService(service);
             sqlQueue.setQueueClass(this.getClass().getSimpleName());
             String messageId = sqlQueue.push(data, this.order, this.groupCode, this.priorId);
             if (!Utils.isEmpty(this.groupCode)) {
-                priorId = Integer.parseInt(messageId);
-                showTime = 3600 * 24 * 365;
+                this.setPriorId(Integer.parseInt(messageId));
+                this.setShowTime(new Datetime().inc(DateType.Year, 1));
             }
             return messageId;
         }

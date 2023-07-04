@@ -1,6 +1,7 @@
 package cn.cerc.db.queue.sqlmq;
 
 import java.net.InetAddress;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,7 @@ public class SqlmqQueue implements IHandle {
 
     private String queue;
     private int delayTime = 0;
-    private int showTime = 0;
+    private Optional<Datetime> showTime = Optional.empty();
     private QueueServiceEnum service = QueueServiceEnum.Sqlmq;
     private ISession session;
     private String queueClass;
@@ -141,7 +142,7 @@ public class SqlmqQueue implements IHandle {
         query.append();
         query.setValue("queue_", this.queue);
         query.setValue("order_", order);
-        query.setValue("show_time_", new Datetime().inc(DateType.Second, showTime));
+        query.setValue("show_time_", showTime.orElse(new Datetime()));
         query.setValue("message_", message);
         query.setValue("consume_times_", 0);
         query.setValue("group_code_", groupCode);
@@ -188,12 +189,12 @@ public class SqlmqQueue implements IHandle {
         this.delayTime = delayTime;
     }
 
-    public int getShowTime() {
-        return showTime;
+    public Datetime getShowTime() {
+        return showTime.get();
     }
 
-    public void setShowTime(int showTime) {
-        this.showTime = showTime;
+    public void setShowTime(Datetime showTime) {
+        this.showTime = Optional.ofNullable(showTime);
     }
 
     public void setService(QueueServiceEnum service) {
