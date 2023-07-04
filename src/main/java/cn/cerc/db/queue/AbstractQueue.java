@@ -89,7 +89,6 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         this.delayTime = delayTime;
     }
 
-    // 创建延迟队列消息
     public final long getDelayTime() {
         return this.delayTime;
     }
