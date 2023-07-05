@@ -122,7 +122,7 @@ public class MysqlConfig {
      * @return maxIdleTime
      */
     public int maxIdleTime() {
-        return node.getInt(getNodePath("MaxIdleTime"), 7200);
+        return node.getInt(getNodePath("MaxIdleTime"), 600000);
     }
 
     /**
