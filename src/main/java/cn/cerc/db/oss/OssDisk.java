@@ -6,10 +6,9 @@ import java.io.InputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.aliyun.oss.OSS;
-import com.aliyun.oss.OSSException;
-import com.aliyun.oss.model.CopyObjectResult;
-import com.aliyun.oss.model.ObjectMetadata;
+import com.obs.services.ObsClient;
+import com.obs.services.model.CopyObjectResult;
+import com.obs.services.model.ObjectMetadata;
 
 import cn.cerc.db.SummerDB;
 import cn.cerc.db.core.ClassResource;
@@ -20,7 +19,7 @@ public class OssDisk {
     private static final Logger log = LoggerFactory.getLogger(OssDisk.class);
 
     private OssConnection connection;
-    private OSS client;
+    private ObsClient client;
     private String localPath;
 
     public OssDisk(IHandle handle) {
@@ -52,7 +51,7 @@ public class OssDisk {
                 log.info("ignore upload, because the local file has the same size as cloud file");
                 return true;
             }
-        } catch (OSSException e) {
+        } catch (Exception e) {
             log.info("there is no such file on the server, start uploading ...");
         }
 
@@ -93,10 +92,10 @@ public class OssDisk {
         CopyObjectResult result = client.copyObject(srcBucketName, srcKey, destBucketName, destKey);
 
         // 打印结果
-        log.info("ETag: {}, LastModified: {}", result.getETag(), result.getLastModified());
+        log.info("ETag: {}, LastModified: {}", result.getEtag(), result.getLastModified());
     }
 
-    public OSS getClient() {
+    public ObsClient getClient() {
         return client;
     }
 

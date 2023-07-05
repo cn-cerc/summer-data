@@ -1,20 +1,20 @@
 package cn.cerc.db.oss;
 
-import com.aliyun.oss.OSS;
-import com.aliyun.oss.model.ListObjectsRequest;
-import com.aliyun.oss.model.OSSObjectSummary;
-import com.aliyun.oss.model.ObjectListing;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.obs.services.ObsClient;
+import com.obs.services.model.ListObjectsRequest;
+import com.obs.services.model.ObjectListing;
+import com.obs.services.model.ObsObject;
+
 public class OssFolder {
     private OssDisk disk;
     private String name;
     private List<String> subItems = new ArrayList<>();
-    private Map<String, OSSObjectSummary> files = new HashMap<>();
+    private Map<String, ObsObject> files = new HashMap<>();
 
     public OssFolder(OssDisk disk) {
         this.disk = disk;
@@ -32,7 +32,7 @@ public class OssFolder {
         return subItems;
     }
 
-    public Map<String, OSSObjectSummary> getFiles() {
+    public Map<String, ObsObject> getFiles() {
         return files;
     }
 
@@ -40,7 +40,7 @@ public class OssFolder {
         this.setName(folderName);
         this.files.clear();
         this.subItems.clear();
-        OSS client = disk.getClient();
+        ObsClient client = disk.getClient();
 
         String marker = "";
         while (true) {
@@ -61,9 +61,9 @@ public class OssFolder {
 
             // 遍历所有Object
             // log.info("Objects:");
-            for (OSSObjectSummary item : listing.getObjectSummaries()) {
-                if (!item.getKey().equals(params.getPrefix())) {
-                    files.put(item.getKey(), item);
+            for (ObsObject item : listing.getObjects()) {
+                if (!item.getObjectKey().equals(params.getPrefix())) {
+                    files.put(item.getObjectKey(), item);
                 }
                 // log.info(item.getKey());
             }
