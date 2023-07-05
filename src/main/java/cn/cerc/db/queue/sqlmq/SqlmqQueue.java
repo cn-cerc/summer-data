@@ -1,6 +1,7 @@
 package cn.cerc.db.queue.sqlmq;
 
 import java.net.InetAddress;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +12,9 @@ import cn.cerc.db.core.Datetime.DateType;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
 import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.core.Utils;
 import cn.cerc.db.mysql.MysqlQuery;
+import cn.cerc.db.queue.AbstractQueue;
 import cn.cerc.db.queue.OnStringMessage;
 import cn.cerc.db.queue.QueueServiceEnum;
 import cn.cerc.db.redis.Redis;
@@ -23,6 +26,7 @@ public class SqlmqQueue implements IHandle {
 
     private String queue;
     private int delayTime = 0;
+    private Optional<Datetime> showTime = Optional.empty();
     private QueueServiceEnum service = QueueServiceEnum.Sqlmq;
     private ISession session;
     private String queueClass;
@@ -53,8 +57,8 @@ public class SqlmqQueue implements IHandle {
     public void pop(int maximum, OnStringMessage onConsume) {
         MysqlQuery query = new MysqlQuery(this);
         query.add("select * from %s", s_sqlmq_info);
-        query.add("where ((status_=%d)", StatusEnum.Waiting.ordinal());
-        query.add("or (status_=%d and show_time_ <= '%s'))", StatusEnum.Next.ordinal(), new Datetime());
+        query.add("where ((status_=%d or status_=%d)", StatusEnum.Waiting.ordinal(), StatusEnum.Next.ordinal());
+        query.add("and show_time_ <= '%s')", new Datetime());
         query.add("and service_=%s", QueueServiceEnum.Sqlmq.ordinal());
         query.add("and queue_='%s'", this.queue);
         // FIXME 载入笔数需处理
@@ -62,6 +66,8 @@ public class SqlmqQueue implements IHandle {
         query.open();
         try (Redis redis = new Redis()) {
             for (var row : query) {
+                if (onConsume instanceof AbstractQueue queue)
+                    queue.setGroupCode(query.getString("group_code_"));
                 consumeMessage(query, redis, row, onConsume);
             }
         }
@@ -100,12 +106,34 @@ public class SqlmqQueue implements IHandle {
             }
             query.setValue("version_", query.getInt("version_") + 1);
             query.post();
+            if (!result)
+                return;
+
+            var groupCode = query.getString("group_code_");
+            var currId = query.getString("UID_");
+            if (Utils.isEmpty(groupCode))
+                return;
+
+            MysqlQuery queryNext = new MysqlQuery(query);
+            queryNext.add("select * from %s", s_sqlmq_info);
+            queryNext.add("where group_code_='%s'", groupCode);
+            queryNext.add("and prior_id_=%s", currId);
+            queryNext.open();
+            while (queryNext.fetch()) {
+                queryNext.edit();
+                queryNext.setValue("show_time_", new Datetime());
+                queryNext.post();
+            }
         } finally {
             redis.del(lockKey);
         }
     }
 
     public String push(String message, String order) {
+        return push(message, order, "", 0);
+    }
+
+    public String push(String message, String order, String groupCode, Integer priorId) {
         MysqlQuery query = new MysqlQuery(this);
         query.add("select * from %s", s_sqlmq_info);
         query.setMaximum(0);
@@ -114,9 +142,11 @@ public class SqlmqQueue implements IHandle {
         query.append();
         query.setValue("queue_", this.queue);
         query.setValue("order_", order);
-        query.setValue("show_time_", new Datetime());
+        query.setValue("show_time_", showTime.orElseGet(Datetime::new));
         query.setValue("message_", message);
         query.setValue("consume_times_", 0);
+        query.setValue("group_code_", groupCode);
+        query.setValue("prior_id_", priorId);
         query.setValue("status_", StatusEnum.Waiting.ordinal());
 
         query.setValue("delayTime_", delayTime);
@@ -157,6 +187,14 @@ public class SqlmqQueue implements IHandle {
 
     public void setDelayTime(int delayTime) {
         this.delayTime = delayTime;
+    }
+
+    public Optional<Datetime> getShowTime() {
+        return showTime;
+    }
+
+    public void setShowTime(Datetime showTime) {
+        this.showTime = Optional.ofNullable(showTime);
     }
 
     public void setService(QueueServiceEnum service) {

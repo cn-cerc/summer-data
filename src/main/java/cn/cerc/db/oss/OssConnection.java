@@ -17,6 +17,7 @@ import com.obs.services.ObsClient;
 import com.obs.services.ObsConfiguration;
 import com.obs.services.model.GetObjectRequest;
 import com.obs.services.model.ListBucketsRequest;
+import com.obs.services.model.ObjectMetadata;
 import com.obs.services.model.ObsBucket;
 import com.obs.services.model.ObsObject;
 
@@ -100,6 +101,11 @@ public class OssConnection implements IConnection {
         upload(getBucket(), fileName, inputStream);
     }
 
+    // 携带元数据上传文件流
+    public void upload(String fileName, InputStream inputStream, ObjectMetadata metadata) {
+        getClient().putObject(getBucket(), fileName, inputStream, metadata);
+    }
+
     // 指定上传Bucket
     public void upload(String bucket, String fileName, InputStream inputStream) {
         // 例：upload(inputStream, "131001/Default/131001/temp.txt")
@@ -147,6 +153,10 @@ public class OssConnection implements IConnection {
             log.error(e.getMessage(), e);
             return false;
         }
+    }
+
+    public ObjectMetadata getMetaData(String fileName) {
+        return getClient().getObject(new GetObjectRequest(getBucket(), fileName)).getMetadata();
     }
 
     // 下载文件
