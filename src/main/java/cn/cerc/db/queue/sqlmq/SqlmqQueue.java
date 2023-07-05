@@ -118,12 +118,12 @@ public class SqlmqQueue implements IHandle {
             // 启动Group消息处理
             int nextSequence = currSequence + 1;
             // 检查同级消息是否执行完，未执行完提前返回
-            String currMsgTotalkey = groupCode + currSequence;
-            if (redis.client().decr(currMsgTotalkey) > 0) {
-                redis.expire(currMsgTotalkey, TimeUnit.DAYS.toSeconds(29));
+            String msgTotalkey = groupCode + currSequence;
+            if (redis.client().decr(msgTotalkey) > 0) {
+                redis.expire(msgTotalkey, TimeUnit.DAYS.toSeconds(29));
                 return;
             }
-            redis.del(currMsgTotalkey);
+            redis.del(msgTotalkey);
             MysqlQuery queryNext = new MysqlQuery(query);
             queryNext.add("select * from %s", s_sqlmq_info);
             queryNext.add("where group_code_='%s'", groupCode);
