@@ -169,8 +169,8 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         case Sqlmq -> {
             if (this.executionSequence > 1)
                 this.setShowTime(new Datetime().inc(DateType.Year, 1));
-            else if (!Utils.isEmpty(this.groupCode) && this.executionSequence < 0)
-                throw new RuntimeException("执行序列号不能小于0");
+            else if (!Utils.isEmpty(this.groupCode) && this.executionSequence < 1)
+                throw new RuntimeException("执行序列号不能小于1");
             SqlmqQueue sqlQueue = SqlmqServer.getQueue(this.getId());
             sqlQueue.setDelayTime(delayTime);
             sqlQueue.setShowTime(showTime.orElseGet(Datetime::new));
