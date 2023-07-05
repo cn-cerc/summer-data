@@ -68,7 +68,7 @@ public class SqlmqQueue implements IHandle {
         try (Redis redis = new Redis()) {
             for (var row : query) {
                 if (onConsume instanceof AbstractQueue queue)
-                    queue.setGroupCode(query.getString("group_code_"));
+                    queue.setGroupCode(row.getString("group_code_"));
                 consumeMessage(query, redis, row, onConsume);
             }
         }
