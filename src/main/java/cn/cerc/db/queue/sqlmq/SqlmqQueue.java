@@ -2,6 +2,7 @@ package cn.cerc.db.queue.sqlmq;
 
 import java.net.InetAddress;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,15 +111,26 @@ public class SqlmqQueue implements IHandle {
                 return;
 
             var groupCode = query.getString("group_code_");
-            var currId = query.getString("UID_");
-            if (Utils.isEmpty(groupCode))
+            var currSequence = query.getInt("execution_sequence_");
+            if (Utils.isEmpty(groupCode) || currSequence < 1)
                 return;
 
+            // 启动Group消息处理
+            int nextSequence = currSequence + 1;
+            String buffKey = groupCode + nextSequence;
+            // 检查同级消息是否执行完，未执行完提前返回
+            if (redis.client().decr(buffKey) > 0) {
+                redis.expire(buffKey, TimeUnit.DAYS.toSeconds(29));
+                return;
+            }
+            redis.del(buffKey);
             MysqlQuery queryNext = new MysqlQuery(query);
             queryNext.add("select * from %s", s_sqlmq_info);
             queryNext.add("where group_code_='%s'", groupCode);
-            queryNext.add("and prior_id_=%s", currId);
+            queryNext.add("and execution_sequence_=%s", nextSequence);
             queryNext.open();
+            if (queryNext.size() > 1)
+                redis.setex(buffKey, TimeUnit.DAYS.toSeconds(29), String.valueOf(queryNext.size()));
             while (queryNext.fetch()) {
                 queryNext.edit();
                 queryNext.setValue("show_time_", new Datetime());
@@ -133,7 +145,7 @@ public class SqlmqQueue implements IHandle {
         return push(message, order, "", 0);
     }
 
-    public String push(String message, String order, String groupCode, Integer priorId) {
+    public String push(String message, String order, String groupCode, int executionSequence) {
         MysqlQuery query = new MysqlQuery(this);
         query.add("select * from %s", s_sqlmq_info);
         query.setMaximum(0);
@@ -146,7 +158,7 @@ public class SqlmqQueue implements IHandle {
         query.setValue("message_", message);
         query.setValue("consume_times_", 0);
         query.setValue("group_code_", groupCode);
-        query.setValue("prior_id_", priorId);
+        query.setValue("execution_sequence_", executionSequence);
         query.setValue("status_", StatusEnum.Waiting.ordinal());
 
         query.setValue("delayTime_", delayTime);

@@ -16,6 +16,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.Datetime.DateType;
 import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.core.Utils;
 import cn.cerc.db.queue.mns.MnsServer;
 import cn.cerc.db.queue.rabbitmq.RabbitQueue;
 import cn.cerc.db.queue.sqlmq.SqlmqQueue;
@@ -50,7 +51,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     private String original;
     private String order;
     private String groupCode;
-    private int priorId;
+    private int executionSequence;
 
     public AbstractQueue() {
         super();
@@ -165,14 +166,16 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             return MnsServer.getQueue(this.getId()).push(data);
         }
         case Sqlmq -> {
-            if (this.priorId > 0)
+            if (this.executionSequence > 1)
                 this.setShowTime(new Datetime().inc(DateType.Year, 1));
+            else if (!Utils.isEmpty(this.groupCode))
+                throw new RuntimeException("执行序列号不能小于1");
             SqlmqQueue sqlQueue = SqlmqServer.getQueue(this.getId());
             sqlQueue.setDelayTime(delayTime);
             sqlQueue.setShowTime(showTime.orElseGet(Datetime::new));
             sqlQueue.setService(service);
             sqlQueue.setQueueClass(this.getClass().getSimpleName());
-            return sqlQueue.push(data, this.order, this.groupCode, this.priorId);
+            return sqlQueue.push(data, this.order, this.groupCode, this.executionSequence);
         }
         case RabbitMQ -> {
             try (RabbitQueue queue = new RabbitQueue(this.getId())) {
@@ -301,12 +304,12 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         this.groupCode = groupCode;
     }
 
-    public int getPriorId() {
-        return priorId;
+    public int getExecutionSequence() {
+        return executionSequence;
     }
 
-    public void setPriorId(int priorId) {
-        this.priorId = priorId;
+    public void setExecutionSequence(int executionSequence) {
+        this.executionSequence = executionSequence;
     }
 
 }
