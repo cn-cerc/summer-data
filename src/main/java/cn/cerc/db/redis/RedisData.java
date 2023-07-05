@@ -32,7 +32,7 @@ public class RedisData {
         return items();
     }
 
-    public RedisData setExpire(int seconds) {
+    public RedisData setExpire(long seconds) {
         timestamp = System.currentTimeMillis() + seconds * 1000;
         return this;
     }
