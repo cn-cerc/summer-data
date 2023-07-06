@@ -200,7 +200,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             }
         }
         case AliyunMNS -> MnsServer.getQueue(getId()).pop(100, this);
-        case Sqlmq -> SqlmqServer.getQueue(getId()).pop(100, this);
+        case Sqlmq -> SqlmqServer.getQueue(getId()).setDelayTime(delayTime).pop(100, this);
         case RabbitMQ -> {
             try (var queue = new RabbitQueue(this.getId())) {
                 queue.setMaximum(100);
