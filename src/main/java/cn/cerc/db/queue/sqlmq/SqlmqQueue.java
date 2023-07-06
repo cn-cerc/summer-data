@@ -31,7 +31,6 @@ public class SqlmqQueue implements IHandle {
     private QueueServiceEnum service = QueueServiceEnum.Sqlmq;
     private ISession session;
     private String queueClass;
-    private int silentTime;
 
     public enum AckEnum {
         Read,
@@ -60,9 +59,8 @@ public class SqlmqQueue implements IHandle {
         Datetime now = new Datetime();
         MysqlQuery query = new MysqlQuery(this);
         query.add("select * from %s", s_sqlmq_info);
-        query.add("where ((status_=%d or status_=%d)", StatusEnum.Waiting.ordinal(), StatusEnum.Next.ordinal());
-        query.add("or (status_=%d and date_add(begin_consumer_time_,interval %d second)<='%s'))",
-                StatusEnum.Working.ordinal(), this.getSilentTime(), now);
+        query.add("where (status_=%d or status_=%d or status_=%d)", StatusEnum.Waiting.ordinal(),
+                StatusEnum.Next.ordinal(), StatusEnum.Working.ordinal());
         query.add("and show_time_ <= '%s'", now);
         query.add("and service_=%s", QueueServiceEnum.Sqlmq.ordinal());
         query.add("and queue_='%s'", this.queue);
@@ -91,7 +89,7 @@ public class SqlmqQueue implements IHandle {
                 addLog(uid.getLong(), AckEnum.Read, content);
                 query.edit();
                 query.setValue("status_", StatusEnum.Working.ordinal());
-                query.setValue("begin_consumer_time_", new Datetime());
+                query.setValue("show_time_", new Datetime().inc(DateType.Second, delayTime));
                 query.setValue("consume_times_", query.getInt("consume_times_") + 1);
                 query.setValue("version_", query.getInt("version_") + 1);
                 query.post();
@@ -202,8 +200,9 @@ public class SqlmqQueue implements IHandle {
         return delayTime;
     }
 
-    public void setDelayTime(int delayTime) {
+    public SqlmqQueue setDelayTime(int delayTime) {
         this.delayTime = delayTime;
+        return this;
     }
 
     public Optional<Datetime> getShowTime() {
@@ -238,15 +237,6 @@ public class SqlmqQueue implements IHandle {
 
     public void setQueueClass(String queueClass) {
         this.queueClass = queueClass;
-    }
-
-    public int getSilentTime() {
-        return silentTime;
-    }
-
-    public SqlmqQueue setSilentTime(int silentTime) {
-        this.silentTime = silentTime;
-        return this;
     }
 
 }
