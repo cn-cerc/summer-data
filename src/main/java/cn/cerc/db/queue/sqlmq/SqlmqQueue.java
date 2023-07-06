@@ -93,7 +93,7 @@ public class SqlmqQueue implements IHandle {
         var lockKey = "sqlmq." + uid.getString();
         if (redis.setnx(lockKey, new Datetime().toString()) == 0)
             return;
-        redis.expire(lockKey, 60 * 30);
+        redis.expire(lockKey, delayTime + 5);
         try {
             String content = "";
             boolean result = false;
