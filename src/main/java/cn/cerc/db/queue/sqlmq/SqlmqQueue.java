@@ -81,6 +81,7 @@ public class SqlmqQueue implements IHandle {
         var lockKey = "sqlmq." + uid.getString();
         if (redis.setnx(lockKey, new Datetime().toString()) == 0)
             return;
+        int delayTime = query.getInt("delayTime_");
         redis.expire(lockKey, delayTime + 5);
         try {
             String content = "";
@@ -106,7 +107,7 @@ public class SqlmqQueue implements IHandle {
             } else {
                 query.edit();
                 query.setValue("status_", StatusEnum.Next.ordinal());
-                query.setValue("show_time_", new Datetime().inc(DateType.Second, query.getInt("delayTime_")));
+                query.setValue("show_time_", new Datetime().inc(DateType.Second, delayTime));
             }
             query.setValue("version_", query.getInt("version_") + 1);
             query.post();
@@ -200,9 +201,8 @@ public class SqlmqQueue implements IHandle {
         return delayTime;
     }
 
-    public SqlmqQueue setDelayTime(int delayTime) {
+    public void setDelayTime(int delayTime) {
         this.delayTime = delayTime;
-        return this;
     }
 
     public Optional<Datetime> getShowTime() {
