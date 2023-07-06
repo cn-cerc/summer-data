@@ -46,6 +46,18 @@ public class SqlmqQueue implements IHandle {
         Invalid;
     }
 
+    /**
+     * 该方法用于设置顺序型消息队列序列1的消息总数
+     * 
+     * @param groupCode 消息分组
+     * @param total     消息总数
+     */
+    public static void setGroupFirstTotal(String groupCode, int total) {
+        try (Redis redis = new Redis()) {
+            redis.setex(groupCode + 1, TimeUnit.DAYS.toSeconds(29), String.valueOf(total));
+        }
+    }
+
     public SqlmqQueue() {
         this.session = SqlmqServer.get().getSession();
     }
