@@ -20,6 +20,7 @@ import cn.cerc.db.core.Utils;
 import cn.cerc.db.queue.mns.MnsServer;
 import cn.cerc.db.queue.rabbitmq.RabbitQueue;
 import cn.cerc.db.queue.sqlmq.SqlmqQueue;
+import cn.cerc.db.queue.sqlmq.SqlmqQueueName;
 import cn.cerc.db.queue.sqlmq.SqlmqServer;
 import cn.cerc.db.redis.Redis;
 import cn.cerc.db.zk.ZkConfig;
@@ -167,6 +168,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             return MnsServer.getQueue(this.getId()).push(data);
         }
         case Sqlmq -> {
+            SqlmqQueueName.register(this.getClass());
             if (this.executionSequence > 1)
                 this.setShowTime(new Datetime().inc(DateType.Year, 1));
             else if (!Utils.isEmpty(this.groupCode) && this.executionSequence < 1)

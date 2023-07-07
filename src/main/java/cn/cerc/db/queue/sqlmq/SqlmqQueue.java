@@ -100,6 +100,10 @@ public class SqlmqQueue implements IHandle {
         try {
             String content = "";
             boolean result = false;
+            var groupCode = query.getString("group_code_");
+            var currSequence = query.getInt("execution_sequence_");
+            if (!Utils.isEmpty(groupCode) && currSequence == 1)
+                SqlmqGroup.startExecute(groupCode);
             try {
                 addLog(uid.getLong(), AckEnum.Read, content);
                 query.edit();
@@ -118,6 +122,8 @@ public class SqlmqQueue implements IHandle {
             if (result) {
                 query.edit();
                 query.setValue("status_", StatusEnum.Finish.ordinal());
+                if (!Utils.isEmpty(groupCode))
+                    SqlmqGroup.incrDoneNum(groupCode);
             } else {
                 query.edit();
                 query.setValue("status_", StatusEnum.Next.ordinal());
@@ -128,8 +134,6 @@ public class SqlmqQueue implements IHandle {
             if (!result)
                 return;
 
-            var groupCode = query.getString("group_code_");
-            var currSequence = query.getInt("execution_sequence_");
             if (Utils.isEmpty(groupCode) || currSequence < 1)
                 return;
 
@@ -147,6 +151,8 @@ public class SqlmqQueue implements IHandle {
             queryNext.add("where group_code_='%s'", groupCode);
             queryNext.add("and execution_sequence_=%s", nextSequence);
             queryNext.open();
+            if (queryNext.eof())
+                SqlmqGroup.stopExecute(groupCode);
             if (queryNext.size() > 1)
                 redis.setex(groupCode + nextSequence, TimeUnit.DAYS.toSeconds(29), String.valueOf(queryNext.size()));
             while (queryNext.fetch()) {
