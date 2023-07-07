@@ -108,6 +108,7 @@ public class SqlmqQueue implements IHandle {
                 query.setValue("status_", StatusEnum.Working.ordinal());
                 query.setValue("show_time_", new Datetime().inc(DateType.Second, delayTime));
                 query.setValue("consume_times_", query.getInt("consume_times_") + 1);
+                query.setValue("update_time_", new Datetime());
                 query.setValue("version_", query.getInt("version_") + 1);
                 query.post();
                 result = onConsume.consume(row.getString("message_"), true);
@@ -127,6 +128,7 @@ public class SqlmqQueue implements IHandle {
                 query.setValue("status_", StatusEnum.Next.ordinal());
                 query.setValue("show_time_", new Datetime().inc(DateType.Second, delayTime));
             }
+            query.setValue("update_time_", new Datetime());
             query.setValue("version_", query.getInt("version_") + 1);
             query.post();
             if (!result)
