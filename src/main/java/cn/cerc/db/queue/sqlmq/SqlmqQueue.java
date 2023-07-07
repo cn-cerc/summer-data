@@ -18,7 +18,9 @@ import cn.cerc.db.mysql.MysqlQuery;
 import cn.cerc.db.queue.AbstractQueue;
 import cn.cerc.db.queue.OnStringMessage;
 import cn.cerc.db.queue.QueueServiceEnum;
+import cn.cerc.db.redis.JedisFactory;
 import cn.cerc.db.redis.Redis;
+import redis.clients.jedis.Jedis;
 
 public class SqlmqQueue implements IHandle {
     private static final Logger log = LoggerFactory.getLogger(SqlmqQueue.class);
@@ -44,6 +46,18 @@ public class SqlmqQueue implements IHandle {
         Finish,
         Next,
         Invalid;
+    }
+
+    /**
+     * 该方法用于设置顺序型消息队列序列1的消息总数
+     * 
+     * @param groupCode 消息分组
+     * @param total     消息总数
+     */
+    public static void setGroupFirstTotal(String groupCode, int total) {
+        try (Redis redis = new Redis()) {
+            redis.setex(groupCode + 1, TimeUnit.DAYS.toSeconds(29), String.valueOf(total));
+        }
     }
 
     public SqlmqQueue() {
@@ -152,8 +166,20 @@ public class SqlmqQueue implements IHandle {
     public String push(String message, String order, String groupCode, int executionSequence) {
         MysqlQuery query = new MysqlQuery(this);
         query.add("select * from %s", s_sqlmq_info);
-        query.setMaximum(0);
-        query.open();
+        if (!Utils.isEmpty(groupCode) && executionSequence == 1) {
+            query.addWhere().eq("group_code_", groupCode).eq("execution_sequence_", executionSequence).build();
+            query.setMaximum(1);
+            query.open();
+            if (!query.eof()) {
+                try (Jedis redis = JedisFactory.getJedis()) {
+                    if (!redis.exists(groupCode + 1))
+                        throw new RuntimeException("同一个消息分组中序列1存在多条消息！请先使用 setGroupFirstTotal 方法设置序列1的消息总数");
+                }
+            }
+        } else {
+            query.setMaximum(0);
+            query.open();
+        }
 
         query.append();
         query.setValue("queue_", this.queue);
