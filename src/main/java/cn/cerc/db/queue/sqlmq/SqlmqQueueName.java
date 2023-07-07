@@ -20,9 +20,11 @@ public class SqlmqQueueName {
     public static final String TABLE = "s_sqlmq_queue_name";
 
     public static void register(Class<? extends AbstractQueue> queueClazz) {
-        String queueName = Optional.ofNullable(queueClazz.getAnnotation(Description.class))
-                .map(Description::value)
-                .get();
+        String queueName = null;
+        Description annotaion = queueClazz.getAnnotation(Description.class);
+        if (annotaion != null)
+            queueName = annotaion.value();
+
         if (Utils.isEmpty(queueName)) {
             log.warn("{} 缺少 Description 注解，请相关人员填上队列描述", queueClazz);
             return;
