@@ -271,10 +271,4 @@ public class SqlmqQueue implements IHandle {
         this.queueClass = queueClass;
     }
 
-    public static void setGroupFirstTotal(String groupCode, int size) {
-        try (Redis redis = new Redis()) {
-            redis.setex(groupCode + 1, TimeUnit.DAYS.toSeconds(29), String.valueOf(size));
-        }
-    }
-
 }
