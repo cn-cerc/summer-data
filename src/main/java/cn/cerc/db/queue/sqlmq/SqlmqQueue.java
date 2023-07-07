@@ -18,7 +18,9 @@ import cn.cerc.db.mysql.MysqlQuery;
 import cn.cerc.db.queue.AbstractQueue;
 import cn.cerc.db.queue.OnStringMessage;
 import cn.cerc.db.queue.QueueServiceEnum;
+import cn.cerc.db.redis.JedisFactory;
 import cn.cerc.db.redis.Redis;
+import redis.clients.jedis.Jedis;
 
 public class SqlmqQueue implements IHandle {
     private static final Logger log = LoggerFactory.getLogger(SqlmqQueue.class);
@@ -46,6 +48,18 @@ public class SqlmqQueue implements IHandle {
         Invalid;
     }
 
+    /**
+     * 该方法用于设置顺序型消息队列序列1的消息总数
+     * 
+     * @param groupCode 消息分组
+     * @param total     消息总数
+     */
+    public static void setGroupFirstTotal(String groupCode, int total) {
+        try (Redis redis = new Redis()) {
+            redis.setex(groupCode + 1, TimeUnit.DAYS.toSeconds(29), String.valueOf(total));
+        }
+    }
+
     public SqlmqQueue() {
         this.session = SqlmqServer.get().getSession();
     }
@@ -56,10 +70,12 @@ public class SqlmqQueue implements IHandle {
     }
 
     public void pop(int maximum, OnStringMessage onConsume) {
+        Datetime now = new Datetime();
         MysqlQuery query = new MysqlQuery(this);
         query.add("select * from %s", s_sqlmq_info);
-        query.add("where (status_=%d or status_=%d)", StatusEnum.Waiting.ordinal(), StatusEnum.Next.ordinal());
-        query.add("and show_time_ <= '%s'", new Datetime());
+        query.add("where (status_=%d or status_=%d or status_=%d)", StatusEnum.Waiting.ordinal(),
+                StatusEnum.Next.ordinal(), StatusEnum.Working.ordinal());
+        query.add("and show_time_ <= '%s'", now);
         query.add("and service_=%s", QueueServiceEnum.Sqlmq.ordinal());
         query.add("and queue_='%s'", this.queue);
         // FIXME 载入笔数需处理
@@ -79,7 +95,8 @@ public class SqlmqQueue implements IHandle {
         var lockKey = "sqlmq." + uid.getString();
         if (redis.setnx(lockKey, new Datetime().toString()) == 0)
             return;
-        redis.expire(lockKey, 60 * 30);
+        int delayTime = query.getInt("delayTime_");
+        redis.expire(lockKey, delayTime + 5);
         try {
             String content = "";
             boolean result = false;
@@ -87,6 +104,7 @@ public class SqlmqQueue implements IHandle {
                 addLog(uid.getLong(), AckEnum.Read, content);
                 query.edit();
                 query.setValue("status_", StatusEnum.Working.ordinal());
+                query.setValue("show_time_", new Datetime().inc(DateType.Second, delayTime));
                 query.setValue("consume_times_", query.getInt("consume_times_") + 1);
                 query.setValue("version_", query.getInt("version_") + 1);
                 query.post();
@@ -103,7 +121,7 @@ public class SqlmqQueue implements IHandle {
             } else {
                 query.edit();
                 query.setValue("status_", StatusEnum.Next.ordinal());
-                query.setValue("show_time_", new Datetime().inc(DateType.Second, query.getInt("delayTime_")));
+                query.setValue("show_time_", new Datetime().inc(DateType.Second, delayTime));
             }
             query.setValue("version_", query.getInt("version_") + 1);
             query.post();
@@ -148,8 +166,20 @@ public class SqlmqQueue implements IHandle {
     public String push(String message, String order, String groupCode, int executionSequence) {
         MysqlQuery query = new MysqlQuery(this);
         query.add("select * from %s", s_sqlmq_info);
-        query.setMaximum(0);
-        query.open();
+        if (!Utils.isEmpty(groupCode) && executionSequence == 1) {
+            query.addWhere().eq("group_code_", groupCode).eq("execution_sequence_", executionSequence).build();
+            query.setMaximum(1);
+            query.open();
+            if (!query.eof()) {
+                try (Jedis redis = JedisFactory.getJedis()) {
+                    if (!redis.exists(groupCode + 1))
+                        throw new RuntimeException("同一个消息分组中序列1存在多条消息！请先使用 setGroupFirstTotal 方法设置序列1的消息总数");
+                }
+            }
+        } else {
+            query.setMaximum(0);
+            query.open();
+        }
 
         query.append();
         query.setValue("queue_", this.queue);
