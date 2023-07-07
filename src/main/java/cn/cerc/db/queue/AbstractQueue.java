@@ -51,8 +51,8 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     private Optional<Datetime> showTime = Optional.empty(); // 队列延时时间 默认当前时间
     private String original;
     private String order;
-    private String groupCode;
-    private int executionSequence;
+    private String groupCode;// 消息分组
+    private int executionSequence;// 执行序列号
 
     public AbstractQueue() {
         super();
