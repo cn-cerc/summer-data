@@ -13,9 +13,13 @@ public class SqlmqServer implements IHandle {
         this.setSession(new MysqlSession(config));
     }
 
-    public synchronized static SqlmqServer get() {
-        if (instance == null)
-            instance = new SqlmqServer();
+    public static SqlmqServer get() {
+        if (instance == null) {
+            synchronized (SqlmqServer.class) {
+                if (instance == null)
+                    instance = new SqlmqServer();
+            }
+        }
         return instance;
     }
 
