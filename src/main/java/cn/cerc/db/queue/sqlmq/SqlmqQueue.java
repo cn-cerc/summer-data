@@ -56,10 +56,12 @@ public class SqlmqQueue implements IHandle {
     }
 
     public void pop(int maximum, OnStringMessage onConsume) {
+        Datetime now = new Datetime();
         MysqlQuery query = new MysqlQuery(this);
         query.add("select * from %s", s_sqlmq_info);
-        query.add("where (status_=%d or status_=%d)", StatusEnum.Waiting.ordinal(), StatusEnum.Next.ordinal());
-        query.add("and show_time_ <= '%s'", new Datetime());
+        query.add("where (status_=%d or status_=%d or status_=%d)", StatusEnum.Waiting.ordinal(),
+                StatusEnum.Next.ordinal(), StatusEnum.Working.ordinal());
+        query.add("and show_time_ <= '%s'", now);
         query.add("and service_=%s", QueueServiceEnum.Sqlmq.ordinal());
         query.add("and queue_='%s'", this.queue);
         // FIXME 载入笔数需处理
@@ -79,7 +81,8 @@ public class SqlmqQueue implements IHandle {
         var lockKey = "sqlmq." + uid.getString();
         if (redis.setnx(lockKey, new Datetime().toString()) == 0)
             return;
-        redis.expire(lockKey, 60 * 30);
+        int delayTime = query.getInt("delayTime_");
+        redis.expire(lockKey, delayTime + 5);
         try {
             String content = "";
             boolean result = false;
@@ -87,6 +90,7 @@ public class SqlmqQueue implements IHandle {
                 addLog(uid.getLong(), AckEnum.Read, content);
                 query.edit();
                 query.setValue("status_", StatusEnum.Working.ordinal());
+                query.setValue("show_time_", new Datetime().inc(DateType.Second, delayTime));
                 query.setValue("consume_times_", query.getInt("consume_times_") + 1);
                 query.setValue("version_", query.getInt("version_") + 1);
                 query.post();
@@ -103,7 +107,7 @@ public class SqlmqQueue implements IHandle {
             } else {
                 query.edit();
                 query.setValue("status_", StatusEnum.Next.ordinal());
-                query.setValue("show_time_", new Datetime().inc(DateType.Second, query.getInt("delayTime_")));
+                query.setValue("show_time_", new Datetime().inc(DateType.Second, delayTime));
             }
             query.setValue("version_", query.getInt("version_") + 1);
             query.post();
