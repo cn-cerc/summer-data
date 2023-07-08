@@ -44,6 +44,7 @@ public class SqlmqQueue implements IHandle {
         Waiting,
         Working,
         Finish,
+        @Deprecated
         Next,
         Invalid;
     }
@@ -114,12 +115,11 @@ public class SqlmqQueue implements IHandle {
     }
 
     public void pop(int maximum, OnStringMessage onConsume) {
-        Datetime now = new Datetime();
         MysqlQuery query = new MysqlQuery(this);
         query.add("select * from %s", s_sqlmq_info);
         query.add("where (status_=%d or status_=%d or status_=%d)", StatusEnum.Waiting.ordinal(),
                 StatusEnum.Next.ordinal(), StatusEnum.Working.ordinal());
-        query.add("and show_time_ <= '%s'", now);
+        query.add("and show_time_ <= '%s'", new Datetime());
         query.add("and service_=%s", QueueServiceEnum.Sqlmq.ordinal());
         query.add("and queue_='%s'", this.queue);
         // FIXME 载入笔数需处理
@@ -171,7 +171,7 @@ public class SqlmqQueue implements IHandle {
                     SqlmqGroup.incrDoneNum(groupCode);
             } else {
                 query.edit();
-                query.setValue("status_", StatusEnum.Next.ordinal());
+                query.setValue("status_", StatusEnum.Waiting.ordinal());
                 query.setValue("show_time_", new Datetime().inc(DateType.Second, delayTime));
             }
             query.setValue("update_time_", new Datetime());
