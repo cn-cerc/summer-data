@@ -153,7 +153,7 @@ public class SqlmqQueue implements IHandle {
         }
     }
 
-    private void consumeMessage(MysqlQuery query, Redis redis, DataRow row, OnStringMessage onConsume) {
+    public void consumeMessage(MysqlQuery query, Redis redis, DataRow row, OnStringMessage onConsume) {
         var uid = row.bind("UID_");
         var lockKey = "sqlmq." + uid.getString();
         int delayTime = query.getInt("delayTime_");
