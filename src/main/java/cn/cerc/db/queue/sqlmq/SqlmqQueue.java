@@ -111,10 +111,23 @@ public class SqlmqQueue implements IHandle {
         query.setValue("create_time_", new Datetime());
         query.setValue("update_time_", new Datetime());
         query.post();
+
+        // 最近一次新的消息进来了, 则清除休息标识
+        try (Redis redis = new Redis()) {
+            log.debug("有新的消息被登记，同时清除可能存在的休息标识");
+            redis.del(SqlmqQueue.class.getName());
+        }
+
         return query.getString("UID_");
     }
 
     public void pop(int maximum, OnStringMessage onConsume) {
+        try (Redis redis = new Redis()) {
+            // 如果发现休息标识，则不检查
+            if (redis.get(this.getClass().getName()) != null)
+                return;
+        }
+        log.debug("检查是否有可以被消费的消息");
         MysqlQuery query = new MysqlQuery(this);
         query.add("select * from %s", s_sqlmq_info);
         query.add("where (status_=%d or status_=%d or status_=%d)", StatusEnum.Waiting.ordinal(),
@@ -122,14 +135,22 @@ public class SqlmqQueue implements IHandle {
         query.add("and show_time_ <= '%s'", new Datetime());
         query.add("and service_=%s", QueueServiceEnum.Sqlmq.ordinal());
         query.add("and queue_='%s'", this.queue);
-        // FIXME 载入笔数需处理
-        query.setMaximum(1);
+        query.setMaximum(2);
         query.open();
+
         try (Redis redis = new Redis()) {
-            for (var row : query) {
+            if (!query.eof()) {
+                var row = query.current();
                 if (onConsume instanceof AbstractQueue queue)
                     queue.setGroupCode(row.getString("group_code_"));
                 consumeMessage(query, redis, row, onConsume);
+            }
+            // 如果最近一次没有检查到消息
+            if (query.size() < 2) {
+                // 没有找到需要消费的消息，则休息30秒
+                log.debug("没有找到待第一桌的消费，休息 10 秒");
+                redis.set(SqlmqQueue.class.getName(), new Datetime().toString());
+                redis.expire(SqlmqQueue.class.getName(), 10);
             }
         }
     }
