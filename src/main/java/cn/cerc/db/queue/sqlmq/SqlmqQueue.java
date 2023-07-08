@@ -18,7 +18,9 @@ import cn.cerc.db.mysql.MysqlQuery;
 import cn.cerc.db.queue.AbstractQueue;
 import cn.cerc.db.queue.OnStringMessage;
 import cn.cerc.db.queue.QueueServiceEnum;
+import cn.cerc.db.redis.JedisFactory;
 import cn.cerc.db.redis.Redis;
+import redis.clients.jedis.Jedis;
 
 public class SqlmqQueue implements IHandle {
     private static final Logger log = LoggerFactory.getLogger(SqlmqQueue.class);
