@@ -51,8 +51,13 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     private Optional<Datetime> showTime = Optional.empty(); // 队列延时时间 默认当前时间
     private String original;
     private String order;
+    private QueueGroup group;
     private String groupCode;// 消息分组
     private int executionSequence;// 执行序列号
+    /**
+     * 消息内容
+     */
+    private String message;
 
     public AbstractQueue() {
         super();
@@ -157,6 +162,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     }
 
     protected String push(String data) {
+        this.message = data;
         switch (getService()) {
         case Redis -> {
             try (Redis redis = new Redis()) {
@@ -168,17 +174,10 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             return MnsServer.getQueue(this.getId()).push(data);
         }
         case Sqlmq -> {
-            SqlmqQueueName.register(this.getClass());
-            if (this.executionSequence > 1)
-                this.setShowTime(new Datetime().inc(DateType.Year, 1));
-            else if (!Utils.isEmpty(this.groupCode) && this.executionSequence < 1)
-                throw new RuntimeException("执行序列号不能小于1");
-            SqlmqQueue sqlQueue = SqlmqServer.getQueue(this.getId());
-            sqlQueue.setDelayTime(delayTime);
-            sqlQueue.setShowTime(showTime.orElseGet(Datetime::new));
-            sqlQueue.setService(service);
-            sqlQueue.setQueueClass(this.getClass().getSimpleName());
-            return sqlQueue.push(data, this.order, this.groupCode, this.executionSequence);
+            if (this.group == null)
+                return this.saveToSqlmg();
+            else // 不立即执行
+                return null;
         }
         case RabbitMQ -> {
             try (RabbitQueue queue = new RabbitQueue(this.getId())) {
@@ -189,6 +188,37 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             return null;
         }
         }
+    }
+
+    protected String saveToSqlmg() {
+        if (this.getService() != QueueServiceEnum.Sqlmq) {
+            log.warn("仅 sqlmq 才可以使用此函数 ");
+            return null;
+        }
+        if (this.message == null)
+            throw new RuntimeException("未定义消息内容，无法执行！");
+
+        SqlmqQueueName.register(this.getClass());
+        if (this.executionSequence > 1)
+            this.setShowTime(new Datetime().inc(DateType.Year, 1));
+        else if (!Utils.isEmpty(this.getGroupCode()) && this.executionSequence < 1)
+            throw new RuntimeException("执行序列号不能小于1");
+        SqlmqQueue sqlQueue = SqlmqServer.getQueue(this.getId());
+        sqlQueue.setDelayTime(delayTime);
+        sqlQueue.setShowTime(showTime.orElseGet(Datetime::new));
+        sqlQueue.setService(service);
+        sqlQueue.setQueueClass(this.getClass().getSimpleName());
+        return sqlQueue.push(this.message, this.order, this.getGroupCode(), this.executionSequence);
+    }
+
+    protected void pushToSqlmq(String message) {
+        if (this.getService() == QueueServiceEnum.Sqlmq)
+            return;
+        var queue = SqlmqServer.getQueue(this.getId());
+        queue.setService(this.service);
+        queue.setDelayTime(this.delayTime);
+        queue.setQueueClass(this.getClass().getSimpleName());
+        queue.push(message, this.order);
     }
 
     @Override
@@ -264,16 +294,6 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         this.pushMode = pushMode;
     }
 
-    protected void pushToSqlmq(String message) {
-        if (this.getService() == QueueServiceEnum.Sqlmq)
-            return;
-        var queue = SqlmqServer.getQueue(this.getId());
-        queue.setService(this.service);
-        queue.setDelayTime(this.delayTime);
-        queue.setQueueClass(this.getClass().getSimpleName());
-        queue.push(message, this.order);
-    }
-
     public static void close() {
         executor.shutdown();
         try {
@@ -300,11 +320,19 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     }
 
     public String getGroupCode() {
-        return groupCode;
+        return groupCode != null ? groupCode : group.code();
     }
 
     public void setGroupCode(String groupCode) {
+        if (groupCode != null)
+            throw new RuntimeException("group is not null");
         this.groupCode = groupCode;
+    }
+
+    protected void setGroup(QueueGroup group) {
+        if (groupCode != null)
+            throw new RuntimeException("groupCode is not null");
+        this.group = group;
     }
 
     public int getExecutionSequence() {
