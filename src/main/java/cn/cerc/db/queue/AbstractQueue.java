@@ -48,7 +48,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     private boolean pushMode = false; // 默认为拉模式
     private QueueServiceEnum service;
     private int delayTime = 60; // 失败重试时间 单位：秒
-    private Optional<Datetime> showTime = Optional.empty(); // 队列延时时间 默认当前时间
+    private Datetime showTime; // 队列延时时间 默认当前时间
     private String original;
     private String order;
     private String groupCode;// 消息分组
@@ -106,12 +106,12 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
      * 
      * @param showTime 设置延迟时间
      */
-    protected void setShowTime(Datetime showTime) {
-        this.showTime = Optional.ofNullable(showTime);
+    public void setShowTime(Datetime showTime) {
+        this.showTime = showTime;
     }
 
     public final Optional<Datetime> getShowTime() {
-        return this.showTime;
+        return Optional.ofNullable(this.showTime);
     }
 
     public void startService() {
@@ -175,7 +175,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
                 throw new RuntimeException("执行序列号不能小于1");
             SqlmqQueue sqlQueue = SqlmqServer.getQueue(this.getId());
             sqlQueue.setDelayTime(delayTime);
-            sqlQueue.setShowTime(showTime.orElseGet(Datetime::new));
+            sqlQueue.setShowTime(showTime);
             sqlQueue.setService(service);
             sqlQueue.setQueueClass(this.getClass().getSimpleName());
             return sqlQueue.push(data, this.order, this.groupCode, this.executionSequence);

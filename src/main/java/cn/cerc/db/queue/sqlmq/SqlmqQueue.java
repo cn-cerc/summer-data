@@ -29,7 +29,7 @@ public class SqlmqQueue implements IHandle {
 
     private String queue;
     private int delayTime = 0;
-    private Optional<Datetime> showTime = Optional.empty();
+    private Datetime showTime;
     private QueueServiceEnum service = QueueServiceEnum.Sqlmq;
     private ISession session;
     private String queueClass;
@@ -95,7 +95,7 @@ public class SqlmqQueue implements IHandle {
         query.append();
         query.setValue("queue_", this.queue);
         query.setValue("order_", order);
-        query.setValue("show_time_", showTime.orElseGet(Datetime::new));
+        query.setValue("show_time_", showTime != null ? showTime : new Datetime());
         query.setValue("message_", message);
         query.setValue("consume_times_", 0);
         query.setValue("group_code_", groupCode);
@@ -134,12 +134,12 @@ public class SqlmqQueue implements IHandle {
         }
     }
 
-    public void consumeMessage(MysqlQuery query, Redis redis, DataRow row, OnStringMessage onConsume) {
+    private void consumeMessage(MysqlQuery query, Redis redis, DataRow row, OnStringMessage onConsume) {
         var uid = row.bind("UID_");
         var lockKey = "sqlmq." + uid.getString();
+        int delayTime = query.getInt("delayTime_");
         if (redis.setnx(lockKey, new Datetime().toString()) == 0)
             return;
-        int delayTime = query.getInt("delayTime_");
         redis.expire(lockKey, delayTime + 5);
         try {
             String content = "";
@@ -167,6 +167,7 @@ public class SqlmqQueue implements IHandle {
             if (result) {
                 query.edit();
                 query.setValue("status_", StatusEnum.Finish.ordinal());
+                query.setValue("show_time_", query.getDatetime("update_time_"));
                 if (!Utils.isEmpty(groupCode))
                     SqlmqGroup.incrDoneNum(groupCode);
             } else {
@@ -204,6 +205,7 @@ public class SqlmqQueue implements IHandle {
             while (queryNext.fetch()) {
                 queryNext.edit();
                 queryNext.setValue("show_time_", new Datetime());
+                queryNext.setValue("update_time_", new Datetime());
                 queryNext.post();
             }
         } finally {
@@ -238,11 +240,11 @@ public class SqlmqQueue implements IHandle {
     }
 
     public Optional<Datetime> getShowTime() {
-        return showTime;
+        return Optional.ofNullable(showTime);
     }
 
     public void setShowTime(Datetime showTime) {
-        this.showTime = Optional.ofNullable(showTime);
+        this.showTime = showTime;
     }
 
     public void setService(QueueServiceEnum service) {
