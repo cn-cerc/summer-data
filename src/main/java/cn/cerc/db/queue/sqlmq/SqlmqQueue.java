@@ -69,6 +69,50 @@ public class SqlmqQueue implements IHandle {
         this.queue = queue;
     }
 
+    public String push(String message, String order) {
+        return push(message, order, "", 0);
+    }
+
+    public String push(String message, String order, String groupCode, int executionSequence) {
+        MysqlQuery query = new MysqlQuery(this);
+        query.add("select * from %s", s_sqlmq_info);
+        if (!Utils.isEmpty(groupCode) && executionSequence == 1) {
+            query.addWhere().eq("group_code_", groupCode).eq("execution_sequence_", executionSequence).build();
+            query.setMaximum(1);
+            query.open();
+            if (!query.eof()) {
+                try (Jedis redis = JedisFactory.getJedis()) {
+                    if (!redis.exists(groupCode + 1))
+                        throw new RuntimeException("同一个消息分组中序列1存在多条消息！请先使用 setGroupFirstTotal 方法设置序列1的消息总数");
+                }
+            }
+        } else {
+            query.setMaximum(0);
+            query.open();
+        }
+
+        query.append();
+        query.setValue("queue_", this.queue);
+        query.setValue("order_", order);
+        query.setValue("show_time_", showTime.orElseGet(Datetime::new));
+        query.setValue("message_", message);
+        query.setValue("consume_times_", 0);
+        query.setValue("group_code_", groupCode);
+        query.setValue("execution_sequence_", executionSequence);
+        query.setValue("status_", StatusEnum.Waiting.ordinal());
+        query.setValue("delayTime_", delayTime);
+        query.setValue("service_", service.ordinal());
+        query.setValue("product_", ServerConfig.getAppProduct());
+        query.setValue("industry_", ServerConfig.getAppOriginal());
+        query.setValue("queue_class_", this.queueClass);
+        query.setValue("version_", 0);
+        query.setValue("create_user_", getUserCode());
+        query.setValue("create_time_", new Datetime());
+        query.setValue("update_time_", new Datetime());
+        query.post();
+        return query.getString("UID_");
+    }
+
     public void pop(int maximum, OnStringMessage onConsume) {
         Datetime now = new Datetime();
         MysqlQuery query = new MysqlQuery(this);
@@ -167,58 +211,12 @@ public class SqlmqQueue implements IHandle {
         }
     }
 
-    public String push(String message, String order) {
-        return push(message, order, "", 0);
-    }
-
-    public String push(String message, String order, String groupCode, int executionSequence) {
-        MysqlQuery query = new MysqlQuery(this);
-        query.add("select * from %s", s_sqlmq_info);
-        if (!Utils.isEmpty(groupCode) && executionSequence == 1) {
-            query.addWhere().eq("group_code_", groupCode).eq("execution_sequence_", executionSequence).build();
-            query.setMaximum(1);
-            query.open();
-            if (!query.eof()) {
-                try (Jedis redis = JedisFactory.getJedis()) {
-                    if (!redis.exists(groupCode + 1))
-                        throw new RuntimeException("同一个消息分组中序列1存在多条消息！请先使用 setGroupFirstTotal 方法设置序列1的消息总数");
-                }
-            }
-        } else {
-            query.setMaximum(0);
-            query.open();
-        }
-
-        query.append();
-        query.setValue("queue_", this.queue);
-        query.setValue("order_", order);
-        query.setValue("show_time_", showTime.orElseGet(Datetime::new));
-        query.setValue("message_", message);
-        query.setValue("consume_times_", 0);
-        query.setValue("group_code_", groupCode);
-        query.setValue("execution_sequence_", executionSequence);
-        query.setValue("status_", StatusEnum.Waiting.ordinal());
-
-        query.setValue("delayTime_", delayTime);
-        query.setValue("service_", service.ordinal());
-        query.setValue("product_", ServerConfig.getAppProduct());
-        query.setValue("industry_", ServerConfig.getAppOriginal());
-        query.setValue("queue_class_", this.queueClass);
-        query.setValue("version_", 0);
-        query.setValue("create_user_", getUserCode());
-        query.setValue("create_time_", new Datetime());
-        query.setValue("update_time_", new Datetime());
-        query.post();
-        return query.getString("UID_");
-    }
-
     private void addLog(long queueId, AckEnum ack, String content) {
         try {
             MysqlQuery query = new MysqlQuery(this);
             query.add("select * from %s", s_sqlmq_log);
             query.setMaximum(0);
             query.open();
-
             query.append();
             query.setValue("queue_id_", queueId);
             query.setValue("ack_", ack.ordinal());
