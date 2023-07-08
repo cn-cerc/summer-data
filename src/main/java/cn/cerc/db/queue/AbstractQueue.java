@@ -224,7 +224,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     /**
      * 默认3秒检测一次，若某个消息耗时过高，可将此函数覆盖为空函数
      */
-    @Scheduled(initialDelay = 30000, fixedRate = 3000)
+    @Scheduled(initialDelay = 30000, fixedRate = 1000)
     public void defaultCheck() {
         if (this.isPushMode())
             return;
