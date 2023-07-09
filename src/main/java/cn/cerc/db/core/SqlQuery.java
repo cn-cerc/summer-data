@@ -79,7 +79,7 @@ public class SqlQuery extends DataSet implements IHandle {
         this.setStorage(masterServer);
         this.setFetchFinish(true);
         String sql = sql().getCommand();
-        try (ISqlClient client = getConnectionClient()) {
+        try (ServerClient client = getConnectionClient()) {
             this.operator().select(this, client.getConnection(), sql);
             if (this.maximum() > -1)
                 BigdataException.check(this, this.size());
@@ -104,7 +104,7 @@ public class SqlQuery extends DataSet implements IHandle {
         }
 
         log.debug(sqlText.replaceAll("\r\n", " "));
-        try (ISqlClient client = getConnectionClient()) {
+        try (ServerClient client = getConnectionClient()) {
             int total = this.operator().select(this, client.getConnection(), sqlText);
             if (this.maximum() > -1)
                 BigdataException.check(this, this.size());
@@ -118,7 +118,7 @@ public class SqlQuery extends DataSet implements IHandle {
     public final void save() {
         if (!this.isBatchSave())
             throw new RuntimeException("batchSave is false");
-        ISqlClient client = null;
+        ServerClient client = null;
         try {
             if (this.storage())
                 client = getConnectionClient();
@@ -172,7 +172,7 @@ public class SqlQuery extends DataSet implements IHandle {
 
     @Override
     public final void insertStorage(DataRow record) throws Exception {
-        try (ISqlClient client = getConnectionClient()) {
+        try (ServerClient client = getConnectionClient()) {
             if (operator().insert(client.getConnection(), record))
                 record.setState(DataRowState.None);
         }
@@ -180,7 +180,7 @@ public class SqlQuery extends DataSet implements IHandle {
 
     @Override
     public final void updateStorage(DataRow record) throws Exception {
-        try (ISqlClient client = getConnectionClient()) {
+        try (ServerClient client = getConnectionClient()) {
             if (operator().update(client.getConnection(), record))
                 record.setState(DataRowState.None);
         }
@@ -188,7 +188,7 @@ public class SqlQuery extends DataSet implements IHandle {
 
     @Override
     public final void deleteStorage(DataRow record) throws Exception {
-        try (ISqlClient client = getConnectionClient()) {
+        try (ServerClient client = getConnectionClient()) {
             if (operator().delete(client.getConnection(), record))
                 garbage().remove(record);
         }
@@ -199,9 +199,9 @@ public class SqlQuery extends DataSet implements IHandle {
      * 
      * @return 返回 ConnectionClient 接口对象
      */
-    private final ISqlClient getConnectionClient() {
+    private final ServerClient getConnectionClient() {
         ISqlServer server = Objects.requireNonNull(server());
-        return (ISqlClient) server.getClient();
+        return (ServerClient) server.getClient();
     }
 
     public final SqlOperator operator() {
