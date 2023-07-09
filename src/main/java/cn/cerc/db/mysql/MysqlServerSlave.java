@@ -16,8 +16,9 @@ public class MysqlServerSlave extends MysqlServer {
     private static HikariDataSource dataSource;
 
     static {
-        var config = MysqlConfig.getSlave();
-        dataSource = config.createDataSource();
+        MysqlConfig config = MysqlConfig.getSlave();
+        if (config.maxPoolSize() > 0)
+            dataSource = config.createDataSource();
     }
 
     @Override
@@ -34,7 +35,7 @@ public class MysqlServerSlave extends MysqlServer {
 
     @Override
     public boolean isPool() {
-        return true;
+        return dataSource != null;
     }
 
     @Override
