@@ -181,6 +181,24 @@ public class MysqlConfig {
         return dataSource;
     }
 
+    /**
+     * 不使用线程池直接创建连接
+     * 
+     * @return 数据库连接
+     */
+    public Connection createConnection() {
+        return this.createConnection(site(), database(), username(), password());
+    }
+
+    /**
+     * 根据传入的参数直接创建连接
+     * 
+     * @param host     数据库地址
+     * @param database 数据库名称
+     * @param username 用户名称
+     * @param password 用户密码
+     * @return 数据库连接
+     */
     public Connection createConnection(String host, String database, String username, String password) {
         var timezone = serverTimezone();
         if (Utils.isEmpty(host) || Utils.isEmpty(database) || Utils.isEmpty(timezone))
