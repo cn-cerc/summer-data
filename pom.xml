@@ -136,10 +136,6 @@
             <artifactId>spring-context</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>c3p0</groupId>
-            <artifactId>c3p0</artifactId>
-        </dependency>
         <!-- aliyun-log-sdk -->
         <dependency>
             <groupId>com.google.protobuf</groupId>
