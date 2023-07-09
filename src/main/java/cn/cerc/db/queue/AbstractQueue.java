@@ -1,6 +1,7 @@
 package cn.cerc.db.queue;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -12,10 +13,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import cn.cerc.db.core.Datetime;
+import cn.cerc.db.core.Datetime.DateType;
 import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.core.Utils;
 import cn.cerc.db.queue.mns.MnsServer;
 import cn.cerc.db.queue.rabbitmq.RabbitQueue;
 import cn.cerc.db.queue.sqlmq.SqlmqQueue;
+import cn.cerc.db.queue.sqlmq.SqlmqQueueName;
 import cn.cerc.db.queue.sqlmq.SqlmqServer;
 import cn.cerc.db.redis.Redis;
 import cn.cerc.db.zk.ZkConfig;
@@ -42,9 +47,12 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     private static ZkConfig config;
     private boolean pushMode = false; // 默认为拉模式
     private QueueServiceEnum service;
-    private int delayTime = 60; // 单位：秒
+    private int delayTime = 60; // 失败重试时间 单位：秒
+    private Datetime showTime; // 队列延时时间 默认当前时间
     private String original;
     private String order;
+    private String groupCode;// 消息分组
+    private int executionSequence;// 执行序列号
 
     public AbstractQueue() {
         super();
@@ -91,6 +99,19 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     // 创建延迟队列消息
     public final long getDelayTime() {
         return this.delayTime;
+    }
+
+    /**
+     * 不要在单例模式下使用该方法推送延时消息！单例模式下showTime可能会被其他线程更改！
+     * 
+     * @param showTime 设置延迟时间
+     */
+    public void setShowTime(Datetime showTime) {
+        this.showTime = showTime;
+    }
+
+    public final Optional<Datetime> getShowTime() {
+        return Optional.ofNullable(this.showTime);
     }
 
     public void startService() {
@@ -147,11 +168,17 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             return MnsServer.getQueue(this.getId()).push(data);
         }
         case Sqlmq -> {
+            SqlmqQueueName.register(this.getClass());
+            if (this.executionSequence > 1)
+                this.setShowTime(new Datetime().inc(DateType.Year, 1));
+            else if (!Utils.isEmpty(this.groupCode) && this.executionSequence < 1)
+                throw new RuntimeException("执行序列号不能小于1");
             SqlmqQueue sqlQueue = SqlmqServer.getQueue(this.getId());
             sqlQueue.setDelayTime(delayTime);
+            sqlQueue.setShowTime(showTime);
             sqlQueue.setService(service);
             sqlQueue.setQueueClass(this.getClass().getSimpleName());
-            return sqlQueue.push(data, this.order);
+            return sqlQueue.push(data, this.order, this.groupCode, this.executionSequence);
         }
         case RabbitMQ -> {
             try (RabbitQueue queue = new RabbitQueue(this.getId())) {
@@ -197,7 +224,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     /**
      * 默认3秒检测一次，若某个消息耗时过高，可将此函数覆盖为空函数
      */
-    @Scheduled(initialDelay = 30000, fixedRate = 3000)
+    @Scheduled(initialDelay = 30000, fixedRate = 300)
     public void defaultCheck() {
         if (this.isPushMode())
             return;
@@ -209,7 +236,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
                 executor.submit(this);// 使用线程池
             }
             case Sqlmq -> {
-                log.debug("{} sqlmq add job {}", Thread.currentThread(), this.getClass().getSimpleName());
+                log.debug("{} sqlmq check job {}", Thread.currentThread(), this.getClass().getSimpleName());
                 this.run();
             }
             default -> {
@@ -270,6 +297,22 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             log.warn("已完成的任务数量 {}", executor.getCompletedTaskCount());
             log.warn("累计的总任务数量 {}", executor.getTaskCount());
         }
+    }
+
+    public String getGroupCode() {
+        return groupCode;
+    }
+
+    public void setGroupCode(String groupCode) {
+        this.groupCode = groupCode;
+    }
+
+    public int getExecutionSequence() {
+        return executionSequence;
+    }
+
+    public void setExecutionSequence(int executionSequence) {
+        this.executionSequence = executionSequence;
     }
 
 }

@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 
 public class Redis implements AutoCloseable {
@@ -50,7 +51,7 @@ public class Redis implements AutoCloseable {
         }
     }
 
-    public void expire(String key, final int seconds) {
+    public void expire(String key, final long seconds) {
         if (jedis != null)
             jedis.expire(key, seconds);
         else {
@@ -244,7 +245,7 @@ public class Redis implements AutoCloseable {
     /**
      * 设置key和value，且一并设置过期时间
      */
-    public void setex(final String key, final int seconds, final String value) {
+    public void setex(final String key, final long seconds, final String value) {
         if (jedis != null)
             jedis.setex(key, seconds, value);
         else {
@@ -262,7 +263,7 @@ public class Redis implements AutoCloseable {
         }
     }
 
-    public static void setValue(String key, String value, int seconds) {
+    public static void setValue(String key, String value, long seconds) {
         try (Redis redis = new Redis()) {
             redis.setex(key, seconds, value);
         }
@@ -276,5 +277,9 @@ public class Redis implements AutoCloseable {
         try (Redis redis = new Redis()) {
             redis.del(key);
         }
+    }
+    
+    public Jedis client() {
+        return this.jedis;
     }
 }
