@@ -155,15 +155,16 @@ public class MysqlConfig {
      * 创建连接池
      */
     public final HikariDataSource createDataSource() {
-        var host = site();
-        var database = database();
-        var timezone = serverTimezone();
-        if (Utils.isEmpty(host) || Utils.isEmpty(database) || Utils.isEmpty(timezone))
+        log.info("create pool to: " + site());
+        String datahost = site();
+        String database = database();
+        String timezone = serverTimezone();
+        if (Utils.isEmpty(datahost) || Utils.isEmpty(database) || Utils.isEmpty(timezone))
             throw new RuntimeException("mysql connection config is null");
 
         var jdbcUrl = String.format(
                 "jdbc:mysql://%s/%s?useSSL=false&autoReconnect=true&autoCommit=false&useUnicode=true&characterEncoding=utf8&serverTimezone=%s&zeroDateTimeBehavior=CONVERT_TO_NULL",
-                host, database, timezone);
+                datahost, database, timezone);
 
         HikariConfig config = new HikariConfig();
         config.setDriverClassName(MysqlConfig.JdbcDriver);
