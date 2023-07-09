@@ -155,7 +155,7 @@ public class MysqlConfig {
      * 创建连接池
      */
     public final HikariDataSource createDataSource() {
-        log.info("create pool to: " + site());
+        log.info("create pool to {}", site());
         String datahost = site();
         String database = database();
         String timezone = serverTimezone();
