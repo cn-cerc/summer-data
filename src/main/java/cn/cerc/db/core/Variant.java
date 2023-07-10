@@ -278,7 +278,7 @@ public class Variant {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> void writeToEntity(T entity, Field field) throws IllegalAccessException {
+    public <T, E extends Enum<E>> void writeToEntity(T entity, Field field) throws IllegalAccessException {
         if ("boolean".equals(field.getType().getName()))
             field.setBoolean(entity, this.getBoolean());
         else if ("int".equals(field.getType().getName()))
@@ -307,9 +307,10 @@ public class Variant {
             field.set(entity, this.getFastTime());
         else if (field.getType() == String.class)
             field.set(entity, this.getString());
-        else if (field.getType().isEnum())
-            field.set(entity, this.getEnum((Class<Enum<?>>) field.getType()));
-        else {
+        else if (field.getType().isEnum()) {
+            Class<E> enumType = (Class<E>) field.getType();
+            field.set(entity, this.getEnum(enumType));
+        } else {
             if (this.value() != null)
                 throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
                         this.value().getClass().getName(), field.getType().getName()));
