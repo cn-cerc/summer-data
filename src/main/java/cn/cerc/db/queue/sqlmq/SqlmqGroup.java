@@ -156,13 +156,19 @@ public class SqlmqGroup {
         queryQueue.openReadonly().disableStorage();
 
         // 获取队列名称
-        List<String> queues = queryQueue.records().stream().map(row -> row.getString("queue_class_")).toList();
+        List<String> queues = queryQueue.records()
+                .stream()
+                .map(row -> row.getString("queue_class_"))
+                .distinct()
+                .toList();
         Map<String, String> queueNameMap = SqlmqQueueName.getQueueName(queues);
         while (queryQueue.fetch()) {
             String queueClass = queryQueue.getString("queue_class_");
             queryQueue.setValue("queue_name_", queueNameMap.getOrDefault(queueClass, queueClass));
         }
 
+        if (query.getInt("done_num_") < 0)
+            query.setValue("done_num_", 0);
         queryQueue.head().copyValues(query.current());
         return queryQueue;
     }
