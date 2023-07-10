@@ -21,7 +21,7 @@ public class SqlmqGroup {
 
     public static final String TABLE = "s_sqlmq_group";
 
-    public static Optional<String> getGroupCode(IHandle handle, String project, String subItem, int total) {
+    public static Optional<String> getGroupCode(IHandle handle, String project, String subItem) {
         MysqlQuery query = new MysqlQuery(SqlmqServer.get());
         query.add("select * from %s", TABLE);
         query.addWhere().eq("project_", project).eq("sub_item_", subItem).build();
@@ -32,7 +32,7 @@ public class SqlmqGroup {
             query.setValue("group_code_", groupCode);
             query.setValue("project_", project);
             query.setValue("sub_item_", subItem);
-            query.setValue("total_", total);
+            query.setValue("total_", 1);
             query.setValue("done_num_", -1);
             query.setValue("create_user_", handle.getUserCode());
             query.setValue("create_time_", new Datetime());
@@ -42,6 +42,22 @@ public class SqlmqGroup {
             return Optional.of(groupCode);
         } else {
             return Optional.empty();
+        }
+    }
+
+    public static void updateGroupCode(String groupCode, int total) {
+        MysqlQuery query = new MysqlQuery(SqlmqServer.get());
+        query.add("select * from %s", TABLE);
+        query.addWhere().eq("group_code_", groupCode).build();
+        query.open();
+        if (query.eof())
+            throw new RuntimeException("not find message group: " + groupCode);
+
+        if (query.getInt("total_") != total) {
+            query.edit();
+            query.setValue("total_", total);
+            query.setValue("version_", query.getInt("version_") + 1);
+            query.post();
         }
     }
 

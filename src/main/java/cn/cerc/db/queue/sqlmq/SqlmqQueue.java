@@ -17,6 +17,7 @@ import cn.cerc.db.core.Utils;
 import cn.cerc.db.mysql.MysqlQuery;
 import cn.cerc.db.queue.AbstractQueue;
 import cn.cerc.db.queue.OnStringMessage;
+import cn.cerc.db.queue.QueueGroup;
 import cn.cerc.db.queue.QueueServiceEnum;
 import cn.cerc.db.redis.JedisFactory;
 import cn.cerc.db.redis.Redis;
@@ -47,18 +48,6 @@ public class SqlmqQueue implements IHandle {
         @Deprecated
         Next,
         Invalid;
-    }
-
-    /**
-     * 该方法用于设置顺序型消息队列序列1的消息总数
-     * 
-     * @param groupCode 消息分组
-     * @param total     消息总数
-     */
-    public static void setGroupFirstTotal(String groupCode, int total) {
-        try (Redis redis = new Redis()) {
-            redis.setex(groupCode + 1, TimeUnit.DAYS.toSeconds(29), String.valueOf(total));
-        }
     }
 
     public SqlmqQueue() {
@@ -142,7 +131,7 @@ public class SqlmqQueue implements IHandle {
             if (!query.eof()) {
                 var row = query.current();
                 if (onConsume instanceof AbstractQueue queue)
-                    queue.setGroupCode(row.getString("group_code_"));
+                    queue.setGroup(new QueueGroup(row.getString("group_code_"), 0));
                 consumeMessage(query, redis, row, onConsume);
             }
             // 如果最近一次没有检查到消息
