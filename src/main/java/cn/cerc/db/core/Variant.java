@@ -255,10 +255,9 @@ public class Variant {
         return this.getDatetime().toFastTime();
     }
 
-    @SuppressWarnings("rawtypes")
-    public final Enum<?> getEnum(Class<? extends Enum> clazz) {
+    public final <T extends Enum<T>> T getEnum(Class<T> clazz) {
         int tmp = getInt();
-        Enum[] list = clazz.getEnumConstants();
+        T[] list = clazz.getEnumConstants();
         if (tmp >= 0 && tmp < list.length)
             return list[tmp];
         else
