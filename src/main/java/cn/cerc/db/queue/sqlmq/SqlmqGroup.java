@@ -21,7 +21,7 @@ public class SqlmqGroup {
 
     public static final String TABLE = "s_sqlmq_group";
 
-    public static Optional<String> getGropuCode(IHandle handle, String project, String subItem, int total) {
+    public static Optional<String> getGroupCode(IHandle handle, String project, String subItem, int total) {
         MysqlQuery query = new MysqlQuery(SqlmqServer.get());
         query.add("select * from %s", TABLE);
         query.addWhere().eq("project_", project).eq("sub_item_", subItem).build();
@@ -58,8 +58,12 @@ public class SqlmqGroup {
         query.openReadonly();
         if (!query.eof()) {
             String groupCode = query.getString("group_code_");
-            boolean doneStatus = query.getInt("total_") == query.getInt("done_num_");
-            return Optional.of(new MessageGroupRecord(groupCode, doneStatus));
+            int total = query.getInt("total_");
+            int doneNum = query.getInt("done_num_");
+            if (doneNum < 0)
+                doneNum = 0;
+            boolean doneStatus = total == doneNum;
+            return Optional.of(new MessageGroupRecord(groupCode, doneStatus, total, doneNum));
         }
         return Optional.empty();
     }
@@ -152,13 +156,19 @@ public class SqlmqGroup {
         queryQueue.openReadonly().disableStorage();
 
         // 获取队列名称
-        List<String> queues = queryQueue.records().stream().map(row -> row.getString("queue_class_")).toList();
+        List<String> queues = queryQueue.records()
+                .stream()
+                .map(row -> row.getString("queue_class_"))
+                .distinct()
+                .toList();
         Map<String, String> queueNameMap = SqlmqQueueName.getQueueName(queues);
         while (queryQueue.fetch()) {
             String queueClass = queryQueue.getString("queue_class_");
             queryQueue.setValue("queue_name_", queueNameMap.getOrDefault(queueClass, queueClass));
         }
 
+        if (query.getInt("done_num_") < 0)
+            query.setValue("done_num_", 0);
         queryQueue.head().copyValues(query.current());
         return queryQueue;
     }
