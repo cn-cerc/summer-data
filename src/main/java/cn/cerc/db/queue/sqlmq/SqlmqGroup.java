@@ -53,10 +53,12 @@ public class SqlmqGroup {
         if (query.eof())
             throw new RuntimeException("not find message group: " + groupCode);
 
-        query.edit();
-        query.setValue("total_", total);
-        query.setValue("version_", query.getInt("version_") + 1);
-        query.post();
+        if (query.getInt("total_") != total) {
+            query.edit();
+            query.setValue("total_", total);
+            query.setValue("version_", query.getInt("version_") + 1);
+            query.post();
+        }
     }
 
     public static Optional<MessageGroupRecord> getLastGroupCode(String project, String subItem) {
