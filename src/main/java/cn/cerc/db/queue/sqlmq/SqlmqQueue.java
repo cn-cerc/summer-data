@@ -115,7 +115,7 @@ public class SqlmqQueue implements IHandle {
         // 最近一次新的消息进来了, 则清除休息标识
         try (Redis redis = new Redis()) {
             log.debug("有新的消息被登记，同时清除可能存在的休息标识");
-            redis.del(SqlmqQueue.class.getName());
+            redis.del(getSqlmqKey());
         }
 
         return query.getString("UID_");
@@ -124,7 +124,7 @@ public class SqlmqQueue implements IHandle {
     public void pop(int maximum, OnStringMessage onConsume) {
         try (Redis redis = new Redis()) {
             // 如果发现休息标识，则不检查
-            if (redis.get(this.getClass().getName()) != null)
+            if (redis.get(getSqlmqKey()) != null)
                 return;
         }
         log.debug("检查是否有可以被消费的消息");
@@ -147,12 +147,16 @@ public class SqlmqQueue implements IHandle {
             }
             // 如果最近一次没有检查到消息
             if (query.size() < 2) {
-                // 没有找到需要消费的消息，则休息30秒
+                // 没有找到需要消费的消息，则休息10秒
                 log.debug("没有找到待第一桌的消费，休息 10 秒");
-                redis.set(SqlmqQueue.class.getName(), new Datetime().toString());
-                redis.expire(SqlmqQueue.class.getName(), 10);
+                redis.set(getSqlmqKey(), new Datetime().toString());
+                redis.expire(getSqlmqKey(), 10);
             }
         }
+    }
+
+    private String getSqlmqKey() {
+        return String.join(".", SqlmqQueue.class.getName(), this.queue);
     }
 
     public void consumeMessage(MysqlQuery query, Redis redis, DataRow row, OnStringMessage onConsume) {
