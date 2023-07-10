@@ -59,7 +59,9 @@ public class SqlmqGroup {
         if (!query.eof()) {
             String groupCode = query.getString("group_code_");
             int total = query.getInt("total_");
-            int doneNum = query.getInt("done_num_") < 0 ? 0 : query.getInt("done_num_");
+            int doneNum = query.getInt("done_num_");
+            if (doneNum < 0)
+                doneNum = 0;
             boolean doneStatus = total == doneNum;
             return Optional.of(new MessageGroupRecord(groupCode, doneStatus, total, doneNum));
         }
