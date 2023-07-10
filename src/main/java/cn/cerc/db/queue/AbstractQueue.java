@@ -16,7 +16,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.Datetime.DateType;
 import cn.cerc.db.core.ServerConfig;
-import cn.cerc.db.core.Utils;
 import cn.cerc.db.queue.mns.MnsServer;
 import cn.cerc.db.queue.rabbitmq.RabbitQueue;
 import cn.cerc.db.queue.sqlmq.SqlmqQueue;
@@ -51,7 +50,8 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     private Datetime showTime; // 队列延时时间 默认当前时间
     private String original;
     private String order;
-    private String groupCode;// 消息分组
+
+    private QueueGroup group;
     private int executionSequence;// 执行序列号
 
     public AbstractQueue() {
@@ -169,16 +169,20 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         }
         case Sqlmq -> {
             SqlmqQueueName.register(this.getClass());
-            if (this.executionSequence > 1)
-                this.setShowTime(new Datetime().inc(DateType.Year, 1));
-            else if (!Utils.isEmpty(this.groupCode) && this.executionSequence < 1)
-                throw new RuntimeException("执行序列号不能小于1");
+            if (group != null) {
+                this.executionSequence = group.executionSequence();
+                group.incr();
+                if (this.executionSequence > 1)
+                    this.setShowTime(new Datetime().inc(DateType.Year, 1));
+                else if (this.executionSequence < 1)
+                    throw new RuntimeException("执行序列号不能小于1");
+            }
             SqlmqQueue sqlQueue = SqlmqServer.getQueue(this.getId());
             sqlQueue.setDelayTime(delayTime);
             sqlQueue.setShowTime(showTime);
             sqlQueue.setService(service);
             sqlQueue.setQueueClass(this.getClass().getSimpleName());
-            return sqlQueue.push(data, this.order, this.groupCode, this.executionSequence);
+            return sqlQueue.push(data, this.order, group != null ? group.code() : null, this.executionSequence);
         }
         case RabbitMQ -> {
             try (RabbitQueue queue = new RabbitQueue(this.getId())) {
@@ -299,20 +303,9 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         }
     }
 
-    public String getGroupCode() {
-        return groupCode;
-    }
-
-    public void setGroupCode(String groupCode) {
-        this.groupCode = groupCode;
-    }
-
-    public int getExecutionSequence() {
-        return executionSequence;
-    }
-
-    public void setExecutionSequence(int executionSequence) {
-        this.executionSequence = executionSequence;
+    public AbstractQueue setGroup(QueueGroup group) {
+        this.group = group;
+        return this;
     }
 
 }
