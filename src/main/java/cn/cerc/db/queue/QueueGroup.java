@@ -1,36 +1,60 @@
 package cn.cerc.db.queue;
 
-public class QueueGroup {
+import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import cn.cerc.db.queue.sqlmq.SqlmqGroup;
+import cn.cerc.db.redis.Redis;
+
+public class QueueGroup implements AutoCloseable {
+    private static final Logger log = LoggerFactory.getLogger(QueueGroup.class);
     private String code;
-    private int row = 1;
-    private int column = 0;
+    private int executionSequence = 1;
+    private int total = 0;
+    private int currentTotal = 0;
+    private final int firstTotal;
 
-    public QueueGroup(String code) {
+    public QueueGroup(String code, int firstTotal) {
         this.code = code;
+        this.firstTotal = firstTotal;
+        if (firstTotal == 0)
+            log.debug("consume message");
+        else if (firstTotal > 1) {
+            try (Redis redis = new Redis()) {
+                redis.setex(this.code + 1, TimeUnit.DAYS.toSeconds(29), String.valueOf(firstTotal));
+            }
+        }
     }
 
     public String code() {
         return code;
     }
 
-    public int incrRow() {
-        if (column == 0)
+    public int executionSequence() {
+        return executionSequence;
+    }
+
+    public int incr() {
+        this.total++;
+        return ++currentTotal;
+    }
+
+    public int next() {
+        if (currentTotal == 0)
             throw new RuntimeException("当前行没有列数，不得进行下一行");
-        column = 1;
-      return  ++row;
+        currentTotal = 0;
+        return ++executionSequence;
     }
 
-    public int row() {
-        return row;
+    public int total() {
+        return total;
     }
 
-    public int incrColumn() {
-        return ++column;
+    @Override
+    public void close() {
+        if (this.firstTotal > 0 && this.total > 1)
+            SqlmqGroup.updateGroupCode(this.code, this.total);
     }
-
-    public int column() {
-        return column;
-    }
-
 }
