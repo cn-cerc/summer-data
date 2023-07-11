@@ -49,18 +49,23 @@ public class SqlmqGroup {
     }
 
     public static void updateGroupCode(String groupCode, int total) {
-        MysqlQuery query = new MysqlQuery(SqlmqServer.get());
-        query.add("select * from %s", TABLE);
-        query.addWhere().eq("group_code_", groupCode).build();
-        query.open();
-        if (query.eof())
-            throw new RuntimeException("not find message group: " + groupCode);
+        try (var locker = new Locker(groupCode, LOCK_KEY)) {
+            if (!locker.lock("updateGroupCode", 1000 * 3))
+                throw new RuntimeException(String.format("group: %s is locked", groupCode));
 
-        if (query.getInt("total_") != total) {
-            query.edit();
-            query.setValue("total_", total);
-            query.setValue("version_", query.getInt("version_") + 1);
-            query.post();
+            MysqlQuery query = new MysqlQuery(SqlmqServer.get());
+            query.add("select * from %s", TABLE);
+            query.addWhere().eq("group_code_", groupCode).build();
+            query.open();
+            if (query.eof())
+                throw new RuntimeException("not find message group: " + groupCode);
+
+            if (query.getInt("total_") != total) {
+                query.edit();
+                query.setValue("total_", total);
+                query.setValue("version_", query.getInt("version_") + 1);
+                query.post();
+            }
         }
     }
 
