@@ -14,6 +14,7 @@ import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.SqlWhere;
 import cn.cerc.db.core.Utils;
 import cn.cerc.db.mysql.MysqlQuery;
+import cn.cerc.db.redis.Locker;
 
 public class SqlmqGroup {
 
@@ -47,7 +48,7 @@ public class SqlmqGroup {
 
     public static Optional<MessageGroupRecord> getLastGroupCode(String project, String subItem) {
         MysqlQuery query = new MysqlQuery(SqlmqServer.get());
-        query.add("select * from %s", TABLE);
+        query.add("select group_code_,total_,done_num_ from %s", TABLE);
         SqlWhere where = query.addWhere();
         where.eq("project_", project);
         if (!Utils.isEmpty(subItem))
@@ -69,75 +70,97 @@ public class SqlmqGroup {
     }
 
     public static void startExecute(String groupCode) {
-        MysqlQuery query = new MysqlQuery(SqlmqServer.get());
-        query.add("select * from %s", TABLE);
-        query.addWhere().eq("group_code_", groupCode).build();
-        query.open();
-        if (query.eof()) {
-            log.warn("未查询到 {} 消息组", groupCode);
-            return;
-        }
-        int total = query.getInt("total_");
-        int done = query.getInt("done_num_");
-        if (done == total)
-            throw new RuntimeException("子项目完成总数过多");
+        try (var locker = new Locker(groupCode, "")) {
+            if (!locker.lock("startExecute", 1000 * 3)) {
+                log.error("{} lock error", groupCode);
+                return;
+            }
+            MysqlQuery query = new MysqlQuery(SqlmqServer.get());
+            query.add("select * from %s", TABLE);
+            query.addWhere().eq("group_code_", groupCode).build();
+            query.open();
+            if (query.eof()) {
+                log.warn("未查询到 {} 消息组", groupCode);
+                return;
+            }
+            int total = query.getInt("total_");
+            int done = query.getInt("done_num_");
+            if (done == total)
+                throw new RuntimeException("子项目完成总数过多");
 
-        if (done == -1) {
-            query.edit();
-            query.setValue("start_time_", new Datetime());
-            query.setValue("done_num_", 0);
-            query.setValue("start_num_", 1);
-            query.setValue("version_", query.getInt("version_") + 1);
-            query.post();
-        } else {
-            query.edit();
-            query.setValue("start_num_", query.getInt("start_num_") + 1);
-            query.setValue("version_", query.getInt("version_") + 1);
-            query.post();
+            if (done == -1) {
+                query.edit();
+                query.setValue("start_time_", new Datetime());
+                query.setValue("done_num_", 0);
+                query.setValue("start_num_", 1);
+                query.setValue("version_", query.getInt("version_") + 1);
+                query.post();
+            } else {
+                query.edit();
+                query.setValue("start_num_", query.getInt("start_num_") + 1);
+                query.setValue("version_", query.getInt("version_") + 1);
+                query.post();
+            }
         }
     }
 
     public static void stopExecute(String groupCode) {
-        MysqlQuery query = new MysqlQuery(SqlmqServer.get());
-        query.add("select * from %s", TABLE);
-        query.addWhere().eq("group_code_", groupCode).build();
-        query.open();
-        if (query.eof()) {
-            log.warn("未查询到 {} 消息组", groupCode);
-            return;
+        try (var locker = new Locker(groupCode, "")) {
+            if (!locker.lock("stopExecute", 1000 * 3)) {
+                log.error("{} lock error", groupCode);
+                return;
+            }
+            MysqlQuery query = new MysqlQuery(SqlmqServer.get());
+            query.add("select * from %s", TABLE);
+            query.addWhere().eq("group_code_", groupCode).build();
+            query.open();
+            if (query.eof()) {
+                log.warn("未查询到 {} 消息组", groupCode);
+                return;
+            }
+
+            int total = query.getInt("total_");
+            int done = query.getInt("done_num_");
+            if (done != total)
+                throw new RuntimeException("子项目完成总数错误");
+
+            query.edit();
+            query.setValue("stop_time_", new Datetime());
+            query.setValue("version_", query.getInt("version_") + 1);
+            query.post();
         }
-
-        int total = query.getInt("total_");
-        int done = query.getInt("done_num_");
-        if (done != total)
-            throw new RuntimeException("子项目完成总数错误");
-
-        query.edit();
-        query.setValue("stop_time_", new Datetime());
-        query.setValue("version_", query.getInt("version_") + 1);
-        query.post();
     }
 
     public static void incrDoneNum(String groupCode) {
-        MysqlQuery query = new MysqlQuery(SqlmqServer.get());
-        query.add("select * from %s", TABLE);
-        query.addWhere().eq("group_code_", groupCode).build();
-        query.open();
-        if (query.eof()) {
-            log.warn("未查询到 {} 消息组", groupCode);
-            return;
-        }
-        int total = query.getInt("total_");
-        int done = query.getInt("done_num_");
-        if (done == total)
-            throw new RuntimeException("子项目完成次数过多");
-        if (done == -1)
-            throw new RuntimeException("请先调用 startExecute 方法开始执行");
+        try (var locker = new Locker(groupCode, "")) {
+            if (!locker.lock("incrDoneNum", 1000 * 3)) {
+                log.error("{} lock error", groupCode);
+                return;
+            }
+            MysqlQuery query = new MysqlQuery(SqlmqServer.get());
+            query.add("select * from %s", TABLE);
+            query.addWhere().eq("group_code_", groupCode).build();
+            query.open();
+            if (query.eof()) {
+                log.warn("未查询到 {} 消息组", groupCode);
+                return;
+            }
+            int total = query.getInt("total_");
+            int done = query.getInt("done_num_");
+            if (done == total)
+                throw new RuntimeException("子项目完成次数过多");
+            if (done == -1)
+                throw new RuntimeException("请先调用 startExecute 方法开始执行");
 
-        query.edit();
-        query.setValue("done_num_", done + 1);
-        query.setValue("version_", query.getInt("version_") + 1);
-        query.post();
+//            var bs = new BatchScript(SqlmqServer.get());
+//            bs.add("update %s set done_num_=done_num_+1,version_=version_+1 where UID_=%s and group_code_='%s'");
+//            bs.exec();
+
+            query.edit();
+            query.setValue("done_num_", done + 1);
+            query.setValue("version_", query.getInt("version_") + 1);
+            query.post();
+        }
     }
 
     public static DataSet findGroupInfo(IHandle handle, String groupCode) {
