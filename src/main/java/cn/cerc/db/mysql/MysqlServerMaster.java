@@ -35,7 +35,7 @@ public class MysqlServerMaster extends MysqlServer {
 
     @Override
     public final boolean isPool() {
-        return true;
+        return dataSource != null;
     }
 
     @Override

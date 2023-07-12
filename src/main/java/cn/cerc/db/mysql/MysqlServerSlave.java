@@ -35,7 +35,7 @@ public class MysqlServerSlave extends MysqlServer {
 
     @Override
     public boolean isPool() {
-        return true;
+        return dataSource != null;
     }
 
     @Override
