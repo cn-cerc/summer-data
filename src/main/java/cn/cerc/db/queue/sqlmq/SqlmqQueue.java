@@ -60,10 +60,11 @@ public class SqlmqQueue implements IHandle {
     }
 
     public String push(String message, String order) {
-        return push(message, order, "", 0);
+        return push(message, order, null, 0);
     }
 
-    public String push(String message, String order, String groupCode, int executionSequence) {
+    public String push(String message, String order, QueueGroup group, int executionSequence) {
+        String groupCode = group != null ? group.code() : "";
         MysqlQuery query = new MysqlQuery(this);
         query.add("select * from %s", s_sqlmq_info);
         if (!Utils.isEmpty(groupCode) && executionSequence == 1) {
@@ -100,6 +101,9 @@ public class SqlmqQueue implements IHandle {
         query.setValue("create_time_", new Datetime());
         query.setValue("update_time_", new Datetime());
         query.post();
+
+        if (group != null)
+            group.incr();
 
         // 最近一次新的消息进来了, 则清除休息标识
         try (Redis redis = new Redis()) {
