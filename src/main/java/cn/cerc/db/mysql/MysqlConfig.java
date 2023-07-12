@@ -85,7 +85,7 @@ public class MysqlConfig {
      * @return maxPoolSize
      */
     public int maxPoolSize() {
-        return node.getInt(getNodePath("MaxPoolSize"), 0);
+        return node.getInt(getNodePath("MaxPoolSize"), 100);
     }
 
     /**
@@ -103,7 +103,7 @@ public class MysqlConfig {
      * @return initialPoolSize
      */
     public int initialPoolSize() {
-        return node.getInt(getNodePath("InitialPoolSize"), 3);
+        return node.getInt(getNodePath("InitialPoolSize"), 30);
     }
 
     /**

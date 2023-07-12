@@ -52,7 +52,7 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
     @Override
     public final boolean execute(String sql) {
         log.debug(sql);
-        try (ServerClient client = getClient()) {
+        try (ISqlClient client = getClient()) {
             try (Statement st = client.getConnection().createStatement()) {
                 st.execute(sql);
                 return true;
