@@ -2,12 +2,11 @@ package cn.cerc.db.mysql;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import cn.cerc.db.core.ServerClient;
 
 public class MysqlClient implements ServerClient {
-    private AtomicInteger count = new AtomicInteger();
+    private int count = 0;
     private final MysqlServer mysql;
     private Connection connection;
     private boolean pool;
@@ -19,7 +18,7 @@ public class MysqlClient implements ServerClient {
 
     public MysqlClient incReferenced() {
         if (pool) {
-            count.incrementAndGet();
+            ++count;
 //            System.out.println("referenced count(create)= " + count);
         }
         return this;
@@ -28,7 +27,7 @@ public class MysqlClient implements ServerClient {
     @Override
     public void close() {
         if (pool) {
-            if (count.decrementAndGet() == 0) {
+            if (--count == 0) {
                 try {
                     if (connection != null) {
                         connection.close();

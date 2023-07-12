@@ -90,13 +90,14 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     }
 
     /**
-     * @param delayTime 设置失败重试时间，单位：秒
+     * @param delayTime 设置延迟时间，单位：秒
      */
     protected void setDelayTime(int delayTime) {
         this.delayTime = delayTime;
     }
 
-    public final int getDelayTime() {
+    // 创建延迟队列消息
+    public final long getDelayTime() {
         return this.delayTime;
     }
 
