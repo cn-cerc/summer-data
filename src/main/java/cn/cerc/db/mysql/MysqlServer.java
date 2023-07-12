@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import com.zaxxer.hikari.HikariDataSource;
 
 import cn.cerc.db.core.IHandle;
-import cn.cerc.db.core.ServerClient;
+import cn.cerc.db.core.ISqlClient;
 import cn.cerc.db.core.ISqlServer;
 
 @Component
