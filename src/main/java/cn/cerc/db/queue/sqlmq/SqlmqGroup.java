@@ -52,7 +52,6 @@ public class SqlmqGroup {
         try (var locker = new Locker(groupCode, LOCK_KEY)) {
             if (!locker.lock("updateGroupCode", 1000 * 3))
                 throw new RuntimeException(String.format("group: %s is locked", groupCode));
-
             MysqlQuery query = new MysqlQuery(SqlmqServer.get());
             query.add("select * from %s", TABLE);
             query.addWhere().eq("group_code_", groupCode).build();

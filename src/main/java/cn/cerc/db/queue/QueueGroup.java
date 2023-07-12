@@ -20,7 +20,7 @@ public class QueueGroup implements AutoCloseable {
         this.code = code;
         this.firstTotal = firstTotal;
         if (firstTotal == 0)
-            log.info("consume message");
+            log.debug("consume message");
         else if (firstTotal > 1) {
             try (Redis redis = new Redis()) {
                 redis.setex(this.code + 1, TimeUnit.DAYS.toSeconds(29), String.valueOf(firstTotal));
