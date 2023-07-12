@@ -182,9 +182,9 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             sqlQueue.setShowTime(showTime);
             sqlQueue.setService(service);
             sqlQueue.setQueueClass(this.getClass().getSimpleName());
-            String groupCode = groupOpt.map(QueueGroup::code).orElse(null);
+            String groupCode = groupOpt.map(QueueGroup::code).orElse(null);// 获取GroupCode
             String result = sqlQueue.push(data, this.order, groupCode, this.executionSequence);
-            groupOpt.ifPresent(QueueGroup::incr);
+            groupOpt.ifPresent(QueueGroup::incr);// 消息总数增加
             return result;
         }
         case RabbitMQ -> {
