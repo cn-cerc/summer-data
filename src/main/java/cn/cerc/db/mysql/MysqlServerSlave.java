@@ -16,13 +16,21 @@ public class MysqlServerSlave extends MysqlServer {
     private static HikariDataSource dataSource;
 
     static {
-        var config = MysqlConfig.getSlave();
-        dataSource = config.createDataSource();
+        MysqlConfig config = MysqlConfig.getSlave();
+        if (config.maxPoolSize() > 0)
+            dataSource = config.createDataSource();
     }
 
     @Override
     public Connection createConnection() {
-        return MysqlServer.getPoolConnection(dataSource);
+        // 使用线程池创建
+        if (isPool())
+            return MysqlServer.getPoolConnection(dataSource);
+
+        // 直接创建连接
+        if (getConnection() == null)
+            setConnection(MysqlConfig.getMaster().createConnection());
+        return this.getConnection();
     }
 
     @Override

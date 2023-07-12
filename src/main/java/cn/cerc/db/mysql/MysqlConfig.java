@@ -117,12 +117,12 @@ public class MysqlConfig {
 
     /**
      * 检查连接池中所有连接的空闲，单位为秒。注意MySQL空闲超过8小时连接自动关闭） 默认为空闲2小时即自动断开，建议其值为
-     * tomcat.session的生存时长(一般设置为120分钟) 加10分钟，即120 * 60 = 7800
+     * tomcat.session的生存时长(一般设置为120分钟) 加10分钟，即120 * 60 = 7200
      *
      * @return maxIdleTime
      */
     public int maxIdleTime() {
-        return node.getInt(getNodePath("MaxIdleTime"), 600000);
+        return node.getInt(getNodePath("MaxIdleTime"), 7200);
     }
 
     /**
@@ -155,15 +155,16 @@ public class MysqlConfig {
      * 创建连接池
      */
     public final HikariDataSource createDataSource() {
-        var host = site();
-        var database = database();
-        var timezone = serverTimezone();
-        if (Utils.isEmpty(host) || Utils.isEmpty(database) || Utils.isEmpty(timezone))
+        log.info("create pool to {}", site());
+        String datahost = site();
+        String database = database();
+        String timezone = serverTimezone();
+        if (Utils.isEmpty(datahost) || Utils.isEmpty(database) || Utils.isEmpty(timezone))
             throw new RuntimeException("mysql connection config is null");
 
         var jdbcUrl = String.format(
                 "jdbc:mysql://%s/%s?useSSL=false&autoReconnect=true&autoCommit=false&useUnicode=true&characterEncoding=utf8&serverTimezone=%s&zeroDateTimeBehavior=CONVERT_TO_NULL",
-                host, database, timezone);
+                datahost, database, timezone);
 
         HikariConfig config = new HikariConfig();
         config.setDriverClassName(MysqlConfig.JdbcDriver);
@@ -180,6 +181,24 @@ public class MysqlConfig {
         return dataSource;
     }
 
+    /**
+     * 不使用线程池直接创建连接
+     * 
+     * @return 数据库连接
+     */
+    public Connection createConnection() {
+        return this.createConnection(site(), database(), username(), password());
+    }
+
+    /**
+     * 根据传入的参数直接创建连接
+     * 
+     * @param host     数据库地址
+     * @param database 数据库名称
+     * @param username 用户名称
+     * @param password 用户密码
+     * @return 数据库连接
+     */
     public Connection createConnection(String host, String database, String username, String password) {
         var timezone = serverTimezone();
         if (Utils.isEmpty(host) || Utils.isEmpty(database) || Utils.isEmpty(timezone))
