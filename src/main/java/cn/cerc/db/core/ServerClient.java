@@ -2,7 +2,7 @@ package cn.cerc.db.core;
 
 import java.sql.Connection;
 
-public interface ISqlClient extends AutoCloseable {
+public interface ServerClient extends AutoCloseable {
 
     Connection getConnection();
 
