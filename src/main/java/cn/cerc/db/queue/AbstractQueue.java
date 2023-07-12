@@ -169,9 +169,9 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
         }
         case Sqlmq -> {
             SqlmqQueueName.register(this.getClass());
-            if (group != null) {
+            Optional<QueueGroup> groupOpt = Optional.ofNullable(group);
+            if (groupOpt.isPresent()) {
                 this.executionSequence = group.executionSequence();
-                group.incr();
                 if (this.executionSequence > 1)
                     this.setShowTime(new Datetime().inc(DateType.Year, 1));
                 else if (this.executionSequence < 1)
@@ -182,7 +182,10 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             sqlQueue.setShowTime(showTime);
             sqlQueue.setService(service);
             sqlQueue.setQueueClass(this.getClass().getSimpleName());
-            return sqlQueue.push(data, this.order, group != null ? group.code() : null, this.executionSequence);
+            String groupCode = groupOpt.map(QueueGroup::code).orElse(null);
+            String result = sqlQueue.push(data, this.order, groupCode, this.executionSequence);
+            groupOpt.ifPresent(QueueGroup::incr);
+            return result;
         }
         case RabbitMQ -> {
             try (RabbitQueue queue = new RabbitQueue(this.getId())) {
