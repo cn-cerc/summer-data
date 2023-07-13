@@ -178,6 +178,32 @@ public class SqlmqGroup {
         }
     }
 
+    public static void updatePlanTime(String groupCode) {
+        MysqlQuery queryQueue = new MysqlQuery(SqlmqServer.get());
+        queryQueue.add("select plan_time_ from %s", SqlmqQueue.s_sqlmq_info);
+        queryQueue.addWhere().eq("group_code_", groupCode).build();
+        queryQueue.openReadonly().disableStorage();
+        int planTime = queryQueue.records().stream().mapToInt(row -> row.getInt("plan_time_")).sum();
+
+        try (var locker = new Locker(groupCode, LOCK_KEY)) {
+            if (!locker.lock("updatePlanTime", 1000 * 3))
+                throw new RuntimeException(String.format("group: %s is locked", groupCode));
+
+            MysqlQuery query = new MysqlQuery(SqlmqServer.get());
+            query.add("select * from %s", TABLE);
+            query.addWhere().eq("group_code_", groupCode).build();
+            query.open();
+            if (query.eof()) {
+                log.warn("未查询到 {} 消息组", groupCode);
+                return;
+            }
+            query.edit();
+            query.setValue("plan_time_", planTime);
+            query.setValue("version_", query.getInt("version_") + 1);
+            query.post();
+        }
+    }
+
     public static DataSet findGroupInfo(IHandle handle, String groupCode) {
         MysqlQuery query = new MysqlQuery(SqlmqServer.get());
         query.add("select * from %s", TABLE);
