@@ -221,8 +221,8 @@ public class SqlmqQueue implements IHandle {
                 SqlmqGroup.stopExecute(groupCode);
             if (queryNext.size() > 1)
                 redis.setex(groupCode + nextSequence, TimeUnit.DAYS.toSeconds(29), String.valueOf(queryNext.size()));
-            // 最近一次新的消息进来了, 则清除休息标识
-            log.debug("有新的消息被登记，同时清除可能存在的休息标识");
+            // 开始消费下一组消息清除休息标识
+            log.debug("开始消费下一组消息，同时清除可能存在的休息标识");
             while (queryNext.fetch()) {
                 queryNext.edit();
                 queryNext.setValue("show_time_", new Datetime());
