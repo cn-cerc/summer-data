@@ -135,9 +135,13 @@ public class SqlmqQueue implements IHandle {
         try (Redis redis = new Redis()) {
             if (!query.eof()) {
                 var row = query.current();
-                if (onConsume instanceof AbstractQueue queue)
+                if (onConsume instanceof AbstractQueue queue) {
                     queue.setGroup(new QueueGroup(row.getString("group_code_"), 0));
+                    this.setQueueClass(queue.getClass().getSimpleName());
+                }
+                long startTime = System.currentTimeMillis();
                 consumeMessage(query, redis, row, onConsume);
+                SqlmqQueueName.updateConsumerTime(queueClass, System.currentTimeMillis() - startTime);
             }
             // 如果最近一次没有检查到消息
             if (query.size() < 2) {
@@ -161,7 +165,6 @@ public class SqlmqQueue implements IHandle {
         if (redis.setnx(lockKey, new Datetime().toString()) == 0)
             return;
         redis.expire(lockKey, delayTime + 5);
-        long startTime = System.currentTimeMillis();
         try {
             String content = "";
             boolean result = false;
@@ -235,7 +238,6 @@ public class SqlmqQueue implements IHandle {
         } finally {
             redis.del(lockKey);
         }
-        SqlmqQueueName.updateConsumerTime(queueClass, System.currentTimeMillis() - startTime);
     }
 
     private void addLog(long queueId, AckEnum ack, String content) {

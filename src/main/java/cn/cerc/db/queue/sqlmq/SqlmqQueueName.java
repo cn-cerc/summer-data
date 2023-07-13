@@ -110,8 +110,10 @@ public class SqlmqQueueName {
     public static long getQueueAvgUsedTime(String queueClass) {
         MysqlQuery query = new MysqlQuery(SqlmqServer.get());
         query.add("select consumer_times_,consumer_count_ from %s", TABLE);
-        query.addWhere().in("queue_class_", queueClass).build();
+        query.addWhere().eq("queue_class_", queueClass).build();
         query.openReadonly();
+        if (query.getInt("consumer_count_") == 0)
+            return 0;
         return query.getLong("consumer_times_") / query.getInt("consumer_count_");
     }
 
