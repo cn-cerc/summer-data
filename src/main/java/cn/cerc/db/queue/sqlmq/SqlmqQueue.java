@@ -107,8 +107,8 @@ public class SqlmqQueue implements IHandle {
 
         // 最近一次新的消息进来了, 则清除休息标识
         try (Redis redis = new Redis()) {
-            log.debug("有新的消息被登记，同时清除可能存在的休息标识");
-            redis.del(getSqlmqKey());
+            log.debug("{} 有新的消息被登记，同时清除可能存在的休息标识", this.queue);
+            redis.del(getSleepKey(this.queue));
         }
 
         return query.getString("UID_");
@@ -117,7 +117,7 @@ public class SqlmqQueue implements IHandle {
     public void pop(int maximum, OnStringMessage onConsume) {
         try (Redis redis = new Redis()) {
             // 如果发现休息标识，则不检查
-            if (redis.get(getSqlmqKey()) != null)
+            if (redis.get(getSleepKey(this.queue)) != null)
                 return;
         }
         log.debug("检查是否有可以被消费的消息");
@@ -141,15 +141,16 @@ public class SqlmqQueue implements IHandle {
             // 如果最近一次没有检查到消息
             if (query.size() < 2) {
                 // 没有找到需要消费的消息，则休息10秒
-                log.debug("没有找到待第一桌的消费，休息 10 秒");
-                redis.set(getSqlmqKey(), new Datetime().toString());
-                redis.expire(getSqlmqKey(), 10);
+                log.debug("{} 没有找到待消费的消息，休息 10 秒", this.queue);
+                String sleepKey = getSleepKey(this.queue);
+                redis.set(sleepKey, new Datetime().toString());
+                redis.expire(sleepKey, 10);
             }
         }
     }
 
-    private String getSqlmqKey() {
-        return String.join(".", SqlmqQueue.class.getName(), this.queue);
+    private String getSleepKey(String queue) {
+        return String.join(".", SqlmqQueue.class.getName(), queue);
     }
 
     public void consumeMessage(MysqlQuery query, Redis redis, DataRow row, OnStringMessage onConsume) {
@@ -220,11 +221,14 @@ public class SqlmqQueue implements IHandle {
                 SqlmqGroup.stopExecute(groupCode);
             if (queryNext.size() > 1)
                 redis.setex(groupCode + nextSequence, TimeUnit.DAYS.toSeconds(29), String.valueOf(queryNext.size()));
+            // 最近一次新的消息进来了, 则清除休息标识
+            log.debug("有新的消息被登记，同时清除可能存在的休息标识");
             while (queryNext.fetch()) {
                 queryNext.edit();
                 queryNext.setValue("show_time_", new Datetime());
                 queryNext.setValue("update_time_", new Datetime());
                 queryNext.post();
+                redis.del(getSleepKey(queryNext.getString("queue_")));
             }
         } finally {
             redis.del(lockKey);
