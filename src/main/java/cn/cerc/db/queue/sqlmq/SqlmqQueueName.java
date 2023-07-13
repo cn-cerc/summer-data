@@ -112,6 +112,8 @@ public class SqlmqQueueName {
         query.add("select consumer_times_,consumer_count_ from %s", TABLE);
         query.addWhere().eq("queue_class_", queueClass).build();
         query.openReadonly();
+        if (query.eof())
+            return 0;
         if (query.getInt("consumer_count_") == 0)
             return 0;
         return query.getLong("consumer_times_") / query.getInt("consumer_count_");
