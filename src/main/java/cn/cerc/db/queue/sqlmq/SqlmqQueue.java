@@ -90,6 +90,7 @@ public class SqlmqQueue implements IHandle {
         query.setValue("consume_times_", 0);
         query.setValue("group_code_", groupCode);
         query.setValue("execution_sequence_", executionSequence);
+        query.setValue("plan_time_", SqlmqQueueName.getQueueAvgUsedTime(this.queueClass));
         query.setValue("status_", StatusEnum.Waiting.ordinal());
         query.setValue("delayTime_", delayTime);
         query.setValue("service_", service.ordinal());
@@ -160,6 +161,7 @@ public class SqlmqQueue implements IHandle {
         if (redis.setnx(lockKey, new Datetime().toString()) == 0)
             return;
         redis.expire(lockKey, delayTime + 5);
+        long startTime = System.currentTimeMillis();
         try {
             String content = "";
             boolean result = false;
@@ -233,6 +235,7 @@ public class SqlmqQueue implements IHandle {
         } finally {
             redis.del(lockKey);
         }
+        SqlmqQueueName.updateConsumerTime(queueClass, System.currentTimeMillis() - startTime);
     }
 
     private void addLog(long queueId, AckEnum ack, String content) {
