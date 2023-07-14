@@ -6,14 +6,14 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.zaxxer.hikari.HikariDataSource;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MysqlServerMaster extends MysqlServer {
     // IHandle中识别码
     public static final String SessionId = "sqlSession";
-    private static ComboPooledDataSource dataSource;
+    private static HikariDataSource dataSource;
 
     static {
         MysqlConfig config = MysqlConfig.getMaster();
@@ -23,13 +23,14 @@ public class MysqlServerMaster extends MysqlServer {
 
     @Override
     public Connection createConnection() {
-        if (isPool()) // 使用线程池创建
+        // 使用线程池创建
+        if (isPool())
             return MysqlServer.getPoolConnection(dataSource);
 
-        // 不使用线程池直接创建
-        if (getConnection() == null) 
+        // 直接创建连接
+        if (getConnection() == null)
             setConnection(MysqlConfig.getMaster().createConnection());
-        return getConnection();
+        return this.getConnection();
     }
 
     @Override
