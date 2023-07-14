@@ -56,5 +56,6 @@ public class QueueGroup implements AutoCloseable {
     public void close() {
         if (this.firstTotal > 0 && this.total > 1)
             SqlmqGroup.updateGroupCode(this.code, this.total);
+        SqlmqGroup.updatePlanTime(this.code);
     }
 }

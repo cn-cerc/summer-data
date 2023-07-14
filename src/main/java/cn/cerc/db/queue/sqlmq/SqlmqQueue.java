@@ -82,6 +82,7 @@ public class SqlmqQueue implements IHandle {
             query.open();
         }
 
+        long planTime = SqlmqQueueName.getQueueAvgUsedTime(this.queueClass);
         query.append();
         query.setValue("queue_", this.queue);
         query.setValue("order_", order);
@@ -90,6 +91,7 @@ public class SqlmqQueue implements IHandle {
         query.setValue("consume_times_", 0);
         query.setValue("group_code_", groupCode);
         query.setValue("execution_sequence_", executionSequence);
+        query.setValue("plan_time_", planTime);
         query.setValue("status_", StatusEnum.Waiting.ordinal());
         query.setValue("delayTime_", delayTime);
         query.setValue("service_", service.ordinal());
@@ -136,7 +138,10 @@ public class SqlmqQueue implements IHandle {
                 var row = query.current();
                 if (onConsume instanceof AbstractQueue queue)
                     queue.setGroup(new QueueGroup(row.getString("group_code_"), 0));
+                long startTime = System.currentTimeMillis();
                 consumeMessage(query, redis, row, onConsume);
+                SqlmqQueueName.updateConsumerTime(onConsume.getClass().getSimpleName(),
+                        System.currentTimeMillis() - startTime);
             }
             // 如果最近一次没有检查到消息
             if (query.size() < 2) {
