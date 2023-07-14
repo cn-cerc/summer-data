@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 import com.zaxxer.hikari.HikariDataSource;
 
 import cn.cerc.db.core.IHandle;
-import cn.cerc.db.core.ServerClient;
 import cn.cerc.db.core.ISqlServer;
+import cn.cerc.db.core.ServerClient;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -36,12 +36,8 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
 
     @Override
     public final MysqlClient getClient() {
-        if (client == null) {
-            synchronized (this) {
-                if (client == null)
-                    client = new MysqlClient(this, this.isPool());
-            }
-        }
+        if (client == null)
+            client = new MysqlClient(this, this.isPool());
         return client.incReferenced();
     }
 
