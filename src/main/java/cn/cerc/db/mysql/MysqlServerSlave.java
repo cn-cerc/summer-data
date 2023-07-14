@@ -29,7 +29,7 @@ public class MysqlServerSlave extends MysqlServer {
 
         // 直接创建连接
         if (getConnection() == null)
-            setConnection(MysqlConfig.getMaster().createConnection());
+            setConnection(MysqlConfig.getSlave().createConnection());
         return this.getConnection();
     }
 
