@@ -325,7 +325,7 @@ public class SqlOperator implements IHandle {
 
             if (ps.executeUpdate() != 1) {
                 RuntimeException e = new RuntimeException(res.getString(1, "当前记录已被其它用户修改或不存在，更新失败"));
-                log.error(bs.getPrepareCommand(), e);
+                log.error("sqlText {} , ", bs.getPrepareCommand(), e);
                 throw e;
             }
             return true;
