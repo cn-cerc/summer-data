@@ -43,12 +43,11 @@ public class MysqlClient implements ServerClient {
 
     @Override
     public final Connection getConnection() {
-        if (connection == null) {
-            synchronized (this) {
-                if (connection == null)
-                    this.connection = mysql.createConnection();
-            }
+        if (!mysql.isPool()) {
+            pool = false;
+            count = 0;
         }
+        this.connection = mysql.createConnection();
         return connection;
     }
 
