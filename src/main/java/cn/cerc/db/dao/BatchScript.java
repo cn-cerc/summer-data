@@ -78,8 +78,9 @@ public class BatchScript implements IHandle {
         ISqlServer server = getSqlServer();
         for (String item : tmp) {
             if (!"".equals(item.trim())) {
-                log.debug(item.trim() + ";");
-                server.execute(item.trim());
+                String sql = Utils.safeString(item.trim()).replace("\\", "\\\\");
+                log.debug(sql + ";");
+                server.execute(sql);
             }
         }
         return this;
