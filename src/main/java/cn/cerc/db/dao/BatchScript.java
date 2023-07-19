@@ -1,5 +1,8 @@
 package cn.cerc.db.dao;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +51,15 @@ public class BatchScript implements IHandle {
     }
 
     public BatchScript add(String format, Object... args) {
-        builder.append(String.format(format.trim(), args) + " ");
+        List<Object> items = new ArrayList<>();
+        for (Object arg : args) {
+            if (arg instanceof String) {
+                items.add(Utils.safeString((String) arg));
+            } else {
+                items.add(arg);
+            }
+        }
+        builder.append(String.format(format.trim(), items.toArray()) + " ");
         if (newLine) {
             builder.append(Utils.vbCrLf);
         }
@@ -78,8 +89,9 @@ public class BatchScript implements IHandle {
         ISqlServer server = getSqlServer();
         for (String item : tmp) {
             if (!"".equals(item.trim())) {
-                log.debug(item.trim() + ";");
-                server.execute(item.trim());
+                String sql = item.trim().replace("\\", "\\\\");
+                log.debug(sql + ";");
+                server.execute(sql);
             }
         }
         return this;
