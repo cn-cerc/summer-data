@@ -6,7 +6,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,7 +72,7 @@ public class MongoOSS {
             Optional<String> childUrl = getChildUrl(url);
             if (childUrl.isPresent())
                 url = childUrl.get();
-            url = Utils.decode(url, StandardCharsets.UTF_8.name());
+            url = Utils.decode(url, StandardCharsets.UTF_8);
             return Optional.of(upload(url, readStream.get(), null));
         } else
             return Optional.empty();
