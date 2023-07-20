@@ -95,22 +95,6 @@ public class Utils {
     }
 
     /**
-     * 按照指定的编码格式进行url解码，建议使用jdk标准的枚举类型
-     *
-     * @param value 原始字符串
-     * @param enc   编码格式 StandardCharsets.UTF_8.name()
-     * @return 解码后的字符串
-     */
-    @Deprecated
-    public static String decode(String value, String enc) {
-        try {
-            return URLDecoder.decode(value, enc);
-        } catch (UnsupportedEncodingException ex) {
-            throw new RuntimeException(ex.getCause());
-        }
-    }
-
-    /**
      * 按照指定的编码格式进行url解码
      *
      * @param value 原始字符串
