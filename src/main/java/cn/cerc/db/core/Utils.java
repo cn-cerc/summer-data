@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.text.DecimalFormat;
@@ -94,18 +95,30 @@ public class Utils {
     }
 
     /**
-     * 按照指定的编码格式进行url解码
+     * 按照指定的编码格式进行url解码，建议使用jdk标准的枚举类型
      *
      * @param value 原始字符串
      * @param enc   编码格式 StandardCharsets.UTF_8.name()
      * @return 解码后的字符串
      */
+    @Deprecated
     public static String decode(String value, String enc) {
         try {
             return URLDecoder.decode(value, enc);
         } catch (UnsupportedEncodingException ex) {
             throw new RuntimeException(ex.getCause());
         }
+    }
+
+    /**
+     * 按照指定的编码格式进行url解码
+     *
+     * @param value 原始字符串
+     * @param enc   编码格式 StandardCharsets.UTF_8
+     * @return 解码后的字符串
+     */
+    public static String decode(String value, Charset charset) {
+        return URLDecoder.decode(value, charset);
     }
 
     public static String encode(Object obj) {
