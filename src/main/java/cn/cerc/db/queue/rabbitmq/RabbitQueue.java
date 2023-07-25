@@ -165,6 +165,16 @@ public class RabbitQueue implements AutoCloseable {
         this.maximum = maximum;
     }
 
+    public int getMessageCount() {
+        int value = 0;
+        try {
+            value = this.channel.queueDeclare().getMessageCount();
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+        return value;
+    }
+
     @Override
     public void close() {
         if (channel != null) {
