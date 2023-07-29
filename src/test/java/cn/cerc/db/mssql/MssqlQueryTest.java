@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
-import cn.cerc.db.core.StubSession;
+import cn.cerc.db.core.StubDatabaseSession;
 
 public class MssqlQueryTest implements IHandle {
 
@@ -14,7 +14,7 @@ public class MssqlQueryTest implements IHandle {
 
     @Before
     public void setUP() {
-        session = new StubSession();
+        session = new StubDatabaseSession();
     }
 
     @Test

@@ -8,7 +8,7 @@ import com.mongodb.BasicDBObject;
 
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
-import cn.cerc.db.core.StubSession;
+import cn.cerc.db.core.StubDatabaseSession;
 
 public class MongoQueryTest_addWhereFields implements IHandle {
     private ISession session;
@@ -16,7 +16,7 @@ public class MongoQueryTest_addWhereFields implements IHandle {
 
     @Before
     public void setUp() throws Exception {
-        session = new StubSession();
+        session = new StubDatabaseSession();
         ds = new MongoQuery(this);
     }
 

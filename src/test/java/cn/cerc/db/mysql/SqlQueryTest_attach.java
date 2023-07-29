@@ -7,7 +7,7 @@ import org.junit.Test;
 import cn.cerc.db.core.DataRow;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
-import cn.cerc.db.core.StubSession;
+import cn.cerc.db.core.StubDatabaseSession;
 
 public class SqlQueryTest_attach implements IHandle {
     private MysqlQuery ds;
@@ -15,7 +15,7 @@ public class SqlQueryTest_attach implements IHandle {
 
     @Before
     public void setUp() {
-        session = new StubSession();
+        session = new StubDatabaseSession();
         ds = new MysqlQuery(this);
     }
 

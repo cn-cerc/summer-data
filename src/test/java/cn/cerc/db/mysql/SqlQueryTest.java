@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import cn.cerc.db.core.BigdataException;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
-import cn.cerc.db.core.StubSession;
+import cn.cerc.db.core.StubDatabaseSession;
 
 public class SqlQueryTest implements IHandle {
     private static final Logger log = LoggerFactory.getLogger(SqlQueryTest.class);
@@ -22,7 +22,7 @@ public class SqlQueryTest implements IHandle {
 
     @Before
     public void setUp() {
-        session = new StubSession();
+        session = new StubDatabaseSession();
         ds = new MysqlQuery(this);
         userInfo = "Account";
     }

@@ -6,16 +6,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cn.cerc.db.core.Handle;
-import cn.cerc.db.core.StubSession;
+import cn.cerc.db.core.StubDatabaseSession;
 import cn.cerc.db.core.Utils;
 
 public class BatchScriptTest {
-    private StubSession handle;
+    private StubDatabaseSession handle;
     private BatchScript bs;
 
     @Before
     public void setUp() {
-        handle = new StubSession();
+        handle = new StubDatabaseSession();
     }
 
     @Test

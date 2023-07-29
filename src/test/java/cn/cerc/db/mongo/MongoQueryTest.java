@@ -7,7 +7,7 @@ import org.junit.Test;
 import cn.cerc.db.core.DataSet;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
-import cn.cerc.db.core.StubSession;
+import cn.cerc.db.core.StubDatabaseSession;
 
 public class MongoQueryTest implements IHandle {
     private ISession session;
@@ -15,7 +15,7 @@ public class MongoQueryTest implements IHandle {
 
     @Before
     public void setUp() throws Exception {
-        session = new StubSession();
+        session = new StubDatabaseSession();
         ds = new MongoQuery(this);
     }
 

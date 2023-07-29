@@ -2,7 +2,7 @@ package cn.cerc.db.mysql;
 
 import cn.cerc.db.core.Handle;
 import cn.cerc.db.core.IHandle;
-import cn.cerc.db.core.StubSession;
+import cn.cerc.db.core.StubDatabaseSession;
 
 public class MysqlConnectionTest {
 
@@ -10,7 +10,7 @@ public class MysqlConnectionTest {
         Runnable task = new Runnable() {
             @Override
             public void run() {
-                IHandle handle = new Handle(new StubSession());
+                IHandle handle = new Handle(new StubDatabaseSession());
                 try (Transaction tx = new Transaction(handle)) {
                     MysqlQuery ds = new MysqlQuery(handle);
                     ds.add("select * from sql_test");
@@ -42,7 +42,7 @@ public class MysqlConnectionTest {
             }
         };
 //        new Thread(task).start();
-        new Handle(new StubSession()).getMysql().execute("DELETE FROM sql_test");
+        new Handle(new StubDatabaseSession()).getMysql().execute("DELETE FROM sql_test");
 
         for (int i = 0; i < 20; i++) {
             new Thread(task).start();

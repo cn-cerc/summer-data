@@ -7,14 +7,14 @@ import cn.cerc.db.mssql.MssqlServer;
 import cn.cerc.db.mysql.MysqlServerMaster;
 import cn.cerc.db.oss.OssConnection;
 
-public class StubSession implements ISession {
+public class StubDatabaseSession implements ISession {
     private MysqlServerMaster mysql;
     private MssqlServer mssql;
 //    private MongoConfig mgConn;
 //    private QueueServer queConn;
     private OssConnection ossConn;
 
-    public StubSession() {
+    public StubDatabaseSession() {
         mysql = new MysqlServerMaster();
         mssql = new MssqlServer();
 //        mgConn = new MongoConfig();
