@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
-import cn.cerc.db.core.StubSession;
+import cn.cerc.db.core.StubDatabaseSession;
 
 public class SqlQueryTest_save implements IHandle {
     private ISession session;
@@ -16,7 +16,7 @@ public class SqlQueryTest_save implements IHandle {
 
     @Before
     public void setUp() {
-        session = new StubSession();
+        session = new StubDatabaseSession();
         conn = this.getMysql();
     }
 

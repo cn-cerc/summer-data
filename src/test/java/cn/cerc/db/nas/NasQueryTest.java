@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
-import cn.cerc.db.core.StubSession;
+import cn.cerc.db.core.StubDatabaseSession;
 
 public class NasQueryTest implements IHandle {
     private static final Logger log = LoggerFactory.getLogger(NasQueryTest.class);
@@ -18,7 +18,7 @@ public class NasQueryTest implements IHandle {
 
     @Before
     public void setUp() {
-        session = new StubSession();
+        session = new StubDatabaseSession();
         ds = new NasQuery(this);
     }
 

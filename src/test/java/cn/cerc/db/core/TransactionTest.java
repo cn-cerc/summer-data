@@ -15,7 +15,7 @@ public class TransactionTest implements IHandle {
 
     @Before
     public void setUp() {
-        session = new StubSession();
+        session = new StubDatabaseSession();
         conn = this.getMysql();
     }
 
