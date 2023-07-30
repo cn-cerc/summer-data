@@ -2,6 +2,7 @@ package cn.cerc.db.core;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -32,6 +33,8 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     public FieldDefs(Class<?> clazz) {
         super();
         for (Field field : clazz.getDeclaredFields()) {
+            if(Modifier.isStatic(field.getModifiers()))
+                continue;
             if (field.getDeclaredAnnotation(Id.class) != null || field.getDeclaredAnnotation(Column.class) != null) {
                 String fieldCode = field.getName();
                 FieldMeta meta = this.add(fieldCode, FieldKind.Storage);
@@ -150,6 +153,8 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         if (names.length > 0)
             items = Arrays.asList(names);
         for (Field field : clazz.getDeclaredFields()) {
+            if(Modifier.isStatic(field.getModifiers()))
+                continue;
             if (items != null && items.indexOf(field.getName()) == -1)
                 continue;
             FieldMeta meta = this.get(field.getName());

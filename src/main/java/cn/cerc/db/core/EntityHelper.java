@@ -2,6 +2,7 @@ package cn.cerc.db.core;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -55,6 +56,8 @@ public class EntityHelper<T> {
 
         // 查找特殊字段
         for (Field field : clazz.getDeclaredFields()) {
+            if(Modifier.isStatic(field.getModifiers()))
+                continue;
             Id id = field.getDeclaredAnnotation(Id.class);
             Column column = field.getDeclaredAnnotation(Column.class);
             Version version = field.getDeclaredAnnotation(Version.class);

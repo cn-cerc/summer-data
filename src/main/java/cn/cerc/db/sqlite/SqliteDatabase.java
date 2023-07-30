@@ -1,6 +1,7 @@
 package cn.cerc.db.sqlite;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
@@ -48,6 +49,8 @@ public class SqliteDatabase implements ISqlDatabase {
         sb.append("create table ").append(table()).append("(");
         int count = 0;
         for (Field field : clazz.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers()))
+                continue;
             if (count++ > 0)
                 sb.append(",");
             sb.append("\n");

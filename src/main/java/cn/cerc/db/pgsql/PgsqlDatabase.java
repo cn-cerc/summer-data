@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -310,6 +311,8 @@ public class PgsqlDatabase implements IHandle, ISqlDatabase {
         sb.append("create table ").append(table()).append(" (");
         int count = 0;
         for (Field field : clazz.getDeclaredFields()) {
+            if(Modifier.isStatic(field.getModifiers()))
+                continue;
             if (count++ > 0)
                 sb.append(",");
             sb.append("\n");
