@@ -1,6 +1,7 @@
 package cn.cerc.db.mysql;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -8,6 +9,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.Describe;
@@ -20,6 +24,7 @@ import cn.cerc.db.core.ISqlDatabase;
 import cn.cerc.db.core.Utils;
 
 public class MysqlDatabase implements IHandle, ISqlDatabase {
+    private static final Logger log = LoggerFactory.getLogger(MysqlDatabase.class);
     public static final String DefaultOID = "UID_";
     private Class<? extends EntityImpl> clazz;
     private EntityHelper<? extends EntityImpl> helper;
@@ -48,8 +53,10 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
         MysqlServerMaster server = this.getMysql();
         List<String> list = server.tables(this);
         String table = table();
-        if (!list.contains(table.toLowerCase()))
+        if (!list.contains(table.toLowerCase())) {
             server.execute(getCreateSql());
+            log.info("{} 数据表创建成功", table());
+        }
         return true;
     }
 
@@ -58,6 +65,8 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
         sb.append("create table ").append(table()).append(" (");
         int count = 0;
         for (Field field : clazz.getDeclaredFields()) {
+            if(Modifier.isStatic(field.getModifiers()))
+                continue;
             if (count++ > 0)
                 sb.append(",");
             sb.append("\n");
@@ -86,6 +95,8 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
         } else {
             String fields = "";
             for (Field field : clazz.getDeclaredFields()) {
+                if(Modifier.isStatic(field.getModifiers()))
+                    continue;
                 Id id = field.getDeclaredAnnotation(Id.class);
                 if (id != null) {
                     fields = fields + field.getName() + ",";
@@ -107,11 +118,14 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
         Column column = field.getDeclaredAnnotation(Column.class);
         if (field.getType() == String.class) {
             int size = 255;
-            if (column != null)
+            if (column != null) {
                 size = column.length();
-            if (!Utils.isEmpty(column.columnDefinition()) && "text".equals(column.columnDefinition())) {
-                sb.append("text");
+                if (!Utils.isEmpty(column.columnDefinition()) && "text".equals(column.columnDefinition()))
+                    sb.append("text");
+                else
+                    sb.append("varchar(").append(size).append(")");
             } else {
+                log.warn("%s 未定义字段大小，改为默认大小 {}", field.getName(), size);
                 sb.append("varchar(").append(size).append(")");
             }
         } else if (field.getType().isEnum() || field.getType() == int.class || field.getType() == Integer.class

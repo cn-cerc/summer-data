@@ -469,6 +469,10 @@ public class DataRow implements Serializable, IRecord {
         if (this.fields().size() > items.size()) {
             log.warn("database fields.size > entity {} properties.size", entity.getClass().getName());
         } else if (this.fields().size() < items.size()) {
+            for (var field : items.keySet()) {
+                if (!fields.exists(field))
+                    log.error("数据表 {} 缺少字段 {}", helper.table(), field);
+            }
             throw new RuntimeException(String.format("database fields.size %d < %s properties.size %d ",
                     this.fields().size(), entity.getClass().getName(), items.size()));
         }

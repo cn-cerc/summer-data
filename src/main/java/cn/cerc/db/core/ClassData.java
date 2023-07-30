@@ -88,6 +88,8 @@ public class ClassData {
     private Map<String, Field> loadFields() {
         Map<String, Field> fields = new LinkedHashMap<>();
         for (Field field : clazz.getDeclaredFields()) {
+            if(Modifier.isStatic(field.getModifiers()))
+                continue;
             Column column = null;
             for (Annotation item : field.getAnnotations()) {
                 if (item instanceof Column) {
