@@ -326,9 +326,12 @@ public class DataRow implements Serializable, IRecord {
 //    }
 
     public DataRow setJson(String jsonStr) {
+        String temp = jsonStr;
+        if (Utils.isEmpty(jsonStr))
+            temp = "{}";
         this.clear();
         Gson gson = new GsonBuilder().serializeNulls().create();
-        items = gson.fromJson(jsonStr, new TypeToken<Map<String, Object>>() {
+        items = gson.fromJson(temp, new TypeToken<Map<String, Object>>() {
         }.getType());
         for (String key : items.keySet()) {
             this.addField(key);
