@@ -388,7 +388,7 @@ public class SqlQuery extends DataSet implements IHandle {
         }
         case Testsql: {
             if (server == null)
-                server = TestsqlServer.get();
+                server = TestsqlServer.build();
             return server;
         }
         default:

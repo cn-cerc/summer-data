@@ -16,17 +16,21 @@ public class TestsqlServer implements ISqlServer {
     private static TestsqlServer server;
     private static boolean Enabled;
 
-    public static TestsqlServer get() {
+    public static TestsqlServer build() {
+        TestsqlServer.Enabled = true;
         if (server == null)
             server = new TestsqlServer();
         return server;
     }
 
-    public static TestsqlServer get(boolean enabled) {
-        TestsqlServer.Enabled = enabled;
-        if (server == null)
-            server = new TestsqlServer();
-        return server;
+    /**
+     * 请改使用 build
+     * 
+     * @param b
+     * @return
+     */
+    public static TestsqlServer get(boolean value) {
+        return build();
     }
 
     @Override

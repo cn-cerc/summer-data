@@ -17,7 +17,7 @@ public class TestsqlOperator extends SqlOperator {
 
     @Override
     public int select(DataSet dataSet, Connection connection, String sql) throws SQLException {
-        TestsqlServer.get().select(dataSet, this.table(), sql);
+        TestsqlServer.build().select(dataSet, this.table(), sql);
         return dataSet.size();
     }
 
