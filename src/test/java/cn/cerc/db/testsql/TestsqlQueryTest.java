@@ -10,7 +10,7 @@ public class TestsqlQueryTest {
 
     @Test
     public void test_select() {
-        var db = TestsqlServer.get();
+        var db = TestsqlServer.build();
         db.onSelect("sss", (query, sql) -> {
             query.setJson("""
                     {"body":[["UID_","code_"],[1,"001"],[2,"002"],[3,"003"]]}""");
@@ -24,7 +24,7 @@ public class TestsqlQueryTest {
 
     @Test
     public void test_delete() {
-        var db = TestsqlServer.get();
+        var db = TestsqlServer.build();
         db.onSelect("sss", (query, sql) -> {
             query.setJson("""
                     {"body":[["UID_","code_"],[1,"001"],[2,"002"],[3,"003"]]}""");
@@ -41,7 +41,7 @@ public class TestsqlQueryTest {
 
     @Test
     public void test_insert() {
-        var db = TestsqlServer.get();
+        var db = TestsqlServer.build();
         db.onSelect("sss", (query, sql) -> {
             query.setJson("""
                     {"body":[["UID_","code_"],[1,"001"],[2,"002"],[3,"003"]]}""");
@@ -59,7 +59,7 @@ public class TestsqlQueryTest {
 
     @Test
     public void test_update() {
-        var db = TestsqlServer.get();
+        var db = TestsqlServer.build();
         db.onSelect("sss", (query, sql) -> {
             query.setJson("""
                     {"body":[["UID_","code_"],[1,"001"],[2,"002"],[3,"003"]]}""");
@@ -77,7 +77,7 @@ public class TestsqlQueryTest {
 
     @Test
     public void test_mysql() {
-        var db = TestsqlServer.get(true);
+        var db = TestsqlServer.build();
         db.onSelect("sss", (query, sql) -> {
             query.setJson("""
                     {"body":[["UID_","code_"],[1,"001"],[2,"002"],[3,"003"]]}""");
