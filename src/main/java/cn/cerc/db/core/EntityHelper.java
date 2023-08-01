@@ -16,6 +16,7 @@ import javax.persistence.Version;
 import cn.cerc.db.mssql.MssqlDatabase;
 import cn.cerc.db.mysql.MysqlDatabase;
 import cn.cerc.db.sqlite.SqliteDatabase;
+import cn.cerc.db.testsql.TestsqlServer;
 
 public class EntityHelper<T> {
     private static ConcurrentHashMap<Class<?>, EntityHelper<?>> items = new ConcurrentHashMap<>();
@@ -51,12 +52,17 @@ public class EntityHelper<T> {
             this.table = clazz.getSimpleName();
         // 查找数据库类型
         SqlServer server = clazz.getAnnotation(SqlServer.class);
-        if (server != null)
-            this.sqlServerType = server.type();
+        if (server != null) {
+            if (TestsqlServer.enabled())
+                if (TestsqlServer.enabled())
+                    this.sqlServerType = SqlServerType.Testsql;
+                else
+                    this.sqlServerType = server.type();
+        }
 
         // 查找特殊字段
         for (Field field : clazz.getDeclaredFields()) {
-            if(Modifier.isStatic(field.getModifiers()))
+            if (Modifier.isStatic(field.getModifiers()))
                 continue;
             Id id = field.getDeclaredAnnotation(Id.class);
             Column column = field.getDeclaredAnnotation(Column.class);

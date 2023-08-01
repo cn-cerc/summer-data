@@ -15,6 +15,8 @@ import cn.cerc.db.mysql.MysqlServerMaster;
 import cn.cerc.db.mysql.MysqlServerSlave;
 import cn.cerc.db.pgsql.PgsqlServer;
 import cn.cerc.db.sqlite.SqliteServer;
+import cn.cerc.db.testsql.TestsqlOperator;
+import cn.cerc.db.testsql.TestsqlServer;
 
 public class SqlQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = -6671201813972797639L;
@@ -39,7 +41,10 @@ public class SqlQuery extends DataSet implements IHandle {
 
     public SqlQuery(IHandle handle, SqlServerType sqlServerType) {
         super();
-        this.sqlServerType = sqlServerType;
+        if (TestsqlServer.enabled())
+            this.sqlServerType = SqlServerType.Testsql;
+        else
+            this.sqlServerType = sqlServerType;
         this.sql = new SqlText(sqlServerType);
         if (handle != null)
             this.session = handle.getSession();
@@ -173,7 +178,9 @@ public class SqlQuery extends DataSet implements IHandle {
     @Override
     public final void insertStorage(DataRow record) throws Exception {
         try (ServerClient client = getConnectionClient()) {
-            if (operator().insert(client.getConnection(), record))
+            var temp = false;
+            temp = operator().insert(client.getConnection(), record);
+            if (temp)
                 record.setState(DataRowState.None);
         }
     }
@@ -187,10 +194,10 @@ public class SqlQuery extends DataSet implements IHandle {
     }
 
     @Override
-    public final void deleteStorage(DataRow record) throws Exception {
+    public final void deleteStorage(DataRow dataRow) throws Exception {
         try (ServerClient client = getConnectionClient()) {
-            if (operator().delete(client.getConnection(), record))
-                garbage().remove(record);
+            if (operator().delete(client.getConnection(), dataRow))
+                garbage().remove(dataRow);
         }
     }
 
@@ -205,8 +212,12 @@ public class SqlQuery extends DataSet implements IHandle {
     }
 
     public final SqlOperator operator() {
-        if (operator == null)
-            operator = new SqlOperator(this, sqlServerType);
+        if (operator == null) {
+            if (this.sqlServerType == SqlServerType.Testsql)
+                operator = new TestsqlOperator(this, sqlServerType);
+            else
+                operator = new SqlOperator(this, sqlServerType);
+        }
         if (operator.table() == null) {
             String sqlText = this.sqlText();
             if (sqlText != null)
@@ -373,6 +384,11 @@ public class SqlQuery extends DataSet implements IHandle {
         case Pgsql: {
             if (server == null)
                 server = (PgsqlServer) getSession().getProperty(PgsqlServer.SessionId);
+            return server;
+        }
+        case Testsql: {
+            if (server == null)
+                server = TestsqlServer.get();
             return server;
         }
         default:

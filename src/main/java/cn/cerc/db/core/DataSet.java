@@ -20,10 +20,9 @@ import org.slf4j.LoggerFactory;
 
 import cn.cerc.db.SummerDB;
 import cn.cerc.db.core.FieldMeta.FieldKind;
-import cn.cerc.db.core.SqlOperator.ResultSetReader;
 import cn.cerc.db.dao.EntityEvent;
 
-public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, IRecord, ResultSetReader {
+public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, IRecord {
     // 执行成功
     public static final int OK = 1;
     // 以下为普通错误
@@ -67,7 +66,6 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
     }
 
     @Nullable
-    @Override
     public DataRow createDataRow() {
         if (this.readonly)
             throw new UnsupportedOperationException("DataSet is readonly");
@@ -172,6 +170,7 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
                 try {
                     deleteStorage(record);
                 } catch (Exception e) {
+                    log.error(e.getMessage(), e);
                     throw new RuntimeException(e.getMessage());
                 }
             } else {
@@ -193,7 +192,9 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
                     insertStorage(row);
                 } catch (Exception e) {
                     if (e.getMessage() != null && e.getMessage().contains("Data too long"))
-                        log.error(row.toString());
+                        log.error(row.toString(), e);
+                    else
+                        log.error(e.getMessage(), e);
                     throw new RuntimeException(e);
                 }
             } else {
@@ -362,7 +363,6 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
         return this.records.size();
     }
 
-    @Override
     public FieldDefs fields() {
         return this.fields;
     }

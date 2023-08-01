@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import cn.cerc.db.SummerDB;
+import cn.cerc.db.testsql.TestsqlServer;
 
 public class SqlText implements Serializable {
     private static final long serialVersionUID = 5202024253700579642L;
@@ -29,6 +30,8 @@ public class SqlText implements Serializable {
         this.clazz = clazz;
         SqlServer server = clazz.getAnnotation(SqlServer.class);
         this.sqlServerType = (server != null) ? server.type() : SqlServerType.Mysql;
+        if (TestsqlServer.enabled())
+            this.sqlServerType = SqlServerType.Testsql;
         classData = ClassFactory.get(clazz);
         this.text = classData.getSelect();
     }
