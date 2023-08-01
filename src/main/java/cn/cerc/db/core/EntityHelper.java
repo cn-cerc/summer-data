@@ -54,8 +54,8 @@ public class EntityHelper<T> {
         SqlServer server = clazz.getAnnotation(SqlServer.class);
         if (server != null) {
             this.sqlServerType = server.type();
-                if (TestsqlServer.enabled())
-                    this.sqlServerType = SqlServerType.Testsql;
+            if (TestsqlServer.enabled())
+                this.sqlServerType = SqlServerType.Testsql;
         }
 
         // 查找特殊字段
