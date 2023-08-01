@@ -44,7 +44,7 @@ public class SqlOperator implements IHandle {
             this.session = handle.getSession();
         this.sqlServerType = sqlServerType;
         switch (sqlServerType) {
-        case Mysql:
+        case Mysql, Testsql:
             this.setOid(MysqlDatabase.DefaultOID);
             break;
         case Mssql:
@@ -131,20 +131,14 @@ public class SqlOperator implements IHandle {
         this.setOid(primaryKey);
     }
 
-    public interface ResultSetReader {
-        FieldDefs fields();
-
-        DataRow createDataRow();
-    }
-
     // 取出所有数据
-    public int select(ResultSetReader reader, Connection connection, String sql) throws SQLException {
+    public int select(DataSet dataSet, Connection connection, String sql) throws SQLException {
         int total = 0;
         try (Statement st = connection.createStatement()) {
             try (ResultSet rs = st.executeQuery(sql.replace("\\", "\\\\"))) {
                 // 取得字段清单
                 ResultSetMetaData meta = rs.getMetaData();
-                FieldDefs defs = reader.fields();
+                FieldDefs defs = dataSet.fields();
                 for (int i = 1; i <= meta.getColumnCount(); i++) {
                     String field = meta.getColumnLabel(i);
                     if (!defs.exists(field))
@@ -152,7 +146,7 @@ public class SqlOperator implements IHandle {
                 }
                 // 取得所有内容
                 while (rs.next()) {
-                    DataRow row = reader.createDataRow();
+                    DataRow row = dataSet.createDataRow();
                     if (row == null)
                         break;
                     total++;
@@ -167,7 +161,7 @@ public class SqlOperator implements IHandle {
         return total;
     }
 
-    public final boolean insert(Connection connection, DataRow record) {
+    public boolean insert(Connection connection, DataRow record) {
         resetUpdateKey(connection, record);
 
         if (MssqlDatabase.DefaultOID.equalsIgnoreCase(this.oid)) {
@@ -242,7 +236,7 @@ public class SqlOperator implements IHandle {
         }
     }
 
-    public final boolean update(Connection connection, DataRow record) {
+    public boolean update(Connection connection, DataRow record) {
         Map<String, Object> delta = record.delta();
         if (delta.size() == 0)
             return true;
@@ -336,7 +330,7 @@ public class SqlOperator implements IHandle {
         }
     }
 
-    public final boolean delete(Connection connection, DataRow record) {
+    public boolean delete(Connection connection, DataRow record) {
         resetUpdateKey(connection, record);
 
         String lastCommand = null;

@@ -5,4 +5,5 @@ public interface ISqlServer extends IConnection {
     boolean execute(String sql);
 
     String getHost();
+
 }
