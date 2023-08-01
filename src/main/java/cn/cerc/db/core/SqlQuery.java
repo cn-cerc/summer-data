@@ -41,7 +41,10 @@ public class SqlQuery extends DataSet implements IHandle {
 
     public SqlQuery(IHandle handle, SqlServerType sqlServerType) {
         super();
-        this.sqlServerType = sqlServerType;
+        if (TestsqlServer.enabled())
+            this.sqlServerType = SqlServerType.Testsql;
+        else
+            this.sqlServerType = sqlServerType;
         this.sql = new SqlText(sqlServerType);
         if (handle != null)
             this.session = handle.getSession();

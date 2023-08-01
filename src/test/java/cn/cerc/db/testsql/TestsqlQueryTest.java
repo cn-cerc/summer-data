@@ -4,21 +4,16 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import cn.cerc.db.mysql.MysqlQuery;
+
 public class TestsqlQueryTest {
 
     @Test
     public void test_select() {
         var db = TestsqlServer.get();
         db.onSelect("sss", (query, sql) -> {
-            query.append();
-            query.setValue("UID_", 1);
-            query.setValue("code_", "001");
-            query.append();
-            query.setValue("UID_", 2);
-            query.setValue("code_", "002");
-            query.append();
-            query.setValue("UID_", 3);
-            query.setValue("code_", "003");
+            query.setJson("""
+                    {"body":[["UID_","code_"],[1,"001"],[2,"002"],[3,"003"]]}""");
         });
         TestsqlQuery query = new TestsqlQuery();
         query.add("select * from sss");
@@ -78,6 +73,20 @@ public class TestsqlQueryTest {
         query.post();
         assertEquals("""
                 {"body":[["UID_","code_"],[1,"005"],[2,"002"],[3,"003"]]}""", query.toString());
+    }
+
+    @Test
+    public void test_mysql() {
+        var db = TestsqlServer.get(true);
+        db.onSelect("sss", (query, sql) -> {
+            query.setJson("""
+                    {"body":[["UID_","code_"],[1,"001"],[2,"002"],[3,"003"]]}""");
+        });
+        MysqlQuery query = new MysqlQuery();
+        query.add("select * from sss");
+        query.open();
+        assertEquals("""
+                {"body":[["UID_","code_"],[1,"001"],[2,"002"],[3,"003"]]}""", query.toString());
     }
 
 }

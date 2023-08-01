@@ -13,8 +13,16 @@ public class TestsqlServer implements ISqlServer {
     public static final String DefaultOID = "UID_";
     private Map<String, ConsumerTable> onSelect = new HashMap<>();
     private static TestsqlServer server;
+    private static boolean Enabled;
 
     public static TestsqlServer get() {
+        if (server == null)
+            server = new TestsqlServer();
+        return server;
+    }
+
+    public static TestsqlServer get(boolean enabled) {
+        TestsqlServer.Enabled = enabled;
         if (server == null)
             server = new TestsqlServer();
         return server;
@@ -48,6 +56,10 @@ public class TestsqlServer implements ISqlServer {
 
     public void onSelect(String table, ConsumerTable consumer) {
         this.onSelect.put(table, consumer);
+    }
+
+    public static boolean enabled() {
+        return Enabled;
     }
 
 }
