@@ -62,12 +62,11 @@ public class TestsqlServer implements ISqlServer {
         while (dataSet.fetch()) {
             if (!where.pass(dataSet.current()))
                 dataSet.delete();
+            else
+                dataSet.current().setState(DataRowState.None);
         }
-        for (var row : dataSet) {
-            row.setState(DataRowState.None);
-            for (var field : dataSet.fields())
-                field.setKind(FieldKind.Storage);
-        }
+        for (var field : dataSet.fields())
+            field.setKind(FieldKind.Storage);
         dataSet.first();
     }
 
