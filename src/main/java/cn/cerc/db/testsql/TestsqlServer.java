@@ -17,11 +17,18 @@ public class TestsqlServer implements ISqlServer {
     private Long lockTime;
     private static TestsqlServer server;
     private static boolean Enabled;
+    private boolean selectFilter;
 
     public static TestsqlServer build() {
         TestsqlServer.Enabled = true;
         if (server == null)
             server = new TestsqlServer();
+        return server;
+    }
+
+    public static TestsqlServer build(boolean selectFilter) {
+        var server = build();
+        server.selectFilter = selectFilter;
         return server;
     }
 
@@ -57,13 +64,15 @@ public class TestsqlServer implements ISqlServer {
         var consumer = this.onSelect.get(table);
         if (consumer != null)
             consumer.accept(dataSet, sql);
-        var where = new SqlWhereFilter(sql);
+        SqlWhereFilter where = null;
+        if (selectFilter)
+            where = new SqlWhereFilter(sql);
         dataSet.first();
         while (dataSet.fetch()) {
-            if (where.pass(dataSet.current()))
-                dataSet.current().setState(DataRowState.None);
-            else
+            if (selectFilter && !where.pass(dataSet.current()))
                 dataSet.delete();
+            else
+                dataSet.current().setState(DataRowState.None);
         }
         for (var field : dataSet.fields())
             field.setKind(FieldKind.Storage);

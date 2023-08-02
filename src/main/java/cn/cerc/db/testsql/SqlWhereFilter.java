@@ -13,12 +13,11 @@ public class SqlWhereFilter {
 
     public SqlWhereFilter(String sql) {
         this.sql = sql;
+        this.list = this.decode(this.sql);
     }
 
     public boolean pass(DataRow row) {
-        this.list = this.decode(this.sql);
         var pass = true;
-
         for (var key : list) {
             if (!key.pass(row.bind(key.field())))
                 pass = false;

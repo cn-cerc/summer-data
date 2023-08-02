@@ -16,7 +16,7 @@ public class TestsqlQueryTest {
                     {"body":[["UID_","code_"],[1,"001"],[2,"002"],[3,"003"]]}""");
         });
         TestsqlQuery query = new TestsqlQuery();
-        query.add("select * from sss");
+        query.add("select * from sss where code_='001'");
         query.open();
         assertEquals("""
                 {"body":[["UID_","code_"],[1,"001"],[2,"002"],[3,"003"]]}""", query.toString());

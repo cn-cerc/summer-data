@@ -15,9 +15,7 @@ public class SqlCompareNumeric implements SqlCompareImpl {
 
     @Override
     public boolean pass(Variant target) {
-
         switch (symbol) {
-
         case "=": {
             return target.getLong() == value;
         }
@@ -41,7 +39,6 @@ public class SqlCompareNumeric implements SqlCompareImpl {
             throw new RuntimeException(String.format("未匹配到该操作符：%s ！", symbol));
         }
         }
-
     }
 
     @Override
