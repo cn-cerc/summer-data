@@ -12,8 +12,28 @@ public class SqlCompareLike implements SqlCompareImpl {
     }
 
     @Override
-    public boolean pass(Variant targe) {
-        return false;
+    public boolean pass(Variant target) {
+        String targetStr = target.getString();
+        if (value.startsWith("%")) {
+            String processedStr = value.substring(1);
+            if (value.endsWith("%")) {
+                // like %s%
+                processedStr = processedStr.substring(0, processedStr.length() - 1);
+                return targetStr.contains(processedStr);
+            } else {
+                // like %s
+                return targetStr.endsWith(processedStr);
+            }
+        } else {
+            if (value.endsWith("%")) {
+                // like s%
+                String processedStr = value.substring(0, value.length() - 1);
+                return targetStr.startsWith(processedStr);
+            } else {
+                // like s 相当于 =
+                return targetStr.equals(value);
+            }
+        }
     }
 
     @Override

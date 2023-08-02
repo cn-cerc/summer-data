@@ -14,8 +14,9 @@ public class SqlCompareIn implements SqlCompareImpl {
     }
 
     @Override
-    public boolean pass(Variant targe) {
-        return false;
+    public boolean pass(Variant target) {
+        String targetStr = target.getString();
+        return values.contains(targetStr);
     }
 
     @Override

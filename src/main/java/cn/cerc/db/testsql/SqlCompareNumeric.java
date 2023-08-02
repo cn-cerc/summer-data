@@ -15,7 +15,33 @@ public class SqlCompareNumeric implements SqlCompareImpl {
 
     @Override
     public boolean pass(Variant target) {
-        return value == target.getLong();
+
+        switch (symbol) {
+
+        case "=": {
+            return target.getLong() == value;
+        }
+        case ">": {
+            return target.getLong() > value;
+        }
+        case ">=": {
+            return target.getLong() >= value;
+        }
+        case "<": {
+            return target.getLong() < value;
+        }
+        case "<=": {
+            return target.getLong() <= value;
+        }
+        case "<>":
+        case "!=": {
+            return target.getLong() != value;
+        }
+        default: {
+            throw new RuntimeException(String.format("未匹配到该操作符：%s ！", symbol));
+        }
+        }
+
     }
 
     @Override
