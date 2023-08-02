@@ -76,8 +76,13 @@ public class TestsqlServer implements ISqlServer {
         return tables;
     }
 
-    public TestsqlServer lockTime(long lockTime) {
+    public TestsqlServer lockTime(Long lockTime) {
         this.lockTime = lockTime;
+        return this;
+    }
+
+    public TestsqlServer unlockTime() {
+        this.lockTime = null;
         return this;
     }
 
