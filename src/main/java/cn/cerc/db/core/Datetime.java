@@ -11,6 +11,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.EnumSet;
 
+import cn.cerc.db.testsql.TestsqlServer;
+
 public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
     private static final long serialVersionUID = -7395748632907604015L;
     // 常见输出组合
@@ -53,7 +55,10 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
 
     public Datetime() {
         super();
-        this.setTimestamp(System.currentTimeMillis());
+        var current = System.currentTimeMillis();
+        if (TestsqlServer.enabled())
+            current = TestsqlServer.build().getLockTime().orElse(current);
+        this.setTimestamp(current);
     }
 
     public Datetime(long date) {

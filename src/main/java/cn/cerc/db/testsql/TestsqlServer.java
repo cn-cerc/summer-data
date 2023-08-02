@@ -2,6 +2,7 @@ package cn.cerc.db.testsql;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import cn.cerc.db.core.DataRowState;
 import cn.cerc.db.core.DataSet;
@@ -13,6 +14,7 @@ public class TestsqlServer implements ISqlServer {
     public static final String DefaultOID = "UID_";
     private Map<String, ConsumerTable> onSelect = new HashMap<>();
     private Map<String, DataSet> tables = new HashMap<>();
+    private Long lockTime;
     private static TestsqlServer server;
     private static boolean Enabled;
 
@@ -29,6 +31,7 @@ public class TestsqlServer implements ISqlServer {
      * @param b
      * @return
      */
+    @Deprecated
     public static TestsqlServer get(boolean value) {
         return build();
     }
@@ -71,6 +74,20 @@ public class TestsqlServer implements ISqlServer {
 
     public Map<String, DataSet> tables() {
         return tables;
+    }
+
+    public TestsqlServer lockTime(Long lockTime) {
+        this.lockTime = lockTime;
+        return this;
+    }
+
+    public TestsqlServer unlockTime() {
+        this.lockTime = null;
+        return this;
+    }
+
+    public Optional<Long> getLockTime() {
+        return Optional.ofNullable(lockTime);
     }
 
 }
