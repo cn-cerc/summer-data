@@ -57,11 +57,18 @@ public class TestsqlServer implements ISqlServer {
         var consumer = this.onSelect.get(table);
         if (consumer != null)
             consumer.accept(dataSet, sql);
+        var where = new SqlWhereFilter(sql);
+        dataSet.first();
+        while (dataSet.fetch()) {
+            if (!where.pass(dataSet.current()))
+                dataSet.delete();
+        }
         for (var row : dataSet) {
             row.setState(DataRowState.None);
             for (var field : dataSet.fields())
                 field.setKind(FieldKind.Storage);
         }
+        dataSet.first();
     }
 
     public void onSelect(String table, ConsumerTable consumer) {
