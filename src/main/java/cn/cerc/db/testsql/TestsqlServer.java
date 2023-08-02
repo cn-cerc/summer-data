@@ -60,10 +60,10 @@ public class TestsqlServer implements ISqlServer {
         var where = new SqlWhereFilter(sql);
         dataSet.first();
         while (dataSet.fetch()) {
-            if (!where.pass(dataSet.current()))
-                dataSet.delete();
-            else
+            if (where.pass(dataSet.current()))
                 dataSet.current().setState(DataRowState.None);
+            else
+                dataSet.delete();
         }
         for (var field : dataSet.fields())
             field.setKind(FieldKind.Storage);
