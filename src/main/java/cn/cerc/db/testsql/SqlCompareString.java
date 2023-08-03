@@ -23,8 +23,11 @@ public class SqlCompareString implements SqlCompareImpl {
         Datetime targetTime = null;
         Datetime valueTime = null;
         if (!Arrays.asList("=", "!=", "<>", "is null", "is not null").contains(symbol)) {
+            if (Utils.isEmpty(str)) {
+                return false;
+            }
             String regex = "\\d{4}-\\d{2}-\\d{2}";
-            if (!str.substring(0, 10).matches(regex)) {
+            if (str.length() < 10 || !str.substring(0, 10).matches(regex)) {
                 throw new RuntimeException(String.format("暂时只支持DateTime形式比较大小"));
             } else {
                 targetTime = new Datetime(str);
