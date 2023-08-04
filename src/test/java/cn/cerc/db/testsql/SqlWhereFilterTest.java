@@ -2,10 +2,6 @@ package cn.cerc.db.testsql;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
-
 import org.junit.Test;
 
 import cn.cerc.db.core.DataSet;
@@ -436,102 +432,193 @@ public class SqlWhereFilterTest {
     }
 
     @Test
-    public void test11() {
-        String s = "abc111abcd";
-        System.out.println(s.split("or").length);
+    public void test_bracket_1() {
+        var obj = new SqlWhereFilter("where (a = 2 or c = 1) and b = 2");
+        DataSet ds = new DataSet();
+        ds.append().setValue("a", 1).setValue("b", 1).setValue("c", 1);
+        ds.append().setValue("a", 2).setValue("b", 2).setValue("c", 2);
+        ds.append().setValue("a", 3).setValue("b", 3).setValue("c", 3);
+        ds.append().setValue("a", 4).setValue("b", 4).setValue("c", 4);
+        ds.first();
+        while (ds.fetch()) {
+            if (!obj.pass(ds.current()))
+                ds.delete();
+        }
+        assertEquals("""
+                {"body":[["a","b","c"],[2,2,2]]}""", ds.toString());
     }
 
     @Test
-    public void testpick() {
-        String s = "(A or B) and (B and (C or D))";
-        pickBracket(s);
+    public void test_bracket_2() {
+        var obj = new SqlWhereFilter("where (a = 1 and b = 1) or (a = 2 and b = 3) or (a = 3 and b = 3)");
+        DataSet ds = new DataSet();
+        ds.append().setValue("a", 1).setValue("b", 1).setValue("c", 1);
+        ds.append().setValue("a", 2).setValue("b", 2).setValue("c", 2);
+        ds.append().setValue("a", 3).setValue("b", 3).setValue("c", 3);
+        ds.append().setValue("a", 4).setValue("b", 4).setValue("c", 4);
+        ds.first();
+        while (ds.fetch()) {
+            if (!obj.pass(ds.current()))
+                ds.delete();
+        }
+        assertEquals("""
+                {"body":[["a","b","c"],[1,1,1],[3,3,3]]}""", ds.toString());
     }
 
-    class JudgeTree {
-        // 不是and就是or
-        private boolean isAnd;
-        private String items;
-        private JudgeTree left;
-        private JudgeTree right;
-
-        public boolean isAnd() {
-            return isAnd;
+    @Test
+    public void test_bracket_3() {
+        var obj = new SqlWhereFilter(
+                "where ((a = 1 and b = 1) or (a = 2 and b = 2)) and (c = 2 and b = 2) or c is null");
+        DataSet ds = new DataSet();
+        ds.append().setValue("a", 1).setValue("b", 1).setValue("c", 1);
+        ds.append().setValue("a", 2).setValue("b", 2).setValue("c", 2);
+        ds.append().setValue("a", 3).setValue("b", 3).setValue("c", 3);
+        ds.append().setValue("a", 4).setValue("b", 4);
+        ds.first();
+        while (ds.fetch()) {
+            if (!obj.pass(ds.current()))
+                ds.delete();
         }
-
-        public void setAnd(boolean isAnd) {
-            this.isAnd = isAnd;
-        }
-
-        public String getItems() {
-            return items;
-        }
-
-        public void setItems(String items) {
-            this.items = items;
-        }
-
-        public JudgeTree getLeft() {
-            return left;
-        }
-
-        public void setLeft(JudgeTree left) {
-            this.left = left;
-        }
-
-        public JudgeTree getRight() {
-            return right;
-        }
-
-        public void setRight(JudgeTree right) {
-            this.right = right;
-        }
-
+        assertEquals("""
+                {"body":[["a","b","c"],[2,2,2],[4,4,null]]}""", ds.toString());
     }
 
-    public void pickBracket(String s) {
-        Stack<Integer> stack = new Stack<>();
-        int index = 0;
-        int lastRight = 0;
-        List<String> items = new ArrayList<>();
-        List<String> symbols = new ArrayList<>();
-        List<Integer> splitIndex = new ArrayList<>();
-        while (index < s.length()) {
-            if (s.charAt(index) == '(') {
-                stack.push(index);
-                if (lastRight != 0) {
-                    String middle = s.substring(lastRight, index);
-                    if (middle.contains("and")) {
-                        symbols.add("and");
-                        splitIndex.add(s.indexOf("and", lastRight));
-                    } else if (middle.contains("or")) {
-                        symbols.add("or");
-                        splitIndex.add(s.indexOf("or", lastRight));
-                    }
-                    lastRight = 0;
-                }
-            }
-            if (s.charAt(index) == ')') {
-                if (stack.isEmpty()) {
-                    throw new RuntimeException("括号格式不规范！");
-                } else {
-                    if (stack.size() == 1) {
-                        items.add(s.substring(stack.pop() + 1, index));
-                        lastRight = index;
-                    } else {
-                        stack.pop();
-                    }
+    @Test
+    public void test_bracket_4() {
+        var obj = new SqlWhereFilter("where ((a = 1 and b = 1) or (a = 4 and c in (3,4)))");
+        DataSet ds = new DataSet();
+        ds.append().setValue("a", 1).setValue("b", 1).setValue("c", 1);
+        ds.append().setValue("a", 2).setValue("b", 2).setValue("c", 2);
+        ds.append().setValue("a", 3).setValue("b", 3).setValue("c", 3);
+        ds.append().setValue("a", 4).setValue("b", 4).setValue("c", 4);
+        ds.first();
+        while (ds.fetch()) {
+            if (!obj.pass(ds.current()))
+                ds.delete();
+        }
+        assertEquals("""
+                {"body":[["a","b","c"],[1,1,1],[4,4,4]]}""", ds.toString());
+    }
 
-                }
-            }
-            index++;
+    @Test
+    public void test_bracket_5() {
+        var obj = new SqlWhereFilter("where a in (2,3,4) and (b = 1 or b = 3)");
+        DataSet ds = new DataSet();
+        ds.append().setValue("a", 1).setValue("b", 1).setValue("c", 1);
+        ds.append().setValue("a", 2).setValue("b", 2).setValue("c", 2);
+        ds.append().setValue("a", 3).setValue("b", 3).setValue("c", 3);
+        ds.append().setValue("a", 4).setValue("b", 4).setValue("c", 4);
+        ds.first();
+        while (ds.fetch()) {
+            if (!obj.pass(ds.current()))
+                ds.delete();
         }
-        for (String temp : items) {
-            System.out.println(temp);
-        }
+        assertEquals("""
+                {"body":[["a","b","c"],[3,3,3]]}""", ds.toString());
+    }
 
-        for (String temp : symbols) {
-            System.out.println(temp);
+    @Test
+    public void test_bracket_6() {
+        var obj = new SqlWhereFilter("where (b = 1 or b = 3) and a in (2,3,4)");
+        DataSet ds = new DataSet();
+        ds.append().setValue("a", 1).setValue("b", 1).setValue("c", 1);
+        ds.append().setValue("a", 2).setValue("b", 2).setValue("c", 2);
+        ds.append().setValue("a", 3).setValue("b", 3).setValue("c", 3);
+        ds.append().setValue("a", 4).setValue("b", 4).setValue("c", 4);
+        ds.first();
+        while (ds.fetch()) {
+            if (!obj.pass(ds.current()))
+                ds.delete();
         }
+        assertEquals("""
+                {"body":[["a","b","c"],[3,3,3]]}""", ds.toString());
+    }
+
+    @Test
+    public void test_bracket_7() {
+        var obj = new SqlWhereFilter("where (a = 1 and b = 1) or a in (2,3)");
+        DataSet ds = new DataSet();
+        ds.append().setValue("a", 1).setValue("b", 1).setValue("c", 1);
+        ds.append().setValue("a", 2).setValue("b", 2).setValue("c", 2);
+        ds.append().setValue("a", 3).setValue("b", 3).setValue("c", 3);
+        ds.append().setValue("a", 4).setValue("b", 4).setValue("c", 4);
+        ds.first();
+        while (ds.fetch()) {
+            if (!obj.pass(ds.current()))
+                ds.delete();
+        }
+        assertEquals("""
+                {"body":[["a","b","c"],[1,1,1],[2,2,2],[3,3,3]]}""", ds.toString());
+    }
+
+    @Test
+    public void test_bracket_8() {
+        var obj = new SqlWhereFilter("where (b = 1 or b = 3) and a in (2,3,4) or (a = 1 and b = 2)");
+        DataSet ds = new DataSet();
+        ds.append().setValue("a", 1).setValue("b", 1).setValue("c", 1);
+        ds.append().setValue("a", 2).setValue("b", 2).setValue("c", 2);
+        ds.append().setValue("a", 3).setValue("b", 3).setValue("c", 3);
+        ds.append().setValue("a", 4).setValue("b", 4).setValue("c", 4);
+        ds.first();
+        while (ds.fetch()) {
+            if (!obj.pass(ds.current()))
+                ds.delete();
+        }
+        assertEquals("""
+                {"body":[["a","b","c"],[3,3,3]]}""", ds.toString());
+    }
+
+    @Test
+    public void test_bracket_9() {
+        var obj = new SqlWhereFilter("where (b = 1 or b = 3) and (a in (2,3,4)) or (a = 1 and b = 2)");
+        DataSet ds = new DataSet();
+        ds.append().setValue("a", 1).setValue("b", 1).setValue("c", 1);
+        ds.append().setValue("a", 2).setValue("b", 2).setValue("c", 2);
+        ds.append().setValue("a", 3).setValue("b", 3).setValue("c", 3);
+        ds.append().setValue("a", 4).setValue("b", 4).setValue("c", 4);
+        ds.first();
+        while (ds.fetch()) {
+            if (!obj.pass(ds.current()))
+                ds.delete();
+        }
+        assertEquals("""
+                {"body":[["a","b","c"],[3,3,3]]}""", ds.toString());
+    }
+
+    @Test
+    public void test_bracket_10() {
+        var obj = new SqlWhereFilter("where (b = 3) and (a in (2,3,4)) or (c = 2)");
+        DataSet ds = new DataSet();
+        ds.append().setValue("a", 1).setValue("b", 1).setValue("c", 1);
+        ds.append().setValue("a", 2).setValue("b", 2).setValue("c", 2);
+        ds.append().setValue("a", 3).setValue("b", 3).setValue("c", 3);
+        ds.append().setValue("a", 4).setValue("b", 4).setValue("c", 4);
+        ds.first();
+        while (ds.fetch()) {
+            if (!obj.pass(ds.current()))
+                ds.delete();
+        }
+        assertEquals("""
+                {"body":[["a","b","c"],[2,2,2],[3,3,3]]}""", ds.toString());
+    }
+
+    @Test
+    public void test_bracket_str() {
+        var obj = new SqlWhereFilter(
+                "where (name in ('Jenny', 'Jack') and order_time_ is not null) or (age = 24 and name = 'Jackson')");
+        DataSet ds = new DataSet();
+        ds.append().setValue("name", "Jack").setValue("age", 23);
+        ds.append().setValue("name", "Jackson").setValue("order_time_", "2023-08-01 15:08:41").setValue("age", 24);
+        ds.append().setValue("name", "Jenny").setValue("order_time_", "2023-08-01 15:08:42").setValue("age", 25);
+        ds.first();
+        while (ds.fetch()) {
+            if (!obj.pass(ds.current()))
+                ds.delete();
+        }
+        assertEquals(
+                """
+                        {"body":[["name","age","order_time_"],["Jackson",24,"2023-08-01 15:08:41"],["Jenny",25,"2023-08-01 15:08:42"]]}""",
+                ds.toString());
     }
 
 }
