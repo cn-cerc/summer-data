@@ -19,6 +19,10 @@ import com.aliyun.mns.model.QueueMeta;
 
 import cn.cerc.db.core.IConnection;
 
+/**
+ * 阿里云 mns 队列应删除
+ */
+@Deprecated
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MnsServer implements IConnection {
