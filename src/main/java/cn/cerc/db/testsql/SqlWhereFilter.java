@@ -281,7 +281,7 @@ public class SqlWhereFilter {
             } else {
                 throw new RuntimeException(String.format("模糊查询条件：%s 必须为字符串", item));
             }
-        } else if (item.split("in").length == 2 || item.split("in").length == 2) {
+        } else if (item.split("in").length == 2) {
             String symbol = item.contains("not") ? "not in" : "in";
             String[] tmp = item.split(symbol);
             String field = tmp[0].trim();
