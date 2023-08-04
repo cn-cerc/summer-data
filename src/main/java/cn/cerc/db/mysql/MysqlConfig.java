@@ -210,6 +210,7 @@ public class MysqlConfig {
                 host, database, timezone);
         try {
             Class.forName(MysqlConfig.JdbcDriver);
+            log.debug("连接到 mysql, host={}, database={}, username={}", host, database, username);
             return DriverManager.getConnection(jdbcUrl, username, password);
         } catch (SQLException | ClassNotFoundException e) {
             log.error("connection {}, database {}", jdbcUrl, database, e);
