@@ -6,6 +6,9 @@ import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
 import cn.cerc.db.zk.ZkNode;
 
+/**
+ * 阿里云 mns 队列应删除
+ */
 public class AliyunUserConfig {
     private static final ClassResource res = new ClassResource(MnsServer.class, SummerDB.ID);
     private static final String AccountEndpoint = "aliyunMNS/accountendpoint";
