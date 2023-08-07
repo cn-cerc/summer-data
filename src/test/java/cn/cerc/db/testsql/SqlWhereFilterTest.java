@@ -621,4 +621,28 @@ public class SqlWhereFilterTest {
                 ds.toString());
     }
 
+    public enum TestEnum {
+        枚举0,
+        枚举1,
+        枚举2;
+    }
+
+    @Test
+    public void test_enum() {
+        var obj = new SqlWhereFilter("where a <> 1 and a <> 2");
+        DataSet ds = new DataSet();
+        ds.append().setValue("a", TestEnum.枚举1).setValue("b", 1);
+        ds.append().setValue("a", TestEnum.枚举1).setValue("b", 2);
+        ds.append().setValue("a", TestEnum.枚举2).setValue("b", 2);
+        ds.append().setValue("a", TestEnum.枚举0).setValue("b", 3);
+        ds.first();
+        while (ds.fetch()) {
+            if (!obj.pass(ds.current()))
+                ds.delete();
+        }
+        assertEquals("""
+                {"body":[["a","b"],[0,3]]}""", ds.toString());
+
+    }
+
 }
