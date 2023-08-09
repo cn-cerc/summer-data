@@ -7,5 +7,5 @@ public interface SqlCompareImpl {
     boolean pass(Variant targe);
 
     String field();
-    
+
 }

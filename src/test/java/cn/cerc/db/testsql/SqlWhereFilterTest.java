@@ -299,4 +299,48 @@ public class SqlWhereFilterTest {
                 {"body":[["name","order_time_"],["Jack",null],["Jenny","2023-08-01 15:08:42"]]}""", ds.toString());
     }
 
+    @Test
+    public void test_or1() {
+        var obj = new SqlWhereFilter("where name='Jack' or name='Jenny' and age=18");
+        DataSet ds = new DataSet();
+        ds.append().setValue("name", "Jack");
+        ds.append().setValue("name", "Jenny").setValue("age", 18);
+        ds.first();
+        while (ds.fetch()) {
+            if (!obj.pass(ds.current()))
+                ds.delete();
+        }
+        assertEquals(2, ds.size());
+    }
+
+    @Test
+    public void test_or2() {
+        var obj = new SqlWhereFilter("where name='Jack' or name='Jenny' and age=18 or sex='女'");
+        DataSet ds = new DataSet();
+        ds.append().setValue("name", "Jack");
+        ds.append().setValue("name", "Jenny").setValue("age", 18);
+        ds.append().setValue("sex", "女");
+        ds.first();
+        while (ds.fetch()) {
+            if (!obj.pass(ds.current()))
+                ds.delete();
+        }
+        assertEquals(3, ds.size());
+    }
+
+    @Test
+    public void test_or3() {
+        var obj = new SqlWhereFilter("where name='Jack' or name='Jenny' and age=18 or sex='女' and name='王'");
+        DataSet ds = new DataSet();
+        ds.append().setValue("name", "Jack");
+        ds.append().setValue("name", "Jenny").setValue("age", 18);
+        ds.append().setValue("sex", "女");
+        ds.first();
+        while (ds.fetch()) {
+            if (!obj.pass(ds.current()))
+                ds.delete();
+        }
+        assertEquals(2, ds.size());
+    }
+
 }
