@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cn.cerc.db.core.DataRowState;
 import cn.cerc.db.core.DataSet;
 import cn.cerc.db.core.FieldMeta.FieldKind;
@@ -11,6 +14,7 @@ import cn.cerc.db.core.ISqlServer;
 import cn.cerc.db.core.ServerClient;
 
 public class TestsqlServer implements ISqlServer {
+    private static final Logger log = LoggerFactory.getLogger(TestsqlServer.class);
     public static final String DefaultOID = "UID_";
     private Map<String, ConsumerTable> onSelect = new HashMap<>();
     private Map<String, DataSet> tables = new HashMap<>();
@@ -61,6 +65,7 @@ public class TestsqlServer implements ISqlServer {
     public void select(DataSet dataSet, String table, String sql) {
         if (!tables.containsKey(table))
             tables.put(table, dataSet);
+        log.info("table: {}, sql: {}", table, sql);
         var consumer = this.onSelect.get(table);
         if (consumer != null)
             consumer.accept(dataSet, sql);

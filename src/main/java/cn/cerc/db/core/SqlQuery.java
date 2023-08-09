@@ -92,7 +92,7 @@ public class SqlQuery extends DataSet implements IHandle {
             this.doAfterOpen();
             this.first();
         } catch (Exception e) {
-            log.error("sql command {}, {}", sql, e.getMessage(), e);
+            log.error("sql: {}, {}", sql, e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }

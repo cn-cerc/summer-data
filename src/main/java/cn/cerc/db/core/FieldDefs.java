@@ -33,7 +33,7 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     public FieldDefs(Class<?> clazz) {
         super();
         for (Field field : clazz.getDeclaredFields()) {
-            if(Modifier.isStatic(field.getModifiers()))
+            if (Modifier.isStatic(field.getModifiers()))
                 continue;
             if (field.getDeclaredAnnotation(Id.class) != null || field.getDeclaredAnnotation(Column.class) != null) {
                 String fieldCode = field.getName();
@@ -44,9 +44,16 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     }
 
     public boolean exists(String fieldCode) {
-        return items.contains(new FieldMeta(fieldCode));
+        if (fieldCode == null)
+            return false;
+        for (var item : items) {
+            if (fieldCode.equals(item.code()))
+                return true;
+        }
+        return false;
     }
 
+    @Deprecated
     public boolean exists(FieldMeta field) {
         return items.contains(field);
     }
@@ -153,7 +160,7 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         if (names.length > 0)
             items = Arrays.asList(names);
         for (Field field : clazz.getDeclaredFields()) {
-            if(Modifier.isStatic(field.getModifiers()))
+            if (Modifier.isStatic(field.getModifiers()))
                 continue;
             if (items != null && items.indexOf(field.getName()) == -1)
                 continue;
