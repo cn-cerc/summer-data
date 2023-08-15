@@ -15,6 +15,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 public class ClassData {
+    public static final int DEFAULT = 0;
     public static final int PUBLIC = 1;
     public static final int PRIVATE = 2;
     public static final int PROTECTED = 4;
