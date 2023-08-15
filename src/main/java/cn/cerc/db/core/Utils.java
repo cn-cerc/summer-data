@@ -44,6 +44,7 @@ public class Utils {
     private static final ClassResource res = new ClassResource(Utils.class, SummerDB.ID);
 
     public static final String vbCrLf = "\r\n";
+    public static final String separtor = System.lineSeparator();
 
     /**
      * 空串
