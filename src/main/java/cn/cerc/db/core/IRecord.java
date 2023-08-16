@@ -17,7 +17,7 @@ public interface IRecord {
         if (value == null) {
             return "";
         } else if (value instanceof String) {
-            return (String) value;
+            return ((String) value).trim();
         } else if (value instanceof Date) {
             Datetime tmp = new Datetime((Date) value);
             return tmp.toString();
@@ -28,7 +28,7 @@ public interface IRecord {
             else
                 return str;
         } else {
-            return value.toString();
+            return value.toString().trim();
         }
     }
 
