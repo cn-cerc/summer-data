@@ -645,4 +645,48 @@ public class SqlWhereFilterTest {
 
     }
 
+    @Test
+    public void testSS() {
+        String sql = "(A) or B and C and (D) and qwe";
+        String subSql = sql.substring(sql.lastIndexOf(")") + 1);
+        System.out.println(subSql);
+        String firstConj = getFirstConj(subSql);
+        String lastConj = getLastConj(subSql);
+        subSql = subSql.substring(subSql.indexOf(firstConj) + firstConj.length() + 1);
+        System.out.println(subSql);
+        System.out.println(firstConj);
+        System.out.println(lastConj);
+
+    }
+
+    // 获取第一个连词
+    private String getFirstConj(String sql) {
+        if (sql.contains("and ") || sql.contains("or ")) {
+            int firstAndIndex = sql.toLowerCase().indexOf("and ");
+            int firstOrIndex = sql.toLowerCase().indexOf("or ");
+            if (firstAndIndex < 0)
+                return "or";
+            else if (firstOrIndex < 0)
+                return "and";
+            else
+                return firstAndIndex < firstOrIndex ? "and" : "or";
+        }
+        return "";
+    }
+
+    // 获取最后一个连词
+    private String getLastConj(String sql) {
+        if (sql.contains("and ") || sql.contains("or ")) {
+            int lastAndIndex = sql.lastIndexOf("and ");
+            int lastOrIndex = sql.indexOf("or ");
+            if (lastAndIndex < 0)
+                return "or";
+            else if (lastOrIndex < 0)
+                return "and";
+            else
+                return lastAndIndex > lastOrIndex ? "and" : "or";
+        }
+        return "";
+    }
+
 }

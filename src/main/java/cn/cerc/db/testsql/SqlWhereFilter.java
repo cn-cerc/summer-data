@@ -19,7 +19,7 @@ public class SqlWhereFilter {
         return decode(this.sql, row);
     }
 
-    protected boolean decode(String sql, DataRow row) {
+    private boolean decode(String sql, DataRow row) {
         // 筛选出where语句
         int offset = sql.toLowerCase().indexOf("where");
         if (offset > -1) {
@@ -34,221 +34,185 @@ public class SqlWhereFilter {
                     whereStr = sql.substring(offset + 5, orderIndex);
                 }
             }
-            return parse(whereStr, row);
+            SqlNode root = new SqlNode().setSql(sql);
+            buildTree(root);
+            return parseTree(root, row);
         }
         return true;
     }
 
-    // 解析语句
-    private boolean parse(String sql, DataRow row) {
-        // 最小单元:如 Key = value 不包含任何括号以及and和or则直接判断
-        if (isMinimum(sql)) {
-            return selectCompare(sql, row);
+    // 构建sql树
+    private void buildTree(SqlNode node) {
+        if (isMinimumNode(node)) {
+            return;
+        }
+        String sql = node.getSql();
+        if (sql.contains("(")) {
+            processBracket(node);
         } else {
-            // 处理括号
-            boolean flag = sql.contains("(");
-            if (flag) {
-                String checkStr = sql.substring(sql.indexOf("(") + 1, sql.lastIndexOf(")"));
-                // 如果括号中不含有=号,如in (v1, v2, v3)则不进入判断
-                flag = checkStr.contains("=");
-            }
-            if (flag) {
-                Stack<Integer> stack = new Stack<>();
-                int index = 0;
-                int lastRight = -1;
-                List<String> items = new ArrayList<>();
-                List<String> linkTypes = new ArrayList<>();
-                // 处理第一个左括号外的非括号内容 如 A and (B)
-                if (!sql.trim().startsWith("(")) {
-                    // 去除类似该种情况: key in (v1,v2) and
-                    int rightIndex = sql.indexOf("(");
-                    String contain = sql.substring(sql.indexOf("(") + 1, sql.indexOf(")"));
-                    if (!contain.contains("="))
-                        rightIndex = sql.indexOf("(", sql.indexOf(")"));
-                    String head = sql.substring(0, rightIndex);
-                    int lastAndIndex = head.toLowerCase().lastIndexOf("and ");
-                    int lastOrIndex = head.toLowerCase().lastIndexOf("or ");
-                    if (lastAndIndex > lastOrIndex) {
-                        linkTypes.add("and");
-                        items.add(head.substring(0, lastAndIndex).trim());
-                        index = lastAndIndex + 4;
-                    } else if (lastAndIndex < lastOrIndex) {
-                        linkTypes.add("or");
-                        items.add(head.substring(0, lastOrIndex).trim());
-                        index = lastOrIndex + 3;
+            String[] orArray = sql.split("or ");
+            if (orArray.length > 1) {
+                for (int i = 0; i < orArray.length - 1; i++) {
+                    String subOrSql = orArray[i];
+                    if (subOrSql.contains("and ")) {
+                        String[] subAndArray = subOrSql.split("and ");
+                        for (int j = 0; j < subAndArray.length - 1; j++) {
+                            node.addSubNode(new SqlNode().setSql(subAndArray[j]).setConj("and"));
+                        }
+                        node.addSubNode(new SqlNode().setSql(subAndArray[subAndArray.length - 1]));
                     } else {
-                        throw new RuntimeException(String.format("错误的或暂不支持的sql语句，请检查语句：\" %s \"", sql));
+                        node.addSubNode(new SqlNode().setSql(orArray[i]).setConj("or"));
                     }
                 }
-
-                while (index < sql.length()) {
-                    if (sql.charAt(index) == '(') {
-                        stack.push(index);
-                        if (lastRight != -1 && stack.size() == 1) {
-                            // 判断两个括号之间是否还有其他语句 如该种情况:(A) or B and C and (D)
-                            String middle = sql.substring(lastRight + 1, index);
-                            if (middle.contains("and ")) {
-                                if (middle.contains("or ")) {
-                                    int firstAndIndex = middle.toLowerCase().indexOf("and ");
-                                    int firstOrIndex = middle.toLowerCase().indexOf("or ");
-                                    int lastAndIndex = middle.toLowerCase().lastIndexOf("and ");
-                                    int lastOrIndex = middle.toLowerCase().lastIndexOf("or ");
-                                    if (firstAndIndex < firstOrIndex) {
-                                        linkTypes.add("and");
-                                        items.add(
-                                                middle.substring(firstAndIndex + 4, Math.max(lastAndIndex, lastOrIndex))
-                                                        .trim());
-                                    } else {
-                                        linkTypes.add("or");
-                                        items.add(
-                                                middle.substring(firstOrIndex + 3, Math.max(lastAndIndex, lastOrIndex))
-                                                        .trim());
-                                    }
-                                    if (lastAndIndex > lastOrIndex)
-                                        linkTypes.add("and");
-                                    else
-                                        linkTypes.add("or");
-                                } else {
-                                    int firstAndIndex = middle.toLowerCase().indexOf("and ");
-                                    int lastAndIndex = middle.toLowerCase().lastIndexOf("and ");
-                                    if (firstAndIndex != lastAndIndex) {
-                                        items.add(middle.substring(firstAndIndex + 4, lastAndIndex).trim());
-                                        linkTypes.add("and");
-                                    } else {
-                                        if (middle.contains("in")) {
-                                            index = sql.indexOf(")", index);
-                                            items.add(sql.substring(lastRight + 5, index + 1));
-                                        }
-                                    }
-                                    linkTypes.add("and");
-                                }
-                            } else if (middle.contains("or ")) {
-                                int firstOrIndex = middle.toLowerCase().indexOf("or ");
-                                int lastOrIndex = middle.toLowerCase().lastIndexOf("or ");
-                                if (firstOrIndex != lastOrIndex) {
-                                    items.add(middle.substring(firstOrIndex + 3, lastOrIndex).trim());
-                                    linkTypes.add("or");
-                                } else {
-                                    if (middle.contains("in")) {
-                                        index = sql.indexOf(")", index);
-                                        items.add(sql.substring(lastRight + 5, index + 1));
-                                    }
-                                }
-                                linkTypes.add("or");
-                            }
-                            lastRight = -1;
-                        }
-                    }
-                    if (sql.charAt(index) == ')') {
-                        if (stack.isEmpty()) {
-                            throw new RuntimeException("括号格式不规范！");
-                        } else {
-                            if (stack.size() == 1) {
-                                // 去除in条件
-                                String subStr = sql.substring(stack.pop() + 1, index).trim();
-                                if (subStr.contains("=") || subStr.contains("in "))
-                                    items.add(subStr);
-                            } else {
-                                stack.pop();
-                            }
-                            lastRight = index;
-                        }
-                    }
-                    index++;
-                }
-                // 处理最后一个右括号外的非括号内容 如 (A) and B
-                if (!sql.trim().endsWith(")")) {
-                    int lastAndIndex = sql.toLowerCase().indexOf("and ", sql.lastIndexOf(")"));
-                    int lastOrIndex = sql.toLowerCase().indexOf("or ", sql.lastIndexOf(")"));
-                    String lastPart = null;
-                    if (lastAndIndex != -1) {
-                        if (lastOrIndex != -1) {
-                            if (lastAndIndex < lastOrIndex) {
-                                // 取距最后一个括号最近的值
-                                linkTypes.add("and");
-                                lastPart = sql.substring(lastAndIndex + 4);
-                            } else {
-                                linkTypes.add("or");
-                                lastPart = sql.substring(lastOrIndex + 3);
-                            }
-                        } else {
-                            linkTypes.add("and");
-                            lastPart = sql.substring(lastAndIndex + 4);
-                        }
-                    } else {
-                        if (lastOrIndex != -1) {
-                            linkTypes.add("or");
-                            lastPart = sql.substring(lastOrIndex + 3);
-                        }
-                    }
-                    if (Utils.isEmpty(lastPart))
-                        throw new RuntimeException(String.format("错误的或暂不支持的sql语句，请检查语句：\" %s \"", sql));
-                    else
-                        items.add(lastPart.trim());
-                }
-                boolean result = parse(items.get(0), row);
-                for (int i = 0; i < linkTypes.size(); i++) {
-                    if ("and".equals(linkTypes.get(i))) {
-                        result = result && parse(items.get(i + 1), row);
-                    } else {
-                        result = result || parse(items.get(i + 1), row);
-                    }
-                }
-                return result;
+                node.addSubNode(new SqlNode().setSql(orArray[orArray.length - 1]));
             } else {
-                // 处理 and or 语句
-                List<String> andItems = new ArrayList<>();
-                List<String> orItems = new ArrayList<>();
-                String[] orArray = sql.split("or ");
-                if (orArray.length > 1) {
-                    String first = orArray[0];
-                    if (first.contains("and")) {
-                        String[] temp = first.split("and");
-                        for (String s : temp) {
-                            andItems.add(s);
-                        }
-                    } else {
-                        andItems.add(first);
-                    }
-                    for (int i = 1; i < orArray.length; i++) {
-                        String str = orArray[i];
-                        if (str.contains("and")) {
-                            String[] temp = str.split("and");
-                            orItems.add(temp[0]);
-                            for (int j = 1; j < temp.length; j++) {
-                                andItems.add(temp[j]);
-                            }
-                        } else {
-                            orItems.add(str);
-                        }
-                    }
-                } else {
-                    for (String temp : sql.split("and")) {
-                        andItems.add(temp);
-                    }
+                String[] subAndArray = sql.split("and");
+                for (int i = 0; i < subAndArray.length - 1; i++) {
+                    node.addSubNode(new SqlNode().setSql(subAndArray[i]).setConj("and"));
                 }
-                for (String temp : orItems) {
-                    // or 条件通过一条就直接全部通过
-                    if (parse(temp, row)) {
-                        return true;
-                    }
-                }
-                for (String temp : andItems) {
-                    // and 条件一条不通过就全部不通过
-                    if (!parse(temp, row)) {
-                        return false;
-                    }
-                }
-                return true;
+                node.addSubNode(new SqlNode().setSql(subAndArray[subAndArray.length - 1]));
             }
+        }
+        for (SqlNode subNode : node.getSubNodes()) {
+            buildTree(subNode);
         }
     }
 
-    // 判断当前单元是否为最小单元
-    private boolean isMinimum(String sql) {
+    // 判断当前结点是否为最小结点
+    private boolean isMinimumNode(SqlNode node) {
         // 条件加空格是为了排除如android_,order_等含有and与or的字段
-        boolean flag = sql.contains("and ") || sql.contains("or ");
+        boolean flag = node.getSql().contains("and ") || node.getSql().contains("or ");
         return !flag;
+    }
+
+    // 处理括号
+    private void processBracket(SqlNode node) {
+        String sql = node.getSql();
+        int index = 0;
+        // 最后一个右括号的游标
+        int lastRight = -1;
+        // 处理第一个左括号前的内容
+        if (!sql.trim().startsWith("(")) {
+            String head = sql.substring(0, sql.indexOf("("));
+            // 判断第一个左括号是否为in () 的左括号
+            if (head.contains("in ")) {
+                String subSql = sql.substring(0, sql.indexOf(")") + 1);
+                String conj = getFirstConj(sql.substring(sql.indexOf(")")));
+                node.addSubNode(new SqlNode().setSql(subSql).setConj(conj));
+                index = sql.indexOf(conj) + conj.length() + 1;
+            } else {
+                String conj = getLastConj(sql.substring(0, sql.indexOf("(") + 1));
+                String subSql = sql.substring(0, sql.lastIndexOf(conj));
+                node.addSubNode(new SqlNode().setSql(subSql).setConj(conj));
+                index = sql.indexOf(")") + 1;
+            }
+        }
+
+        // 处理第一个左括号到最后一个右括号中间的内容
+        if (index >= sql.length())
+            return;
+        Stack<Integer> stack = new Stack<>();
+        while (index < sql.length()) {
+            if (sql.charAt(index) == '(') {
+                stack.push(index);
+                // 设置stack.size() == 1是为了对于(()())这种情况只对最外层括号进行操作
+                if (lastRight != -1 && stack.size() == 1) {
+                    // 判断两个括号之间是否有除连词外其他语句 如该种情况:(A) or B and C and (D)
+                    String subSql = sql.substring(lastRight + 1, index);
+                    if (subSql.trim().length() > 3) {
+                        String firstConj = getFirstConj(subSql);
+                        String lastConj = getLastConj(subSql);
+                        subSql = subSql.substring(subSql.indexOf(firstConj) + firstConj.length() + 1,
+                                subSql.lastIndexOf(lastConj));
+                        node.addSubNode(new SqlNode().setSql(subSql).setConj(lastConj));
+                    }
+                }
+            }
+            if (sql.charAt(index) == ')') {
+                if (stack.isEmpty()) {
+                    throw new RuntimeException("括号格式不规范！");
+                } else {
+                    if (stack.size() == 1) {
+                        String subStr = sql.substring(stack.peek() + 1, index).trim();
+                        // 去除in条件
+                        if (subStr.contains("=") || subStr.contains("in ")) {
+                            String conj = getFirstConj(sql.substring(index));
+                            SqlNode subNode = new SqlNode();
+                            if (!Utils.isEmpty(conj)) {
+                                subNode.setConj(conj);
+                            }
+                            node.addSubNode(subNode);
+                        }
+                    }
+                    stack.pop();
+                    lastRight = index;
+                }
+            }
+            index++;
+        }
+
+        // 处理第最后一个右括号后面的内容
+        if (!sql.trim().endsWith(")")) {
+            String subSql = sql.substring(sql.lastIndexOf(")") + 1);
+            String conj = getFirstConj(subSql);
+            subSql = subSql.substring(subSql.indexOf(conj) + conj.length() + 1);
+            node.addSubNode(new SqlNode().setSql(subSql));
+        }
+
+    }
+
+    // 获取第一个连词
+    private String getFirstConj(String sql) {
+        if (sql.contains("and ") || sql.contains("or ")) {
+            int firstAndIndex = sql.toLowerCase().indexOf("and ");
+            int firstOrIndex = sql.toLowerCase().indexOf("or ");
+            if (firstAndIndex < 0)
+                return "or";
+            else if (firstOrIndex < 0)
+                return "and";
+            else
+                return firstAndIndex < firstOrIndex ? "and" : "or";
+        }
+        return "";
+    }
+
+    // 获取最后一个连词
+    private String getLastConj(String sql) {
+        if (sql.contains("and ") || sql.contains("or ")) {
+            int lastAndIndex = sql.toLowerCase().lastIndexOf("and ");
+            int lastOrIndex = sql.toLowerCase().indexOf("or ");
+            if (lastAndIndex < 0)
+                return "or";
+            else if (lastOrIndex < 0)
+                return "and";
+            else
+                return lastAndIndex > lastOrIndex ? "and" : "or";
+        }
+        return "";
+    }
+
+    // 解析sql树
+    boolean parseTree(SqlNode node, DataRow row) {
+        if (isMinimumNode(node)) {
+            return selectCompare(node.getSql(), row);
+        } else {
+            List<SqlNode> subList = node.getSubNodes();
+            if (subList.size() == 0) {
+                throw new RuntimeException("错误的Sql语句!");
+            }
+            if (subList.size() == 1) {
+                return parseTree(subList.get(0), row);
+            }
+            boolean result = parseTree(subList.get(subList.size() - 1), row);
+            for (int i = subList.size() - 2; i >= 0; i--) {
+                if ("and".equals(subList.get(i).getConj())) {
+                    result = result && parseTree(subList.get(i - 1), row);
+                } else {
+                    result = result || parseTree(subList.get(i - 1), row);
+                }
+            }
+            return result;
+        }
     }
 
     // 选择对应比较器
