@@ -69,7 +69,8 @@ public class EntityHelper<T> {
                 continue;
 
             // 开放读取权限
-            if (field.getModifiers() == ClassData.PRIVATE || field.getModifiers() == ClassData.PROTECTED)
+            if (field.getModifiers() == ClassData.DEFAULT || field.getModifiers() == ClassData.PRIVATE
+                    || field.getModifiers() == ClassData.PROTECTED)
                 field.setAccessible(true);
 
             // 查找id标识的字段
@@ -91,10 +92,7 @@ public class EntityHelper<T> {
                 this.lockedField = Optional.of(field);
             }
             // 加入字段列表
-            String name = field.getName();
-            if (column != null && !"".equals(column.name()))
-                name = column.name();
-            fields.put(name, field);
+            fields.put(field.getName(), field);
         }
     }
 
