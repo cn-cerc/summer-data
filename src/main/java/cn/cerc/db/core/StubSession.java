@@ -30,8 +30,8 @@ public class StubSession implements ISession {
 
     }
 
-    public StubSession setIndustry(String corpNo) {
-        this.setProperty(ISession.INDUSTRY, corpNo);
+    public StubSession setIndustry(String industry) {
+        this.setProperty(ISession.INDUSTRY, industry);
         return this;
     }
 
@@ -40,13 +40,13 @@ public class StubSession implements ISession {
         return this;
     }
 
-    public StubSession setUserCode(String corpNo) {
-        this.setProperty(ISession.USER_CODE, corpNo);
+    public StubSession setUserCode(String userCode) {
+        this.setProperty(ISession.USER_CODE, userCode);
         return this;
     }
 
-    public StubSession setUserName(String corpNo) {
-        this.setProperty(ISession.USER_NAME, corpNo);
+    public StubSession setUserName(String userName) {
+        this.setProperty(ISession.USER_NAME, userName);
         return this;
     }
 

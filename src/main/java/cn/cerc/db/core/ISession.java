@@ -6,6 +6,7 @@ public interface ISession extends SessionImpl, AutoCloseable {
     String EDITION = "edition";
     String CORP_NO = "corp_no";
     String USER_CODE = "user_code";
+    String USER_ROLE = "user_role";// 用户角色
     String USER_ID = "user_id";
     String USER_NAME = "user_name";
     String VERSION = "version";

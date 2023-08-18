@@ -22,6 +22,10 @@ public interface SessionImpl {
         return (String) getProperty(ISession.INDUSTRY);
     }
 
+    default String getUserRole() {
+        return (String) getProperty(ISession.USER_ROLE);
+    }
+
     default String getCorpNo() {
         return (String) getProperty(ISession.CORP_NO);
     }
