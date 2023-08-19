@@ -379,16 +379,10 @@ public class DataRow implements Serializable, IRecord {
             fields.clear();
     }
 
-    /**
-     * 请改使用语义更清晰的 hasValue
-     * 
-     * @param field 字段代码
-     * @return 判断是否有此栏位，以及此栏位是否有值
-     */
-    @Deprecated
-    public boolean has(String field) {
-        return hasValue(field);
-    }
+//    @Deprecated
+//    public boolean has(String field) {
+//        return hasValue(field);
+//    }
 
     /**
      * 判断是否有此栏位，但不管这个栏位是否有值
