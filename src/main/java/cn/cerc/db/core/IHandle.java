@@ -35,6 +35,13 @@ public interface IHandle {
         return getSession().getUserCode();
     }
 
+    /**
+     * 获取用户角色
+     */
+    default String getUserRole() {
+        return getSession().getUserRole();
+    }
+
     default MysqlServerMaster getMysql() {
         return (MysqlServerMaster) getSession().getProperty(MysqlServerMaster.SessionId);
     }
