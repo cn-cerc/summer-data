@@ -853,16 +853,6 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
         return new DataColumn(this, fieldCode);
     }
 
-    /**
-     * 此函数没有意义，不需要自己返回自己
-     * 
-     * @return 返回 this
-     */
-    @Deprecated
-    public DataSet dataSet() {
-        return this;
-    }
-
     public static void main(String[] args) throws InterruptedException {
         DataSet ds = new DataSet();
         for (int i = 0; i < 1000; i++)
