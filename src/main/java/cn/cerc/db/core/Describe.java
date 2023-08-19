@@ -11,7 +11,8 @@ import java.lang.annotation.Target;
 public @interface Describe {
 
     // 字段标准
-    String name();
+    @Deprecated
+    String name() default "";
 
     // 备注
     String remark() default "";
