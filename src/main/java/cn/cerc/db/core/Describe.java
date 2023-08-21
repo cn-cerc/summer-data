@@ -10,7 +10,9 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 public @interface Describe {
 
-    // 字段标准
+    /**
+     * 请改使用注解 @Column
+     */
     @Deprecated
     String name() default "";
 

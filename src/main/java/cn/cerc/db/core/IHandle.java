@@ -50,7 +50,7 @@ public interface IHandle {
     }
 
     /**
-     * 允许编辑菜单
+     * 允许编辑菜单界面
      */
     default boolean allowVisualDesign() {
         return getSession().allowVisualDesign();
