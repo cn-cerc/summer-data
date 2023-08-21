@@ -36,6 +36,13 @@ public interface IHandle {
     }
 
     /**
+     * 是否为超级用户
+     */
+    default String isSuperUser() {
+        return getSession().isSuperUser();
+    }
+
+    /**
      * 获取用户角色
      */
     default String getUserRole() {

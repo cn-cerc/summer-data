@@ -12,6 +12,7 @@ public interface ISession extends AutoCloseable {
     String USER_ROLE = "user_role";// 用户角色
     String USER_ID = "user_id";
     String USER_NAME = "user_name";
+    String SUPER_USER = "super_user";
     String VERSION = "version";
 
     String CLIENT_DEVICE = "device"; // client device
@@ -51,6 +52,10 @@ public interface ISession extends AutoCloseable {
 
     default String getUserRole() {
         return (String) getProperty(ISession.USER_ROLE);
+    }
+
+    default String isSuperUser() {
+        return (String) getProperty(ISession.SUPER_USER);
     }
 
     default String getCorpNo() {
