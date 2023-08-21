@@ -45,12 +45,12 @@ public interface ISession extends AutoCloseable {
         return (String) getProperty(ISession.INDUSTRY);
     }
 
-    default String getUserRole() {
-        return (String) getProperty(ISession.USER_ROLE);
-    }
-
     default boolean allowVisualDesign() {
         return "true".equals(getProperty(ISession.Visual_Design));
+    }
+
+    default String getUserRole() {
+        return (String) getProperty(ISession.USER_ROLE);
     }
 
     default String getCorpNo() {
