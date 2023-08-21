@@ -5,7 +5,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class SqlWhere {
+
+    private static final Logger log = LoggerFactory.getLogger(SqlWhere.class);
+
     private final JoinDirectionEnum joinGroup;
     private JoinDirectionEnum joinMode = JoinDirectionEnum.And;
     private final StringBuffer sb = new StringBuffer();
@@ -309,8 +315,11 @@ public class SqlWhere {
     }
 
     public final SqlWhere in(String field, Collection<?> values) {
-        if (values == null || values.size() == 0)
-            throw new RuntimeException("sql command IN conditions can not be empty");
+        if (values == null || values.size() == 0) {
+            RuntimeException e = new RuntimeException("sql command IN conditions can not be empty");
+            log.error(e.getMessage(), e);
+            throw e;
+        }
         if (field.contains("'"))
             throw new RuntimeException("field contains error character[']");
         if (this.size++ > 0)
