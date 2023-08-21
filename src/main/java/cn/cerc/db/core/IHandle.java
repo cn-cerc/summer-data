@@ -42,6 +42,13 @@ public interface IHandle {
         return getSession().getUserRole();
     }
 
+    /**
+     * 允许编辑菜单
+     */
+    default boolean allowVisualDesign() {
+        return getSession().allowVisualDesign();
+    }
+
     default MysqlServerMaster getMysql() {
         return (MysqlServerMaster) getSession().getProperty(MysqlServerMaster.SessionId);
     }
