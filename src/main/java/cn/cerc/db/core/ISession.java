@@ -54,8 +54,8 @@ public interface ISession extends AutoCloseable {
         return (String) getProperty(ISession.USER_ROLE);
     }
 
-    default String isSuperUser() {
-        return (String) getProperty(ISession.SUPER_USER);
+    default boolean isSuperUser() {
+        return "true".equals(getProperty(ISession.SUPER_USER));
     }
 
     default String getCorpNo() {

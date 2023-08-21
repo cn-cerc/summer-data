@@ -38,7 +38,7 @@ public interface IHandle {
     /**
      * 是否为超级用户
      */
-    default String isSuperUser() {
+    default boolean isSuperUser() {
         return getSession().isSuperUser();
     }
 
