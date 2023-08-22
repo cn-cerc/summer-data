@@ -17,6 +17,7 @@ import cn.cerc.db.core.Datetime;
 public class MongoDataSetConver {
     private DataSet dataSet;
     private Collection<Document> documents;
+    private boolean filterId = true;
     private boolean isConverDone;
     /**
      * 时间字段集合：在进行转换时集合内的字段将会被转换为 {@link cn.cerc.db.core.Datetime} 类型
@@ -50,7 +51,7 @@ public class MongoDataSetConver {
                     for (Document document : documents) {
                         DataRow dataRow = this.dataSet.append().current();
                         document.forEach((key, value) -> {
-                            if ("_id".equals(key))
+                            if (filterId && "_id".equals(key))
                                 return;
                             dataRow.setValue(key,
                                     converFunction.getOrDefault(key, DefaultConver.INSTANCE).apply(value));
@@ -62,6 +63,15 @@ public class MongoDataSetConver {
         }
         dataSet.first();
         return dataSet;
+    }
+
+    public boolean isFilterId() {
+        return filterId;
+    }
+
+    public MongoDataSetConver setFilterId(boolean filterId) {
+        this.filterId = filterId;
+        return this;
     }
 
     protected enum DatetimeConver implements Function<Object, Object> {
