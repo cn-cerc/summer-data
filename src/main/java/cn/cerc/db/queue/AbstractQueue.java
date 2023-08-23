@@ -16,7 +16,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.Datetime.DateType;
 import cn.cerc.db.core.ServerConfig;
-import cn.cerc.db.queue.mns.MnsServer;
 import cn.cerc.db.queue.rabbitmq.RabbitQueue;
 import cn.cerc.db.queue.sqlmq.SqlmqQueue;
 import cn.cerc.db.queue.sqlmq.SqlmqQueueName;
@@ -164,9 +163,6 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
                 return "push redis ok";
             }
         }
-        case AliyunMNS -> {
-            return MnsServer.getQueue(this.getId()).push(data);
-        }
         case Sqlmq -> {
             SqlmqQueueName.register(this.getClass());
             if (group != null) {
@@ -204,7 +200,6 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
                     this.consume(data, true);
             }
         }
-        case AliyunMNS -> MnsServer.getQueue(getId()).pop(100, this);
         case Sqlmq -> SqlmqServer.getQueue(getId()).pop(100, this);
         case RabbitMQ -> {
             try (var queue = new RabbitQueue(this.getId())) {
