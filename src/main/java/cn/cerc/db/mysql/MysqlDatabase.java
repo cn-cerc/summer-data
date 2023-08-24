@@ -166,7 +166,7 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
             sb.append(" auto_increment");
         }
         if (des != null) {
-            sb.append(" comment '").append(Utils.isEmpty(des.name()) ? field.getName() : des.name()).append("'");
+            sb.append(" comment '").append(Utils.isEmpty(column.name()) ? field.getName() : column.name()).append("'");
         }
     }
 
