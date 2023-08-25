@@ -25,7 +25,7 @@ import cn.cerc.db.testsql.TestsqlServer;
 public class EntityHelper<T> {
     private static ConcurrentHashMap<Class<?>, EntityHelper<?>> items = new ConcurrentHashMap<>();
     private Class<T> clazz;
-    private String table;
+    private String tableName;
     private Optional<Field> idField = Optional.empty();
     private Optional<Field> lockedField = Optional.empty();
     private Optional<Field> versionField = Optional.empty();
@@ -36,6 +36,7 @@ public class EntityHelper<T> {
     private String description;
     private EntityKey entityKey;
     private SqlServer sqlServer;
+    private Table table;
 
     @Deprecated
     public static <T extends EntityImpl> EntityHelper<T> create(Class<T> clazz) {
@@ -57,12 +58,15 @@ public class EntityHelper<T> {
     private EntityHelper(Class<T> class1) {
         super();
         this.clazz = class1;
-        this.table = class1.getSimpleName();
+        this.tableName = class1.getSimpleName();
         for (var clazz : this.getFamily()) {
             // 查找表名
-            Table object = clazz.getDeclaredAnnotation(Table.class);
-            if (object != null && !Utils.isEmpty(object.name()))
-                this.table = object.name();
+            Table annoTable = clazz.getDeclaredAnnotation(Table.class);
+            if (annoTable != null) {
+                this.table = annoTable;
+                if (!Utils.isEmpty(annoTable.name()))
+                    this.tableName = annoTable.name();
+            }
 
             // 查找数据库类型
             SqlServer annoServer = clazz.getDeclaredAnnotation(SqlServer.class);
@@ -153,8 +157,11 @@ public class EntityHelper<T> {
         return clazz;
     }
 
-    public String table() {
+    public Table table() {
         return this.table;
+    }
+    public String tableName() {
+        return this.tableName;
     }
 
     public Optional<Field> idField() {

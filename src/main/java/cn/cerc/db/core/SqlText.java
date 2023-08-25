@@ -250,7 +250,7 @@ public class SqlText implements Serializable {
     public SqlText addSelectDefault() {
         if (this.clazz == null)
             throw new IllegalArgumentException("clazz is null");
-        this.add("select * from %s", EntityHelper.create(clazz).table());
+        this.add("select * from %s", EntityHelper.create(clazz).tableName());
         return this;
     }
 

@@ -40,7 +40,7 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
 
     @Override
     public final String table() {
-        return helper.table();
+        return helper.tableName();
     }
 
     @Override
@@ -73,7 +73,7 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
             sb.append(field.getName()).append(" ");
             writeDataType(sb, field);
         }
-        Table table = clazz.getDeclaredAnnotation(Table.class);
+        Table table = EntityHelper.get(clazz).table();
         if (table != null && table.indexes().length > 0) {
             sb.append(",");
             Index[] indexs = table.indexes();

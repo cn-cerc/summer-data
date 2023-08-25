@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import javax.persistence.Table;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -273,13 +271,8 @@ public class SqlQuery extends DataSet implements IHandle {
      * @return SqlWhere
      */
     public SqlWhere addWhere(Class<? extends EntityImpl> clazz) {
-        // 查找表名
-        String table = clazz.getSimpleName();
-        Table object = clazz.getDeclaredAnnotation(Table.class);
-        if (object != null && !Utils.isEmpty(object.name()))
-            table = object.name();
-        // 自动生成select指令
-        sql.add("select * from %s", table);
+        String tableName = EntityHelper.get(clazz).tableName();
+        sql.add("select * from %s", tableName);
         return this.addWhere();
     }
 

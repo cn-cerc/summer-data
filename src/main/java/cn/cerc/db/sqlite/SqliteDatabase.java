@@ -30,7 +30,7 @@ public class SqliteDatabase implements ISqlDatabase {
 
     @Override
     public final String table() {
-        return helper.table();
+        return helper.tableName();
     }
 
     @Override
@@ -58,7 +58,7 @@ public class SqliteDatabase implements ISqlDatabase {
             writeDataType(sb, field);
         }
         sb.append("\n);");
-        Table table = clazz.getDeclaredAnnotation(Table.class);
+        Table table = EntityHelper.get(clazz).table();
         if (table != null && table.indexes().length > 0) {
             sb.append("\n");
             Index[] indexs = table.indexes();
