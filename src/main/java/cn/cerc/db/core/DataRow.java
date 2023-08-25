@@ -468,47 +468,45 @@ public class DataRow implements Serializable, IRecord {
 
     public void saveToEntity(EntityImpl entity) {
         EntityHelper<? extends EntityImpl> helper = EntityHelper.create(entity.getClass());
-        Map<String, Field> items = helper.fields();
-        if (this.fields().size() > items.size()) {
-            log.warn("database fields.size > entity {} properties.size", entity.getClass().getName());
-        } else if (this.fields().size() < items.size()) {
-            for (var field : items.keySet()) {
-                if (!fields.exists(field))
-                    log.error("数据表 {} 缺少字段 {}", helper.table(), field);
+        Map<String, Field> fieldsList = helper.fields();
+        if (helper.strict()) {
+            if (this.fields().size() > fieldsList.size()) {
+                log.warn("database fields.size > entity {} properties.size", entity.getClass().getName());
+            } else if (this.fields().size() < fieldsList.size()) {
+                for (var field : fieldsList.keySet()) {
+                    if (!fields.exists(field))
+                        log.error("数据表 {} 缺少字段 {}", helper.table(), field);
+                }
+                throw new RuntimeException(String.format("database fields.size %d < %s properties.size %d ",
+                        this.fields().size(), entity.getClass().getName(), fieldsList.size()));
             }
-            throw new RuntimeException(String.format("database fields.size %d < %s properties.size %d ",
-                    this.fields().size(), entity.getClass().getName(), items.size()));
         }
-
         // 查找并赋值
         Variant variant = new Variant();
         for (FieldMeta meta : this.fields()) {
-            Object value = this.getValue(meta.code());
-
             // 查找指定的对象属性
-            Field field = items.get(meta.code());
-            if (field == null) {
+            Field field = fieldsList.get(meta.code());
+            if (field != null) {
+                // 给属性赋值
+                Object value = this.getValue(meta.code());
+                try {
+                    if (value == null) {
+                        Column column = field.getAnnotation(Column.class);
+                        if (column == null || column.nullable()) {
+                            field.set(entity, null);
+                        } else
+                            variant.setValue(null).writeToEntity(entity, field);
+                    } else if (field.getType().equals(value.getClass()))
+                        field.set(entity, value);
+                    else
+                        variant.setValue(value).writeToEntity(entity, field);
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    log.error(e.getMessage(), e);
+                    throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
+                            value.getClass().getName(), field.getType().getName()));
+                }
+            } else if (helper.strict())
                 log.warn("not find property: " + meta.code());
-                continue;
-            }
-
-            // 给属性赋值
-            try {
-                if (value == null) {
-                    Column column = field.getAnnotation(Column.class);
-                    if (column == null || column.nullable()) {
-                        field.set(entity, null);
-                    } else
-                        variant.setValue(null).writeToEntity(entity, field);
-                } else if (field.getType().equals(value.getClass()))
-                    field.set(entity, value);
-                else
-                    variant.setValue(value).writeToEntity(entity, field);
-            } catch (IllegalArgumentException | IllegalAccessException e) {
-                e.printStackTrace();
-                throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
-                        value.getClass().getName(), field.getType().getName()));
-            }
         }
     }
 
@@ -518,16 +516,11 @@ public class DataRow implements Serializable, IRecord {
             for (String fieldCode : fields.keySet())
                 this.setValue(fieldCode, fields.get(fieldCode).get(entity));
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
         return this;
     }
-
-//    @Deprecated
-//    public final <T extends EntityImpl> T asObject(Class<T> clazz) {
-//        return asEntity(clazz);
-//    }
 
     public String getText(String field) {
         FieldMeta meta = this.fields().get(field);

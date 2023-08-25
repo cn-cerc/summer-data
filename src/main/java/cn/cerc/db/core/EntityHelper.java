@@ -28,6 +28,7 @@ public class EntityHelper<T> {
     private SqlServerType sqlServerType = SqlServerType.Mysql;
     // 找出所有可用的的数据字段
     private Map<String, Field> fields = new LinkedHashMap<>();
+    private boolean strict = true;
 
     public static <T extends EntityImpl> EntityHelper<T> create(Class<T> clazz) {
         @SuppressWarnings("unchecked")
@@ -50,6 +51,7 @@ public class EntityHelper<T> {
             this.table = object.name();
         else
             this.table = clazz.getSimpleName();
+
         // 查找数据库类型
         SqlServer server = clazz.getAnnotation(SqlServer.class);
         if (server != null) {
@@ -57,6 +59,11 @@ public class EntityHelper<T> {
             if (TestsqlServer.enabled())
                 this.sqlServerType = SqlServerType.Testsql;
         }
+
+        // 查找是否非严格模式
+        Strict annoStrict = clazz.getAnnotation(Strict.class);
+        if (annoStrict != null)
+            this.strict = annoStrict.value();
 
         // 查找特殊字段
         for (Field field : clazz.getDeclaredFields()) {
@@ -196,6 +203,10 @@ public class EntityHelper<T> {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
+    }
+
+    public boolean strict() {
+        return strict;
     }
 
 }
