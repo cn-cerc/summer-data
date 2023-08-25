@@ -467,7 +467,7 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public void saveToEntity(EntityImpl entity) {
-        EntityHelper<? extends EntityImpl> helper = EntityHelper.create(entity.getClass());
+        EntityHelper<? extends EntityImpl> helper = EntityHelper.get(entity.getClass());
         Map<String, Field> fieldsList = helper.fields();
         if (helper.strict()) {
             if (this.fields().size() > fieldsList.size()) {
@@ -475,7 +475,7 @@ public class DataRow implements Serializable, IRecord {
             } else if (this.fields().size() < fieldsList.size()) {
                 for (var field : fieldsList.keySet()) {
                     if (!fields.exists(field))
-                        log.error("数据表 {} 缺少字段 {}", helper.table(), field);
+                        log.error("数据表 {} 缺少字段 {}", helper.tableName(), field);
                 }
                 throw new RuntimeException(String.format("database fields.size %d < %s properties.size %d ",
                         this.fields().size(), entity.getClass().getName(), fieldsList.size()));

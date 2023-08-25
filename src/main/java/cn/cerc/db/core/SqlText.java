@@ -28,7 +28,7 @@ public class SqlText implements Serializable {
     public SqlText(Class<? extends EntityImpl> clazz) {
         super();
         this.clazz = clazz;
-        SqlServer server = clazz.getAnnotation(SqlServer.class);
+        SqlServer server = EntityHelper.get(clazz).sqlServer();
         this.sqlServerType = (server != null) ? server.type() : SqlServerType.Mysql;
         if (TestsqlServer.enabled())
             this.sqlServerType = SqlServerType.Testsql;
@@ -250,7 +250,7 @@ public class SqlText implements Serializable {
     public SqlText addSelectDefault() {
         if (this.clazz == null)
             throw new IllegalArgumentException("clazz is null");
-        this.add("select * from %s", EntityHelper.create(clazz).table());
+        this.add("select * from %s", EntityHelper.create(clazz).tableName());
         return this;
     }
 

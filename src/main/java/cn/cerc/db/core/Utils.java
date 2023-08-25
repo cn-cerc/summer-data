@@ -717,7 +717,7 @@ public class Utils {
 
     @Deprecated
     public static String findTable(Class<? extends EntityImpl> clazz) {
-        return EntityHelper.create(clazz).table();
+        return EntityHelper.create(clazz).tableName();
     }
 
     @Deprecated
