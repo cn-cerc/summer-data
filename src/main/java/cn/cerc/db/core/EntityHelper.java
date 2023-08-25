@@ -61,9 +61,9 @@ public class EntityHelper<T> {
         }
 
         // 查找是否非严格模式
-        Strict strict = clazz.getAnnotation(Strict.class);
-        if (strict != null)
-            this.strict = strict.value();
+        Strict annoStrict = clazz.getAnnotation(Strict.class);
+        if (annoStrict != null)
+            this.strict = annoStrict.value();
 
         // 查找特殊字段
         for (Field field : clazz.getDeclaredFields()) {
