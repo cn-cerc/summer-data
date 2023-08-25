@@ -12,5 +12,9 @@ public enum CacheLevelEnum {
     /**
      * 2级缓存：开通Redis与Session缓存
      */
-    RedisAndSession;
+    RedisAndSession,
+	/**
+	 * 3级缓存：使用EntitySpace
+	 */
+    EntitySpace;
 }
