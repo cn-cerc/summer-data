@@ -528,7 +528,7 @@ public class SqlWhere {
     }
 
     public static SqlWhere create(IHandle handle, Class<? extends EntityImpl> clazz, String... values) {
-        EntityKey entityKey = clazz.getDeclaredAnnotation(EntityKey.class);
+        EntityKey entityKey = EntityHelper.get(clazz).entityKey();
         int offset = entityKey.corpNo() ? 1 : 0;
         SqlWhere where = SqlWhere.create(clazz);
         if (entityKey.corpNo())

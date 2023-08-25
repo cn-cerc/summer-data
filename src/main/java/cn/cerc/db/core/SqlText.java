@@ -28,7 +28,7 @@ public class SqlText implements Serializable {
     public SqlText(Class<? extends EntityImpl> clazz) {
         super();
         this.clazz = clazz;
-        SqlServer server = clazz.getAnnotation(SqlServer.class);
+        SqlServer server = EntityHelper.get(clazz).sqlServer();
         this.sqlServerType = (server != null) ? server.type() : SqlServerType.Mysql;
         if (TestsqlServer.enabled())
             this.sqlServerType = SqlServerType.Testsql;

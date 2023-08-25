@@ -34,8 +34,15 @@ public class EntityHelper<T> {
     private Map<String, Field> fields = new LinkedHashMap<>();
     private boolean strict = true;
     private String description;
+    private EntityKey entityKey;
+    private SqlServer sqlServer;
 
+    @Deprecated
     public static <T extends EntityImpl> EntityHelper<T> create(Class<T> clazz) {
+        return get(clazz);
+    }
+
+    public static <T extends EntityImpl> EntityHelper<T> get(Class<T> clazz) {
         @SuppressWarnings("unchecked")
         EntityHelper<T> result = (EntityHelper<T>) items.get(clazz);
         if (result != null)
@@ -60,6 +67,7 @@ public class EntityHelper<T> {
             // 查找数据库类型
             SqlServer annoServer = clazz.getDeclaredAnnotation(SqlServer.class);
             if (annoServer != null) {
+                this.sqlServer = annoServer;
                 this.sqlServerType = annoServer.type();
                 if (TestsqlServer.enabled())
                     this.sqlServerType = SqlServerType.Testsql;
@@ -74,6 +82,10 @@ public class EntityHelper<T> {
             Description annoDescription = clazz.getDeclaredAnnotation(Description.class);
             if (annoDescription != null)
                 this.description = annoDescription.value();
+
+            EntityKey annoEntityKey = clazz.getDeclaredAnnotation(EntityKey.class);
+            if (annoEntityKey != null)
+                this.entityKey = annoEntityKey;
 
             // 查找特殊字段
             for (Field field : clazz.getDeclaredFields()) {
@@ -115,7 +127,7 @@ public class EntityHelper<T> {
     }
 
     /**
-     * 返顺类的层级，从最上层类到当前类
+     * 返回类的层级，从最上层类到当前类
      * 
      * @param clazz
      * @param list
@@ -176,6 +188,10 @@ public class EntityHelper<T> {
 
     public SqlServerType sqlServerType() {
         return sqlServerType;
+    }
+
+    public SqlServer sqlServer() {
+        return sqlServer;
     }
 
     public T newEntity() {
@@ -245,6 +261,10 @@ public class EntityHelper<T> {
 
     public String description() {
         return description;
+    }
+
+    public EntityKey entityKey() {
+        return this.entityKey;
     }
 
 }
