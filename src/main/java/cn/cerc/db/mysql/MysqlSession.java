@@ -7,14 +7,18 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import cn.cerc.db.core.ISession;
 import cn.cerc.db.core.LanguageResource;
 
 /**
  * 同步日瓦数据库专用
  */
-//@Component
-//@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MysqlSession implements ISession {
     protected Map<String, Object> connections = new HashMap<>();
     private final Map<String, Object> params = new HashMap<>();
