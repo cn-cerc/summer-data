@@ -460,7 +460,7 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public <T extends EntityImpl> T asEntity(Class<T> clazz) {
-        EntityHelper<T> helper = EntityHelper.create(clazz);
+        EntityHelper<T> helper = EntityHelper.get(clazz);
         T entity = helper.newEntity();
         saveToEntity(entity);
         return entity;
@@ -512,7 +512,7 @@ public class DataRow implements Serializable, IRecord {
 
     public <T extends EntityImpl> DataRow loadFromEntity(T entity) {
         try {
-            Map<String, Field> fields = EntityHelper.create(entity.getClass()).fields();
+            Map<String, Field> fields = EntityHelper.get(entity.getClass()).fields();
             for (String fieldCode : fields.keySet())
                 this.setValue(fieldCode, fields.get(fieldCode).get(entity));
         } catch (IllegalArgumentException | IllegalAccessException e) {

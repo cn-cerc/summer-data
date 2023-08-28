@@ -25,7 +25,7 @@ public class SqliteDatabase implements ISqlDatabase {
     public SqliteDatabase(IHandle handle, Class<? extends EntityImpl> clazz) {
         super();
         this.clazz = clazz;
-        this.helper = EntityHelper.create(clazz);
+        this.helper = EntityHelper.get(clazz);
     }
 
     @Override

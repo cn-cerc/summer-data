@@ -63,7 +63,7 @@ public class JsonTool {
     public static <T extends EntityImpl> Document toDocument(T entity) {
         var doc = new Document();
         try {
-            Map<String, Field> fields = EntityHelper.create(entity.getClass()).fields();
+            Map<String, Field> fields = EntityHelper.get(entity.getClass()).fields();
             for (String fieldCode : fields.keySet()) {
                 var value = fields.get(fieldCode).get(entity);
                 if (value instanceof Datetime datetime)
