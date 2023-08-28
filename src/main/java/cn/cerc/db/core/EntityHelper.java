@@ -15,6 +15,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Version;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Description;
 
 import cn.cerc.db.mssql.MssqlDatabase;
@@ -23,6 +25,8 @@ import cn.cerc.db.sqlite.SqliteDatabase;
 import cn.cerc.db.testsql.TestsqlServer;
 
 public class EntityHelper<T> {
+    private static final Logger log = LoggerFactory.getLogger(EntityHelper.class);
+
     private static ConcurrentHashMap<Class<?>, EntityHelper<?>> items = new ConcurrentHashMap<>();
     private Class<T> clazz;
     private String tableName;
@@ -108,8 +112,11 @@ public class EntityHelper<T> {
 
                 // 查找id标识的字段
                 if (id != null) {
-                    if (idField.isPresent())
-                        throw new RuntimeException("暂不支持多个Id字段");
+                    if (idField.isPresent()) {
+                        RuntimeException exception = new RuntimeException("暂不支持多个Id字段");
+                        log.error("{} {}", field.toString(), exception.getMessage(), exception);
+                        throw exception;
+                    }
                     this.idField = Optional.of(field);
                 }
                 // 查找version标识的字段
@@ -160,6 +167,7 @@ public class EntityHelper<T> {
     public Table table() {
         return this.table;
     }
+
     public String tableName() {
         return this.tableName;
     }
