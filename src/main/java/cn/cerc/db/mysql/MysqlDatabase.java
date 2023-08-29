@@ -33,7 +33,7 @@ public class MysqlDatabase implements IHandle, ISqlDatabase {
     public MysqlDatabase(IHandle handle, Class<? extends EntityImpl> clazz) {
         super();
         this.clazz = clazz;
-        this.helper = EntityHelper.create(clazz);
+        this.helper = EntityHelper.get(clazz);
         if (handle != null)
             this.setSession(handle.getSession());
     }

@@ -717,12 +717,12 @@ public class Utils {
 
     @Deprecated
     public static String findTable(Class<? extends EntityImpl> clazz) {
-        return EntityHelper.create(clazz).tableName();
+        return EntityHelper.get(clazz).tableName();
     }
 
     @Deprecated
     public static String findOid(Class<? extends EntityImpl> clazz, String defaultUid) {
-        return EntityHelper.create(clazz).idFieldCode();
+        return EntityHelper.get(clazz).idFieldCode();
     }
 
     /**
