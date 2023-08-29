@@ -19,7 +19,7 @@ import cn.cerc.db.core.FieldMeta.FieldKind;
 
 public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     private static final long serialVersionUID = 7478897050846245325L;
-    private HashSet<FieldMeta> items = new LinkedHashSet<>();
+    private final HashSet<FieldMeta> items = new LinkedHashSet<>();
 
     public FieldDefs() {
         super();

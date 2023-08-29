@@ -9,9 +9,11 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -29,7 +31,7 @@ import com.google.gson.reflect.TypeToken;
 
 import cn.cerc.db.Alias;
 
-public class DataRow implements Serializable, IRecord {
+public class DataRow implements Serializable, Iterable<Entry<String, Object>>, IRecord {
     private static final Logger log = LoggerFactory.getLogger(DataRow.class);
     private static final long serialVersionUID = 4454304132898734723L;
     private DataRowState state = DataRowState.None;
@@ -679,5 +681,10 @@ public class DataRow implements Serializable, IRecord {
 
     public DataCell bind(String field) {
         return new DataCell(this, field);
+    }
+
+    @Override
+    public Iterator<Entry<String, Object>> iterator() {
+        return items.entrySet().iterator();
     }
 }
