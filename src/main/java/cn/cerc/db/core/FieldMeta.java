@@ -324,6 +324,8 @@ public final class FieldMeta implements Serializable {
     public void readEntityField(Field field) {
         Describe describe = field.getDeclaredAnnotation(Describe.class);
         if (describe != null) {
+            if (!"".equals(describe.name()))
+                this.setName(describe.name());
             if (!"".equals(describe.remark()))
                 this.setRemark(describe.remark());
             this.describe = describe;
