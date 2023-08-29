@@ -1,22 +1,25 @@
 package cn.cerc.db.oss;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.aliyun.oss.ClientBuilderConfiguration;
-import com.aliyun.oss.OSS;
-import com.aliyun.oss.OSSClientBuilder;
-import com.aliyun.oss.OSSException;
-import com.aliyun.oss.model.Bucket;
-import com.aliyun.oss.model.GetObjectRequest;
-import com.aliyun.oss.model.OSSObject;
-import com.aliyun.oss.model.ObjectMetadata;
+import com.obs.services.ObsClient;
+import com.obs.services.ObsConfiguration;
+import com.obs.services.model.GetObjectRequest;
+import com.obs.services.model.ListBucketsRequest;
+import com.obs.services.model.ObjectMetadata;
+import com.obs.services.model.ObsBucket;
+import com.obs.services.model.ObsObject;
 
 import cn.cerc.db.core.IConfig;
 import cn.cerc.db.core.IConnection;
@@ -25,17 +28,18 @@ import cn.cerc.db.core.Utils;
 
 @Component
 public class OssConnection implements IConnection {
+    private static final Logger log = LoggerFactory.getLogger(OssConnection.class);
 
     // 设置连接地址
-    public static final String oss_endpoint = "oss.endpoint";
+    public static final String oss_endpoint = "huawei.oss.endpoint";
     // 连接区域
-    public static final String oss_bucket = "oss.bucket";
+    public static final String oss_bucket = "huawei.oss.bucket";
     // 对外访问地址
-    public static final String oss_site = "oss.site";
+    public static final String oss_site = "huawei.oss.site";
     // 连接id
-    public static final String oss_accessKeyId = "oss.accessKeyId";
+    public static final String oss_accessKeyId = "huawei.oss.accessKeyId";
     // 连接密码
-    public static final String oss_accessKeySecret = "oss.accessKeySecret";
+    public static final String oss_accessKeySecret = "huawei.oss.accessKeySecret";
 
     private static String bucket;
     private static String site;
@@ -43,10 +47,10 @@ public class OssConnection implements IConnection {
     // IHandle 标识
     public static final String sessionId = "ossSession";
     private static final IConfig config = ServerConfig.getInstance();
-    private static volatile OSS client;
+    private static volatile ObsClient client;
 
     @Override
-    public OSS getClient() {
+    public ObsClient getClient() {
         if (client == null) {
             synchronized (OssConnection.class) {
                 if (client == null) {
@@ -66,16 +70,16 @@ public class OssConnection implements IConnection {
                         throw new RuntimeException(
                                 String.format("the property %s is empty", OssConnection.oss_accessKeySecret));
 
-                    ClientBuilderConfiguration conf = new ClientBuilderConfiguration();
+                    ObsConfiguration conf = new ObsConfiguration();
                     // 设置OSSClient使用的最大连接数，默认1024
                     conf.setMaxConnections(1024);
                     // 设置请求超时时间，默认3秒
                     conf.setSocketTimeout(3 * 1000);
                     // 设置失败请求重试次数，默认3次
                     conf.setMaxErrorRetry(3);
+                    conf.setEndPoint(endpoint);
 
-                    // 创建OSSClient实例
-                    client = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret, conf);
+                    client = new ObsClient(accessKeyId, accessKeySecret, conf);
                 }
             }
         }
@@ -84,17 +88,22 @@ public class OssConnection implements IConnection {
 
     // 获取指定的数据库是否存在
     public boolean exist(String bucket) {
-        return getClient().doesBucketExist(bucket);
+        return getClient().headBucket(bucket);
     }
 
     // 获取所有的列表
-    public List<Bucket> getBuckets() {
-        return getClient().listBuckets();
+    public List<ObsBucket> getBuckets() {
+        return getClient().listBuckets(new ListBucketsRequest());
     }
 
     // 上传文件
     public void upload(String fileName, InputStream inputStream) {
         upload(getBucket(), fileName, inputStream);
+    }
+
+    // 携带元数据上传文件流
+    public void upload(String fileName, InputStream inputStream, ObjectMetadata metadata) {
+        getClient().putObject(getBucket(), fileName, inputStream, metadata);
     }
 
     // 指定上传Bucket
@@ -103,12 +112,57 @@ public class OssConnection implements IConnection {
         getClient().putObject(bucket, fileName, inputStream);
     }
 
+    /**
+     * @param fileName    原文件
+     * @param newFileName 目标文件
+     */
+    public void copy(String fileName, String newFileName) {
+        copy(getBucket(), fileName, getBucket(), newFileName);
+    }
+
+    /**
+     * @param bucket      原bucket
+     * @param newBucket   目标bucket
+     * @param fileName    原文件
+     * @param newFileName 目标文件
+     */
+    public void copy(String bucket, String fileName, String newBucket, String newFileName) {
+        getClient().copyObject(bucket, fileName, newBucket, newFileName);
+    }
+
     // 下载文件
     public boolean download(String fileName, String localFile) {
+        if (Utils.isEmpty(fileName))
+            return false;
+        if (Utils.isEmpty(localFile))
+            return false;
+
+        ObsObject obsObject = getClient().getObject(getBucket(), localFile);
+        try (InputStream input = obsObject.getObjectContent()) {
+            Path path = Path.of(localFile);
+            Files.copy(input, path, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            return false;
+        }
+
+        try {
+            long fileSize = Files.size(Path.of(localFile));
+            return fileSize > 0 && obsObject.getMetadata().getContentLength() == fileSize;
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            return false;
+        }
+    }
+
+    public ObjectMetadata getMetaData(String fileName) {
+        return getClient().getObject(new GetObjectRequest(getBucket(), fileName)).getMetadata();
+    }
+
+    // 下载文件
+    public InputStream download(String fileName) {
         GetObjectRequest param = new GetObjectRequest(getBucket(), fileName);
-        File file = new File(localFile);
-        ObjectMetadata metadata = getClient().getObject(param, file);
-        return file.exists() && metadata.getContentLength() == file.length();
+        return getClient().getObject(param).getObjectContent();
     }
 
     // 删除文件
@@ -124,11 +178,7 @@ public class OssConnection implements IConnection {
     public String getContent(String fileName) {
         try {
             StringBuffer sb = new StringBuffer();
-            // ObjectMetadata meta = client.getObjectMetadata(this.getBucket(),
-            // fileName);
-            // if (meta.getContentLength() == 0)
-            // return null;
-            OSSObject obj = getClient().getObject(getBucket(), fileName);
+            ObsObject obj = getClient().getObject(getBucket(), fileName);
             BufferedReader reader = new BufferedReader(new InputStreamReader(obj.getObjectContent()));
             while (true) {
                 String line;
@@ -139,7 +189,8 @@ public class OssConnection implements IConnection {
                 sb.append(line);
             }
             return sb.toString();
-        } catch (OSSException | IOException e) {
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
             return null;
         }
     }
@@ -151,12 +202,9 @@ public class OssConnection implements IConnection {
      * @return 若存在则返回true
      */
     public boolean existsFile(String fileName) {
-        try {
-            OSSObject obj = getClient().getObject(getBucket(), fileName);
-            return obj.getObjectMetadata().getContentLength() > 0;
-        } catch (OSSException e) {
+        if (Utils.isEmpty(fileName))
             return false;
-        }
+        return getClient().doesObjectExist(getBucket(), fileName);
     }
 
     @Deprecated

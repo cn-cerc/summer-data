@@ -2,6 +2,9 @@ package cn.cerc.db.core;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
@@ -23,6 +26,8 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializer;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
+
+import cn.cerc.db.Alias;
 
 public class DataRow implements Serializable, IRecord {
     private static final Logger log = LoggerFactory.getLogger(DataRow.class);
@@ -55,10 +60,31 @@ public class DataRow implements Serializable, IRecord {
         return this.state;
     }
 
-    @Deprecated
-    public final DataRowState getState() {
-        return this.state();
+    /**
+     * 替换掉 Map.of 的传值方式，根据字段参数直接生成 DataRow
+     */
+    public static DataRow of(Object... args) {
+        if (args.length % 2 != 0)
+            throw new RuntimeException("dataRow 传入参数数量必须为偶数");
+
+        DataRow dataRow = new DataRow();
+        for (int i = 0; i + 2 <= args.length; i = i + 2) {
+            String field = (String) args[i];
+            if (Utils.isEmpty(field))
+                throw new RuntimeException("field 字段不允许为空");
+
+            Object value = args[i + 1];
+            if (value == null)
+                value = "";
+            dataRow.setValue(field, value);
+        }
+        return dataRow;
     }
+
+//    @Deprecated
+//    public final DataRowState getState() {
+//        return this.state();
+//    }
 
     public DataRow setState(DataRowState value) {
         if (this.readonly())
@@ -141,10 +167,10 @@ public class DataRow implements Serializable, IRecord {
         }
         // 都不为空
         if (value != null && compareValue != null) {
-            if ((value instanceof Integer) && (compareValue instanceof Double)) {
-                Integer v1 = (Integer) value;
-                Double v2 = (Double) compareValue;
+            if ((value instanceof Integer v1) && (compareValue instanceof Double v2)) {
                 return v2 - v1 == 0;
+            } else if ((value instanceof Long v1) && (compareValue instanceof Integer v2)) {
+                return v1 - v2 == 0;
             } else {
                 return value.equals(compareValue);
             }
@@ -155,9 +181,8 @@ public class DataRow implements Serializable, IRecord {
 
     @Override
     public Object getValue(String field) {
-        if (field == null || "".equals(field)) {
+        if (field == null || "".equals(field))
             throw new RuntimeException("field is null!");
-        }
         return this.items.get(field);
     }
 
@@ -174,12 +199,17 @@ public class DataRow implements Serializable, IRecord {
         return delta;
     }
 
-    @Deprecated
-    public final Map<String, Object> getDelta() {
-        return delta();
-    }
+//    @Deprecated
+//    public final Map<String, Object> getDelta() {
+//        return delta();
+//    }
 
-    public Object getOldField(String field) {
+//    @Deprecated
+//    public Object getOldField(String field) {
+//        return this.getOldValue(field);
+//    }
+
+    public Object getOldValue(String field) {
         if (field == null || "".equals(field))
             throw new RuntimeException("field is null!");
         if (this.history != null)
@@ -192,24 +222,27 @@ public class DataRow implements Serializable, IRecord {
         return items.size();
     }
 
-    @Deprecated
     public Map<String, Object> items() {
         return this.items;
     }
 
-    @Deprecated
-    public final Map<String, Object> getItems() {
-        return items();
-    }
+//    @Deprecated
+//    public final Map<String, Object> getItems() {
+//        return items();
+//    }
 
     public FieldDefs fields() {
         return fields;
     }
 
-    @Deprecated
-    public final FieldDefs getFieldDefs() {
-        return fields();
+    public FieldMeta fields(String fieldCode) {
+        return fields.get(fieldCode);
     }
+
+//    @Deprecated
+//    public final FieldDefs getFieldDefs() {
+//        return fields();
+//    }
 
     public void copyValues(DataRow source) {
         this.copyValues(source, source.fields());
@@ -268,34 +301,37 @@ public class DataRow implements Serializable, IRecord {
         return gson.toJson(items);
     }
 
-    @Deprecated
-    public final void setJSON(Object jsonObj) {
-        if (!(jsonObj instanceof Map<?, ?>))
-            throw new RuntimeException("not support type：" + jsonObj.getClass().getName());
-        if (this.readonly())
-            throw new UnsupportedOperationException("DataRow is readonly");
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> head = (Map<String, Object>) jsonObj;
-        for (String field : head.keySet()) {
-            Object obj = head.get(field);
-            if (obj instanceof Double) {
-                double tmp = (double) obj;
-                if (tmp >= Integer.MIN_VALUE && tmp <= Integer.MAX_VALUE) {
-                    Integer val = (int) tmp;
-                    if (tmp == val) {
-                        obj = val;
-                    }
-                }
-            }
-            setValue(field, obj);
-        }
-    }
+//    @Deprecated
+//    public final void setJSON(Object jsonObj) {
+//        if (!(jsonObj instanceof Map<?, ?>))
+//            throw new RuntimeException("not support type：" + jsonObj.getClass().getName());
+//        if (this.readonly())
+//            throw new UnsupportedOperationException("DataRow is readonly");
+//
+//        @SuppressWarnings("unchecked")
+//        Map<String, Object> head = (Map<String, Object>) jsonObj;
+//        for (String field : head.keySet()) {
+//            Object obj = head.get(field);
+//            if (obj instanceof Double) {
+//                double tmp = (double) obj;
+//                if (tmp >= Integer.MIN_VALUE && tmp <= Integer.MAX_VALUE) {
+//                    Integer val = (int) tmp;
+//                    if (tmp == val) {
+//                        obj = val;
+//                    }
+//                }
+//            }
+//            setValue(field, obj);
+//        }
+//    }
 
     public DataRow setJson(String jsonStr) {
+        String temp = jsonStr;
+        if (Utils.isEmpty(jsonStr))
+            temp = "{}";
         this.clear();
         Gson gson = new GsonBuilder().serializeNulls().create();
-        items = gson.fromJson(jsonStr, new TypeToken<Map<String, Object>>() {
+        items = gson.fromJson(temp, new TypeToken<Map<String, Object>>() {
         }.getType());
         for (String key : items.keySet()) {
             this.addField(key);
@@ -306,6 +342,7 @@ public class DataRow implements Serializable, IRecord {
         return this;
     }
 
+    @Override
     public double getDouble(String field, int scale) {
         double value = this.getDouble(field);
         return Utils.roundTo(value, scale);
@@ -317,21 +354,21 @@ public class DataRow implements Serializable, IRecord {
      * @param field 字段名
      * @return 返回安全的字符串
      */
-    @Deprecated
-    public final String getSafeString(String field) {
-        String value = getString(field);
-        return value == null ? "" : value.replaceAll("'", "''");
-    }
+//    @Deprecated
+//    public final String getSafeString(String field) {
+//        String value = getString(field);
+//        return value == null ? "" : value.replaceAll("'", "''");
+//    }
 
-    @Deprecated
-    public final TDate getDate(String field) {
-        return new TDate(this.getDateTime(field).getTimestamp());
-    }
+//    @Deprecated
+//    public final TDate getDate(String field) {
+//        return new TDate(this.getDateTime(field).getTimestamp());
+//    }
 
-    @Deprecated
-    public final TDateTime getDateTime(String field) {
-        return new TDateTime(getDatetime(field).getTimestamp());
-    }
+//    @Deprecated
+//    public final TDateTime getDateTime(String field) {
+//        return new TDateTime(getDatetime(field).getTimestamp());
+//    }
 
     public void clear() {
         if (this.readonly())
@@ -342,6 +379,20 @@ public class DataRow implements Serializable, IRecord {
             fields.clear();
     }
 
+    /**
+     * 请改使用语义更清晰的 hasValue
+     * 
+     * @param field 字段代码
+     * @return 判断是否有此栏位，以及此栏位是否有值
+     */
+    @Deprecated
+    public boolean has(String field) {
+        return hasValue(field);
+    }
+
+    /**
+     * 判断是否有此栏位，但不管这个栏位是否有值
+     */
     @Override
     public boolean exists(String field) {
         return this.fields.exists(field);
@@ -351,30 +402,25 @@ public class DataRow implements Serializable, IRecord {
      * @param field 字段代码
      * @return 判断是否有此栏位，以及此栏位是否有值
      */
-    public boolean has(String field) {
-        return fields.exists(field) && !"".equals(getString(field));
-    }
-
-    @Deprecated
     public final boolean hasValue(String field) {
-        return has(field);
+        return fields.exists(field) && !"".equals(getString(field));
     }
 
     public DataSet dataSet() {
         return dataSet;
     }
 
-    @Deprecated
-    public final DataSet getDataSet() {
-        return dataSet();
-    }
+//    @Deprecated
+//    public final DataSet getDataSet() {
+//        return dataSet();
+//    }
 
-    @Deprecated
-    public final DataSet locate() {
-        int recNo = dataSet.getRecords().indexOf(this) + 1;
-        dataSet.setRecNo(recNo);
-        return dataSet;
-    }
+//    @Deprecated
+//    public final DataSet locate() {
+//        int recNo = dataSet.getRecords().indexOf(this) + 1;
+//        dataSet.setRecNo(recNo);
+//        return dataSet;
+//    }
 
     public boolean equalsValues(Map<String, Object> values) {
         for (String field : values.keySet()) {
@@ -399,10 +445,10 @@ public class DataRow implements Serializable, IRecord {
             fields.remove(field);
     }
 
-    @Deprecated
-    public final void delete(String field) {
-        remove(field);
-    }
+//    @Deprecated
+//    public final void delete(String field) {
+//        remove(field);
+//    }
 
     private void addField(String field) {
         if (field == null)
@@ -414,69 +460,66 @@ public class DataRow implements Serializable, IRecord {
     }
 
     public <T extends EntityImpl> T asEntity(Class<T> clazz) {
-        EntityHelper<T> helper = EntityHelper.create(clazz);
+        EntityHelper<T> helper = EntityHelper.get(clazz);
         T entity = helper.newEntity();
         saveToEntity(entity);
         return entity;
     }
 
     public void saveToEntity(EntityImpl entity) {
-        EntityHelper<? extends EntityImpl> helper = EntityHelper.create(entity.getClass());
-        Map<String, Field> items = helper.fields();
-        if (this.fields().size() > items.size()) {
-            log.warn("fields.size > propertys.size");
-        } else if (this.fields().size() < items.size()) {
-            String fmt = "fields.size %d < propertys.size %d";
-            throw new RuntimeException(String.format(fmt, this.fields().size(), items.size()));
+        EntityHelper<? extends EntityImpl> helper = EntityHelper.get(entity.getClass());
+        Map<String, Field> fieldsList = helper.fields();
+        if (helper.strict()) {
+            if (this.fields().size() > fieldsList.size()) {
+                log.warn("database fields.size > entity {} properties.size", entity.getClass().getName());
+            } else if (this.fields().size() < fieldsList.size()) {
+                for (var field : fieldsList.keySet()) {
+                    if (!fields.exists(field))
+                        log.error("数据表 {} 缺少字段 {}", helper.tableName(), field);
+                }
+                throw new RuntimeException(String.format("database fields.size %d < %s properties.size %d ",
+                        this.fields().size(), entity.getClass().getName(), fieldsList.size()));
+            }
         }
-
         // 查找并赋值
         Variant variant = new Variant();
         for (FieldMeta meta : this.fields()) {
-            Object value = this.getValue(meta.code());
-
             // 查找指定的对象属性
-            Field field = items.get(meta.code());
-            if (field == null) {
+            Field field = fieldsList.get(meta.code());
+            if (field != null) {
+                // 给属性赋值
+                Object value = this.getValue(meta.code());
+                try {
+                    if (value == null) {
+                        Column column = field.getAnnotation(Column.class);
+                        if (column == null || column.nullable()) {
+                            field.set(entity, null);
+                        } else
+                            variant.setValue(null).writeToEntity(entity, field);
+                    } else if (field.getType().equals(value.getClass()))
+                        field.set(entity, value);
+                    else
+                        variant.setValue(value).writeToEntity(entity, field);
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    log.error(e.getMessage(), e);
+                    throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
+                            value.getClass().getName(), field.getType().getName()));
+                }
+            } else if (helper.strict())
                 log.warn("not find property: " + meta.code());
-                continue;
-            }
-
-            // 给属性赋值
-            try {
-                if (value == null) {
-                    Column column = field.getAnnotation(Column.class);
-                    if (column == null || column.nullable()) {
-                        field.set(entity, null);
-                    } else
-                        variant.setData(null).writeToEntity(entity, field);
-                } else if (field.getType().equals(value.getClass()))
-                    field.set(entity, value);
-                else
-                    variant.setData(value).writeToEntity(entity, field);
-            } catch (IllegalArgumentException | IllegalAccessException e) {
-                e.printStackTrace();
-                throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
-                        value.getClass().getName(), field.getType().getName()));
-            }
         }
     }
 
     public <T extends EntityImpl> DataRow loadFromEntity(T entity) {
         try {
-            Map<String, Field> fields = EntityHelper.create(entity.getClass()).fields();
+            Map<String, Field> fields = EntityHelper.get(entity.getClass()).fields();
             for (String fieldCode : fields.keySet())
                 this.setValue(fieldCode, fields.get(fieldCode).get(entity));
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
         return this;
-    }
-
-    @Deprecated
-    public final <T extends EntityImpl> T asObject(Class<T> clazz) {
-        return asEntity(clazz);
     }
 
     public String getText(String field) {
@@ -555,4 +598,86 @@ public class DataRow implements Serializable, IRecord {
         return this;
     }
 
+    public static class RecordProxy implements InvocationHandler {
+        private final DataRow dataRow;
+
+        public RecordProxy(DataRow dataRow) {
+            this.dataRow = dataRow;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            Object result;
+            String field = method.getName();
+            Alias alias = method.getAnnotation(Alias.class);
+            if (alias != null && alias.value().length() > 0)
+                field = alias.value();
+            if (dataRow.fields().get(field) == null)
+                throw new RuntimeException("not find field: " + field);
+            if (method.getReturnType() == Variant.class)
+                result = dataRow.bind(field);
+            else if (method.getReturnType() == String.class)
+                result = dataRow.getString(field);
+            else if (method.getReturnType() == boolean.class || method.getReturnType() == Boolean.class)
+                result = dataRow.getBoolean(field);
+            else if (method.getReturnType() == int.class || method.getReturnType() == Integer.class)
+                result = dataRow.getInt(field);
+            else if (method.getReturnType() == double.class || method.getReturnType() == Double.class)
+                result = dataRow.getDouble(field);
+            else if (method.getReturnType() == long.class || method.getReturnType() == Long.class)
+                result = dataRow.getLong(field);
+            else if (method.getReturnType() == Datetime.class)
+                result = dataRow.getDatetime(field);
+            else
+                result = dataRow.getValue(field);
+            return result;
+        }
+
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T asRecord(Class<T> clazz) {
+        if (clazz.isInterface()) {
+            return (T) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[] { clazz },
+                    new RecordProxy(this));
+//        } else if (clazz.isRecord()) {
+//            Constructor<?> constructor = clazz.getConstructors()[0];
+//            Object[] initArgs = new Object[constructor.getParameterCount()];
+//            int i = 0;
+//            for (Parameter item : constructor.getParameters()) {
+//                String field = item.getName();
+//                Alias alias = item.getAnnotation(Alias.class);
+//                if (alias != null && alias.value().length() > 0)
+//                    field = alias.value();
+//                if (item.getType() == Variant.class)
+//                    initArgs[i++] = new Variant(this.getValue(field)).setKey(field);
+//                else if (item.getType() == String.class)
+//                    initArgs[i++] = this.getString(field);
+//                else if (item.getType() == boolean.class || item.getType() == Boolean.class)
+//                    initArgs[i++] = this.getBoolean(field);
+//                else if (item.getType() == int.class || item.getType() == Integer.class)
+//                    initArgs[i++] = this.getInt(field);
+//                else if (item.getType() == double.class || item.getType() == Double.class)
+//                    initArgs[i++] = this.getDouble(field);
+//                else if (item.getType() == long.class || item.getType() == Long.class)
+//                    initArgs[i++] = this.getLong(field);
+//                else if (item.getType() == Datetime.class)
+//                    initArgs[i++] = this.getDatetime(field);
+//                else
+//                    initArgs[i++] = this.getValue(field);
+//            }
+//            try {
+//                return (T) constructor.newInstance(initArgs);
+//            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+//                    | InvocationTargetException e) {
+//                e.printStackTrace();
+//                throw new RuntimeException(e.getMessage());
+//            }
+        } else
+            throw new RuntimeException("only support record and interface");
+    }
+
+    public DataCell bind(String field) {
+        return new DataCell(this, field);
+    }
 }

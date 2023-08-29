@@ -77,7 +77,8 @@ public interface IRecord {
             if (tmp < Integer.MIN_VALUE || tmp > Integer.MAX_VALUE)
                 throw new ClassCastException("Double to Integer is out of range");
             if (tmp != tmp.intValue())
-                throw new ClassCastException("Double to Integer fail, value: " + tmp);
+                throw new ClassCastException(
+                        String.format("Double to Integer fail, original %s -> %s ", tmp, tmp.intValue()));
             return tmp.intValue();
         } else if (value instanceof String) {
             String str = (String) value;
@@ -106,14 +107,16 @@ public interface IRecord {
             if (tmp < Long.MIN_VALUE || tmp > Long.MAX_VALUE)
                 throw new ClassCastException("Float to Long is out of range");
             if (tmp != tmp.longValue())
-                throw new ClassCastException("Float to Long fail, value: " + tmp);
+                throw new ClassCastException(
+                        String.format("Float to Long fail, original %s -> %s ", tmp, tmp.longValue()));
             return tmp.longValue();
         } else if (value instanceof Double) {
             Double tmp = (Double) value;
             if (tmp < Long.MIN_VALUE || tmp > Long.MAX_VALUE)
                 throw new ClassCastException("Double to Long is out of range");
             if (tmp != tmp.longValue())
-                throw new ClassCastException("Double to Long fail, value: " + tmp);
+                throw new ClassCastException(
+                        String.format("Double to Long fail, original %s -> %s ", tmp, tmp.longValue()));
             return tmp.longValue();
         } else if (value instanceof String) {
             String str = (String) value;
@@ -155,6 +158,10 @@ public interface IRecord {
         } else {
             throw new ClassCastException(String.format("not support class: %s", value.getClass().getName()));
         }
+    }
+
+    default double getDouble(String field, int scale) {
+        return Utils.roundTo(getDouble(field), scale);
     }
 
     default double getDouble(String field) {
@@ -226,10 +233,9 @@ public interface IRecord {
         return this.getDatetime(field).toFastTime();
     }
 
-    @SuppressWarnings("rawtypes")
-    default Enum<?> getEnum(String field, Class<? extends Enum> clazz) {
+    default <T extends Enum<?>> T getEnum(String field, Class<T> clazz) {
         final int index = getInt(field);
-        Enum[] list = clazz.getEnumConstants();
+        T[] list = clazz.getEnumConstants();
         if (index >= 0 && index < list.length)
             return list[index];
         else

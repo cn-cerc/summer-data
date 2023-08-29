@@ -6,7 +6,6 @@ import java.util.List;
 import org.bson.Document;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
@@ -14,8 +13,7 @@ public class MongoUtils {
     private MongoDatabase database;
 
     public MongoUtils() {
-        MongoClient client = MongoConfig.getClient();
-        database = client.getDatabase(MongoConfig.databaseName());
+        database = MongoConfig.getDatabase();
     }
 
     // 获取Collection by name

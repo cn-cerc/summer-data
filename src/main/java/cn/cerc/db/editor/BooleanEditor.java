@@ -1,9 +1,8 @@
 package cn.cerc.db.editor;
 
-import cn.cerc.db.core.DataRow;
-import cn.cerc.db.core.FieldMeta;
+import cn.cerc.db.core.DataCell;
 
-public class BooleanEditor implements GetSetTextEvent {
+public class BooleanEditor implements OnGetSetText {
     private final String trueText;
     private final String falseText;
 
@@ -14,8 +13,8 @@ public class BooleanEditor implements GetSetTextEvent {
     }
 
     @Override
-    public String getText(DataRow record, FieldMeta meta) {
-        return record.getBoolean(meta.code()) ? trueText : falseText;
+    public String getText(DataCell data) {
+        return data.getBoolean() ? trueText : falseText;
     }
 
     @Override

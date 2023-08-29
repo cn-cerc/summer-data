@@ -1,6 +1,7 @@
 package cn.cerc.db.sqlite;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
@@ -24,12 +25,12 @@ public class SqliteDatabase implements ISqlDatabase {
     public SqliteDatabase(IHandle handle, Class<? extends EntityImpl> clazz) {
         super();
         this.clazz = clazz;
-        this.helper = EntityHelper.create(clazz);
+        this.helper = EntityHelper.get(clazz);
     }
 
     @Override
     public final String table() {
-        return helper.table();
+        return helper.tableName();
     }
 
     @Override
@@ -48,6 +49,8 @@ public class SqliteDatabase implements ISqlDatabase {
         sb.append("create table ").append(table()).append("(");
         int count = 0;
         for (Field field : clazz.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers()))
+                continue;
             if (count++ > 0)
                 sb.append(",");
             sb.append("\n");
@@ -55,7 +58,7 @@ public class SqliteDatabase implements ISqlDatabase {
             writeDataType(sb, field);
         }
         sb.append("\n);");
-        Table table = clazz.getDeclaredAnnotation(Table.class);
+        Table table = EntityHelper.get(clazz).table();
         if (table != null && table.indexes().length > 0) {
             sb.append("\n");
             Index[] indexs = table.indexes();

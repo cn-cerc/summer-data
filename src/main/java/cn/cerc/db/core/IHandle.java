@@ -14,12 +14,46 @@ public interface IHandle {
 
     void setSession(ISession session);
 
+    /**
+     * 获取行业代码
+     */
+    default String getIndustry() {
+        return getSession().getIndustry();
+    }
+
+    /**
+     * 获取帐套代码
+     */
     default String getCorpNo() {
         return getSession().getCorpNo();
     }
 
+    /**
+     * 获取用户代码
+     */
     default String getUserCode() {
         return getSession().getUserCode();
+    }
+
+    /**
+     * 是否为超级用户
+     */
+    default boolean isSuperUser() {
+        return getSession().isSuperUser();
+    }
+
+    /**
+     * 获取用户角色
+     */
+    default String getUserRole() {
+        return getSession().getUserRole();
+    }
+
+    /**
+     * 允许编辑菜单界面
+     */
+    default boolean allowVisualDesign() {
+        return getSession().allowVisualDesign();
     }
 
     default MysqlServerMaster getMysql() {
@@ -49,13 +83,13 @@ public interface IHandle {
         }
     }
 
-    @Deprecated
-    default void setProperty(String key, Object value) {
-        getSession().setProperty(key, value);
-    }
+//    @Deprecated
+//    default void setProperty(String key, Object value) {
+//        getSession().setProperty(key, value);
+//    }
 
-    @Deprecated
-    default void setHandle(IHandle handle) {
-        this.setSession(handle.getSession());
-    }
+//    @Deprecated
+//    default void setHandle(IHandle handle) {
+//        this.setSession(handle.getSession());
+//    }
 }

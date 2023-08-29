@@ -2,9 +2,9 @@ package cn.cerc.db.core;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 
 import cn.cerc.db.SummerDB;
+import cn.cerc.db.testsql.TestsqlServer;
 
 public class SqlText implements Serializable {
     private static final long serialVersionUID = 5202024253700579642L;
@@ -28,8 +28,10 @@ public class SqlText implements Serializable {
     public SqlText(Class<? extends EntityImpl> clazz) {
         super();
         this.clazz = clazz;
-        SqlServer server = clazz.getAnnotation(SqlServer.class);
+        SqlServer server = EntityHelper.get(clazz).sqlServer();
         this.sqlServerType = (server != null) ? server.type() : SqlServerType.Mysql;
+        if (TestsqlServer.enabled())
+            this.sqlServerType = SqlServerType.Testsql;
         classData = ClassFactory.get(clazz);
         this.text = classData.getSelect();
     }
@@ -85,19 +87,19 @@ public class SqlText implements Serializable {
         return offset;
     }
 
-    @Deprecated
-    public final int getOffset() {
-        return offset();
-    }
+//    @Deprecated
+//    public final int getOffset() {
+//        return offset();
+//    }
 
     public void setOffset(int offset) {
         this.offset = offset;
     }
 
-    @Deprecated
-    public final String getText() {
-        return text();
-    }
+//    @Deprecated
+//    public final String getText() {
+//        return text();
+//    }
 
     public String getCommand() {
         String sql = this.text();
@@ -129,10 +131,10 @@ public class SqlText implements Serializable {
         return maximum;
     }
 
-    @Deprecated
-    public final int getMaximum() {
-        return maximum();
-    }
+//    @Deprecated
+//    public final int getMaximum() {
+//        return maximum();
+//    }
 
     public void setMaximum(int maximum) {
         if (maximum > MAX_RECORDS) {
@@ -145,66 +147,66 @@ public class SqlText implements Serializable {
         return classData != null ? classData.getTableId() : null;
     }
 
-    @Deprecated // 请改使用 add(whereText).getText()
-    public String getWhere(String whereText) {
-        return add(whereText).getText();
-    }
+//    @Deprecated // 请改使用 add(whereText).getText()
+//    public String getWhere(String whereText) {
+//        return add(whereText).getText();
+//    }
 
-    @Deprecated // 请改使用 addWhereKeys(values).getText()
-    public final String getWhereKeys(Object... values) {
-        return addWhereKeys(values).getText();
-    }
+//    @Deprecated // 请改使用 addWhereKeys(values).getText()
+//    public final String getWhereKeys(Object... values) {
+//        return addWhereKeys(values).getText();
+//    }
 
-    @Deprecated
-    public final SqlText addWhereKeys(Object... values) {
-        if (values.length == 0) {
-            throw new RuntimeException("values is null");
-        }
-
-        if (classData == null) {
-            throw new RuntimeException("classData is null");
-        }
-
-        StringBuffer sb = new StringBuffer();
-        List<String> idList = classData.getSearchKeys();
-        if (idList.size() == 0) {
-            throw new RuntimeException("id is null");
-        }
-
-        if (idList.size() != values.length) {
-            throw new RuntimeException(String.format("ids.size(%s) != values.size(%s)", idList.size(), values.length));
-        }
-
-        int i = 0;
-        int count = idList.size();
-        if (count > 0) {
-            sb.append("where");
-        }
-        for (String fieldCode : idList) {
-            Object value = values[i];
-            sb.append(i > 0 ? " and " : " ");
-            if (value == null) {
-                sb.append(String.format("%s is null", fieldCode));
-            }
-            if (value instanceof String) {
-                sb.append(String.format("%s='%s'", fieldCode, Utils.safeString((String) value)));
-            } else {
-                sb.append(String.format("%s='%s'", fieldCode, value));
-            }
-            i++;
-        }
-
-        return add(sb.toString());
-    }
+//    @Deprecated
+//    public final SqlText addWhereKeys(Object... values) {
+//        if (values.length == 0) {
+//            throw new RuntimeException("values is null");
+//        }
+//
+//        if (classData == null) {
+//            throw new RuntimeException("classData is null");
+//        }
+//
+//        StringBuffer sb = new StringBuffer();
+//        List<String> idList = classData.getSearchKeys();
+//        if (idList.size() == 0) {
+//            throw new RuntimeException("id is null");
+//        }
+//
+//        if (idList.size() != values.length) {
+//            throw new RuntimeException(String.format("ids.size(%s) != values.size(%s)", idList.size(), values.length));
+//        }
+//
+//        int i = 0;
+//        int count = idList.size();
+//        if (count > 0) {
+//            sb.append("where");
+//        }
+//        for (String fieldCode : idList) {
+//            Object value = values[i];
+//            sb.append(i > 0 ? " and " : " ");
+//            if (value == null) {
+//                sb.append(String.format("%s is null", fieldCode));
+//            }
+//            if (value instanceof String) {
+//                sb.append(String.format("%s='%s'", fieldCode, Utils.safeString((String) value)));
+//            } else {
+//                sb.append(String.format("%s='%s'", fieldCode, value));
+//            }
+//            i++;
+//        }
+//
+//        return add(sb.toString());
+//    }
 
     public ClassData getClassData() {
         return classData;
     }
 
-    @Deprecated
-    public boolean isSupportMssql() {
-        return sqlServerType == SqlServerType.Mysql;
-    }
+//    @Deprecated
+//    public boolean isSupportMssql() {
+//        return sqlServerType == SqlServerType.Mysql;
+//    }
 
     // 根据 sql 获取数据库表名
     public static String findTableName(String sql) {
@@ -248,7 +250,7 @@ public class SqlText implements Serializable {
     public SqlText addSelectDefault() {
         if (this.clazz == null)
             throw new IllegalArgumentException("clazz is null");
-        this.add("select * from %s", EntityHelper.create(clazz).table());
+        this.add("select * from %s", EntityHelper.get(clazz).tableName());
         return this;
     }
 

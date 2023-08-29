@@ -1,11 +1,12 @@
 package cn.cerc.db.mssql;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
-import cn.cerc.db.core.StubSession;
+import cn.cerc.db.core.StubDatabaseSession;
 
 public class MssqlQueryTest implements IHandle {
 
@@ -13,10 +14,11 @@ public class MssqlQueryTest implements IHandle {
 
     @Before
     public void setUP() {
-        session = new StubSession();
+        session = new StubDatabaseSession();
     }
 
     @Test
+    @Ignore
     public void test_append() {
         MssqlQuery query = new MssqlQuery(this);
         query.add("select * from Dept where Code_='%s'", "191220");

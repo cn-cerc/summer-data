@@ -2,6 +2,7 @@ package cn.cerc.db.core;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -10,12 +11,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import javax.persistence.Column;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Version;
 
 import com.google.gson.Gson;
 
@@ -37,18 +33,27 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
     public FieldDefs(Class<?> clazz) {
         super();
         for (Field field : clazz.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers()))
+                continue;
             if (field.getDeclaredAnnotation(Id.class) != null || field.getDeclaredAnnotation(Column.class) != null) {
                 String fieldCode = field.getName();
                 FieldMeta meta = this.add(fieldCode, FieldKind.Storage);
-                readEntityField(field, meta);
+                meta.readEntityField(field);
             }
         }
     }
 
     public boolean exists(String fieldCode) {
-        return items.contains(new FieldMeta(fieldCode));
+        if (fieldCode == null)
+            return false;
+        for (var item : items) {
+            if (fieldCode.equals(item.code()))
+                return true;
+        }
+        return false;
     }
 
+    @Deprecated
     public boolean exists(FieldMeta field) {
         return items.contains(field);
     }
@@ -59,10 +64,10 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return result;
     }
 
-    @Deprecated
-    public List<String> getFields() {
-        return names();
-    }
+//    @Deprecated
+//    public List<String> getFields() {
+//        return names();
+//    }
 
     public FieldMeta add(String fieldCode) {
         FieldMeta item = new FieldMeta(fieldCode);
@@ -102,10 +107,10 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         items.remove(field);
     }
 
-    @Deprecated
-    public void delete(String fieldCode) {
-        remove(fieldCode);
-    }
+//    @Deprecated
+//    public void delete(String fieldCode) {
+//        remove(fieldCode);
+//    }
 
     public FieldMeta get(String fieldCode) {
         for (FieldMeta meta : items) {
@@ -126,15 +131,15 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         return null;
     }
 
-    @Deprecated
-    public final FieldMeta getItems(int index) {
-        return get(index);
-    }
+//    @Deprecated
+//    public final FieldMeta getItems(int index) {
+//        return get(index);
+//    }
 
-    @Deprecated
-    public FieldMeta getItem(String fieldCode) {
-        return get(fieldCode);
-    }
+//    @Deprecated
+//    public FieldMeta getItem(String fieldCode) {
+//        return get(fieldCode);
+//    }
 
     @Override
     public String toString() {
@@ -155,56 +160,15 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         if (names.length > 0)
             items = Arrays.asList(names);
         for (Field field : clazz.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers()))
+                continue;
             if (items != null && items.indexOf(field.getName()) == -1)
                 continue;
             FieldMeta meta = this.get(field.getName());
             if (meta != null)
-                readEntityField(field, meta);
+                meta.readEntityField(field);
         }
         return this;
-    }
-
-    private void readEntityField(Field field, FieldMeta meta) {
-        Describe describe = field.getDeclaredAnnotation(Describe.class);
-        if (describe != null) {
-            if (!"".equals(describe.name()))
-                meta.setName(describe.name());
-            if (!"".equals(describe.remark()))
-                meta.setRemark(describe.remark());
-        }
-        Column column = field.getDeclaredAnnotation(Column.class);
-        if (column != null) {
-            meta.setInsertable(column.insertable());
-            meta.setUpdatable(column.updatable());
-            meta.setNullable(column.nullable());
-        }
-        Id id = field.getDeclaredAnnotation(Id.class);
-        if (id != null) {
-            meta.setIdentification(true);
-            meta.setNullable(false);
-        }
-        GeneratedValue gv = field.getDeclaredAnnotation(GeneratedValue.class);
-        if (gv != null) {
-            if (gv.strategy() != GenerationType.AUTO)
-                throw new RuntimeException("strategy only support auto");
-            meta.setAutoincrement(true);
-            meta.setInsertable(false);
-            meta.setUpdatable(false);
-        }
-        if (field.getType().isEnum()) {
-            Enumerated enumerated = field.getDeclaredAnnotation(Enumerated.class);
-            if ((enumerated != null) && (enumerated.value() == EnumType.STRING))
-                meta.dataType().setValue("s" + column.length());
-            else
-                meta.dataType().setValue("n1");
-        } else {
-            meta.dataType().readClass(field.getType());
-            if ("s".equals(meta.dataType().value()) || "o".equals(meta.dataType().value()))
-                meta.dataType().setLength(column.length());
-        }
-        Version version = field.getDeclaredAnnotation(Version.class);
-        if (version != null)
-            meta.setNullable(false);
     }
 
     public final FieldMeta getByAutoincrement() {

@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.cerc.db.core.DataRow;
-import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.IRecord;
 
 public class RedisRecord implements IRecord {
@@ -46,7 +45,7 @@ public class RedisRecord implements IRecord {
     public final void post() {
         if (this.modified) {
             try {
-                Redis.set(key, record.toString(), this.expires);
+                Redis.setValue(key, record.toString(), this.expires);
                 log.debug("cache set:" + key + ":" + record.toString());
                 this.modified = false;
             } catch (Exception e) {
@@ -59,10 +58,10 @@ public class RedisRecord implements IRecord {
         return !this.existsData;
     }
 
-    @Deprecated
-    public void setNull(String field) {
-        setValue(field, null);
-    }
+//    @Deprecated
+//    public void setNull(String field) {
+//        setValue(field, null);
+//    }
 
     public String getKey() {
         return key;
@@ -79,7 +78,7 @@ public class RedisRecord implements IRecord {
 
         connected = true;
         existsData = false;
-        String recordStr = Redis.get(key);
+        String recordStr = Redis.getValue(key);
         log.debug("cache get: {} - {}", key, recordStr);
         if (recordStr != null && !"".equals(recordStr)) {
             try {
@@ -120,10 +119,10 @@ public class RedisRecord implements IRecord {
         return connected;
     }
 
-    @Deprecated
-    public Datetime getDateTime(String field) {
-        return record.getDatetime(field);
-    }
+//    @Deprecated
+//    public Datetime getDateTime(String field) {
+//        return record.getDatetime(field);
+//    }
 
     @Override
     public RedisRecord setValue(String field, Object value) {
@@ -132,10 +131,10 @@ public class RedisRecord implements IRecord {
         return this;
     }
 
-    @Deprecated
-    public RedisRecord setField(String field, Object value) {
-        return setValue(field, value);
-    }
+//    @Deprecated
+//    public RedisRecord setField(String field, Object value) {
+//        return setValue(field, value);
+//    }
 
     @Override
     public String toString() {
@@ -160,9 +159,9 @@ public class RedisRecord implements IRecord {
         return record.getValue(field);
     }
 
-    @Deprecated
-    public Object getField(String field) {
-        return getValue(field);
-    }
+//    @Deprecated
+//    public Object getField(String field) {
+//        return getValue(field);
+//    }
 
 }

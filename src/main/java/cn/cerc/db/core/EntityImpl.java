@@ -36,6 +36,15 @@ public interface EntityImpl {
     }
 
     /**
+     * 更新记录时自动更新时间戳
+     * 
+     * @param handle IHandle
+     */
+    default HistoryLoggerImpl getHistoryLogger() {
+        return null;
+    }
+
+    /**
      * 输出时自动带出计算字段
      * 
      * @param DataRow    关连的数据源
@@ -78,6 +87,31 @@ public interface EntityImpl {
         EntityHomeImpl entityHome = getEntityHome();
         Objects.requireNonNull(entityHome, "entityHome is null");
         entityHome.post(this);
+    }
+
+    /**
+     * 指定锁的状态是解锁还是锁定
+     * 
+     * @param flag
+     */
+    default void setLocked(boolean flag) {
+
+    }
+
+    /**
+     * 取得当前锁的启用状态，默认为true
+     * 
+     * @return boolean
+     */
+    default boolean isLocked() {
+        return true;
+    }
+
+    /**
+     * 锁定后先进行解锁操作
+     */
+    default void unlock() {
+        setLocked(false);
     }
 
 }

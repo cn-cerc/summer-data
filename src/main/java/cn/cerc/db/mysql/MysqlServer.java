@@ -1,6 +1,5 @@
 package cn.cerc.db.mysql;
 
-import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -13,12 +12,11 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.mchange.v2.c3p0.ComboPooledDataSource;
-import com.mchange.v2.resourcepool.TimeoutException;
+import com.zaxxer.hikari.HikariDataSource;
 
-import cn.cerc.db.core.ServerClient;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISqlServer;
+import cn.cerc.db.core.ServerClient;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -69,49 +67,16 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
         this.tag = tag;
     }
 
-    protected static final ComboPooledDataSource createDataSource(MysqlConfig config) {
-        log.info("create pool to: " + config.getHost());
-        // 使用线程池创建
-        ComboPooledDataSource dataSource = new ComboPooledDataSource();
+    protected static final Connection getPoolConnection(HikariDataSource dataSource) {
+        Connection connection = null;
         try {
-            dataSource.setDriverClass(MysqlConfig.JdbcDriver);
-        } catch (PropertyVetoException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
-
-        dataSource.setJdbcUrl(config.getConnectUrl());
-        dataSource.setUser(config.getUser());
-        dataSource.setPassword(config.getPassword());
-        // 连接池大小设置
-        dataSource.setMaxPoolSize(config.getMaxPoolSize());
-        dataSource.setMinPoolSize(config.getMinPoolSize());
-        dataSource.setInitialPoolSize(config.getInitialPoolSize());
-        // 连接池断开控制
-        dataSource.setCheckoutTimeout(config.getCheckoutTimeout()); // 单位毫秒
-        dataSource.setMaxIdleTime(config.getMaxIdleTime()); // 空闲自动断开时间
-        // 每隔多少时间（时间请小于 数据库的 timeout）,测试一下链接，防止失效，会损失小部分性能
-        dataSource.setIdleConnectionTestPeriod(config.getIdleConnectionTestPeriod()); // 单位秒
-        dataSource.setTestConnectionOnCheckin(true);
-        dataSource.setTestConnectionOnCheckout(false);
-
-        return dataSource;
-    }
-
-    protected static final Connection getPoolConnection(ComboPooledDataSource dataSource) {
-        Connection result = null;
-        try {
-            result = dataSource.getConnection();
-            log.debug("dataSource connection count:" + dataSource.getNumConnections());
+            connection = dataSource.getConnection();
+            log.debug("dataSource connection maxPoolSize {}", dataSource.getMaximumPoolSize());
         } catch (SQLException e) {
-            if (e.getCause() instanceof InterruptedException)
-                log.warn("mysql connection create timeout");
-            else if (e.getCause() instanceof TimeoutException)
-                log.warn("mysql connection create timeout.");
-            else
-                log.warn(e.getMessage(), e);
+            log.error("jdbc url {}", dataSource.getJdbcUrl());
+            log.error(e.getMessage(), e);
         }
-        return result;
+        return connection;
     }
 
     protected final Connection getConnection() {

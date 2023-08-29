@@ -4,7 +4,7 @@ import org.junit.Before;
 
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
-import cn.cerc.db.core.StubSession;
+import cn.cerc.db.core.StubDatabaseSession;
 
 public class SqlQueryTest_open implements IHandle {
     private MysqlQuery ds;
@@ -12,7 +12,7 @@ public class SqlQueryTest_open implements IHandle {
 
     @Before
     public void setUp() {
-        session = new StubSession();
+        session = new StubDatabaseSession();
         ds = new MysqlQuery(this);
         ds.sql().setMaximum(1);
         ds.add("select CorpNo_,CWCode_,PartCode_ from TranB1B where CorpNo_='%s'", "911001");

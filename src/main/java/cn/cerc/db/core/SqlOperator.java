@@ -23,6 +23,7 @@ import cn.cerc.db.mysql.BuildStatement;
 import cn.cerc.db.mysql.MysqlClient;
 import cn.cerc.db.mysql.MysqlDatabase;
 import cn.cerc.db.mysql.MysqlServerMaster;
+import cn.cerc.db.pgsql.PgsqlDatabase;
 import cn.cerc.db.sqlite.SqliteDatabase;
 
 public class SqlOperator implements IHandle {
@@ -43,7 +44,7 @@ public class SqlOperator implements IHandle {
             this.session = handle.getSession();
         this.sqlServerType = sqlServerType;
         switch (sqlServerType) {
-        case Mysql:
+        case Mysql, Testsql:
             this.setOid(MysqlDatabase.DefaultOID);
             break;
         case Mssql:
@@ -51,6 +52,9 @@ public class SqlOperator implements IHandle {
             break;
         case Sqlite:
             this.setOid(SqliteDatabase.DefaultOID);
+            break;
+        case Pgsql:
+            this.setOid(PgsqlDatabase.DefaultOID);
             break;
         default:
             throw new SqlServerTypeException();
@@ -127,20 +131,14 @@ public class SqlOperator implements IHandle {
         this.setOid(primaryKey);
     }
 
-    public interface ResultSetReader {
-        FieldDefs fields();
-
-        DataRow createDataRow();
-    }
-
     // 取出所有数据
-    public int select(ResultSetReader reader, Connection connection, String sql) throws SQLException {
+    public int select(DataSet dataSet, Connection connection, String sql) throws SQLException {
         int total = 0;
         try (Statement st = connection.createStatement()) {
             try (ResultSet rs = st.executeQuery(sql.replace("\\", "\\\\"))) {
                 // 取得字段清单
                 ResultSetMetaData meta = rs.getMetaData();
-                FieldDefs defs = reader.fields();
+                FieldDefs defs = dataSet.fields();
                 for (int i = 1; i <= meta.getColumnCount(); i++) {
                     String field = meta.getColumnLabel(i);
                     if (!defs.exists(field))
@@ -148,7 +146,7 @@ public class SqlOperator implements IHandle {
                 }
                 // 取得所有内容
                 while (rs.next()) {
-                    DataRow row = reader.createDataRow();
+                    DataRow row = dataSet.createDataRow();
                     if (row == null)
                         break;
                     total++;
@@ -163,8 +161,7 @@ public class SqlOperator implements IHandle {
         return total;
     }
 
-    @SuppressWarnings("deprecation")
-    public final boolean insert(Connection connection, DataRow record) {
+    public boolean insert(Connection connection, DataRow record) {
         resetUpdateKey(connection, record);
 
         if (MssqlDatabase.DefaultOID.equalsIgnoreCase(this.oid)) {
@@ -234,13 +231,13 @@ public class SqlOperator implements IHandle {
 
             return result > 0;
         } catch (SQLException e) {
-            log.error(lastCommand);
+            log.error(lastCommand, e);
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
     }
 
-    public final boolean update(Connection connection, DataRow record) {
+    public boolean update(Connection connection, DataRow record) {
         Map<String, Object> delta = record.delta();
         if (delta.size() == 0)
             return true;
@@ -267,8 +264,10 @@ public class SqlOperator implements IHandle {
                     }
                 }
             }
-            if (i == 0)
+            if (i == 0) {
+                log.error("update table {} error，record is {}", this.table(), record);
                 throw new RuntimeException("no field is update");
+            }
 
             // 加入 where 条件
             i = 0;
@@ -320,18 +319,19 @@ public class SqlOperator implements IHandle {
             }
 
             if (ps.executeUpdate() != 1) {
-                log.error(bs.getPrepareCommand());
-                throw new RuntimeException(res.getString(1, "当前记录已被其它用户修改或不存在，更新失败"));
+                RuntimeException e = new RuntimeException(res.getString(1, "当前记录已被其它用户修改或不存在，更新失败"));
+                log.error(bs.getPrepareCommand(), e);
+                throw e;
             }
             return true;
         } catch (SQLException e) {
-            log.error(lastCommand);
+            log.error(lastCommand, e);
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
     }
 
-    public final boolean delete(Connection connection, DataRow record) {
+    public boolean delete(Connection connection, DataRow record) {
         resetUpdateKey(connection, record);
 
         String lastCommand = null;
@@ -363,7 +363,7 @@ public class SqlOperator implements IHandle {
             }
             return ps.execute();
         } catch (SQLException e) {
-            log.error(lastCommand);
+            log.error(lastCommand, e);
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
@@ -464,6 +464,9 @@ public class SqlOperator implements IHandle {
             break;
         case Sqlite:
             sql = "select last_insert_rowid() newid";
+            break;
+        case Pgsql:
+            sql = String.format("SELECT currval('%s_%s_seq')", this.table, this.oid);
             break;
         default:
             throw new SqlServerTypeException();

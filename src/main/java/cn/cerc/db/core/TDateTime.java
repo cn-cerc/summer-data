@@ -65,12 +65,10 @@ public class TDateTime extends Datetime {
         return inc(DateType.Hour, offset);
     }
 
-    @Override
     public TDateTime incDay(int offset) {
         return inc(DateType.Day, offset);
     }
 
-    @Override
     public TDateTime incMonth(int offset) {
         return inc(DateType.Month, offset);
     }
@@ -81,10 +79,10 @@ public class TDateTime extends Datetime {
     }
 
     // 返回value的日值
-    @Override
-    public final int getDay() {
-        return get(DateType.Day);
-    }
+//    @Override
+//    public final int getDay() {
+//        return get(DateType.Day);
+//    }
 
     // 返回value的小时值
     public final int getHours() {
@@ -153,17 +151,17 @@ public class TDateTime extends Datetime {
         return this.isEmpty();
     }
 
-    @Deprecated
-    public String getShortValue() {
-        String year = this.getYearMonth().substring(2, 4);
-        int month = this.getMonth();
-        int day = this.getDay();
-        if (TDateTime.now().subtract(DateType.Year, this) != 0) {
-            return String.format("%s年%d月", year, month);
-        } else {
-            return String.format("%d月%d日", month, day);
-        }
-    }
+//    @Deprecated
+//    public String getShortValue() {
+//        String year = this.getYearMonth().substring(2, 4);
+//        int month = this.getMonth();
+//        int day = this.getDay();
+//        if (TDateTime.now().subtract(DateType.Year, this) != 0) {
+//            return String.format("%s年%d月", year, month);
+//        } else {
+//            return String.format("%d月%d日", month, day);
+//        }
+//    }
 
     @Deprecated
     public final Datetime addDay(int value) {
@@ -260,30 +258,30 @@ public class TDateTime extends Datetime {
 
     // 若当前值大，则返回正数，否则返回负数
     // 返回this - to 的差异天数 ,返回相对值
-    @Override
-    public final int compareDay(Datetime from) {
-        return subtract(DateType.Day, from);
-    }
+//    @Override
+//    public final int compareDay(Datetime from) {
+//        return subtract(DateType.Day, from);
+//    }
 
     // 原MonthsBetween，改名为：compareMonth
-    @Override
-    public final int compareMonth(Datetime from) {
-        return subtract(DateType.Month, from);
-    }
+//    @Override
+//    public final int compareMonth(Datetime from) {
+//        return subtract(DateType.Month, from);
+//    }
 
     public final int compareYear(Datetime from) {
         return subtract(DateType.Year, from);
     }
 
-    @Override
-    public final TDateTime clone() {
-        TDateTime result = new TDateTime(this.timestamp);
-        result.setDateSeparator(dateSeparator);
-        this.setEmptyDisplay(displayEmpty);
-        result.setDateKind(dateKind);
-        result.setOptions(options);
-        return result;
-    }
+//    @Override
+//    public final TDateTime clone() {
+//        TDateTime result = new TDateTime(this.timestamp);
+//        result.setDateSeparator(dateSeparator);
+//        this.setEmptyDisplay(displayEmpty);
+//        result.setDateKind(dateKind);
+//        result.setOptions(options);
+//        return result;
+//    }
 
     /**
      * @return 获取Unix时间戳，一共10位，秒级

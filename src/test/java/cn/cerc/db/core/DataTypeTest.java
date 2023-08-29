@@ -12,17 +12,17 @@ public class DataTypeTest {
 
     @Test
     public void test_setType_1() {
-        assertEquals("b", new DataType().readClass(Boolean.class).toString());
-        assertEquals("n1", new DataType().readClass(Integer.class).toString());
-        assertEquals("n2", new DataType().readClass(Long.class).toString());
-        assertEquals("f1", new DataType().readClass(Float.class).toString());
-        assertEquals("f2", new DataType().readClass(Double.class).toString());
-        assertEquals("s", new DataType().readClass(String.class).toString());
+        assertEquals("b", new DataType().setClass(Boolean.class).toString());
+        assertEquals("n1", new DataType().setClass(Integer.class).toString());
+        assertEquals("n2", new DataType().setClass(Long.class).toString());
+        assertEquals("f1", new DataType().setClass(Float.class).toString());
+        assertEquals("f2", new DataType().setClass(Double.class).toString());
+        assertEquals("s", new DataType().setClass(String.class).toString());
         //
-        assertEquals("t", new DataType().readClass(FastTime.class).toString());
-        assertEquals("d", new DataType().readClass(FastDate.class).toString());
-        assertEquals("dt", new DataType().readClass(Datetime.class).toString());
-        assertEquals("dt", new DataType().readClass(Date.class).toString());
+        assertEquals("t", new DataType().setClass(FastTime.class).toString());
+        assertEquals("d", new DataType().setClass(FastDate.class).toString());
+        assertEquals("dt", new DataType().setClass(Datetime.class).toString());
+        assertEquals("dt", new DataType().setClass(Date.class).toString());
     }
 
     @Test
@@ -69,7 +69,7 @@ public class DataTypeTest {
     @Test
     public void test_clone() {
         DataType type1 = new DataType();
-        type1.readClass(String.class);
+        type1.setClass(String.class);
         type1.setDecimal(1);
         type1.setLength(2);
         DataType type2 = type1.clone();

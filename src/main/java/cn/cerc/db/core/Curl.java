@@ -11,9 +11,18 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.zip.GZIPInputStream;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -25,6 +34,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.gson.Gson;
 
 /**
  * HTTP请求代理类
@@ -65,6 +76,8 @@ public class Curl {
     private String responseContent = null;
     private static final Logger log = LoggerFactory.getLogger(Curl.class);
 
+    private boolean ignoreSSL = false;
+
     public String sendGet(String reqUrl) {
         StringBuilder result = new StringBuilder();
         BufferedReader in = null;
@@ -79,9 +92,9 @@ public class Curl {
                 builder.append(i == 1 ? "?" : "&");
                 builder.append(key);
                 builder.append("=");
-                String value = parameters.get(key).toString();
+                Object value = parameters.get(key);
                 if (value != null) {
-                    builder.append(encodeUTF8(value));
+                    builder.append(encodeUTF8(value.toString()));
                 }
             }
             URL url = new URL(builder.toString());
@@ -146,6 +159,9 @@ public class Curl {
             }
 
             URL url = new URL(reqUrl);
+
+            initHttpsCertificates();
+
             final HttpURLConnection fcon = url_con = (HttpURLConnection) url.openConnection();
             headers.forEach((k, v) -> fcon.setRequestProperty(k, (String) v));
             fcon.setRequestMethod("GET");
@@ -288,7 +304,11 @@ public class Curl {
             reqUrl = new String(reqUrl.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
 
             URL url = new URL(reqUrl);
+
+            initHttpsCertificates();
+
             final HttpURLConnection fcon = url_con = (HttpURLConnection) url.openConnection();
+
             fcon.setRequestMethod("POST");
             headers.forEach((k, v) -> fcon.setRequestProperty(k, (String) v));
             // System.setProperty("sun.net.client.defaultConnectTimeout",
@@ -310,7 +330,11 @@ public class Curl {
             if (status >= 400) {
                 in = new BufferedInputStream(fcon.getErrorStream());
             } else {
-                in = new BufferedInputStream(fcon.getInputStream());
+                String contentEncoding = fcon.getContentEncoding();
+                if (!Utils.isEmpty(contentEncoding) && contentEncoding.equalsIgnoreCase("gzip"))
+                    in = new BufferedInputStream(new GZIPInputStream(fcon.getInputStream()));
+                else
+                    in = new BufferedInputStream(fcon.getInputStream());
             }
 
             BufferedReader rd = new BufferedReader(new InputStreamReader(in, recvEncoding));
@@ -331,6 +355,19 @@ public class Curl {
         return responseContent;
     }
 
+    /**
+     * 传入对象并将对象转换为 JSON 数据请求
+     */
+    public String doPost(String url, Object obj) {
+        try {
+            String json = new Gson().toJson(obj);
+            return this.doPost(url, json);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
     public String doPost(String url, String json) {
         try {
             CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -348,6 +385,43 @@ public class Curl {
             throw new RuntimeException(e.getMessage());
         }
         return responseContent;
+    }
+
+    private void initHttpsCertificates() {
+        HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> isIgnoreSSL());
+        if (!isIgnoreSSL()) {
+            HttpsURLConnection.setDefaultSSLSocketFactory((SSLSocketFactory) SSLSocketFactory.getDefault());
+        } else {
+            TrustManager[] trustAllCerts = new TrustManager[] { new MyTrustManager() };
+            try {
+                SSLContext sc = SSLContext.getInstance("SSL");
+                sc.init(null, trustAllCerts, null);
+                HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+            } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static class MyTrustManager implements X509TrustManager {
+
+        @Override
+        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            return null;
+        }
+
+        @Override
+        public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType)
+                throws java.security.cert.CertificateException {
+            return;
+        }
+
+        @Override
+        public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType)
+                throws java.security.cert.CertificateException {
+            return;
+        }
+
     }
 
     public int getConnectTimeOut() {
@@ -390,21 +464,21 @@ public class Curl {
         return responseContent;
     }
 
-    @Deprecated // 请改为 putParameter
-    public Curl addParameter(String key, Object value) {
-        this.parameters.put(key, value);
-        return this;
-    }
+//    @Deprecated // 请改为 putParameter
+//    public Curl addParameter(String key, Object value) {
+//        this.parameters.put(key, value);
+//        return this;
+//    }
 
     public Curl put(String key, Object value) {
         this.parameters.put(key, value);
         return this;
     }
 
-    @Deprecated
-    public Curl putParameter(String key, Object value) {
-        return this.put(key, value);
-    }
+//    @Deprecated
+//    public Curl putParameter(String key, Object value) {
+//        return this.put(key, value);
+//    }
 
     public Map<String, Object> getHeaders() {
         return headers;
@@ -412,6 +486,20 @@ public class Curl {
 
     public Curl putHeader(String key, Object value) {
         this.headers.put(key, value);
+        return this;
+    }
+
+    public boolean isIgnoreSSL() {
+        return ignoreSSL;
+    }
+
+    public Curl setIgnoreSSL(boolean ignoreSSL) {
+        this.ignoreSSL = ignoreSSL;
+        return this;
+    }
+
+    public Curl setIgnoreSSL() {
+        this.ignoreSSL = true;
         return this;
     }
 

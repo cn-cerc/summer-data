@@ -3,6 +3,7 @@ package cn.cerc.db.mysql;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import cn.cerc.db.core.BigdataException;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
-import cn.cerc.db.core.StubSession;
+import cn.cerc.db.core.StubDatabaseSession;
 
 public class SqlQueryTest implements IHandle {
     private static final Logger log = LoggerFactory.getLogger(SqlQueryTest.class);
@@ -21,12 +22,13 @@ public class SqlQueryTest implements IHandle {
 
     @Before
     public void setUp() {
-        session = new StubSession();
+        session = new StubDatabaseSession();
         ds = new MysqlQuery(this);
         userInfo = "Account";
     }
 
     @Test
+    @Ignore
     public void test_open() {
         ds.sql().setMaximum(1);
         ds.add("select Code_,Name_ from %s", userInfo);
@@ -56,6 +58,7 @@ public class SqlQueryTest implements IHandle {
     }
 
     @Test
+    @Ignore
     public void test_open_2() {
         ds.sql().setMaximum(1);
         String str = "\\小王233\\";

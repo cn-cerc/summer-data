@@ -1,9 +1,12 @@
 package cn.cerc.db.core;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+
+import cn.cerc.db.Alias;
 
 public class DataRowTest {
 
@@ -115,7 +118,7 @@ public class DataRowTest {
         row.setValue("Code_", "c");
         row.setValue("Code_", "d");
         assertEquals(row.delta().size(), 1);
-        assertTrue(row.getOldField("Code_") == val);
+        assertTrue(row.getOldValue("Code_") == val);
     }
 
     @Test
@@ -154,5 +157,90 @@ public class DataRowTest {
         row.setValue("b", 1162.89);
 //        1193.75 + 1162.89 = 2356.64
         System.out.println(row.getDouble("a") + row.getDouble("b"));// 2356.6400000000003
+    }
+
+    @Test
+    public void test_of_1() {
+        DataRow dataRow = DataRow.of("a", "1", "b", 2);
+        assertEquals("{\"a\":\"1\",\"b\":2}", dataRow.json());
+    }
+
+    @Test
+    public void test_of_2() {
+        assertThrows(RuntimeException.class, () -> DataRow.of("a", "1", "b", 2, "c"));
+    }
+
+    @Test
+    public void test_of_3() {
+        DataRow dataRow = DataRow.of("a", "1", "b", null);
+        assertEquals("{\"a\":\"1\",\"b\":\"\"}", dataRow.json());
+    }
+
+    @Test
+    public void test_of_4() {
+        assertThrows(RuntimeException.class, () -> DataRow.of("a", "1", "", null));
+    }
+
+    @Test
+    public void test_of_5() {
+        DataRow dataRow = DataRow.of();
+        assertEquals("{}", dataRow.json());
+    }
+
+//    public record TestUser1(@Alias("code_") Variant code, @Alias("name_") String name, boolean enabled) {
+//    }
+//
+//    @Test
+//    public void test_of_asRecord1() {
+//        DataRow row = DataRow.of("code_", "001", "name_", "jason", "enabled", "true");
+//        TestUser1 user = row.asRecord(TestUser1.class);
+//        assertEquals("001", user.code().getString());
+//        assertEquals(1, user.code().getInt());
+//        assertEquals("jason", user.name());
+//        assertEquals(true, user.enabled());
+//        // 注意：使用record模式，不会产生绑定效果
+//        row.setValue("code_", "002");
+//        assertEquals(1, user.code().getInt());
+//    }
+
+    public interface TestUser2 {
+        @Alias("code_")
+        Variant code();
+
+        @Alias("name_")
+        String name();
+
+        boolean enabled();
+    }
+
+    @Test
+    public void test_of_asRecord2() {
+        DataRow row = DataRow.of("code_", "001", "name_", "jason", "enabled", "true");
+        TestUser2 user = row.asRecord(TestUser2.class);
+        assertEquals("001", user.code().getString());
+        assertEquals(1, user.code().getInt());
+        assertEquals("jason", user.name());
+        assertTrue(user.enabled());
+        // 注意：使用interface模式，会产生绑定效果
+        row.setValue("code_", "002");
+        assertEquals(2, user.code().getInt());
+        user.code().setValue("003");
+        assertEquals("003", row.getString("code_"));
+    }
+
+    @Test
+    public void test_bind() {
+        DataRow row = DataRow.of("code", "001");
+
+        Variant code = row.bind("code");
+        assertEquals(1, code.getInt());
+
+        // 连动更新
+        code.setValue("002");
+        assertEquals("002", row.getString("code"));
+
+        row.setValue("code", "003");
+        assertEquals("003", code.getString());
+        assertEquals(3, code.getInt());
     }
 }

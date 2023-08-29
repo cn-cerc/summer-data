@@ -11,6 +11,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.EnumSet;
 
+import cn.cerc.db.testsql.TestsqlServer;
+
 public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
     private static final long serialVersionUID = -7395748632907604015L;
     // 常见输出组合
@@ -53,7 +55,10 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
 
     public Datetime() {
         super();
-        this.setTimestamp(System.currentTimeMillis());
+        var current = System.currentTimeMillis();
+        if (TestsqlServer.enabled())
+            current = TestsqlServer.build().getLockTime().orElse(current);
+        this.setTimestamp(current);
     }
 
     public Datetime(long date) {
@@ -494,7 +499,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
                 throw new DateFormatErrorException(text);
             }
 
-            String value = text;
+            String value = text.replace("T", " ");
             // 防止年月日均为0
             if ("0000-00-00".equals(text.substring(0, 10)))
                 value = "0001-01-01" + text.substring(10, text.length());
@@ -526,6 +531,17 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
      */
     public boolean before(Datetime target) {
         return this.getTimestamp() < target.getTimestamp();
+    }
+
+    /**
+     * 判断当前对象是否在指定的时间区间内
+     * 
+     * @param start 区间开始
+     * @param end   区间结束
+     * @return 是否在区间内
+     */
+    public boolean between(Datetime start, Datetime end) {
+        return this.getTimestamp() >= start.getTimestamp() && this.getTimestamp() <= end.getTimestamp();
     }
 
     /**
@@ -608,29 +624,29 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
         return source.containsAll(target);
     }
 
-    @Deprecated
-    public Datetime incDay(int offset) {
-        return inc(DateType.Day, offset);
-    }
-
-    @Deprecated
-    public int getDay() {
-        return get(DateType.Day);
-    }
-
-    @Deprecated
-    public int compareDay(Datetime target) {
-        return this.subtract(DateType.Day, target);
-    }
-
-    @Deprecated
-    public Datetime incMonth(int offset) {
-        return inc(DateType.Month, offset);
-    }
-
-    @Deprecated
-    public int compareMonth(Datetime target) {
-        return this.subtract(DateType.Month, target);
-    }
+//    @Deprecated
+//    public Datetime incDay(int offset) {
+//        return inc(DateType.Day, offset);
+//    }
+//
+//    @Deprecated
+//    public int getDay() {
+//        return get(DateType.Day);
+//    }
+//
+//    @Deprecated
+//    public int compareDay(Datetime target) {
+//        return this.subtract(DateType.Day, target);
+//    }
+//
+//    @Deprecated
+//    public Datetime incMonth(int offset) {
+//        return inc(DateType.Month, offset);
+//    }
+//
+//    @Deprecated
+//    public int compareMonth(Datetime target) {
+//        return this.subtract(DateType.Month, target);
+//    }
 
 }

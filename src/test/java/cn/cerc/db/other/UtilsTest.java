@@ -9,10 +9,13 @@ import static cn.cerc.db.core.Utils.roundTo;
 import static cn.cerc.db.core.Utils.strToDoubleDef;
 import static cn.cerc.db.core.Utils.trunc;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -86,9 +89,15 @@ public class UtilsTest {
 
     @Test
     public void test_isNumeric() {
+        assertTrue(isNumeric("1"));
+        assertTrue(isNumeric("-1"));
         assertTrue(isNumeric("111.333"));
-        assertTrue(isNumeric("1113232333"));
-        assertTrue(!isNumeric("a111.333"));
+        assertTrue(isNumeric("-111.333"));
+
+        assertTrue(isNumeric("-111.333222222222222222222222"));
+        assertTrue(isNumeric("1113232333554545454544545"));
+
+        assertFalse(isNumeric("a111.333"));
     }
 
     @Test
@@ -112,4 +121,19 @@ public class UtilsTest {
         assertEquals(0, strToDoubleDef("1.03a", 0), 0);
         assertEquals(-1.03, strToDoubleDef("-1.03", 0), 0);
     }
+
+    @Test
+    public void test_groupList() {
+        List<String> original = new ArrayList<>();
+        for (int i = 1; i <= 33; i++) {
+            original.add(String.valueOf(i));
+        }
+        int num = 16;
+        long start = System.nanoTime();
+        List<List<String>> groupList = Utils.divideList(original, num);
+        long end = System.nanoTime();
+        System.out.println(end - start);
+        assertEquals(3, groupList.size());
+    }
+
 }

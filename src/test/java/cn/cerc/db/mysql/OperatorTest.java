@@ -12,7 +12,7 @@ import cn.cerc.db.core.ISession;
 import cn.cerc.db.core.SqlOperator;
 import cn.cerc.db.core.SqlServerType;
 import cn.cerc.db.core.SqlText;
-import cn.cerc.db.core.StubSession;
+import cn.cerc.db.core.StubDatabaseSession;
 import cn.cerc.db.core.FieldMeta.FieldKind;
 
 public class OperatorTest implements IHandle {
@@ -22,7 +22,7 @@ public class OperatorTest implements IHandle {
 
     @Before
     public void setUp() {
-        session = new StubSession();
+        session = new StubDatabaseSession();
     }
 
     @Test

@@ -10,8 +10,11 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 public @interface Describe {
 
-    // 名称
-    String name();
+    /**
+     * 请改使用注解 @Column
+     */
+    @Deprecated
+    String name() default "";
 
     // 备注
     String remark() default "";
@@ -22,4 +25,12 @@ public @interface Describe {
     // 默认值
     String def() default "";
 
+    // 建议显示宽度
+    int width() default 0;
+
+    // 在增加记录时，是否为必填栏位
+    boolean required() default false;
+
+    // 开窗选择JavaScript函数代码
+    String dialog() default "";
 }

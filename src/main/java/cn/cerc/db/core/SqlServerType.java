@@ -4,6 +4,7 @@ public enum SqlServerType {
 
     Mysql,
     Mssql,
-    Sqlite;
-
+    Sqlite,
+    Pgsql,
+    Testsql;
 }

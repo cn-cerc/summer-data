@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,14 +37,14 @@ public class MssqlDatabase implements IHandle, ISqlDatabase {
     public MssqlDatabase(IHandle handle, Class<? extends EntityImpl> clazz) {
         super();
         this.clazz = clazz;
-        this.helper = EntityHelper.create(clazz);
+        this.helper = EntityHelper.get(clazz);
         if (handle != null)
             this.setSession(handle.getSession());
     }
 
     @Override
     public final String table() {
-        return helper.table();
+        return helper.tableName();
     }
 
     @Override
@@ -310,13 +311,15 @@ public class MssqlDatabase implements IHandle, ISqlDatabase {
         sb.append("create table ").append(table()).append(" (");
         int count = 0;
         for (Field field : clazz.getDeclaredFields()) {
+            if(Modifier.isStatic(field.getModifiers()))
+                continue;
             if (count++ > 0)
                 sb.append(",");
             sb.append("\n");
             sb.append(field.getName()).append(" ");
             writeDataType(sb, field);
         }
-        Table table = clazz.getDeclaredAnnotation(Table.class);
+        Table table = EntityHelper.get(clazz).table();
         if (table != null && table.uniqueConstraints().length > 0) {
             sb.append(",\n");
             UniqueConstraint[] uniques = table.uniqueConstraints();

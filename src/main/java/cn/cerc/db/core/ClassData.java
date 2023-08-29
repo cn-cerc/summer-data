@@ -15,6 +15,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 public class ClassData {
+    public static final int DEFAULT = 0;
     public static final int PUBLIC = 1;
     public static final int PRIVATE = 2;
     public static final int PROTECTED = 4;
@@ -88,6 +89,8 @@ public class ClassData {
     private Map<String, Field> loadFields() {
         Map<String, Field> fields = new LinkedHashMap<>();
         for (Field field : clazz.getDeclaredFields()) {
+            if(Modifier.isStatic(field.getModifiers()))
+                continue;
             Column column = null;
             for (Annotation item : field.getAnnotations()) {
                 if (item instanceof Column) {

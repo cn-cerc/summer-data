@@ -1,73 +1,36 @@
 package cn.cerc.db.mysql;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.mchange.v2.c3p0.ComboPooledDataSource;
-
-import cn.cerc.db.core.ClassConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MysqlServerSlave extends MysqlServer {
     // IHandle中识别码
     public static final String SessionId = "slaveSqlSession";
-    private static final Logger log = LoggerFactory.getLogger(MysqlServerSlave.class);
-    private static ComboPooledDataSource dataSource;
-    private static final MysqlConfig config;
+    private static HikariDataSource dataSource;
 
     static {
-        config = new MysqlConfig();
-
-        final String salve = ".slave";
-        final ClassConfig appConfig = MysqlConfig.appConfig;
-
-        // mysql 连接相关，在未设置时，将与master库相同
-        final String server = config.getHost();
-        final String database = config.getDatabase();
-        final String user = config.getUser();
-        final String password = config.getPassword();
-        config.setServer(appConfig.getString(MysqlConfig.rds_site + salve, server));
-        config.setDatabase(appConfig.getString(MysqlConfig.rds_database + salve, database));
-        config.setUser(appConfig.getString(MysqlConfig.rds_username + salve, user));
-        config.setPassword(appConfig.getString(MysqlConfig.rds_password + salve, password));
-
-        // mysql 连接池相关
-        config.setMaxPoolSize(appConfig.getString(MysqlConfig.rds_MaxPoolSize + salve, "0"));
-        config.setMinPoolSize(appConfig.getString(MysqlConfig.rds_MinPoolSize + salve, "9"));
-        config.setInitialPoolSize(appConfig.getString(MysqlConfig.rds_InitialPoolSize + salve, "3"));
-
-        if (config.getMaxPoolSize() > 0)
-            dataSource = MysqlServer.createDataSource(config);
+        MysqlConfig config = MysqlConfig.getSlave();
+        if (config.maxPoolSize() > 0)
+            dataSource = config.createDataSource();
     }
 
     @Override
     public Connection createConnection() {
-        if (isPool()) // 使用线程池创建
+        // 使用线程池创建
+        if (isPool())
             return MysqlServer.getPoolConnection(dataSource);
 
-        // 不使用线程池直接创建
-        try {
-            if (getConnection() == null) {
-                Class.forName(MysqlConfig.JdbcDriver);
-                setConnection(
-                        DriverManager.getConnection(config.getConnectUrl(), config.getUser(), config.getPassword()));
-            }
-            return getConnection();
-        } catch (ClassNotFoundException e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
+        // 直接创建连接
+        if (getConnection() == null)
+            setConnection(MysqlConfig.getSlave().createConnection());
+        return this.getConnection();
     }
 
     @Override
@@ -77,12 +40,12 @@ public class MysqlServerSlave extends MysqlServer {
 
     @Override
     public String getHost() {
-        return config.getHost();
+        return MysqlConfig.getSlave().site();
     }
 
     @Override
     public String getDatabase() {
-        return config.getDatabase();
+        return MysqlConfig.getSlave().database();
     }
 
     public static void openPool() {

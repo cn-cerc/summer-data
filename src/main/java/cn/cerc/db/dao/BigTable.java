@@ -76,7 +76,7 @@ public abstract class BigTable<T extends BigRecord> implements IHandle {
     @SuppressWarnings("unchecked")
     private void initClazz() {
         this.clazz = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-        this.tableId = EntityHelper.create(clazz).table();
+        this.tableId = EntityHelper.get(clazz).tableName();
     }
 
     @Deprecated // 请改使用 open
@@ -152,23 +152,23 @@ public abstract class BigTable<T extends BigRecord> implements IHandle {
         return total;
     }
 
-    @Deprecated // 请改使用open(SqlText)
-    public int load(Object... keyValues) {
-        SqlText sql = new SqlText(clazz);
-        return loadRecords(sql.getWhereKeys(keyValues));
-    }
+//    @Deprecated // 请改使用open(SqlText)
+//    public int load(Object... keyValues) {
+//        SqlText sql = new SqlText(clazz);
+//        return loadRecords(sql.getWhereKeys(keyValues));
+//    }
 
-    @Deprecated // 请改使用open(SqlText)
-    public int loadWhere(String whereText) {
-        SqlText sql = new SqlText(clazz);
-        return loadRecords(sql.getWhere(whereText));
-    }
+//    @Deprecated // 请改使用open(SqlText)
+//    public int loadWhere(String whereText) {
+//        SqlText sql = new SqlText(clazz);
+//        return loadRecords(sql.getWhere(whereText));
+//    }
 
-    @Deprecated // 请改使用open(SqlText)
-    public int loadWhere(String format, Object... args) {
-        SqlText sql = new SqlText(clazz);
-        return loadRecords(sql.getWhere(String.format(format, args)));
-    }
+//    @Deprecated // 请改使用open(SqlText)
+//    public int loadWhere(String format, Object... args) {
+//        SqlText sql = new SqlText(clazz);
+//        return loadRecords(sql.getWhere(String.format(format, args)));
+//    }
 
     private int loadRecords(String sqlText) {
         int total = 0;
@@ -283,7 +283,7 @@ public abstract class BigTable<T extends BigRecord> implements IHandle {
             return;
         }
 
-        String tableName = EntityHelper.create(clazz).table();
+        String tableName = EntityHelper.get(clazz).tableName();
         if (tableName == null) {
             throw new RuntimeException("tableName is null");
         }

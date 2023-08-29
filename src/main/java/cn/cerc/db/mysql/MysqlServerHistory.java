@@ -9,31 +9,30 @@ import org.slf4j.LoggerFactory;
 
 public class MysqlServerHistory extends MysqlServer {
     private static final Logger log = LoggerFactory.getLogger(MysqlServerHistory.class);
-    private MysqlConfig config = new MysqlConfig();
 
     public MysqlServerHistory(String database) {
         super();
-        config.setDatabase(database);
     }
 
     @Override
     public String getHost() {
-        return config.getHost();
+        return MysqlConfig.getMaster().site();
     }
 
     @Override
     public String getDatabase() {
-        return config.getDatabase();
+        return MysqlConfig.getMaster().database();
     }
 
     @Override
     public Connection createConnection() {
         // 不使用线程池直接创建
         try {
+            var config = MysqlConfig.getMaster();
             if (getConnection() == null) {
                 Class.forName(MysqlConfig.JdbcDriver);
                 setConnection(
-                        DriverManager.getConnection(config.getConnectUrl(), config.getUser(), config.getPassword()));
+                        DriverManager.getConnection(config.getConnectUrl(), config.username(), config.password()));
             }
             return getConnection();
         } catch (ClassNotFoundException e) {

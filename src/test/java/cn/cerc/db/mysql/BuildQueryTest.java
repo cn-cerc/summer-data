@@ -6,16 +6,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cn.cerc.db.core.Handle;
-import cn.cerc.db.core.StubSession;
+import cn.cerc.db.core.StubDatabaseSession;
 
 public class BuildQueryTest {
 
     private BuildQuery bs;
-    private StubSession handle;
+    private StubDatabaseSession handle;
 
     @Before
     public void setUp() {
-        handle = new StubSession();
+        handle = new StubDatabaseSession();
         bs = new BuildQuery(new Handle(handle));
     }
 
@@ -24,7 +24,7 @@ public class BuildQueryTest {
         bs.add("x");
         bs.byParam("x");
         bs.byField("x", "y");
-        bs.setOrder("ok");
+        bs.setOrder("order by ok");
         bs.clear();
         assertEquals("", bs.sqlText());
     }

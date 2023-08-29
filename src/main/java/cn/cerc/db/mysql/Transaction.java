@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.cerc.db.core.IHandle;
+import cn.cerc.db.testsql.TestsqlServer;
 
 public class Transaction implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(Transaction.class);
@@ -16,6 +17,8 @@ public class Transaction implements AutoCloseable {
     private boolean locked = false;
 
     public Transaction(IHandle owner) {
+        if (TestsqlServer.enabled())
+            return;
         MysqlServerMaster mysql = owner.getMysql();
         this.client = mysql.getClient();
         try {
@@ -31,6 +34,8 @@ public class Transaction implements AutoCloseable {
     }
 
     public boolean commit() {
+        if (TestsqlServer.enabled())
+            return true;
         if (!active)
             return false;
 
@@ -49,6 +54,8 @@ public class Transaction implements AutoCloseable {
 
     @Override
     public void close() {
+        if (TestsqlServer.enabled())
+            return;
         try {
             if (active) {
                 Connection connection = client.getConnection();

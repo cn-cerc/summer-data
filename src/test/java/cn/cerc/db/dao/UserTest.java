@@ -23,9 +23,9 @@ public class UserTest implements EntityImpl {
     public Integer version_;
 
     public static void main(String[] args) {
-        EntityHelper<UserTest> meta = EntityHelper.create(UserTest.class);
+        EntityHelper<UserTest> meta = EntityHelper.get(UserTest.class);
         System.out.println(meta);
-        System.out.println(meta.table());
+        System.out.println(meta.tableName());
         System.out.println(meta.idField());
         System.out.println(meta.versionField());
         System.out.println(meta.idFieldCode());

@@ -22,6 +22,14 @@ public class FieldDefsTest {
     }
 
     @Test
+    public void test() {
+        var defs = new FieldDefs();
+        defs.add("a");
+        assertTrue(defs.exists("a"));
+        assertFalse(defs.exists("b"));
+    }
+
+    @Test
     public void test_id() {
         FieldMeta meta = defs.get("id_");
         assertTrue(meta.storage());

@@ -5,12 +5,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 
-import com.google.gson.Gson;
-
 public class Variant {
-    private Object data;
+    private String key;
+    private Object value;
     private transient boolean modified;
-    private String tag;
 
     public Variant() {
         super();
@@ -18,37 +16,37 @@ public class Variant {
 
     public Variant(Object data) {
         super();
-        this.setData(data);
+        this.setValue(data);
     }
 
-    public final String tag() {
-        return this.tag;
+    public final String key() {
+        return this.key;
     }
 
-    public final Object data() {
-        return this.data;
+    public Object value() {
+        return value;
     }
 
-    public Variant setData(Object data) {
-        if (this.data == data)
+    public Variant setValue(Object value) {
+        if (this.value == value)
             return this;
-        if (this.data == null && data != null)
+        if (this.value == null && value != null)
             modified = true;
-        else if (this.data != null && data == null)
+        else if (this.value != null && value == null)
             modified = true;
-        else if (!this.data.equals(data))
+        else if (!this.value.equals(value))
             modified = true;
-        this.data = data;
+        this.value = value;
         return this;
     }
 
-    public final Variant setTag(String tag) {
-        this.tag = tag;
+    public Variant setKey(String key) {
+        this.key = key;
         return this;
     }
 
     public final String getString() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return "";
         } else if (value instanceof String) {
@@ -68,7 +66,7 @@ public class Variant {
     }
 
     public final boolean getBoolean() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return false;
         } else if (value instanceof Boolean) {
@@ -86,7 +84,7 @@ public class Variant {
     }
 
     public final int getInt() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -125,7 +123,7 @@ public class Variant {
     }
 
     public final long getLong() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -161,7 +159,7 @@ public class Variant {
     }
 
     public final float getFloat() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -193,7 +191,7 @@ public class Variant {
     }
 
     public final double getDouble() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return 0;
         } else if ((value instanceof Boolean)) {
@@ -219,7 +217,7 @@ public class Variant {
     }
 
     public final BigInteger getBigInteger() {
-        Object value = this.data();
+        Object value = this.value();
         if (value instanceof BigInteger) {
             return (BigInteger) value;
         } else
@@ -227,7 +225,7 @@ public class Variant {
     }
 
     public final BigDecimal getBigDecimal() {
-        Object value = this.data();
+        Object value = this.value();
         if (value instanceof BigDecimal)
             return (BigDecimal) value;
         else
@@ -235,7 +233,7 @@ public class Variant {
     }
 
     public final Datetime getDatetime() {
-        Object value = this.data();
+        Object value = this.value();
         if (value == null) {
             return Datetime.zero();
         } else if (value instanceof Datetime) {
@@ -257,10 +255,9 @@ public class Variant {
         return this.getDatetime().toFastTime();
     }
 
-    @SuppressWarnings("rawtypes")
-    public Enum<?> getEnum(Class<? extends Enum> clazz) {
+    public final <T extends Enum<T>> T getEnum(Class<T> clazz) {
         int tmp = getInt();
-        Enum[] list = clazz.getEnumConstants();
+        T[] list = clazz.getEnumConstants();
         if (tmp >= 0 && tmp < list.length)
             return list[tmp];
         else
@@ -269,15 +266,18 @@ public class Variant {
 
     @Override
     public final String toString() {
-        return new Gson().toJson(this);
+        return String.format("{\"key\":\"%s\",\"value\":\"%s\"}", this.key, this.value());
     }
 
-    public boolean isModified() {
+    public final boolean isModified() {
         return modified;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> void writeToEntity(T entity, Field field) throws IllegalAccessException {
+    protected final void setModified(boolean modified) {
+        this.modified = modified;
+    }
+
+    public <T, E extends Enum<E>> void writeToEntity(T entity, Field field) throws IllegalAccessException {
         if ("boolean".equals(field.getType().getName()))
             field.setBoolean(entity, this.getBoolean());
         else if ("int".equals(field.getType().getName()))
@@ -300,27 +300,41 @@ public class Variant {
             field.set(entity, Double.valueOf(this.getDouble()));
         else if (field.getType() == Datetime.class)
             field.set(entity, this.getDatetime());
+        else if (field.getType() == FastDate.class)
+            field.set(entity, this.getFastDate());
+        else if (field.getType() == FastTime.class)
+            field.set(entity, this.getFastTime());
         else if (field.getType() == String.class)
             field.set(entity, this.getString());
-        else if (field.getType().isEnum())
-            field.set(entity, this.getEnum((Class<Enum<?>>) field.getType()));
-        else {
-            if (this.data() != null)
+        else if (field.getType().isEnum()) {
+            @SuppressWarnings("unchecked")
+            Class<E> enumType = (Class<E>) field.getType();
+            field.set(entity, this.getEnum(enumType));
+        } else {
+            if (this.value() != null)
                 throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
-                        this.data().getClass().getName(), field.getType().getName()));
+                        this.value().getClass().getName(), field.getType().getName()));
             else
                 throw new RuntimeException(
                         String.format("field %s error: %s to null", field.getName(), field.getType().getName()));
         }
     }
 
-    public static void main(String[] args) {
-        System.out.println(new Variant());
-        System.out.println(new Variant("202109"));
-        System.out.println(new Variant("202109").setTag("date"));
+    public boolean hasValue() {
+        return !"".equals(getString());
+    }
 
-        Variant kv = new Variant("3").setTag("id");
-        System.out.println(kv.tag());
+    public static void main(String[] args) {
+        DataSet ds = new DataSet();
+        ds.append().setValue("code", 1);
+        ds.append().setValue("code", 2);
+        var code1 = ds.bindColumn("code");
+        var code2 = ds.current().bind("code");
+        System.out.println(code1);
+        System.out.println(code2);
+        ds.first();
+        System.out.println(code1);
+        System.out.println(code2);
     }
 
 }

@@ -13,13 +13,15 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -42,6 +44,7 @@ public class Utils {
     private static final ClassResource res = new ClassResource(Utils.class, SummerDB.ID);
 
     public static final String vbCrLf = "\r\n";
+    public static final String separtor = System.lineSeparator();
 
     /**
      * 空串
@@ -65,7 +68,7 @@ public class Utils {
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
         ObjectOutputStream objOut = new ObjectOutputStream(byteOut);
         objOut.writeObject(obj);
-        return byteOut.toString(StandardCharsets.ISO_8859_1.name());// 此处只能是ISO-8859-1,但是不会影响中文使用;
+        return byteOut.toString(StandardCharsets.ISO_8859_1);// 此处只能是ISO-8859-1,但是不会影响中文使用;
     }
 
     public static Object deserializeToObject(String str) throws IOException, ClassNotFoundException {
@@ -93,18 +96,30 @@ public class Utils {
     }
 
     /**
-     * 按照指定的编码格式进行url解码
+     * 按照指定的编码格式进行url解码，建议使用jdk标准的枚举类型
      *
      * @param value 原始字符串
      * @param enc   编码格式 StandardCharsets.UTF_8.name()
      * @return 解码后的字符串
      */
+    @Deprecated
     public static String decode(String value, String enc) {
         try {
             return URLDecoder.decode(value, enc);
         } catch (UnsupportedEncodingException ex) {
             throw new RuntimeException(ex.getCause());
         }
+    }
+
+    /**
+     * 按照指定的编码格式进行url解码
+     *
+     * @param value 原始字符串
+     * @param enc   编码格式 StandardCharsets.UTF_8
+     * @return 解码后的字符串
+     */
+    public static String decode(String value, Charset charset) {
+        return URLDecoder.decode(value, charset);
     }
 
     public static String encode(Object obj) {
@@ -115,7 +130,7 @@ public class Utils {
             ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
             ObjectOutputStream objOut = new ObjectOutputStream(byteOut);
             objOut.writeObject(obj);
-            return byteOut.toString("ISO-8859-1");// 此处只能是ISO-8859-1,但是不会影响中文使用;
+            return byteOut.toString(StandardCharsets.ISO_8859_1);// 此处只能是ISO-8859-1,但是不会影响中文使用;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -150,14 +165,16 @@ public class Utils {
      *              当scale = -2时，精确后为2351.25 <br>
      *              当scale = -1时，精确后为2351.3 正数表示小数向前的位数，例如：2351.2513 <br>
      *              当scale = 2时，精确后为2400.0 当scale = 3时，精确后为2000.0 <br>
-     * @return 指定小数点的四舍六入
+     * @return 指定小数点的四舍五入
      */
     public static double roundTo(double val, int scale) {
-        BigDecimal bigDecimal = new BigDecimal(Double.toString(val));
-        if (LanguageResource.isLanguageTW())
+        try {
+            BigDecimal bigDecimal = new BigDecimal(Double.toString(val));
             return bigDecimal.setScale(-scale, RoundingMode.HALF_UP).doubleValue();
-        else
-            return bigDecimal.setScale(-scale, RoundingMode.HALF_EVEN).doubleValue();
+        } catch (NumberFormatException e) {
+            log.error(e.getMessage(), e);
+            return 0;
+        }
     }
 
     // 兼容 delphi 代码
@@ -167,12 +184,16 @@ public class Utils {
 
     // 兼容 delphi 代码
     public static String intToStr(int value) {
-        return "" + value;
+        return String.valueOf(value);
+    }
+
+    public static String intToStr(long value) {
+        return String.valueOf(value);
     }
 
     // 兼容 delphi 代码
     public static String intToStr(double value) {
-        return "" + value;
+        return String.valueOf(value);
     }
 
     // 兼容 delphi 代码
@@ -199,7 +220,7 @@ public class Utils {
 
     // 兼容 delphi 代码
     public static String floatToStr(Double value) {
-        return value + "";
+        return String.valueOf(value);
     }
 
     // 兼容 delphi 代码
@@ -325,13 +346,11 @@ public class Utils {
      * @return 判断字符串是否全部为数字
      */
     public static boolean isNumeric(String text) {
-        if (text == null) {
+        if (text == null)
             return false;
-        }
-        if (".".equals(text)) {
+        if (".".equals(text))
             return false;
-        }
-        return text.matches("[0-9,.]*");
+        return text.matches("[-+]?\\d+(?:\\.\\d+)?");
     }
 
     public static boolean isNotNumeric(String text) {
@@ -349,6 +368,9 @@ public class Utils {
         return "".equals(text) ? def : text;
     }
 
+    /**
+     * 若无特殊定制的情况，建议改为使用 Utils.roundTo() 方法
+     */
     // 兼容 delphi 代码
     public static String formatFloat(String fmt, double value) {
         DecimalFormat df = new DecimalFormat(fmt);
@@ -365,12 +387,12 @@ public class Utils {
      * @return 随机数
      */
     public static String getNumRandom(int len) {
-        Random random = new Random();
-        String verify = "";
+        SecureRandom random = new SecureRandom();
+        StringBuilder verify = new StringBuilder();
         for (int i = 0; i < len; i++) {
-            verify = verify + random.nextInt(10);
+            verify.append(random.nextInt(10));
         }
-        return verify;
+        return verify.toString();
     }
 
     /**
@@ -382,12 +404,11 @@ public class Utils {
         if (max < min) {
             throw new RuntimeException("max must > min");
         }
-        Random random = new Random();
+        SecureRandom random = new SecureRandom();
         return random.nextInt((max - min) + 1) + min;
     }
 
     // 转成指定类型的对象
-    @SuppressWarnings("deprecation")
     public static <T> T recordAsObject(DataRow record, Class<T> clazz) {
         T obj;
         try {
@@ -440,14 +461,14 @@ public class Utils {
                         boolean value = record.getBoolean(dbField);
                         Method set = clazz.getMethod("set" + field, boolean.class);
                         set.invoke(obj, value);
-                    } else if (method.getType().equals(TDate.class)) {
-                        TDate value = record.getDate(dbField);
-                        Method set = clazz.getMethod("set" + field, value.getClass());
-                        set.invoke(obj, value);
-                    } else if (method.getType().equals(TDateTime.class)) {
-                        TDateTime value = record.getDateTime(dbField);
-                        Method set = clazz.getMethod("set" + field, value.getClass());
-                        set.invoke(obj, value);
+//                    } else if (method.getType().equals(TDate.class)) {
+//                        TDate value = record.getDate(dbField);
+//                        Method set = clazz.getMethod("set" + field, value.getClass());
+//                        set.invoke(obj, value);
+//                    } else if (method.getType().equals(TDateTime.class)) {
+//                        TDateTime value = record.getDateTime(dbField);
+//                        Method set = clazz.getMethod("set" + field, value.getClass());
+//                        set.invoke(obj, value);
                     } else if (method.getType().equals(Datetime.class)) {
                         Datetime value = record.getDatetime(dbField);
                         Method set = clazz.getMethod("set" + field, value.getClass());
@@ -543,10 +564,7 @@ public class Utils {
             throw new RuntimeException(res.getString(1, "字符串长度不符合要求"));
         }
         int len = mobile.length() - fromLength - endLength;
-        String star = "";
-        for (int i = 0; i < len; i++) {
-            star += "*";
-        }
+        String star = "*".repeat(Math.max(0, len));// 需要复制的*个数
         return mobile.substring(0, fromLength) + star + mobile.substring(mobile.length() - endLength);
     }
 
@@ -558,10 +576,9 @@ public class Utils {
      */
     public static String getStrRandom(int length) {
         StringBuilder result = new StringBuilder();
-        Random random = new Random();
+        SecureRandom random = new SecureRandom();
         for (int i = 0; i < length; i++) {
             String symbol = random.nextInt(2) % 2 == 0 ? "char" : "num";
-
             if ("char".equalsIgnoreCase(symbol)) {
                 // 随机获取大小写字母
                 int letterIndex = random.nextInt(2) % 2 == 0 ? 65 : 97;
@@ -605,8 +622,38 @@ public class Utils {
      * @param str 目标字符串
      * @return 判断字符串是否为空
      */
-    public static final boolean isEmpty(String str) {
+    public static boolean isEmpty(String str) {
         return str == null || str.length() == 0;
+    }
+
+    /**
+     * 判断集合为空
+     *
+     * @param values 目标集合
+     * @return 判断目标集合是否为空
+     */
+    public static boolean isEmpty(Collection<?> values) {
+        return values == null || values.size() == 0;
+    }
+
+    /**
+     * 判断集合是否为空
+     *
+     * @param values 目标数组
+     * @return 判断目标数组是否为空
+     */
+    public static boolean isEmpty(Object[] values) {
+        return values == null || values.length == 0;
+    }
+
+    /**
+     * 判断Map为空
+     *
+     * @param map 目标Map
+     * @return 判断目标Map是否为空，为NULL或键值对个数为0
+     */
+    public static boolean isEmpty(Map<?, ?> map) {
+        return map == null || map.size() == 0;
     }
 
     /**
@@ -669,22 +716,46 @@ public class Utils {
     }
 
     @Deprecated
-    public final static String findTable(Class<? extends EntityImpl> clazz) {
-        return EntityHelper.create(clazz).table();
+    public static String findTable(Class<? extends EntityImpl> clazz) {
+        return EntityHelper.get(clazz).tableName();
     }
 
     @Deprecated
-    public final static String findOid(Class<? extends EntityImpl> clazz, String defaultUid) {
-        return EntityHelper.create(clazz).idFieldCode();
+    public static String findOid(Class<? extends EntityImpl> clazz, String defaultUid) {
+        return EntityHelper.get(clazz).idFieldCode();
     }
 
     /**
      * 格式化输出JSON字符串
      */
-    public final static String formatJson(String json) {
+    public static String formatJson(String json) {
         JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         return gson.toJson(jsonObject);
+    }
+
+    /**
+     * 按数量对List进行分组
+     *
+     * @param sourceList 原始组List
+     * @param groupSize  每组数量单位
+     */
+    public static <T> List<List<T>> divideList(List<T> sourceList, int groupSize) {
+        List<List<T>> list = new ArrayList<>(groupSize);
+        if (sourceList == null || sourceList.size() == 0)
+            return list;
+        if (groupSize <= 0)
+            return list;
+
+        // 先算出分组的数量再按照分组进行切割
+        int listSize = sourceList.size();
+        int num = (listSize + groupSize - 1) / groupSize;
+        for (int i = 0; i < num; i++) {
+            int startIndex = i * groupSize;
+            int endIndex = Math.min(startIndex + groupSize, listSize);
+            list.add(sourceList.subList(startIndex, endIndex));
+        }
+        return list;
     }
 
 }

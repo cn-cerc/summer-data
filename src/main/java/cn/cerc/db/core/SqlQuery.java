@@ -2,8 +2,7 @@ package cn.cerc.db.core;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.persistence.Table;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +11,10 @@ import cn.cerc.db.mssql.MssqlServer;
 import cn.cerc.db.mysql.MysqlServer;
 import cn.cerc.db.mysql.MysqlServerMaster;
 import cn.cerc.db.mysql.MysqlServerSlave;
+import cn.cerc.db.pgsql.PgsqlServer;
 import cn.cerc.db.sqlite.SqliteServer;
+import cn.cerc.db.testsql.TestsqlOperator;
+import cn.cerc.db.testsql.TestsqlServer;
 
 public class SqlQuery extends DataSet implements IHandle {
     private static final long serialVersionUID = -6671201813972797639L;
@@ -37,7 +39,10 @@ public class SqlQuery extends DataSet implements IHandle {
 
     public SqlQuery(IHandle handle, SqlServerType sqlServerType) {
         super();
-        this.sqlServerType = sqlServerType;
+        if (TestsqlServer.enabled())
+            this.sqlServerType = SqlServerType.Testsql;
+        else
+            this.sqlServerType = sqlServerType;
         this.sql = new SqlText(sqlServerType);
         if (handle != null)
             this.session = handle.getSession();
@@ -77,7 +82,6 @@ public class SqlQuery extends DataSet implements IHandle {
         this.setStorage(masterServer);
         this.setFetchFinish(true);
         String sql = sql().getCommand();
-        log.debug(sql.replaceAll("\r\n", " "));
         try (ServerClient client = getConnectionClient()) {
             this.operator().select(this, client.getConnection(), sql);
             if (this.maximum() > -1)
@@ -86,7 +90,7 @@ public class SqlQuery extends DataSet implements IHandle {
             this.doAfterOpen();
             this.first();
         } catch (Exception e) {
-            log.error(sql);
+            log.error("sql: {}, {}", sql, e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
@@ -172,7 +176,9 @@ public class SqlQuery extends DataSet implements IHandle {
     @Override
     public final void insertStorage(DataRow record) throws Exception {
         try (ServerClient client = getConnectionClient()) {
-            if (operator().insert(client.getConnection(), record))
+            var temp = false;
+            temp = operator().insert(client.getConnection(), record);
+            if (temp)
                 record.setState(DataRowState.None);
         }
     }
@@ -186,10 +192,10 @@ public class SqlQuery extends DataSet implements IHandle {
     }
 
     @Override
-    public final void deleteStorage(DataRow record) throws Exception {
+    public final void deleteStorage(DataRow dataRow) throws Exception {
         try (ServerClient client = getConnectionClient()) {
-            if (operator().delete(client.getConnection(), record))
-                garbage().remove(record);
+            if (operator().delete(client.getConnection(), dataRow))
+                garbage().remove(dataRow);
         }
     }
 
@@ -199,12 +205,17 @@ public class SqlQuery extends DataSet implements IHandle {
      * @return 返回 ConnectionClient 接口对象
      */
     private final ServerClient getConnectionClient() {
-        return (ServerClient) server().getClient();
+        ISqlServer server = Objects.requireNonNull(server());
+        return (ServerClient) server.getClient();
     }
 
     public final SqlOperator operator() {
-        if (operator == null)
-            operator = new SqlOperator(this, sqlServerType);
+        if (operator == null) {
+            if (this.sqlServerType == SqlServerType.Testsql)
+                operator = new TestsqlOperator(this, sqlServerType);
+            else
+                operator = new SqlOperator(this, sqlServerType);
+        }
         if (operator.table() == null) {
             String sqlText = this.sqlText();
             if (sqlText != null)
@@ -260,13 +271,8 @@ public class SqlQuery extends DataSet implements IHandle {
      * @return SqlWhere
      */
     public SqlWhere addWhere(Class<? extends EntityImpl> clazz) {
-        // 查找表名
-        String table = clazz.getSimpleName();
-        Table object = clazz.getDeclaredAnnotation(Table.class);
-        if (object != null && !Utils.isEmpty(object.name()))
-            table = object.name();
-        // 自动生成select指令
-        sql.add("select * from %s", table);
+        String tableName = EntityHelper.get(clazz).tableName();
+        sql.add("select * from %s", tableName);
         return this.addWhere();
     }
 
@@ -366,6 +372,16 @@ public class SqlQuery extends DataSet implements IHandle {
         case Sqlite: {
             if (server == null)
                 server = new SqliteServer();
+            return server;
+        }
+        case Pgsql: {
+            if (server == null)
+                server = (PgsqlServer) getSession().getProperty(PgsqlServer.SessionId);
+            return server;
+        }
+        case Testsql: {
+            if (server == null)
+                server = TestsqlServer.build();
             return server;
         }
         default:
