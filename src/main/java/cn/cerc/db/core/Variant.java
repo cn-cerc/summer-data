@@ -277,7 +277,9 @@ public class Variant {
         this.modified = modified;
     }
 
-    public <T, E extends Enum<E>> void writeToEntity(T entity, Field field) throws IllegalAccessException {
+    public <E extends Enum<E>> void writeToEntity(Object entity, Field field) throws IllegalAccessException {
+        if (this.value == null)
+            return;
         if ("boolean".equals(field.getType().getName()))
             field.setBoolean(entity, this.getBoolean());
         else if ("int".equals(field.getType().getName()))
