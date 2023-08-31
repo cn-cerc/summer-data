@@ -240,7 +240,7 @@ public class EntityHelper<T> {
                     Describe describe = field.getAnnotation(Describe.class);
                     String def = describe != null ? describe.def() : null;
                     if (!column.nullable() || !Utils.isEmpty(def))
-                        variant.setValue(def).writeToEntity(entity, field);
+                        variant.setValue(def).writeToObject(entity, field);
                 }
                 if (field.getAnnotation(Version.class) != null)
                     field.set(entity, 0);
@@ -259,7 +259,7 @@ public class EntityHelper<T> {
                 Column column = field.getAnnotation(Column.class);
                 if ((column != null && field.get(entity) == null)) {
                     if (!column.nullable())
-                        variant.setValue(null).writeToEntity(entity, field);
+                        variant.setValue(null).writeToObject(entity, field);
                 }
                 if (field.getAnnotation(Version.class) != null)
                     field.set(entity, ((Integer) field.get(entity)) + 1);

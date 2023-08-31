@@ -277,41 +277,39 @@ public class Variant {
         this.modified = modified;
     }
 
-    public <E extends Enum<E>> void writeToEntity(Object entity, Field field) throws IllegalAccessException {
-        if (this.value == null)
-            return;
+    public <E extends Enum<E>> void writeToObject(Object object, Field field) throws IllegalAccessException {
         if ("boolean".equals(field.getType().getName()))
-            field.setBoolean(entity, this.getBoolean());
+            field.setBoolean(object, this.getBoolean());
         else if ("int".equals(field.getType().getName()))
-            field.setInt(entity, this.getInt());
+            field.setInt(object, this.getInt());
         else if ("long".equals(field.getType().getName()))
-            field.setLong(entity, this.getLong());
+            field.setLong(object, this.getLong());
         else if ("float".equals(field.getType().getName()))
-            field.setDouble(entity, this.getFloat());
+            field.setDouble(object, this.getFloat());
         else if ("double".equals(field.getType().getName()))
-            field.setDouble(entity, this.getDouble());
+            field.setDouble(object, this.getDouble());
         else if (field.getType() == Boolean.class)
-            field.set(entity, Boolean.valueOf(this.getBoolean()));
+            field.set(object, value == null ? null : Boolean.valueOf(this.getBoolean()));
         else if (field.getType() == Integer.class)
-            field.set(entity, Integer.valueOf(this.getInt()));
+            field.set(object, value == null ? null : Integer.valueOf(this.getInt()));
         else if (field.getType() == Long.class)
-            field.set(entity, Long.valueOf(this.getLong()));
+            field.set(object, value == null ? null : Long.valueOf(this.getLong()));
         else if (field.getType() == Float.class)
-            field.set(entity, Float.valueOf(this.getFloat()));
+            field.set(object, value == null ? null : Float.valueOf(this.getFloat()));
         else if (field.getType() == Double.class)
-            field.set(entity, Double.valueOf(this.getDouble()));
+            field.set(object, value == null ? null : Double.valueOf(this.getDouble()));
         else if (field.getType() == Datetime.class)
-            field.set(entity, this.getDatetime());
+            field.set(object, value == null ? null : this.getDatetime());
         else if (field.getType() == FastDate.class)
-            field.set(entity, this.getFastDate());
+            field.set(object, value == null ? null : this.getFastDate());
         else if (field.getType() == FastTime.class)
-            field.set(entity, this.getFastTime());
+            field.set(object, value == null ? null : this.getFastTime());
         else if (field.getType() == String.class)
-            field.set(entity, this.getString());
+            field.set(object, value == null ? null : this.getString());
         else if (field.getType().isEnum()) {
             @SuppressWarnings("unchecked")
             Class<E> enumType = (Class<E>) field.getType();
-            field.set(entity, this.getEnum(enumType));
+            field.set(object, value == null ? null : this.getEnum(enumType));
         } else {
             if (this.value() != null)
                 throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),

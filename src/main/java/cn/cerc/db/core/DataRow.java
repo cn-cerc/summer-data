@@ -492,14 +492,13 @@ public class DataRow implements Serializable, IRecord {
                 try {
                     if (value == null) {
                         Column column = field.getAnnotation(Column.class);
-                        if (column == null || column.nullable()) {
-                            field.set(entity, null);
-                        } else
-                            variant.setValue(null).writeToEntity(entity, field);
+                        if (column != null && !column.nullable())
+                            log.warn("Entity {} field {} 不允许为空", entity.getClass(), field.getName());
+                        variant.setValue(null).writeToObject(entity, field);
                     } else if (field.getType().equals(value.getClass()))
                         field.set(entity, value);
                     else
-                        variant.setValue(value).writeToEntity(entity, field);
+                        variant.setValue(value).writeToObject(entity, field);
                 } catch (IllegalArgumentException | IllegalAccessException e) {
                     log.error(e.getMessage(), e);
                     throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),

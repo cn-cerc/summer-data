@@ -49,7 +49,24 @@ public class VariantTest {
         dataRow.setValue("number1", null).setValue("number2", null).setValue("testEnum2", 1);
         TestEntity entity = dataRow.asEntity(TestEntity.class);
         assertEquals(null, entity.number1);
-        assertEquals(2, entity.number2);
+        assertEquals(0, entity.number2);
+        assertEquals(null, entity.testEnum1);
+        assertEquals(TestEnum.枚举B, entity.testEnum2);
+    }
+
+    @Test
+    public void test_writeToEntity_2() {
+        DataRow dataRow = new DataRow();
+        dataRow.setValue("number1", null).setValue("number2", null).setValue("testEnum2", 1);
+
+        TestEntity entity = new TestEntity();
+        entity.number1 = 2;
+        entity.number2 = 2;
+
+        dataRow.saveToEntity(entity);
+
+        assertEquals(null, entity.number1);
+        assertEquals(0, entity.number2);
         assertEquals(null, entity.testEnum1);
         assertEquals(TestEnum.枚举B, entity.testEnum2);
     }
