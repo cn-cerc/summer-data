@@ -72,6 +72,7 @@ public class MysqlEntityBuilder {
                         || "mediumtext".equals(dataType) || "longtext".equals(dataType) || "timestamp".equals(dataType)
                         || "blob".equals(dataType)) {
                     builder.append("@Column(");
+                    builder.append(String.format("name = \"%s\",", codeComment));
                     if (!"YES".equals(nullable)) {
                         builder.append("nullable = false, ");
                     }
@@ -81,6 +82,7 @@ public class MysqlEntityBuilder {
                     String codeLength = columnType.substring(columnType.indexOf("(") + 1, columnType.indexOf(")"));
                     StringBuilder strColumn = new StringBuilder();
                     strColumn.append("@Column(");
+                    strColumn.append(String.format("name = \"%s\",", codeComment));
                     if (codeLength.contains(",")) {
                         strColumn.append(String.format("precision = %s, scale = %s", codeLength.split(",")[0],
                                 codeLength.split(",")[1]));
@@ -93,12 +95,10 @@ public class MysqlEntityBuilder {
                     strColumn.append(")\r\n");
                     builder.append(strColumn.toString());
                 }
-                builder.append(String.format("@Describe(name = \"%s\"", codeComment));
                 String def = dsColumn.getString("column_default");
                 if (!Utils.isEmpty(def)) {
                     builder.append(String.format(", def = \"%s\"", def));
                 }
-                builder.append(")\r\n");
                 builder.append(String.format("private %s %s;\r\n\r\n", codeType, field));
             }
             builder.append("}");
