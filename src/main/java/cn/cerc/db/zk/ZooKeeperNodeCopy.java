@@ -8,7 +8,7 @@ import org.apache.zookeeper.ZooKeeper;
 
 public class ZooKeeperNodeCopy {
     private static final String Source = "/4plc/itjun";
-    private static final String Target = "/4plc/itjun-linux";
+    private static final String Target = "/4plc/itjun-alpha";
     private static ZooKeeper zooKeeper;
 
     public static void main(String[] args) throws Exception {
