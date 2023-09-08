@@ -1,14 +1,16 @@
 package cn.cerc.db.core;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.persistence.Column;
@@ -288,14 +290,25 @@ public class EntityHelper<T> {
      * 
      * @return
      */
-    public List<Class<?>> getFamily() {
+    public <A extends Annotation> Set<Class<?>> getFamily(Class<A> annotationClass) {
+        var result = new HashSet<Class<?>>();
+        // 判断当前类
         Class<?> classz = this.clazz;
-        if (classz.getSuperclass().getAnnotation(EntityKey.class) != null)
+        if (classz.isAnnotationPresent(annotationClass))
+            result.add(classz);
+        for (var item : classz.getDeclaredClasses()) {
+            if (item.isAnnotationPresent(annotationClass))
+                result.add(item);
+        }
+        // 判断其父类
+        if (classz.getSuperclass().isAnnotationPresent(annotationClass)) {
             classz = classz.getSuperclass();
-        var result = new ArrayList<Class<?>>();
-        result.add(classz);
-        for (var item : Arrays.asList(classz.getDeclaredClasses()))
-            result.add(item);
+            if (classz.isAnnotationPresent(annotationClass))
+                result.add(classz);
+            for (var item : classz.getDeclaredClasses())
+                if (item.isAnnotationPresent(annotationClass))
+                    result.add(item);
+        }
         return result;
     }
 }
