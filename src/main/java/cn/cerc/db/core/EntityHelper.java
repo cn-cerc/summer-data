@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +64,7 @@ public class EntityHelper<T> {
         super();
         this.clazz = class1;
         this.tableName = class1.getSimpleName();
-        for (var clazz : this.getFamily()) {
+        for (var clazz : this.getAncestors()) {
             // 查找表名
             Table annoTable = clazz.getDeclaredAnnotation(Table.class);
             if (annoTable != null) {
@@ -144,7 +145,7 @@ public class EntityHelper<T> {
      * @param list
      * @return
      */
-    public List<Class<?>> getFamily() {
+    private List<Class<?>> getAncestors() {
         List<Class<?>> list = new ArrayList<>();
         putFamily(this.clazz, list);
         List<Class<?>> result = new ArrayList<>();
@@ -282,4 +283,19 @@ public class EntityHelper<T> {
         return this.entityKey;
     }
 
+    /**
+     * 返回与之相关的全部类家族
+     * 
+     * @return
+     */
+    public List<Class<?>> getFamily() {
+        Class<?> classz = this.clazz;
+        if (classz.getSuperclass().getAnnotation(EntityKey.class) != null)
+            classz = classz.getSuperclass();
+        var result = new ArrayList<Class<?>>();
+        result.add(classz);
+        for (var item : Arrays.asList(classz.getDeclaredClasses()))
+            result.add(item);
+        return result;
+    }
 }
