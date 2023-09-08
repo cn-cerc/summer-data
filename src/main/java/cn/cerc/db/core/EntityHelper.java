@@ -292,22 +292,14 @@ public class EntityHelper<T> {
      */
     public <A extends Annotation> Set<Class<?>> getFamily(Class<A> annotationClass) {
         var result = new HashSet<Class<?>>();
-        // 判断当前类
         Class<?> classz = this.clazz;
+        if (classz.getSuperclass().isAnnotationPresent(annotationClass))
+            classz = classz.getSuperclass();
         if (classz.isAnnotationPresent(annotationClass))
             result.add(classz);
         for (var item : classz.getDeclaredClasses()) {
             if (item.isAnnotationPresent(annotationClass))
                 result.add(item);
-        }
-        // 判断其父类
-        if (classz.getSuperclass().isAnnotationPresent(annotationClass)) {
-            classz = classz.getSuperclass();
-            if (classz.isAnnotationPresent(annotationClass))
-                result.add(classz);
-            for (var item : classz.getDeclaredClasses())
-                if (item.isAnnotationPresent(annotationClass))
-                    result.add(item);
         }
         return result;
     }
