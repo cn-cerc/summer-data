@@ -607,30 +607,11 @@ public class DataRow implements Serializable, IRecord {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            Object result;
             String field = method.getName();
             Alias alias = method.getAnnotation(Alias.class);
             if (alias != null && alias.value().length() > 0)
                 field = alias.value();
-            if (dataRow.fields().get(field) == null)
-                throw new RuntimeException("not find field: " + field);
-            if (method.getReturnType() == Variant.class)
-                result = dataRow.bind(field);
-            else if (method.getReturnType() == String.class)
-                result = dataRow.getString(field);
-            else if (method.getReturnType() == boolean.class || method.getReturnType() == Boolean.class)
-                result = dataRow.getBoolean(field);
-            else if (method.getReturnType() == int.class || method.getReturnType() == Integer.class)
-                result = dataRow.getInt(field);
-            else if (method.getReturnType() == double.class || method.getReturnType() == Double.class)
-                result = dataRow.getDouble(field);
-            else if (method.getReturnType() == long.class || method.getReturnType() == Long.class)
-                result = dataRow.getLong(field);
-            else if (method.getReturnType() == Datetime.class)
-                result = dataRow.getDatetime(field);
-            else
-                result = dataRow.getValue(field);
-            return result;
+            return dataRow.getByType(field, method.getReturnType());
         }
 
     }
@@ -675,6 +656,28 @@ public class DataRow implements Serializable, IRecord {
 //            }
         } else
             throw new RuntimeException("only support record and interface");
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getByType(String field, Class<T> clazz) {
+        if (this.fields.get(field) == null)
+            throw new RuntimeException("not find field: " + field);
+        if (clazz == String.class)
+            return (T) this.getString(field);
+        else if (clazz == boolean.class || clazz == Boolean.class)
+            return (T) Boolean.valueOf(this.getBoolean(field));
+        else if (clazz == int.class || clazz == Integer.class)
+            return (T) Integer.valueOf(this.getInt(field));
+        else if (clazz == double.class || clazz == Double.class)
+            return (T) Double.valueOf(this.getDouble(field));
+        else if (clazz == long.class || clazz == Long.class)
+            return (T) Long.valueOf(this.getLong(field));
+        else if (clazz == Datetime.class)
+            return (T) this.getDatetime(field);
+        else if (clazz.isEnum())
+            return (T) this.getEnum(field, (Class<Enum<?>>) clazz);
+        else
+            return (T) this.getValue(field);
     }
 
     public DataCell bind(String field) {
