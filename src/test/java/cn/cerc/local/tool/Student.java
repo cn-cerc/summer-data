@@ -2,11 +2,6 @@ package cn.cerc.local.tool;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Setter
-@Getter
 public class Student {
 
     @JacksonXmlProperty(isAttribute = true, localName = "stu_id")
@@ -20,5 +15,37 @@ public class Student {
 
     @JacksonXmlProperty(localName = "Age")
     private String age;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public String getAge() {
+        return age;
+    }
+
+    public void setAge(String age) {
+        this.age = age;
+    }
 
 }

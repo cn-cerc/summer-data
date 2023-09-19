@@ -6,15 +6,16 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public class JsonToolTest {
+
+    private static final Logger log = LoggerFactory.getLogger(JsonToolTest.class);
 
     @Test
     public void test_json() {
