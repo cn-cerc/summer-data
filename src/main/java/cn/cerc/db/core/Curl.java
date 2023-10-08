@@ -359,13 +359,8 @@ public class Curl {
      * 传入对象并将对象转换为 JSON 数据请求
      */
     public String doPost(String url, Object obj) {
-        try {
-            String json = new Gson().toJson(obj);
-            return this.doPost(url, json);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e.getMessage());
-        }
+        String json = new Gson().toJson(obj);
+        return this.doPost(url, json);
     }
 
     public String doPost(String url, String json) {
@@ -381,8 +376,7 @@ public class Curl {
             response.close();
             httpClient.close();
         } catch (IOException e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e.getMessage());
+            log.error("url {}, json {}, message {}", url, json, e.getMessage(), e);
         }
         return responseContent;
     }
