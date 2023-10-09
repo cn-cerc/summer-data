@@ -5,6 +5,7 @@ import cn.cerc.db.core.ISession;
 import cn.cerc.db.mysql.MysqlSession;
 
 public class SqlmqServer implements IHandle {
+    private static SqlmqServer instance;
     private ISession session;
 
     private SqlmqServer() {
@@ -13,7 +14,13 @@ public class SqlmqServer implements IHandle {
     }
 
     public static SqlmqServer get() {
-        return new SqlmqServer();
+        if (instance == null) {
+            synchronized (SqlmqServer.class) {
+                if (instance == null)
+                    instance = new SqlmqServer();
+            }
+        }
+        return instance;
     }
 
     public static SqlmqQueue getQueue(String queueId) {
