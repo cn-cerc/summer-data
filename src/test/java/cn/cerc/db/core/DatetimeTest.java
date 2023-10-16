@@ -3,6 +3,7 @@ package cn.cerc.db.core;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.junit.Test;
@@ -212,4 +213,19 @@ public class DatetimeTest {
         assertEquals("AAA", item.getString("String"));
         assertEquals(jsonStr, item.toString());
     }
+
+    @Test
+    public void test_localDate() {
+        Datetime datetime = new Datetime();
+        LocalDate localDate = datetime.asLocalDate();
+        assertEquals(datetime.getDate(), new Datetime(localDate).getDate());
+    }
+
+    @Test
+    public void test_LocalDateTime() {
+        Datetime datetime = new Datetime();
+        LocalDateTime localDateTime = datetime.asLocalDateTime();
+        assertEquals(datetime.getDate(), new Datetime(localDateTime).getDate());
+    }
+
 }
