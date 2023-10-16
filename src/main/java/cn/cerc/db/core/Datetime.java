@@ -111,7 +111,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
     public Datetime(LocalDate localDate) {
         super();
         try {
-            Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+            Instant instant = localDate.atStartOfDay(LocalZone).toInstant();
             this.setTimestamp(instant.toEpochMilli());
         } catch (DateTimeException e) {
             this.timestamp = StartPoint;
@@ -585,7 +585,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
      */
     public final Datetime toDayStart() {
         LocalDateTime ldt = this.asLocalDateTime().with(LocalTime.MIN);
-        Datetime result = new Datetime(ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+        Datetime result = new Datetime(ldt.atZone(LocalZone).toInstant().toEpochMilli());
         return result.setOptions(yyyyMMdd_HHmmss);
     }
 
@@ -596,7 +596,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
      */
     public final Datetime toDayEnd() {
         LocalDateTime ldt = this.asLocalDateTime().with(LocalTime.MAX);
-        Datetime result = new Datetime(ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+        Datetime result = new Datetime(ldt.atZone(LocalZone).toInstant().toEpochMilli());
         return result.setOptions(yyyyMMdd_HHmmss);
     }
 
