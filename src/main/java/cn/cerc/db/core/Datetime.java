@@ -3,6 +3,7 @@ package cn.cerc.db.core;
 import java.io.Serializable;
 import java.time.DateTimeException;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -13,6 +14,9 @@ import java.util.EnumSet;
 
 import cn.cerc.db.testsql.TestsqlServer;
 
+/**
+ * 日期工具类
+ */
 public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
     private static final long serialVersionUID = -7395748632907604015L;
     // 常见输出组合
@@ -81,9 +85,35 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
         LocalDateTime ldt;
         try {
             ldt = build(dateValue);
-            Instant data = ldt.atZone(LocalZone).toInstant();
-            this.setTimestamp(data.toEpochMilli());
+            Instant instant = ldt.atZone(LocalZone).toInstant();
+            this.setTimestamp(instant.toEpochMilli());
         } catch (DateFormatErrorException | DateTimeException e) {
+            this.timestamp = StartPoint;
+        }
+    }
+
+    /**
+     * LocalDateTime 转 Datetime
+     */
+    public Datetime(LocalDateTime localDateTime) {
+        super();
+        try {
+            Instant instant = localDateTime.atZone(LocalZone).toInstant();
+            this.setTimestamp(instant.toEpochMilli());
+        } catch (DateTimeException e) {
+            this.timestamp = StartPoint;
+        }
+    }
+
+    /**
+     * LocalDate 转 Datetime
+     */
+    public Datetime(LocalDate localDate) {
+        super();
+        try {
+            Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+            this.setTimestamp(instant.toEpochMilli());
+        } catch (DateTimeException e) {
             this.timestamp = StartPoint;
         }
     }
@@ -243,6 +273,10 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
 
     public final LocalDateTime asLocalDateTime() {
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), LocalZone);
+    }
+
+    public final LocalDate asLocalDate() {
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), LocalZone).toLocalDate();
     }
 
     /**
