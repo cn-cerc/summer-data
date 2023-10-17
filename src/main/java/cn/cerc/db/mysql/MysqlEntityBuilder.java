@@ -36,18 +36,15 @@ public class MysqlEntityBuilder {
             builder.append("import javax.persistence.*;\r\n");
             builder.append("import org.springframework.stereotype.Component;\r\n");
             builder.append("import cn.cerc.*;\r\n");
-            builder.append("import lombok.Getter;\r\n");
-            builder.append("import lombok.Setter;\r\n");
+            builder.append("\r\n");
             builder.append("@Component\r\n");
             builder.append("@Entity\r\n");
 
             String tableIndex = getTableIndex(tableName);
             builder.append(tableIndex);
             builder.append("@SqlServer(type = SqlServerType.Mysql)\r\n");
-            builder.append("@Getter\r\n");
-            builder.append("@Setter\r\n");
             if (!Utils.isEmpty(tableComment))
-                builder.append(String.format("@Describe(name = \"%s\")\r\n", tableComment));
+                builder.append(String.format("@Description(\"%s\")\r\n", tableComment));
             builder.append(String.format("public class %s extends CustomEntity {\r\n\r\n", clazz.getSimpleName()));
 
             MysqlQuery dsColumn = new MysqlQuery(handle);
@@ -81,6 +78,9 @@ public class MysqlEntityBuilder {
                 } else {
                     String codeLength = columnType.substring(columnType.indexOf("(") + 1, columnType.indexOf(")"));
                     StringBuilder strColumn = new StringBuilder();
+                    if ("version_".equalsIgnoreCase(field)) {
+                        strColumn.append("@Version\r\n");
+                    }
                     strColumn.append("@Column(");
                     strColumn.append(String.format("name = \"%s\",", codeComment));
                     if (codeLength.contains(",")) {
