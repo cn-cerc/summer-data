@@ -107,7 +107,7 @@ public class SqlmqGroup {
             int total = query.getInt("total_");
             int done = query.getInt("done_num_");
             if (done == total)
-                throw new RuntimeException("子项目完成总数过多");
+                throw new RuntimeException(String.format("%s 子项目完成总数过多", query.current().json()));
 
             if (done == -1) {
                 query.edit();
@@ -142,7 +142,7 @@ public class SqlmqGroup {
             int total = query.getInt("total_");
             int done = query.getInt("done_num_");
             if (done != total)
-                throw new RuntimeException("子项目完成总数错误");
+                throw new RuntimeException(String.format("%s 子项目完成总数错误", query.current().json()));
 
             query.edit();
             query.setValue("stop_time_", new Datetime());
@@ -167,9 +167,9 @@ public class SqlmqGroup {
             int total = query.getInt("total_");
             int done = query.getInt("done_num_");
             if (done == total)
-                throw new RuntimeException("子项目完成次数过多");
+                throw new RuntimeException(String.format("%s 子项目完成总数过多", query.current().json()));
             if (done == -1)
-                throw new RuntimeException("请先调用 startExecute 方法开始执行");
+                throw new RuntimeException(String.format("%s 请先调用 startExecute 方法开始执行", groupCode));
 
             query.edit();
             query.setValue("done_num_", done + 1);
