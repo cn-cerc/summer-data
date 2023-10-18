@@ -171,7 +171,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
                     this.setShowTime(new Datetime().inc(DateType.Minute, 10));
                 else if (this.executionSequence > 1)
                     this.setShowTime(new Datetime().inc(DateType.Year, 1));
-                else if (this.executionSequence < 1)
+                else
                     throw new RuntimeException("执行序列号不能小于1");
                 this.setShowTime(new Datetime().inc(DateType.Year, 1));
             }
