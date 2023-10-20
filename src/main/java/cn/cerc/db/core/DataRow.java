@@ -471,7 +471,10 @@ public class DataRow implements Serializable, IRecord {
         Map<String, Field> fieldsList = helper.fields();
         if (helper.strict()) {
             if (this.fields().size() > fieldsList.size()) {
-                log.warn("database fields.size > entity {} properties.size", entity.getClass().getName());
+                String msg = String.format("database fields.size > entity %s properties.size",
+                        entity.getClass().getName());
+                RuntimeException exception = new RuntimeException(msg);
+                log.warn("{}", msg, exception);
             } else if (this.fields().size() < fieldsList.size()) {
                 for (var field : fieldsList.keySet()) {
                     if (!fields.exists(field))
