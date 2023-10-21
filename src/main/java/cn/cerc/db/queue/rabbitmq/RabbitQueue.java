@@ -85,7 +85,7 @@ public class RabbitQueue implements AutoCloseable {
                             else
                                 channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
                         } catch (Exception e) {
-                            log.error("payload {}, message {}", msg, e.getMessage(), e);
+                            log.error("queueId {}, payload {}, message {}", queueId, msg, e.getMessage(), e);
                             channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
                         }
                     }
@@ -123,11 +123,11 @@ public class RabbitQueue implements AutoCloseable {
                 else
                     channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
             } catch (Exception e) {
-                log.error("payload {}, message {}", msg, e.getMessage(), e);
+                log.error("queueId {}, payload {}, message {}", queueId, msg, e.getMessage(), e);
                 try {
                     channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
                 } catch (IOException e1) {
-                    log.error("payload {}, message {}", msg, e1.getMessage(), e1);
+                    log.error("queueId {}, payload {}, message {}", queueId, msg, e1.getMessage(), e1);
                 }
             }
         }
