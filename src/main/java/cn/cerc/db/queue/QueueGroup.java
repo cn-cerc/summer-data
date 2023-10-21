@@ -5,7 +5,11 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.cerc.db.core.Datetime;
+import cn.cerc.db.mysql.MysqlQuery;
 import cn.cerc.db.queue.sqlmq.SqlmqGroup;
+import cn.cerc.db.queue.sqlmq.SqlmqQueue;
+import cn.cerc.db.queue.sqlmq.SqlmqServer;
 import cn.cerc.db.redis.Redis;
 
 public class QueueGroup implements AutoCloseable {
@@ -54,8 +58,19 @@ public class QueueGroup implements AutoCloseable {
 
     @Override
     public void close() {
-        if (this.firstTotal > 0 && this.total > 1)
+        if (this.firstTotal > 0 && this.total > 1) {
             SqlmqGroup.updateGroupCode(this.code, this.total);
+            // 查询并设置序列一的队列开始执行
+            MysqlQuery query = new MysqlQuery(SqlmqServer.get());
+            query.add("select * from %s", SqlmqQueue.s_sqlmq_info);
+            query.addWhere().eq("group_code_", this.code).eq("execution_sequence_", 1).build();
+            query.open();
+            while (query.fetch()) {
+                query.edit();
+                query.setValue("show_time_", new Datetime());
+                query.post();
+            }
+        }
         SqlmqGroup.updatePlanTime(this.code);
     }
 }

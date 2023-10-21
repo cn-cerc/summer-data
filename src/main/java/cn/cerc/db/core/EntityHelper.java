@@ -1,13 +1,16 @@
 package cn.cerc.db.core;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.persistence.Column;
@@ -63,7 +66,7 @@ public class EntityHelper<T> {
         super();
         this.clazz = class1;
         this.tableName = class1.getSimpleName();
-        for (var clazz : this.getFamily()) {
+        for (var clazz : this.getAncestors()) {
             // 查找表名
             Table annoTable = clazz.getDeclaredAnnotation(Table.class);
             if (annoTable != null) {
@@ -144,7 +147,7 @@ public class EntityHelper<T> {
      * @param list
      * @return
      */
-    public List<Class<?>> getFamily() {
+    private List<Class<?>> getAncestors() {
         List<Class<?>> list = new ArrayList<>();
         putFamily(this.clazz, list);
         List<Class<?>> result = new ArrayList<>();
@@ -282,4 +285,22 @@ public class EntityHelper<T> {
         return this.entityKey;
     }
 
+    /**
+     * 返回与之相关的全部类家族
+     * 
+     * @return
+     */
+    public <A extends Annotation> Set<Class<?>> getFamily(Class<A> annotationClass) {
+        var result = new HashSet<Class<?>>();
+        Class<?> classz = this.clazz;
+        if (classz.getSuperclass().isAnnotationPresent(annotationClass))
+            classz = classz.getSuperclass();
+        if (classz.isAnnotationPresent(annotationClass))
+            result.add(classz);
+        for (var item : classz.getDeclaredClasses()) {
+            if (item.isAnnotationPresent(annotationClass))
+                result.add(item);
+        }
+        return result;
+    }
 }

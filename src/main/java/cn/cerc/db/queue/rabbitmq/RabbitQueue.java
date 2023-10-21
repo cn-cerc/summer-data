@@ -47,7 +47,7 @@ public class RabbitQueue implements AutoCloseable {
             ServerConfig config = ServerConfig.getInstance();
             String site = config.getProperty("qc.api.rabbitmq.heartbeat.site");
             if (Utils.isEmpty(site)) {
-                log.error("未配置rabbitmq心跳监测地址");
+                log.error("未配置rabbitmq心跳监测地址 qc.api.rabbitmq.heartbeat.site");
                 return;
             }
             String project = ServerConfig.getAppProduct();
@@ -85,7 +85,7 @@ public class RabbitQueue implements AutoCloseable {
                             else
                                 channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
                         } catch (Exception e) {
-                            log.error(e.getMessage(), e);
+                            log.error("payload {}, message {}", msg, e.getMessage(), e);
                             channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
                         }
                     }
@@ -107,7 +107,7 @@ public class RabbitQueue implements AutoCloseable {
             try {
                 response = channel.basicGet(this.queueId, false);
             } catch (IOException e) {
-                log.error(e.getMessage(), e);
+                log.error("queueId {}, message {}", this.queueId, e.getMessage(), e);
                 return;
             }
             if (response == null) {
@@ -123,11 +123,11 @@ public class RabbitQueue implements AutoCloseable {
                 else
                     channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
             } catch (Exception e) {
-                log.error(e.getMessage(), e);
+                log.error("payload {}, message {}", msg, e.getMessage(), e);
                 try {
                     channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
                 } catch (IOException e1) {
-                    log.error(e1.getMessage(), e1);
+                    log.error("payload {}, message {}", msg, e1.getMessage(), e1);
                 }
             }
         }

@@ -6,11 +6,6 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Setter
-@Getter
 @JacksonXmlRootElement(localName = "Class")
 public class Group {
 
@@ -20,5 +15,21 @@ public class Group {
     @JacksonXmlElementWrapper(localName = "Students")
     @JacksonXmlProperty(localName = "Stu")
     private List<Student> student; // 学生列表
+
+    public Teacher getTeacher() {
+        return teacher;
+    }
+
+    public void setTeacher(Teacher teacher) {
+        this.teacher = teacher;
+    }
+
+    public List<Student> getStudent() {
+        return student;
+    }
+
+    public void setStudent(List<Student> student) {
+        this.student = student;
+    }
 
 }
