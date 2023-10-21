@@ -27,7 +27,7 @@ public class JayunLogParser {
         Enumeration<?> allAppends = logger.getAllAppenders();
         Iterator<?> asIterator = allAppends.asIterator();
         while (asIterator.hasNext()) {
-            if (asIterator.next() instanceof JayunLog jayun) {
+            if (asIterator.next() instanceof JayunLogAppender jayun) {
                 loggerName = jayun.getName();
                 break;
             }

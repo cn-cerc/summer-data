@@ -9,7 +9,7 @@ import org.apache.log4j.spi.LoggingEvent;
 
 import cn.cerc.db.core.ServerConfig;
 
-public class JayunLog implements Appender {
+public class JayunLogAppender implements Appender {
     private String name;
     private Layout layout;
     private ErrorHandler errorHandler;
