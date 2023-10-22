@@ -200,17 +200,18 @@ public class SqlOperator implements IHandle {
 
             if (i == 0)
                 throw new RuntimeException("not storage field update");
-
-            lastCommand = bs.getPrepareCommand();
             log.debug(bs.getPrepareCommand());
+
             PreparedStatement ps = bs.build();
+            lastCommand = ps.toString();
+            log.debug(lastCommand);
+
             if (this.debug) {
-                log.info(bs.getPrepareCommand());
+                log.info(lastCommand);
                 return false;
             }
 
             int result = ps.executeUpdate();
-
             boolean find = false;
             for (FieldMeta meta : record.fields()) {
                 if (meta.storage() && meta.autoincrement()) {
@@ -228,11 +229,9 @@ public class SqlOperator implements IHandle {
                     }
                 }
             }
-
             return result > 0;
         } catch (SQLException e) {
             log.error(lastCommand, e);
-            e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -312,24 +311,26 @@ public class SqlOperator implements IHandle {
                     }
                 }
             }
-
-            lastCommand = bs.getPrepareCommand();
             log.debug(bs.getPrepareCommand());
+
             PreparedStatement ps = bs.build();
+            lastCommand = ps.toString();
             if (this.debug) {
-                log.info(bs.getPrepareCommand());
+                log.info(lastCommand);
                 return false;
             }
 
             if (ps.executeUpdate() != 1) {
-                RuntimeException e = new RuntimeException(res.getString(1, "当前记录已被其它用户修改或不存在，更新失败"));
-                log.error(bs.getPrepareCommand(), e);
-                throw e;
+                String message = String.format("%s, dataRow %s, sqlText %s", res.getString(1, "当前记录已被其它用户修改或不存在，更新失败"),
+                        dataRow.json(), lastCommand);
+                RuntimeException exception = new RuntimeException(message);
+                JayunLogParser.error(SqlOperator.class, exception);
+                log.info(exception.getMessage(), exception);
+                throw exception;
             }
             return true;
         } catch (SQLException e) {
             log.error(lastCommand, e);
-            e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -488,7 +489,7 @@ public class SqlOperator implements IHandle {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e.getMessage());
         } finally {
             try {
