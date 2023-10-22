@@ -110,7 +110,7 @@ public class JayunLogParser {
         if (wanted.stream().noneMatch(origin::contains)) {
             for (String line : stack) {
                 // 如果捕捉到业务代码就重置触发器信息
-                if (wanted.stream().anyMatch(origin::contains)) {
+                if (wanted.stream().anyMatch(line::contains)) {
                     line = line.trim();
                     String trigger = JayunLogParser.trigger(line);
                     if (Utils.isEmpty(trigger))
