@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 import cn.cerc.db.core.DataException;
-import cn.cerc.db.core.LastModified;
+import cn.cerc.mis.core.LastModified;
 import cn.cerc.db.core.Utils;
 
 /**

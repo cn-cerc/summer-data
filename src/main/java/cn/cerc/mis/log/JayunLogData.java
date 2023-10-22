@@ -5,7 +5,7 @@ import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 
-import cn.cerc.db.core.LastModified;
+import cn.cerc.mis.core.LastModified;
 
 public class JayunLogData {
     public static final String info = "info";

@@ -1,4 +1,4 @@
-package cn.cerc.db.core;
+package cn.cerc.mis.core;
 
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
