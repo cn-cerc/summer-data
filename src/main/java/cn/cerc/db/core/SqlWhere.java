@@ -8,6 +8,8 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.cerc.mis.log.JayunLogParser;
+
 public class SqlWhere {
 
     private static final Logger log = LoggerFactory.getLogger(SqlWhere.class);
@@ -316,10 +318,12 @@ public class SqlWhere {
 
     public final SqlWhere in(String field, Collection<?> values) {
         if (values == null || values.size() == 0) {
-            RuntimeException e = new RuntimeException("sql command IN conditions can not be empty");
-            log.error(e.getMessage(), e);
-            throw e;
+            RuntimeException exception = new RuntimeException("sql command IN conditions can not be empty");
+            JayunLogParser.error(SqlWhere.class, exception);
+            log.info(exception.getMessage(), exception);
+            throw exception;
         }
+
         if (field.contains("'"))
             throw new RuntimeException("field contains error character[']");
         if (this.size++ > 0)

@@ -14,6 +14,7 @@ import cn.cerc.db.core.Utils;
 import cn.cerc.db.dao.BatchScript;
 import cn.cerc.db.mysql.MysqlQuery;
 import cn.cerc.db.queue.AbstractQueue;
+import cn.cerc.mis.log.JayunLogParser;
 
 public class SqlmqQueueName {
     private static final Logger log = LoggerFactory.getLogger(SqlmqQueueName.class);
@@ -32,7 +33,10 @@ public class SqlmqQueueName {
             queueName = annotaion.value();
 
         if (Utils.isEmpty(queueName)) {
-            log.warn("{} 缺少 Description 注解，请相关人员填上队列描述", queueClazz);
+            String message = String.format("%s 缺少 Description 注解，请相关人员填上队列描述", queueClazz);
+            RuntimeException exception = new RuntimeException(message);
+            JayunLogParser.warn(queueClazz, exception);
+            log.info(exception.getMessage(), exception);
             return;
         }
         String queueClass = queueClazz.getSimpleName();
