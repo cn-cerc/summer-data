@@ -4,6 +4,8 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,6 +21,7 @@ import cn.cerc.db.core.Utils;
  * 异常解析器用于读取堆栈的异常对象信息
  */
 public class JayunLogParser {
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
     private static volatile JayunLogParser instance;
     private final String loggerName;
 
@@ -81,66 +84,70 @@ public class JayunLogParser {
     }
 
     private static void analyze(Class<?> clazz, Throwable throwable, String level) {
-        if (throwable == null)
-            return;
+        executor.submit(() -> {
+            // 异常类为空不采集
+            if (throwable == null)
+                return;
+            // 数据类异常不采集
+            if (throwable instanceof DataException)
+                return;
+            // 日志不配置不采集
+            if (Utils.isEmpty(JayunLogParser.loggerName()))
+                return;
 
-        // 数据类异常不采集
-        if (throwable instanceof DataException)
-            return;
+            String fullname = clazz.getName();
+            String message = throwable.getMessage();
+            JayunLogData data = new JayunLogData();
+            data.setId(fullname);
+            data.setLine("?");
+            data.setLevel(level);
+            data.setMessage(message);
 
-        if (Utils.isEmpty(JayunLogParser.loggerName()))
-            return;
+            // 读取起源类修改人
+            LastModified modified = clazz.getAnnotation(LastModified.class);
+            if (modified != null) {
+                data.setName(modified.name());
+                data.setDate(modified.date());
+            }
 
-        String fullname = clazz.getName();
-        String message = throwable.getMessage();
-        JayunLogData data = new JayunLogData();
-        data.setId(fullname);
-        data.setLine("?");
-        data.setLevel(level);
-        data.setMessage(message);
+            String[] stack = DefaultThrowableRenderer.render(throwable);
+            // 起源类没有在通缉名单上再抓堆栈信息
+            if (wanted.stream().noneMatch(fullname::contains)) {
+                for (String line : stack) {
+                    // 如果捕捉到业务代码就重置触发器信息
+                    if (wanted.stream().anyMatch(line::contains)) {
+                        line = line.trim();
+                        String trigger = JayunLogParser.trigger(line);
+                        if (Utils.isEmpty(trigger))
+                            continue;
+                        data.setId(trigger);
+                        data.setLine(JayunLogParser.lineNumber(line));
 
-        LastModified modified = clazz.getAnnotation(LastModified.class);
-        if (modified != null) {
-            data.setName(modified.name());
-            data.setDate(modified.date());
-        }
-
-        String[] stack = DefaultThrowableRenderer.render(throwable);
-        // 起源类没有在通缉名单上再抓堆栈信息
-        if (wanted.stream().noneMatch(fullname::contains)) {
-            for (String line : stack) {
-                // 如果捕捉到业务代码就重置触发器信息
-                if (wanted.stream().anyMatch(line::contains)) {
-                    line = line.trim();
-                    String trigger = JayunLogParser.trigger(line);
-                    if (Utils.isEmpty(trigger))
-                        continue;
-                    data.setId(trigger);
-                    data.setLine(JayunLogParser.lineNumber(line));
-
-                    try {
-                        Class<?> caller = Class.forName(trigger);
-                        modified = caller.getAnnotation(LastModified.class);
-                        if (modified != null) {
-                            data.setName(modified.name());
-                            data.setDate(modified.date());
+                        try {
+                            Class<?> caller = Class.forName(trigger);
+                            // 读取通缉令修改人
+                            modified = caller.getAnnotation(LastModified.class);
+                            if (modified != null) {
+                                data.setName(modified.name());
+                                data.setDate(modified.date());
+                            }
+                        } catch (ClassNotFoundException e) {
+                            e.printStackTrace();
                         }
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
+                        break;
                     }
-                    break;
                 }
             }
-        }
 
-        data.setStack(stack);
-        data.setTimestamp(System.currentTimeMillis());
-        data.setHostname(ApplicationEnvironment.hostname());
-        data.setIp(ApplicationEnvironment.hostIP());
-        data.setPort(ApplicationEnvironment.hostPort());
-        data.setProject(JayunLogParser.loggerName());
-        // 推送数据到日志监控队列
-        new QueueJayunLog().push(data);
+            data.setStack(stack);
+            data.setTimestamp(System.currentTimeMillis());
+            data.setHostname(ApplicationEnvironment.hostname());
+            data.setIp(ApplicationEnvironment.hostIP());
+            data.setPort(ApplicationEnvironment.hostPort());
+            data.setProject(JayunLogParser.loggerName());
+            // 推送数据到日志监控队列
+            new QueueJayunLog().push(data);
+        });
     }
 
     public static String trigger(String line) {
@@ -161,6 +168,10 @@ public class JayunLogParser {
         if (ibegin == -1)
             return lineNumber;
         return line.substring(ibegin + 1, iend);
+    }
+
+    public static void close() {
+        executor.shutdownNow();
     }
 
     public static void main(String[] args) {
