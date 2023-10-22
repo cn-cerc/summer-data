@@ -1,12 +1,12 @@
 package cn.cerc.db.other;
 
-import cn.cerc.db.SampleData;
-import cn.cerc.db.core.DataSet;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import cn.cerc.db.SampleData;
+import cn.cerc.db.core.DataSet;
 
 public class SumRecordTest {
     private SumRecord sum;

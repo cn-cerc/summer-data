@@ -14,8 +14,8 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 import cn.cerc.db.core.DataException;
-import cn.cerc.mis.core.LastModified;
 import cn.cerc.db.core.Utils;
+import cn.cerc.mis.core.LastModified;
 
 /**
  * 异常解析器用于读取堆栈的异常对象信息
