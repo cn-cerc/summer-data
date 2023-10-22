@@ -28,6 +28,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 
 import cn.cerc.db.Alias;
+import cn.cerc.mis.log.JayunLogParser;
 
 public class DataRow implements Serializable, IRecord {
     private static final Logger log = LoggerFactory.getLogger(DataRow.class);
@@ -471,16 +472,29 @@ public class DataRow implements Serializable, IRecord {
         Map<String, Field> fieldsList = helper.fields();
         if (helper.strict()) {
             if (this.fields().size() > fieldsList.size()) {
-                log.warn("database fields.size > entity {} properties.size", entity.getClass().getName());
+                String message = String.format("database fields.size %s > entity %s properties.size %s",
+                        this.fields().size(), entity.getClass().getName(), fieldsList.size());
+                RuntimeException throwable = new RuntimeException(message);
+                JayunLogParser.warn(entity.getClass(), throwable);
+                log.info("{}", message, throwable);
             } else if (this.fields().size() < fieldsList.size()) {
                 for (var field : fieldsList.keySet()) {
-                    if (!fields.exists(field))
-                        log.error("数据表 {} 缺少字段 {}", helper.tableName(), field);
+                    if (!fields.exists(field)) {
+                        String message = String.format("实体类 %s 数据表 %s 缺字段 %s", entity.getClass().getName(),
+                                helper.tableName(), field);
+                        RuntimeException throwable = new RuntimeException(message);
+                        JayunLogParser.error(DataRow.class, throwable);
+                        log.info("{}", message, throwable);
+                    }
                 }
-                throw new RuntimeException(String.format("database fields.size %d < %s properties.size %d ",
-                        this.fields().size(), entity.getClass().getName(), fieldsList.size()));
+                String message = String.format("database fields.size %s < entity %s properties.size %s",
+                        this.fields().size(), entity.getClass().getName(), fieldsList.size());
+                RuntimeException throwable = new RuntimeException(message);
+                JayunLogParser.error(entity.getClass(), throwable);
+                throw throwable;
             }
         }
+
         // 查找并赋值
         Variant variant = new Variant();
         for (FieldMeta meta : this.fields()) {
@@ -501,12 +515,11 @@ public class DataRow implements Serializable, IRecord {
                     else
                         variant.setValue(value).writeToEntity(entity, field);
                 } catch (IllegalArgumentException | IllegalAccessException e) {
-                    log.error(e.getMessage(), e);
                     throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
                             value.getClass().getName(), field.getType().getName()));
                 }
             } else if (helper.strict())
-                log.warn("not find property: " + meta.code());
+                log.warn("not find property: {}", meta.code());
         }
     }
 
