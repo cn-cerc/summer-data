@@ -25,6 +25,7 @@ import cn.cerc.db.mysql.MysqlDatabase;
 import cn.cerc.db.mysql.MysqlServerMaster;
 import cn.cerc.db.pgsql.PgsqlDatabase;
 import cn.cerc.db.sqlite.SqliteDatabase;
+import cn.cerc.mis.log.JayunLogParser;
 
 public class SqlOperator implements IHandle {
     private static final ClassResource res = new ClassResource(SqlOperator.class, SummerDB.ID);
@@ -199,17 +200,18 @@ public class SqlOperator implements IHandle {
 
             if (i == 0)
                 throw new RuntimeException("not storage field update");
-
-            lastCommand = bs.getPrepareCommand();
             log.debug(bs.getPrepareCommand());
+
             PreparedStatement ps = bs.build();
+            lastCommand = ps.toString();
+            log.debug(lastCommand);
+
             if (this.debug) {
-                log.info(bs.getPrepareCommand());
+                log.info(lastCommand);
                 return false;
             }
 
             int result = ps.executeUpdate();
-
             boolean find = false;
             for (FieldMeta meta : record.fields()) {
                 if (meta.storage() && meta.autoincrement()) {
@@ -227,21 +229,19 @@ public class SqlOperator implements IHandle {
                     }
                 }
             }
-
             return result > 0;
         } catch (SQLException e) {
             log.error(lastCommand, e);
-            e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
     }
 
-    public boolean update(Connection connection, DataRow record) {
-        Map<String, Object> delta = record.delta();
+    public boolean update(Connection connection, DataRow dataRow) {
+        Map<String, Object> delta = dataRow.delta();
         if (delta.size() == 0)
             return true;
 
-        resetUpdateKey(connection, record);
+        resetUpdateKey(connection, dataRow);
 
         String lastCommand = null;
         try (BuildStatement bs = new BuildStatement(connection)) {
@@ -249,34 +249,37 @@ public class SqlOperator implements IHandle {
             // 加入set条件
             int i = 0;
             for (String field : delta.keySet()) {
-                FieldMeta meta = record.fields().get(field);
+                FieldMeta meta = dataRow.fields().get(field);
                 if (meta.storage()) {
                     if (!meta.autoincrement()) {
                         i++;
                         bs.append(i == 1 ? " set " : ",");
                         bs.append(field);
                         if (field.indexOf("+") >= 0 || field.indexOf("-") >= 0) {
-                            bs.append("?", record.getValue(field));
+                            bs.append("?", dataRow.getValue(field));
                         } else {
-                            bs.append("=?", record.getValue(field));
+                            bs.append("=?", dataRow.getValue(field));
                         }
                     }
                 }
             }
             if (i == 0) {
-                log.error("update table {} error，record is {}", this.table(), record);
-                throw new RuntimeException("no field is update");
+                String message = String.format("no field is update, %s table update error, dataRow is %s", this.table(),
+                        dataRow);
+                RuntimeException exception = new RuntimeException(message);
+                JayunLogParser.error(SqlOperator.class, exception);
+                throw exception;
             }
 
             // 加入 where 条件
             i = 0;
             int pkCount = 0;
             for (String field : searchKeys) {
-                FieldMeta meta = record.fields().get(field);
+                FieldMeta meta = dataRow.fields().get(field);
                 if (meta.kind() == FieldKind.Storage) {
                     i++;
                     bs.append(i == 1 ? " where " : " and ").append(field);
-                    Object value = delta.containsKey(field) ? delta.get(field) : record.getValue(field);
+                    Object value = delta.containsKey(field) ? delta.get(field) : dataRow.getValue(field);
                     if (value != null) {
                         bs.append("=?", value);
                         pkCount++;
@@ -294,7 +297,7 @@ public class SqlOperator implements IHandle {
             } else if (this.updateMode() == UpdateMode.strict) {
                 for (String field : delta.keySet()) {
                     if (!searchKeys.contains(field)) {
-                        FieldMeta meta = record.fields().get(field);
+                        FieldMeta meta = dataRow.fields().get(field);
                         if (meta.kind() == FieldKind.Storage) {
                             i++;
                             bs.append(i == 1 ? " where " : " and ").append(field);
@@ -308,24 +311,26 @@ public class SqlOperator implements IHandle {
                     }
                 }
             }
-
-            lastCommand = bs.getPrepareCommand();
             log.debug(bs.getPrepareCommand());
+
             PreparedStatement ps = bs.build();
+            lastCommand = ps.toString();
             if (this.debug) {
-                log.info(bs.getPrepareCommand());
+                log.info(lastCommand);
                 return false;
             }
 
             if (ps.executeUpdate() != 1) {
-                RuntimeException e = new RuntimeException(res.getString(1, "当前记录已被其它用户修改或不存在，更新失败"));
-                log.error(bs.getPrepareCommand(), e);
-                throw e;
+                String message = String.format("%s, dataRow %s, sqlText %s", res.getString(1, "当前记录已被其它用户修改或不存在，更新失败"),
+                        dataRow.json(), lastCommand);
+                RuntimeException exception = new RuntimeException(message);
+                JayunLogParser.error(SqlOperator.class, exception);
+                log.info(exception.getMessage(), exception);
+                throw exception;
             }
             return true;
         } catch (SQLException e) {
             log.error(lastCommand, e);
-            e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -484,7 +489,7 @@ public class SqlOperator implements IHandle {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e.getMessage());
         } finally {
             try {

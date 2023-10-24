@@ -276,7 +276,7 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     }
 
     public static void close() {
-        executor.shutdown();
+        executor.shutdownNow();
         try {
             boolean awaited = executor.awaitTermination(5, TimeUnit.MINUTES);
             if (!awaited)

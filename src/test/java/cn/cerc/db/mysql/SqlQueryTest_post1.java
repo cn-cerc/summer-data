@@ -5,11 +5,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import cn.cerc.db.core.Datetime;
+import cn.cerc.db.core.Datetime.DateType;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
 import cn.cerc.db.core.PostFieldException;
 import cn.cerc.db.core.StubDatabaseSession;
-import cn.cerc.db.core.Datetime.DateType;
 
 public class SqlQueryTest_post1 implements IHandle {
     private MysqlQuery ds;
