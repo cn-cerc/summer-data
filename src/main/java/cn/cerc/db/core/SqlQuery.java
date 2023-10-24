@@ -90,8 +90,8 @@ public class SqlQuery extends DataSet implements IHandle {
             this.doAfterOpen();
             this.first();
         } catch (Exception e) {
-            log.error("sql: {}, {}", sql, e.getMessage(), e);
-            throw new RuntimeException(e);
+            String message = String.format("%s -> message %s", sql, e.getMessage());
+            throw new RuntimeException(message);
         }
     }
 

@@ -16,6 +16,7 @@ import org.apache.log4j.PropertyConfigurator;
 import cn.cerc.db.core.DataException;
 import cn.cerc.db.core.Utils;
 import cn.cerc.mis.core.LastModified;
+import cn.cerc.mis.log.JayunLogData.Builder;
 
 /**
  * 异常解析器用于读取堆栈的异常对象信息
@@ -97,17 +98,13 @@ public class JayunLogParser {
 
             String fullname = clazz.getName();
             String message = throwable.getMessage();
-            JayunLogData data = new JayunLogData();
-            data.setId(fullname);
-            data.setLine("?");
-            data.setLevel(level);
-            data.setMessage(message);
+            Builder builder = new JayunLogData.Builder(fullname, JayunLogData.error, message).level(level);
 
             // 读取起源类修改人
             LastModified modified = clazz.getAnnotation(LastModified.class);
             if (modified != null) {
-                data.setName(modified.name());
-                data.setDate(modified.date());
+                builder.name(modified.name());
+                builder.date(modified.date());
             }
 
             String[] stack = DefaultThrowableRenderer.render(throwable);
@@ -120,16 +117,16 @@ public class JayunLogParser {
                         String trigger = JayunLogParser.trigger(line);
                         if (Utils.isEmpty(trigger))
                             continue;
-                        data.setId(trigger);
-                        data.setLine(JayunLogParser.lineNumber(line));
+                        builder.id(trigger);
+                        builder.line(JayunLogParser.lineNumber(line));
 
                         try {
                             Class<?> caller = Class.forName(trigger);
                             // 读取通缉令修改人
                             modified = caller.getAnnotation(LastModified.class);
                             if (modified != null) {
-                                data.setName(modified.name());
-                                data.setDate(modified.date());
+                                builder.name(modified.name());
+                                builder.date(modified.date());
                             }
                         } catch (ClassNotFoundException e) {
                             e.printStackTrace();
@@ -139,12 +136,8 @@ public class JayunLogParser {
                 }
             }
 
-            data.setStack(stack);
-            data.setTimestamp(System.currentTimeMillis());
-            data.setHostname(ApplicationEnvironment.hostname());
-            data.setIp(ApplicationEnvironment.hostIP());
-            data.setPort(ApplicationEnvironment.hostPort());
-            data.setProject(JayunLogParser.loggerName());
+            builder.stack(stack);
+            JayunLogData data = builder.build();
             // 推送数据到日志监控队列
             new QueueJayunLog().push(data);
         });
