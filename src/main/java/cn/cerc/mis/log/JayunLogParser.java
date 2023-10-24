@@ -98,7 +98,7 @@ public class JayunLogParser {
 
             String fullname = clazz.getName();
             String message = throwable.getMessage();
-            Builder builder = new JayunLogData.Builder(fullname, JayunLogData.error, message).level(level);
+            Builder builder = new JayunLogData.Builder(fullname, level, message);
 
             // 读取起源类修改人
             LastModified modified = clazz.getAnnotation(LastModified.class);
