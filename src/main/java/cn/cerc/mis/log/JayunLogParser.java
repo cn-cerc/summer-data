@@ -3,6 +3,7 @@ package cn.cerc.mis.log;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,6 +37,8 @@ public class JayunLogParser {
         wanted.add("site.oem");
         wanted.add("site.odm");
         wanted.add("site.fpl");
+        // 测试类
+        wanted.add("cn.cerc.mis.log.WantedTest");
     }
 
     private JayunLogParser() {
@@ -86,61 +89,64 @@ public class JayunLogParser {
 
     private static void analyze(Class<?> clazz, Throwable throwable, String level) {
         executor.submit(() -> {
-            // 异常类为空不采集
-            if (throwable == null)
-                return;
-            // 数据类异常不采集
-            if (throwable instanceof DataException)
-                return;
-            // 日志不配置不采集
-            if (Utils.isEmpty(JayunLogParser.loggerName()))
-                return;
+            getJayunLogData(clazz, throwable, level).ifPresent(item -> new QueueJayunLog().push(item));
+        });
+    }
 
-            String fullname = clazz.getName();
-            String message = throwable.getMessage();
-            Builder builder = new JayunLogData.Builder(fullname, level, message);
+    protected static Optional<JayunLogData> getJayunLogData(Class<?> clazz, Throwable throwable, String level) {
+        // 异常类为空不采集
+        if (throwable == null)
+            return Optional.empty();
+        // 数据类异常不采集
+        if (throwable instanceof DataException)
+            return Optional.empty();
+        // 日志不配置不采集
+        if (Utils.isEmpty(JayunLogParser.loggerName()))
+            return Optional.empty();
 
-            // 读取起源类修改人
-            LastModified modified = clazz.getAnnotation(LastModified.class);
-            if (modified != null) {
-                builder.name(modified.name());
-                builder.date(modified.date());
-            }
+        String fullname = clazz.getName();
+        String message = throwable.getMessage();
+        Builder builder = new JayunLogData.Builder(fullname, level, message);
 
-            String[] stack = DefaultThrowableRenderer.render(throwable);
-            // 起源类没有在通缉名单上再抓堆栈信息
-            if (wanted.stream().noneMatch(fullname::contains)) {
-                for (String line : stack) {
-                    // 如果捕捉到业务代码就重置触发器信息
-                    if (wanted.stream().anyMatch(line::contains)) {
-                        line = line.trim();
-                        String trigger = JayunLogParser.trigger(line);
-                        if (Utils.isEmpty(trigger))
-                            continue;
-                        builder.id(trigger);
-                        builder.line(JayunLogParser.lineNumber(line));
+        // 读取起源类修改人
+        LastModified modified = clazz.getAnnotation(LastModified.class);
+        if (modified != null) {
+            builder.name(modified.name());
+            builder.date(modified.date());
+        }
 
-                        try {
-                            Class<?> caller = Class.forName(trigger);
-                            // 读取通缉令修改人
-                            modified = caller.getAnnotation(LastModified.class);
-                            if (modified != null) {
-                                builder.name(modified.name());
-                                builder.date(modified.date());
-                            }
-                        } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
+        String[] stack = DefaultThrowableRenderer.render(throwable);
+        // 起源类没有在通缉名单上再抓堆栈信息
+        if (wanted.stream().noneMatch(fullname::contains)) {
+            for (String line : stack) {
+                // 如果捕捉到业务代码就重置触发器信息
+                if (wanted.stream().anyMatch(line::contains)) {
+                    line = line.trim();
+                    String trigger = JayunLogParser.trigger(line);
+                    if (Utils.isEmpty(trigger))
+                        continue;
+                    builder.id(trigger);
+                    builder.line(JayunLogParser.lineNumber(line));
+
+                    try {
+                        Class<?> caller = Class.forName(trigger);
+                        // 读取通缉令修改人
+                        modified = caller.getAnnotation(LastModified.class);
+                        if (modified != null) {
+                            builder.name(modified.name());
+                            builder.date(modified.date());
                         }
-                        break;
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
                     }
+                    break;
                 }
             }
+        }
 
-            builder.stack(stack);
-            JayunLogData data = builder.build();
-            // 推送数据到日志监控队列
-            new QueueJayunLog().push(data);
-        });
+        builder.stack(stack);
+        JayunLogData data = builder.build();
+        return Optional.ofNullable(data);
     }
 
     public static String trigger(String line) {
@@ -165,12 +171,6 @@ public class JayunLogParser {
 
     public static void close() {
         executor.shutdownNow();
-    }
-
-    public static void main(String[] args) {
-        String line = "at site.diteng.start.login.WebDefault.execute(WebDefault.java:121)";
-        System.out.println(trigger(line));
-        System.out.println(lineNumber(line));
     }
 
 }
