@@ -73,18 +73,29 @@ public class JayunLogParser {
     /**
      * 警告类日志
      */
+    public static void warn(Class<?> clazz, Throwable throwable, String message) {
+        JayunLogParser.analyze(clazz, throwable, JayunLogData.warn, message);
+    }
+
+    /**
+     * 警告类日志
+     */
     public static void warn(Class<?> clazz, Throwable throwable) {
-        JayunLogParser.analyze(clazz, throwable, JayunLogData.warn);
+        JayunLogParser.analyze(clazz, throwable, JayunLogData.warn, null);
     }
 
     /**
      * 错误类日志
      */
-    public static void error(Class<?> clazz, Throwable throwable) {
-        JayunLogParser.analyze(clazz, throwable, JayunLogData.error);
+    public static void error(Class<?> clazz, Throwable throwable, String message) {
+        JayunLogParser.analyze(clazz, throwable, JayunLogData.error, message);
     }
 
-    private static void analyze(Class<?> clazz, Throwable throwable, String level) {
+    public static void error(Class<?> clazz, Throwable throwable) {
+        JayunLogParser.analyze(clazz, throwable, JayunLogData.error, null);
+    }
+
+    private static void analyze(Class<?> clazz, Throwable throwable, String level, String message) {
         executor.submit(() -> {
             // 异常类为空不采集
             if (throwable == null)
@@ -96,9 +107,11 @@ public class JayunLogParser {
             if (Utils.isEmpty(JayunLogParser.loggerName()))
                 return;
 
+            String error = message;
             String fullname = clazz.getName();
-            String message = throwable.getMessage();
-            Builder builder = new JayunLogData.Builder(fullname, level, message);
+            if (Utils.isEmpty(error))
+                error = throwable.getMessage();
+            Builder builder = new JayunLogData.Builder(fullname, level, error);
 
             // 读取起源类修改人
             LastModified modified = clazz.getAnnotation(LastModified.class);

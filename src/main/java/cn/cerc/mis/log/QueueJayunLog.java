@@ -60,7 +60,9 @@ public class QueueJayunLog extends AbstractQueue {
         pool.submit(() -> {
             try {
                 Curl curl = new Curl();
-                curl.doPost(site, json);
+                String response = curl.doPost(site, json);
+                if (Utils.isEmpty(response))
+                    System.err.println(String.format("site {}, json {}", site, json));
             } catch (Exception e) {
                 System.err.println(e.getMessage());
             }
