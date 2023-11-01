@@ -21,8 +21,8 @@ public class StubSession implements ISession {
     }
 
     @Override
-    public void loadToken(String token) {
-
+    public boolean loadToken(String token) {
+        return true;
     }
 
     @Override

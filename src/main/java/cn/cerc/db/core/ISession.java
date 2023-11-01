@@ -36,7 +36,7 @@ public interface ISession extends AutoCloseable {
     void setProperty(String key, Object value);
 
     // 从数据库根据token载入所有环境
-    void loadToken(String token);
+    boolean loadToken(String token);
 
     default String getToken() {
         return (String) getProperty(ISession.TOKEN);
