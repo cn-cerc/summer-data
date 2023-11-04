@@ -75,7 +75,7 @@ public class StubDatabaseSession implements ISession {
     }
 
     @Override
-    public void loadToken(String token) {
+    public boolean loadToken(String token) {
         throw new RuntimeException("not support loadToken");
     }
 

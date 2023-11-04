@@ -19,6 +19,7 @@ import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
 import cn.cerc.db.queue.OnStringMessage;
 import cn.cerc.db.queue.entity.CheckMQEntity;
+import cn.cerc.mis.log.JayunLogParser;
 
 public class RabbitQueue implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(RabbitQueue.class);
@@ -72,8 +73,8 @@ public class RabbitQueue implements AutoCloseable {
      */
     public void watch(OnStringMessage consumer) {
         initChannel();
-        try {
-            if (consumer != null && channel != null) {
+        if (consumer != null && channel != null) {
+            try {
                 channel.basicConsume(queueId, false, new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties,
@@ -85,14 +86,15 @@ public class RabbitQueue implements AutoCloseable {
                             else
                                 channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
                         } catch (Exception e) {
-                            log.error("queueId {}, payload {}, message {}", queueId, msg, e.getMessage(), e);
-                            channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
+                            String message = String.format("queueId %s, payload %s, message %s", queueId, msg,
+                                    e.getMessage());
+                            JayunLogParser.error(RabbitQueue.class, e, message);
                         }
                     }
                 });
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
             }
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
         }
     }
 
@@ -123,12 +125,8 @@ public class RabbitQueue implements AutoCloseable {
                 else
                     channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
             } catch (Exception e) {
-                log.error("queueId {}, payload {}, message {}", queueId, msg, e.getMessage(), e);
-                try {
-                    channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
-                } catch (IOException e1) {
-                    log.error("queueId {}, payload {}, message {}", queueId, msg, e1.getMessage(), e1);
-                }
+                String message = String.format("queueId %s, payload %s, message %s", queueId, msg, e.getMessage());
+                JayunLogParser.error(RabbitQueue.class, e, message);
             }
         }
     }
