@@ -145,6 +145,11 @@ public class ClassConfig implements IConfig {
         return config;
     }
 
+    public ClassConfig setProperty(String key, String value) {
+        this.config.setProperty(key, value);
+        return this;
+    }
+
     public static void main(String[] args) {
         String key = "cn.cerc.core.DataSet.1";
         ClassConfig config = new ClassConfig(ClassConfig.class, "summer-core-cn");

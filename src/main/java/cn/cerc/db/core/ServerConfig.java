@@ -137,6 +137,11 @@ public enum ServerConfig implements IConfig {
         return config.getString(key, def);
     }
 
+    public ServerConfig setProperty(String key, String value) {
+        config.setProperty(key, value);
+        return this;
+    }
+
     public int getInt(String key, int def) {
         String value = this.getProperty(key, "" + def);
         try {
