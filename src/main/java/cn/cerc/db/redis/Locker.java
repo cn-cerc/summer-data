@@ -49,7 +49,7 @@ public class Locker implements Closeable {
     private boolean tryLock(Jedis jedis, String key, String flag, int timeout) throws InterruptedException {
         int i = 0;
         int totalSleepTime = 0;
-        // 重试机制
+        // 重试机制 递增睡眠时间
         while (totalSleepTime < timeout) {
             if (jedis.setnx(key, System.currentTimeMillis() + "," + flag) == 1) {
                 this.message = String.format(res.getString(1, "[%s]%s锁定成功"), key, flag);
