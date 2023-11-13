@@ -29,10 +29,12 @@ public class Locker implements Closeable {
         }
     }
 
+    @Deprecated
     public void add(Object key) {
         items.put(group + "-" + key, false);
     }
 
+    @Deprecated
     public boolean lock(String flag) {
         return lock(flag, 100);
     }
