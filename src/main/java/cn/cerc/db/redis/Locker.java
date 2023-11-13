@@ -33,7 +33,7 @@ public class Locker implements Closeable {
     }
 
     /**
-     * 默认三秒释放锁
+     * 默认三秒重试时间
      */
     public boolean lock(String flag) {
         return lock(flag, 3000);
