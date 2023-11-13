@@ -27,10 +27,6 @@ public class Locker implements Closeable {
             items.put(group + "-" + arg, false);
     }
 
-    public boolean lock() {
-        return lock("", 3000);
-    }
-
     public Locker add(Object key) {
         items.put(group + "-" + key, false);
         return this;
