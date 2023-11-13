@@ -26,14 +26,23 @@ public class Locker implements Closeable {
         for (Object arg : args)
             items.put(group + "-" + arg, false);
     }
-    
-    /**
-     * 默认三秒释放锁
-     */
+
     public boolean lock() {
         return lock("", 3000);
     }
-    
+
+    public Locker add(Object key) {
+        items.put(group + "-" + key, false);
+        return this;
+    }
+
+    /**
+     * 默认三秒释放锁
+     */
+    public boolean lock(String flag) {
+        return lock(flag, 3000);
+    }
+
     public boolean lock(String flag, int time) {
         if (time % 100 != 0)
             throw new RuntimeException(String.format("%s %% 100 !=0", time));
@@ -81,11 +90,6 @@ public class Locker implements Closeable {
                     jedis.del(key);
             }
         }
-    }
-
-    public Locker add(Object key) {
-        items.put(group + "-" + key, false);
-        return this;
     }
 
     public int getTimeout() {
