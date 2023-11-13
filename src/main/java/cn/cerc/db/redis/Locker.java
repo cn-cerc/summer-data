@@ -66,7 +66,7 @@ public class Locker implements Closeable {
         while (totalSleepTime < time) {
             if (jedis.setnx(key, System.currentTimeMillis() + "," + flag) == 1) {
                 this.message = String.format(res.getString(1, "[%s]%s锁定成功"), key, flag);
-                // 设置到期时间，避免服务器更新时，为能正常释放key，导致死锁
+                // 设置到期时间，避免服务器更新时，未能正常释放key，导致死锁
                 jedis.expire(key, this.timeout);
                 return true;
             }
