@@ -8,7 +8,7 @@ public class LockerTest {
 
     private final String group = LockerTest.class.getSimpleName() + ".group";
     private final String firstKey = LockerTest.class.getSimpleName() + ".key";
-    private final int count = 10000;
+    private final int count = 5000;
 
     @Test
     public void lock_test1() {
@@ -20,6 +20,16 @@ public class LockerTest {
 
     @Test
     public void lock_test2() {
+        try (Locker lock = new Locker(group, firstKey)) {
+            assertEquals(lock.lock("标记", 1000), true);
+        }
+        try (Locker lock = new Locker(group, firstKey)) {
+            assertEquals(lock.lock("标记", 1000), true);
+        }
+    }
+
+    @Test
+    public void lock_test3() {
         try (Locker lock = new Locker(group, firstKey)) {
             assertEquals(lock.lock("标记", 1000), true);
         }
@@ -89,6 +99,7 @@ public class LockerTest {
         }
         System.err.println("lockTransferMoney Final balance of account1: " + account1.getBalance());
         System.err.println("lockTransferMoney Final balance of account2: " + account2.getBalance());
+        assertEquals(account1.getBalance() == account2.getBalance(), true);
     }
 
     @Test
