@@ -665,7 +665,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
         return super.equals(obj);
     }
 
-    // @Deprecated
+//    @Deprecated
 //    public Datetime incDay(int offset) {
 //        return inc(DateType.Day, offset);
 //    }
