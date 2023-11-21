@@ -658,6 +658,13 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
         return source.containsAll(target);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Datetime datetime)
+            return this.subtract(DateType.Second, datetime) == 0;
+        return super.equals(obj);
+    }
+
 //    @Deprecated
 //    public Datetime incDay(int offset) {
 //        return inc(DateType.Day, offset);
