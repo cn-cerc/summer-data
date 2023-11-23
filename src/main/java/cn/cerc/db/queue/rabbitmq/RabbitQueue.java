@@ -78,13 +78,19 @@ public class RabbitQueue implements AutoCloseable {
                 channel.basicConsume(queueId, false, new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties,
-                            byte[] body) throws IOException {
+                            byte[] body) {
                         String msg = new String(body);
                         try {
-                            if (consumer.consume(msg, true))
-                                channel.basicAck(envelope.getDeliveryTag(), false); // 通知服务端删除消息
-                            else
-                                channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
+                            if (channel == null || !channel.isOpen())
+                                return;
+                            synchronized (channel) {
+                                if (channel == null || !channel.isOpen())
+                                    return;
+                                if (consumer.consume(msg, true))
+                                    channel.basicAck(envelope.getDeliveryTag(), false); // 通知服务端删除消息
+                                else
+                                    channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
+                            }
                         } catch (Exception e) {
                             String message = String.format("queueId %s, payload %s, message %s", queueId, msg,
                                     e.getMessage());
@@ -176,12 +182,14 @@ public class RabbitQueue implements AutoCloseable {
     @Override
     public void close() {
         if (channel != null) {
-            try {
-                channel.close();
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
+            synchronized (channel) {
+                try {
+                    channel.close();
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+                channel = null;
             }
-            channel = null;
         }
     }
 
