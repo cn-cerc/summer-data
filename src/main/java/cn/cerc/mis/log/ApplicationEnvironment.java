@@ -17,6 +17,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
 
 /**
@@ -73,6 +74,20 @@ public class ApplicationEnvironment {
             e.printStackTrace();
         }
         return hostip;
+    }
+
+    /**
+     * 应用主机分组
+     * <p>
+     * docker run <br>
+     * --env DOCKER_GROUP=$group \
+     */
+    public static String group() {
+        // docker 容器分组
+        String group = System.getenv("DOCKER_GROUP");
+        if (!Utils.isEmpty(group))
+            return group;
+        return ServerConfig.getInstance().getProperty("application.group", "undefined");
     }
 
     /**
