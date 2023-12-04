@@ -22,6 +22,7 @@ import cn.cerc.db.queue.sqlmq.SqlmqQueueName;
 import cn.cerc.db.queue.sqlmq.SqlmqServer;
 import cn.cerc.db.redis.Redis;
 import cn.cerc.db.zk.ZkConfig;
+import cn.cerc.mis.log.JayunLogParser;
 
 public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnable {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
@@ -200,7 +201,11 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
             try (Redis redis = new Redis()) {
                 var data = redis.rpop(this.getId());
                 if (data != null)
-                    this.consume(data, true);
+                    try {
+                        this.consume(data, true);
+                    } catch (Exception e) {
+                        JayunLogParser.error(this.getClass(), e);
+                    }
             }
         }
         case Sqlmq -> SqlmqServer.getQueue(getId()).pop(100, this);
