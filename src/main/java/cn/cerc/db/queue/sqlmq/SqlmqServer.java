@@ -4,6 +4,10 @@ import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.ISession;
 import cn.cerc.db.mysql.MysqlSession;
 
+/**
+ * 临时解决方案：MySQL 的系统参数 wait_timeout 长度改为 15天=1296000秒 <br>
+ * 最终解决方案：MySQL 支持断线自动重连机制 HikariCP 启用
+ */
 public class SqlmqServer implements IHandle {
     private static SqlmqServer instance;
     private ISession session;
