@@ -668,7 +668,6 @@ public class Utils {
      * @param str 目标字符串
      * @return 判断字符串不为空
      */
-    @Deprecated
     public static boolean isNotEmpty(String str) {
         return !Utils.isEmpty(str);
     }
