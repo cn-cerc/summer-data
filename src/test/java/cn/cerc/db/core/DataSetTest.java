@@ -1,5 +1,7 @@
 package cn.cerc.db.core;
 
+import java.util.stream.Stream;
+
 import org.junit.Test;
 
 import junit.framework.TestCase;
@@ -139,6 +141,25 @@ public class DataSetTest extends TestCase {
         assertEquals("1", dataSet.head().getString("Discount_"));
         assertTrue(dataSet.head().getValue("Discount_") instanceof Integer);
         assertEquals(1, dataSet.head().getInt("Discount_"));
+    }
+
+    private record TestEntity(String code, String name) {
+    }
+
+    @Test
+    public void test_collection_1() {
+        TestEntity entity1 = new TestEntity("00001", "赖贺祥");
+        TestEntity entity2 = new TestEntity("00002", "张明");
+        TestEntity entity3 = new TestEntity("00003", "王凌晶");
+        TestEntity entity4 = new TestEntity("00004", "张晶滢");
+        TestEntity entity5 = new TestEntity("00005", "锺瑾昆");
+        DataSet dataSet = Stream.of(entity1, entity2, entity3, entity4, entity5)
+                .filter(item -> !"00002".equals(item.code())) // 过滤张明
+                .collect(DataSet.toDataSet((row, item) -> row.setValue("name_", item.name())));
+        assertEquals(1, dataSet.recNo()); // 刚生成的DataSet recNo应该在第一个元素
+        assertFalse(dataSet.locate("name_", "张明")); // 张明被过滤掉了，所以 locate 不到
+        assertTrue(dataSet.locate("name_", "张晶滢"));
+        assertEquals(3, dataSet.recNo());
     }
 
 }

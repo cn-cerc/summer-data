@@ -11,7 +11,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 
 import javax.annotation.Nullable;
 
@@ -861,6 +867,50 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
     @Deprecated
     public DataSet dataSet() {
         return this;
+    }
+
+    public static <T> DataSetCollector<T> toDataSet(BiConsumer<DataRow, T> accumulator) {
+        return new DataSetCollector<>(accumulator);
+    }
+
+    public static class DataSetCollector<T> implements Collector<T, DataSet, DataSet> {
+
+        private final BiConsumer<DataRow, T> accumulator;
+
+        public DataSetCollector(BiConsumer<DataRow, T> accumulator) {
+            this.accumulator = accumulator;
+        }
+
+        @Override
+        public Supplier<DataSet> supplier() {
+            return DataSet::new;
+        }
+
+        @Override
+        public BiConsumer<DataSet, T> accumulator() {
+            return (dataSet, t) -> accumulator.accept(dataSet.createDataRow(), t);
+        }
+
+        @Override
+        public BinaryOperator<DataSet> combiner() {
+            return (left, right) -> {
+                left.appendDataSet(right);
+                return left;
+            };
+        }
+
+        @Override
+        public Function<DataSet, DataSet> finisher() {
+            return dataSet -> {
+                dataSet.first();
+                return dataSet;
+            };
+        }
+
+        @Override
+        public Set<Characteristics> characteristics() {
+            return Set.of();
+        }
     }
 
     public static void main(String[] args) throws InterruptedException {
