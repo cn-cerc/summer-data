@@ -25,8 +25,7 @@ public class ZkConfig implements IConfig {
 
         this.path = String.format("/%s/%s/%s%s", ServerConfig.getAppProduct(), ServerConfig.getAppVersion(),
                 ServerConfig.getAppOriginal(), path);
-
-        server = ZkNode.get().server();
+        server = ZkServer.get();
     }
 
     public String path() {
@@ -104,12 +103,9 @@ public class ZkConfig implements IConfig {
         server.delete(path(key));
     }
 
+    // 使用 ZkServer.get()
+    @Deprecated
     public ZooKeeper client() {
         return server.client();
-    }
-
-    @Deprecated
-    public ZkServer server() {
-        return ZkNode.get().server();
     }
 }

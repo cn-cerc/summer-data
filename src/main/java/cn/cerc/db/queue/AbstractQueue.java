@@ -6,9 +6,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,10 +18,9 @@ import cn.cerc.db.queue.sqlmq.SqlmqQueue;
 import cn.cerc.db.queue.sqlmq.SqlmqQueueName;
 import cn.cerc.db.queue.sqlmq.SqlmqServer;
 import cn.cerc.db.redis.Redis;
-import cn.cerc.db.zk.ZkConfig;
 import cn.cerc.mis.log.JayunLogParser;
 
-public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnable {
+public abstract class AbstractQueue implements OnStringMessage, Runnable {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
 
     // 创建一个缓存线程池，在必要的时候在创建线程，若线程空闲60秒则终止该线程
@@ -43,7 +39,6 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
     public static final ThreadPoolExecutor executor = new ThreadPoolExecutor(processors, processors * 4, 60,
             TimeUnit.SECONDS, new ArrayBlockingQueue<>(1024), new ThreadPoolExecutor.CallerRunsPolicy());
 
-    private static ZkConfig config;
     private boolean pushMode = false; // 默认为拉模式
     private QueueServiceEnum service;
     private int delayTime = 60; // 失败重试时间 单位：秒
@@ -112,48 +107,6 @@ public abstract class AbstractQueue implements OnStringMessage, Watcher, Runnabl
 
     public final Optional<Datetime> getShowTime() {
         return Optional.ofNullable(this.showTime);
-    }
-
-    public void startService() {
-        // 通知ZooKeeper
-        try {
-            ZkConfig host = new ZkConfig(String.format("/app/%s", ServerConfig.getAppName()));
-            String child = host.path("status");
-            var stat = host.client().exists(child, this);
-            if (stat == null) {
-                host.setValue("status", "running");
-                stat = host.client().exists(child, this);
-                if (stat == null) {
-                    log.warn("配置有误，无法启动消息队列");
-                    return;
-                }
-            }
-        } catch (KeeperException | InterruptedException e) {
-            log.error(e.getMessage());
-            e.printStackTrace();
-            return;
-        }
-        config().setTempNode(this.getClass().getSimpleName(), "running");
-        log.info("注册消息服务：{} from {}", this.getId(), this.getService().name());
-    }
-
-    @Override
-    public void process(WatchedEvent event) {
-        if (event.getType() == Watcher.Event.EventType.DataWatchRemoved) {
-            log.info("此主机运行状态被移除");
-            this.stopService();
-        }
-    }
-
-    public void stopService() {
-        log.info("{} 关闭了消息推送服务", this.getTopic());
-        config().delete(this.getClass().getSimpleName());
-    }
-
-    private ZkConfig config() {
-        if (config == null)
-            config = new ZkConfig(String.format("/app/%s/task", ServerConfig.getAppName()));
-        return config;
     }
 
     protected String push(String data) {

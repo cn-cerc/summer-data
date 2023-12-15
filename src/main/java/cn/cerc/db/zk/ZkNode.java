@@ -93,6 +93,8 @@ public class ZkNode implements Watcher {
         }
     }
 
+    // 使用 ZkServer.get()
+    @Deprecated
     public ZkServer server() {
         return server;
     }
