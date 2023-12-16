@@ -10,6 +10,20 @@ public interface ISession extends AutoCloseable {
     String CORP_NO = "corp_no";
     String USER_CODE = "user_code";
     String USER_ROLE = "user_role";// 用户角色
+
+    /**
+     * 用户角色
+     */
+    String users_role = "users_role";
+    /**
+     * 参考角色
+     */
+    String refer_role = "refer_role";
+    /**
+     * 系统角色
+     */
+    String admin_role = "admin_role";
+
     String USER_ID = "user_id";
     String USER_NAME = "user_name";
     String SUPER_USER = "super_user";
@@ -52,6 +66,27 @@ public interface ISession extends AutoCloseable {
 
     default String getUserRole() {
         return (String) getProperty(ISession.USER_ROLE);
+    }
+
+    /**
+     * 获取用户角色代码
+     */
+    default String getUsersRole() {
+        return (String) getProperty(ISession.users_role);
+    }
+
+    /**
+     * 获取标准角色代码
+     */
+    default String getReferRole() {
+        return (String) getProperty(ISession.refer_role);
+    }
+
+    /**
+     * 获取系统角色代码
+     */
+    default String getAdminRole() {
+        return (String) getProperty(ISession.admin_role);
     }
 
     default boolean isSuperUser() {

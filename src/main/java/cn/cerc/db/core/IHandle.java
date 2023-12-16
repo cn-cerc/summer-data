@@ -50,6 +50,27 @@ public interface IHandle {
     }
 
     /**
+     * 获取用户角色代码
+     */
+    default String getUsersRole() {
+        return getSession().getUsersRole();
+    }
+
+    /**
+     * 获取标准角色代码
+     */
+    default String getReferRole() {
+        return getSession().getReferRole();
+    }
+
+    /**
+     * 获取系统角色代码
+     */
+    default String getAdminRole() {
+        return getSession().getAdminRole();
+    }
+
+    /**
      * 允许编辑菜单界面
      */
     default boolean allowVisualDesign() {
