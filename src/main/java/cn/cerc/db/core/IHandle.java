@@ -57,7 +57,7 @@ public interface IHandle {
     }
 
     /**
-     * 获取标准角色代码
+     * 获取标准角色代码--企业角色或系统角色
      */
     default String getReferRole() {
         return getSession().getReferRole();
