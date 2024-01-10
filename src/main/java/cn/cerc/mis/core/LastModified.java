@@ -14,6 +14,11 @@ import java.lang.annotation.Target;
 public @interface LastModified {
 
     /**
+     * @return 负责人
+     */
+    String main() default "";
+
+    /**
      * @return 修改人
      */
     String name();
