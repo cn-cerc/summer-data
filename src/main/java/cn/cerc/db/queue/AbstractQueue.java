@@ -1,5 +1,6 @@
 package cn.cerc.db.queue;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -166,6 +167,8 @@ public abstract class AbstractQueue implements OnStringMessage, Runnable {
             try (var queue = new RabbitQueue(this.getId())) {
                 queue.setMaximum(100);
                 queue.pop(this);
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
             }
         }
         default -> log.error("{} 不支持消息拉取模式:", getService().name());

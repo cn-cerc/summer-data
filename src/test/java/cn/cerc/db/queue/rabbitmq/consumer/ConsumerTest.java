@@ -3,6 +3,8 @@ package cn.cerc.db.queue.rabbitmq.consumer;
 import cn.cerc.db.queue.rabbitmq.RabbitQueue;
 import cn.cerc.db.queue.rabbitmq.config.RabbitTestConfig;
 
+import java.io.IOException;
+
 public class ConsumerTest {
 
 //    @Test
@@ -13,6 +15,8 @@ public class ConsumerTest {
                 System.out.println(msg);
                 return true;
             });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
