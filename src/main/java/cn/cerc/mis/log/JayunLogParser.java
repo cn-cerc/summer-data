@@ -169,11 +169,11 @@ public class JayunLogParser {
 
     public static String lineNumber(String line) {
         String lineNumber = "?";
-        int iend = line.lastIndexOf(')');
-        int ibegin = line.lastIndexOf(':', iend - 1);
-        if (ibegin == -1)
+        int end = line.lastIndexOf(')');
+        int begin = line.lastIndexOf(':', end - 1);
+        if (begin == -1)
             return lineNumber;
-        return line.substring(ibegin + 1, iend);
+        return line.substring(begin + 1, end);
     }
 
     public static void close() {

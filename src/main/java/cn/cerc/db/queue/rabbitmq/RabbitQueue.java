@@ -78,7 +78,7 @@ public class RabbitQueue implements AutoCloseable {
                 channel.basicConsume(queueId, false, new DefaultConsumer(channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties,
-                            byte[] body) {
+                            byte[] body) throws IOException {
                         String msg = new String(body);
                         try {
                             if (channel == null || !channel.isOpen())
@@ -92,9 +92,11 @@ public class RabbitQueue implements AutoCloseable {
                                     channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
                             }
                         } catch (Exception e) {
+                            channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
                             String message = String.format("queueId %s, payload %s, message %s", queueId, msg,
                                     e.getMessage());
                             JayunLogParser.error(RabbitQueue.class, e, message);
+                            log.info(message, e);
                         }
                     }
                 });
@@ -108,7 +110,7 @@ public class RabbitQueue implements AutoCloseable {
      * pull 模式使用
      */
     // 读取work队列中的一条消息，ack = false 需要手动确认消息已被读取
-    public void pop(OnStringMessage resume) {
+    public void pop(OnStringMessage resume) throws IOException {
         initChannel();
         for (int i = 0; i < maximum; i++) {
             GetResponse response;
@@ -131,8 +133,10 @@ public class RabbitQueue implements AutoCloseable {
                 else
                     channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
             } catch (Exception e) {
+                channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
                 String message = String.format("queueId %s, payload %s, message %s", queueId, msg, e.getMessage());
                 JayunLogParser.error(RabbitQueue.class, e, message);
+                log.info(message, e);
             }
         }
     }

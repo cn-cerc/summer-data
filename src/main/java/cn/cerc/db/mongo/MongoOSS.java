@@ -230,8 +230,7 @@ public class MongoOSS {
             fileName = "/" + fileName;
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         MongoOSS.bucket().downloadToStream(fileName, outputStream);
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-        return inputStream;
+        return new ByteArrayInputStream(outputStream.toByteArray());
     }
 
     /**
