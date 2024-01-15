@@ -48,6 +48,24 @@ public class JedisBuilder {
             return;
         }
 
+        JedisPoolConfig poolConfig = getPoolConfig();
+
+        if (Utils.isEmpty(host)) {
+            log.error("{}/host not config.", config.getFullPath());
+            return;
+        }
+
+        String password = config.password();
+        if (Utils.isEmpty(password))
+            password = null;
+        int timeout = config.timeout();
+
+        // 创建 JedisPool 连接池
+        jedisPool = new JedisPool(poolConfig, host, port, timeout, password);
+        log.info("{}:{} redis server connected", host, port);
+    }
+
+    private static JedisPoolConfig getPoolConfig() {
         JedisPoolConfig poolConfig = new JedisPoolConfig();
         poolConfig.setMaxTotal(MAX_ACTIVE);
         poolConfig.setMaxIdle(MAX_IDLE);
@@ -65,20 +83,7 @@ public class JedisBuilder {
         // 表示一个对象至少停留在idle状态的最短时间，然后才能被idle object
         // evitor扫描并驱逐；这一项只有在timeBetweenEvictionRunsMillis大于0时才有意义
         poolConfig.setMinEvictableIdleTime(Duration.ofMillis(60000));
-
-        if (Utils.isEmpty(host)) {
-            log.error("{}/host not config.", config.getFullPath());
-            return;
-        }
-
-        String password = config.password();
-        if (Utils.isEmpty(password))
-            password = null;
-        int timeout = config.timeout();
-
-        // 创建 JedisPool 连接池
-        jedisPool = new JedisPool(poolConfig, host, port, timeout, password);
-        log.info("{}:{} redis server connected", host, port);
+        return poolConfig;
     }
 
     /**
@@ -99,19 +104,10 @@ public class JedisBuilder {
             return null;
         }
 
-        // 达3次时，不再重试
-        if (this.atomic.get() >= 3) {
-            log.error("{}:{} redis 尝试连接 {} 次失败，不再进行尝试", this.host, this.port, this.atomic.get());
-            return null;
-        }
-
         try {
             return jedisPool.getResource();
         } catch (JedisConnectionException e) {
-            if (this.atomic.get() < 3) {
-                log.error("redis {}:{} 无法联接，原因：{}", this.host, this.port, e.getMessage());
-                this.atomic.incrementAndGet();
-            }
+            log.error("{}:{} redis 重试 {} 次仍无法联接，原因：{}", this.host, this.port, this.atomic.incrementAndGet(), e.getMessage(), e);
             return null;
         }
     }
