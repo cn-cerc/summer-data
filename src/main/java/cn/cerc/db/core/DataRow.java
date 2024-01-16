@@ -693,4 +693,5 @@ public class DataRow implements Serializable, IRecord {
     public DataCell bind(String field) {
         return new DataCell(this, field);
     }
+
 }
