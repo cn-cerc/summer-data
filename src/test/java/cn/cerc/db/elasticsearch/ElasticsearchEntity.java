@@ -15,7 +15,8 @@ public class ElasticsearchEntity {
     public static final String INDEXNAME = "my_index";
 
     @Id
-    private Long id;
+    @Field(type = FieldType.Keyword)
+    private String id;
 
     @Field(type = FieldType.Text, analyzer = "ik_max_word")
     private String name;
@@ -49,30 +50,27 @@ public class ElasticsearchEntity {
     private final static String[] address = new String[] { "北京市朝阳区北辰东路15号", "上海市黄浦区人民大道200号", "深圳市福田区福中三路市民中心C区",
             "武汉市江岸区一元街道沿江大道188号", "广州市花都区新华街新都大道68号" };
 
-    public static ElasticsearchEntity getRandomData(long id) {
-        ElasticsearchEntity ElasticsearchEntity = new ElasticsearchEntity();
-        ElasticsearchEntity.setId(id);
-        ElasticsearchEntity.setName(RandomUtil.randomString("张三李四王五陈六江文档词测试", 3));
-        ElasticsearchEntity.setSex(id % 2 == 0 ? "男" : "女");
-        ElasticsearchEntity.setAge(RandomUtil.randomInt(15, 30));
-        ElasticsearchEntity.setRemark(
+    public static void setRandomData(ElasticsearchEntity entity) {
+        entity.setName(RandomUtil.randomString("张三李四王五陈六江文档词测试", 3));
+        entity.setSex(RandomUtil.randomInt(0, 1) % 2 == 0 ? "男" : "女");
+        entity.setAge(RandomUtil.randomInt(15, 30));
+        entity.setRemark(
                 RandomUtil.randomString("活波开朗，具有进取精神和团队精神，有较强的动手能力。良好协调沟通能力，适应力强，反应快、积极、细心、灵活， 具有一定的社会交往能力", 15));
-        ElasticsearchEntity.setTag(new String[] {
+        entity.setTag(new String[] {
                 RandomUtil.randomString("活波开朗，具有进取精神和团队精神，有较强的动手能力。良好协调沟通能力，适应力强，反应快、积极、细心、灵活， 具有一定的社会交往能力", 3),
                 RandomUtil.randomString("活波开朗，具有进取精神和团队精神，有较强的动手能力。良好协调沟通能力，适应力强，反应快、积极、细心、灵活， 具有一定的社会交往能力", 3),
                 RandomUtil.randomString("活波开朗，具有进取精神和团队精神，有较强的动手能力。良好协调沟通能力，适应力强，反应快、积极、细心、灵活， 具有一定的社会交往能力", 3) });
-        ElasticsearchEntity.setAddressLocation(address[RandomUtil.randomInt(0, address.length - 1)]);
-        ElasticsearchEntity.setBirthAddress(city[RandomUtil.randomInt(0, city.length - 1)]);
-        ElasticsearchEntity.setCreateTime(new Datetime());
-        ElasticsearchEntity.setHasGirlFriend(id % 4 == 0 ? true : false);
-        return ElasticsearchEntity;
+        entity.setAddressLocation(address[RandomUtil.randomInt(0, address.length - 1)]);
+        entity.setBirthAddress(city[RandomUtil.randomInt(0, city.length - 1)]);
+        entity.setCreateTime(new Datetime());
+        entity.setHasGirlFriend(RandomUtil.randomInt(0, 4) % 4 == 0 ? true : false);
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
