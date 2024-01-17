@@ -4,20 +4,23 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.WeekFields;
+import java.util.Arrays;
+import java.util.Locale;
 
 /**
  * 星期工具类
  */
 public class WeekDate {
 
+    private static final String[] WEEK_STRINGS = { "周一", "周二", "周三", "周四", "周五", "周六", "周日" };
+
     /**
      * 日期在年份的周数
      */
     public static int weekOfYear(Datetime date) {
         LocalDate localDate = date.asLocalDate();
-        WeekFields weekFields = WeekFields.ISO;
-        int weekNumber = localDate.get(weekFields.weekOfYear()) + 1;
-        return weekNumber;
+        WeekFields weekFields = WeekFields.of(Locale.CHINA);
+        return localDate.get(weekFields.weekOfYear());
     }
 
     /**
@@ -36,6 +39,17 @@ public class WeekDate {
         LocalDate givenDate = date.asLocalDate();
         LocalDate to = givenDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
         return new Datetime(to);
+    }
+
+    public static String getWeekString(Datetime date) {
+        return getWeekString(date, WEEK_STRINGS);
+    }
+
+    public static String getWeekString(Datetime date, String[] weekStrings) {
+        if (Utils.isEmpty(weekStrings) || weekStrings.length != 7)
+            throw new RuntimeException(String.format("WeekStrings %s 长度不足七位", Arrays.toString(weekStrings)));
+        LocalDate givenDate = date.asLocalDate();
+        return weekStrings[givenDate.getDayOfWeek().ordinal()];
     }
 
 }
