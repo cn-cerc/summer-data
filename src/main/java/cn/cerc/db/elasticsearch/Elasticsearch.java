@@ -200,7 +200,7 @@ public class Elasticsearch {
         return delete.getResult() == Result.DELETED;
     }
 
-    public static <T> Set<T> search(Class<T> classz, Consumer<BoolQueryBuilder> where) throws IOException {
+    public static <T> Set<T> search(Class<T> classz, Consumer<BoolQueryBuilder> where) {
         Objects.requireNonNull(classz);
         Objects.requireNonNull(where);
 
@@ -214,19 +214,34 @@ public class Elasticsearch {
         SearchSourceBuilder builder = new SearchSourceBuilder();
         builder.size(5000);
         // 执行查询
-        SearchResponse searchResponse = CLIENT.search(
-                new SearchRequest(document.indexName()).source(builder.query(matchAllQueryBuilder)),
-                RequestOptions.DEFAULT);
-
         Set<T> set = new HashSet<>();
-        for (var hit : searchResponse.getHits().getHits()) {
-            T entity = JsonTool.fromJson(hit.getSourceAsString(), classz);
-            try {
-                getIdField(classz).set(entity, hit.getId());
-            } catch (IllegalArgumentException | IllegalAccessException e) {
-                e.printStackTrace();
+        try {
+            SearchResponse searchResponse = CLIENT.search(
+                    new SearchRequest(document.indexName()).source(builder.query(matchAllQueryBuilder)),
+                    RequestOptions.DEFAULT);
+            for (var hit : searchResponse.getHits().getHits()) {
+                Map<String, Object> map = hit.getSourceAsMap();
+                // FIXME使用反射添加值
+                try {
+                    T entity = classz.getDeclaredConstructor().newInstance();
+                    for (var field : classz.getDeclaredFields()) {
+                        if (Modifier.isStatic(field.getModifiers()))
+                            continue;
+                        field.setAccessible(true);
+                        if (field.getType().isEnum()) {
+                            field.set(entity, field.getType().getEnumConstants()[(Integer) map.get(field.getName())]);
+                        } else {
+                            field.set(entity, map.get(field.getName()));
+                        }
+                    }
+                    getIdField(classz).set(entity, hit.getId());
+                    set.add(entity);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-            set.add(entity);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
         return set;
     }
