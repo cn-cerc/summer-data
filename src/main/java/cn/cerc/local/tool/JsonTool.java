@@ -85,7 +85,7 @@ public class JsonTool {
             try {
                 value = mapper.readValue(json, clazz);
             } catch (JsonProcessingException e) {
-                e.printStackTrace();
+                log.warn("json数据转实体失败 class {} json {}", clazz.getName(), json, e);
             }
         }
         return value;
@@ -95,13 +95,13 @@ public class JsonTool {
      * json 数据转泛型
      */
     public static <T> T fromJson(String json, JavaType valueType) {
-        if (json == null || json.length() == 0 || valueType == null) {
+        if (Utils.isEmpty(json) || valueType == null) {
             return null;
         }
         try {
             return mapper.readValue(json, valueType);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            log.warn("json数据转实体失败 JavaType {} json {}", valueType, json, e);
             return null;
         }
     }
