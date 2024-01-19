@@ -58,7 +58,7 @@ public class QueueGroup implements AutoCloseable {
 
     @Override
     public void close() {
-        if (this.firstTotal > 0 && this.total > 1) {
+        if (this.firstTotal > 0 && this.total > 0) {
             SqlmqGroup.updateGroupCode(this.code, this.total);
             // 查询并设置序列一的队列开始执行
             MysqlQuery query = new MysqlQuery(SqlmqServer.get());
