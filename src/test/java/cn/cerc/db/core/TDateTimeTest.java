@@ -5,16 +5,174 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cn.cerc.db.core.Datetime.DateType;
+import cn.cerc.db.mysql.BuildStatement;
+import cn.cerc.db.mysql.MysqlConfig;
 
 @SuppressWarnings("deprecation")
 public class TDateTimeTest {
+    private static final Logger log = LoggerFactory.getLogger(TDateTimeTest.class);
+
     private TDateTime obj;
+
+    public static void main(String[] args) {
+        Datetime datetime = new Datetime("");
+        long timestamp = datetime.timestamp;
+        System.out.println(datetime);
+        System.out.println(datetime.asBaseDate());
+
+        System.out.println(new Date(timestamp));
+        System.out.println(new Datetime(new Date(timestamp)));
+
+        Connection connection = MysqlConfig.getMaster().createConnection();
+        DataRow dataRow = new DataRow();
+        dataRow.setValue("practical_time_", datetime);
+        System.out.println(dataRow.getValue("practical_time_"));
+        try (BuildStatement bs = new BuildStatement(connection)) {
+            bs.append("update ").append("issue").append(" set status_=3");
+            bs.append(",").append("practical_time_");
+            bs.append("=?", dataRow.getValue("practical_time_"));
+            PreparedStatement ps = bs.build();
+            String lastCommand = ps.toString();
+            System.out.println(lastCommand);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        // 转换为 Instant
+        Instant instant = Instant.ofEpochMilli(timestamp);
+        // 转换为 LocalDateTime
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault());
+        LocalDateTime localDateTime = zonedDateTime.toLocalDateTime();
+
+        System.out.println("Timestamp: " + timestamp);
+        System.out.println("LocalDateTime: " + localDateTime);
+
+        Date date = Date.from(instant);
+
+        System.out.println(date);
+        System.out.println(new Datetime(date));
+    }
+
+    @Test
+    public void main1() {
+        long timestamp = -62135453486000L;
+        Datetime datetime = new Datetime(timestamp);
+        System.out.println(datetime);
+        System.out.println(datetime.asBaseDate());
+
+        System.out.println(new Date(timestamp));
+        System.out.println(new Datetime(new Date(timestamp)));
+
+        // 时间戳（以毫秒为单位）
+
+        // 转换为 Instant
+        Instant instant = Instant.ofEpochMilli(timestamp);
+        // 转换为 LocalDateTime
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault());
+        LocalDateTime localDateTime = zonedDateTime.toLocalDateTime();
+
+        System.out.println("Timestamp: " + timestamp);
+        System.out.println("LocalDateTime: " + localDateTime);
+
+        // 定义时间格式
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedDateTime = localDateTime.format(formatter);
+        System.out.println(formattedDateTime);
+
+        Date date = Date.from(instant);
+
+        System.out.println(date);
+        System.out.println(new Datetime(date));
+    }
+
+    @Test
+    public void test_date() {
+        Datetime datetime = new Datetime("");
+        long timestamp = datetime.timestamp;
+        log.info("\"\" 对应的时间戳 {}", timestamp);
+        log.info("框架时间组件时间 {}", datetime);
+
+        // 转换成标准日期
+        Date date = datetime.asBaseDate();
+        log.info(" {} 得到标准时间 {}", timestamp, date);
+        log.info("{} 标准时间转时间戳 {}", date, date.getTime());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String result = sdf.format(date);
+        log.info("{} 标准时间格式化得到 {}", date, result);
+
+        log.info("{} 转为框架组件的标准时间 {}", date, new Datetime(result).asBaseDate());
+        log.info("{} 转为框架组件的时间戳 {}", date, new Datetime(result).timestamp);
+        log.info("{} 转为框架组件的日期格式 {}", date, new Datetime(result).getFull());
+
+//        System.out.println("==============2===============");
+//        // 定义时间格式
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//        // 将字符串转换为 LocalDateTime
+//        LocalDateTime localDateTime = LocalDateTime.parse(result, formatter);
+//        System.out.println(localDateTime);
+//
+//        System.out.println(new Datetime(localDateTime).asBaseDate());
+//        System.out.println(new Datetime(localDateTime).timestamp);
+//
+//        String format = localDateTime.format(formatter);
+//        System.out.println(format);
+//        System.out.println(new Datetime(format).asBaseDate());
+//        System.out.println(new Datetime(format).timestamp);
+    }
+
+    @Test
+    public void test_date2() {
+        Datetime datetime = Datetime.zero();
+        long timestamp = datetime.timestamp;
+        System.out.println(datetime.getFull());
+        System.out.println(datetime.getDate());
+        log.info("zero 对应的时间戳 {}", timestamp);
+        log.info("框架时间组件时间 {}", datetime);
+
+        // 转换成标准日期
+        Date date = datetime.asBaseDate();
+        log.info(" {} 得到标准时间 {}", timestamp, date);
+        log.info("{} 标准时间转时间戳 {}", date, date.getTime());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String result = sdf.format(date);
+        log.info("{} 标准时间格式化得到 {}", date, result);
+
+        log.info("{} 转为框架组件的标准时间 {}", date, new Datetime(result).asBaseDate());
+        log.info("{} 转为框架组件的时间戳 {}", date, new Datetime(result).timestamp);
+        log.info("{} 转为框架组件的日期格式 {}", date, new Datetime(result).getFull());
+
+//        System.out.println("==============2===============");
+//        // 定义时间格式
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//        // 将字符串转换为 LocalDateTime
+//        LocalDateTime localDateTime = LocalDateTime.parse(result, formatter);
+//        System.out.println(localDateTime);
+//
+//        System.out.println(new Datetime(localDateTime).asBaseDate());
+//        System.out.println(new Datetime(localDateTime).timestamp);
+//
+//        String format = localDateTime.format(formatter);
+//        System.out.println(format);
+//        System.out.println(new Datetime(format).asBaseDate());
+//        System.out.println(new Datetime(format).timestamp);
+    }
 
     @Test
     public void test_getYearMonth() throws ParseException {

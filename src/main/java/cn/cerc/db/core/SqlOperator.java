@@ -154,6 +154,8 @@ public class SqlOperator implements IHandle {
                     for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
                         String fn = rs.getMetaData().getColumnLabel(i);
                         row.setValue(fn, rs.getObject(fn));
+                        log.info("object {} -> {}", fn, rs.getObject(fn));
+                        log.info("string {} -> {}", fn, rs.getString(fn));
                     }
                     row.setState(DataRowState.None);
                 }

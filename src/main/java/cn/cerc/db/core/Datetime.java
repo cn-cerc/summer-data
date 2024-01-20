@@ -123,7 +123,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
         if (isEmpty() && !displayEmpty)
             return "";
 
-        String fmt = null;
+        String fmt;
         if (isOptions(yyyyMMdd_HHmmss))
             fmt = String.format("yyyy%sMM%sdd HH:mm:ss", dateSeparator, dateSeparator);
         else if (isOptions(yyyyMMdd_HHmm))

@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -121,6 +122,8 @@ public class DataRow implements Serializable, IRecord {
             newValue = item.asBaseDate();
         else if (value instanceof LocalDateTime item) // 将 LocalDateTime 转化为 Date 存储
             newValue = new Datetime(item).asBaseDate();
+        else if (value instanceof Timestamp item)
+            newValue = item.getDate();
         else if (value instanceof LocalDate item) // 将 LocalDate 转化为 Date 存储
             newValue = new Datetime(item).asBaseDate();
         else if (value instanceof Optional<?> item)

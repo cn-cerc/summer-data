@@ -3,7 +3,8 @@ package cn.cerc.db.mysql;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -21,7 +22,6 @@ public class BuildStatement implements AutoCloseable {
     private StringBuilder build = new StringBuilder();
     private PreparedStatement ps = null;
     private List<Object> items = new ArrayList<>();
-    private SimpleDateFormat sdf;
 
     public BuildStatement(Connection connection) {
         this.connection = connection;
@@ -39,14 +39,14 @@ public class BuildStatement implements AutoCloseable {
         // 转换
         if (data instanceof Datetime) {
             result = data.toString();
+        } else if (data instanceof LocalDateTime localDateTime) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            result = localDateTime.format(formatter);
         } else if (data instanceof Double) {
             result = Utils.roundTo((Double) data, -8);
         } else {
             if (data instanceof Date) {
-                if (sdf == null) {
-                    sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                }
-                result = sdf.format(data);
+                result = Datetime.zero().getDate();
             }
         }
         items.add(result);
