@@ -65,9 +65,9 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
         this.setTimestamp(current);
     }
 
-    public Datetime(long date) {
+    public Datetime(long timestamp) {
         super();
-        this.setTimestamp(date);
+        this.setTimestamp(timestamp);
     }
 
     public Datetime(Date date) {
@@ -268,7 +268,8 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
     }
 
     public final Date asBaseDate() {
-        return new Date(this.timestamp);
+        Instant instant = Instant.ofEpochMilli(this.timestamp);
+        return Date.from(instant);
     }
 
     public final LocalDateTime asLocalDateTime() {

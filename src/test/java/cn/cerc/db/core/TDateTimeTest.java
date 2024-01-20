@@ -16,6 +16,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -115,11 +116,21 @@ public class TDateTimeTest {
         log.info("{} 标准时间转时间戳 {}", date, date.getTime());
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String result = sdf.format(date);
-        log.info("{} 标准时间格式化得到 {}", date, result);
+        log.info("{} 标准时间 format 格式化得到 {}", date, result);
 
         log.info("{} 转为框架组件的标准时间 {}", date, new Datetime(result).asBaseDate());
         log.info("{} 转为框架组件的时间戳 {}", date, new Datetime(result).timestamp);
+        log.info("{} 转为框架组件的日期格式 {}", date, new Datetime(result));
         log.info("{} 转为框架组件的日期格式 {}", date, new Datetime(result).getFull());
+
+        System.out.println("======222222========");
+
+        long stdTimestamp = date.getTime();
+        System.out.println(timestamp == stdTimestamp);
+        log.info("{} 转为框架组件的标准时间 {}", date, new Datetime(stdTimestamp).asBaseDate());
+        log.info("{} 转为框架组件的时间戳 {}", date, new Datetime(stdTimestamp).timestamp);
+        log.info("{} 转为框架组件的日期格式 {}", date, new Datetime(stdTimestamp));
+        log.info("{} 转为框架组件的日期格式 {}", date, new Datetime(stdTimestamp).getFull());
 
 //        System.out.println("==============2===============");
 //        // 定义时间格式
@@ -135,6 +146,73 @@ public class TDateTimeTest {
 //        System.out.println(format);
 //        System.out.println(new Datetime(format).asBaseDate());
 //        System.out.println(new Datetime(format).timestamp);
+    }
+
+    @Test
+    public void test_date_local() {
+        Datetime datetime = new Datetime("");
+        long timestamp = datetime.timestamp;
+        log.info("\"\" 对应的时间戳 {}", timestamp);
+        log.info("框架时间组件时间 {}", datetime);
+
+        // 转换成标准日期
+        Date date = datetime.asBaseDate();
+        log.info(" {} 得到标准时间 {}", timestamp, date);
+        log.info("{} 标准时间转时间戳 {}", date, date.getTime());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String result = sdf.format(date);
+        log.info("{} 标准时间 format 格式化得到 {}", date, result);
+
+        log.info("{} 转为框架组件的标准时间 {}", date, new Datetime(date).asBaseDate());
+        log.info("{} 转为框架组件的时间戳 {}", date, new Datetime(result).timestamp);
+        log.info("{} 转为框架组件的日期格式 {}", date, new Datetime(result));
+        log.info("{} 转为框架组件的日期格式 {}", date, new Datetime(result).getFull());
+
+        System.out.println("======222222========");
+        System.out.println(TimeZone.getDefault().getDisplayName());
+        System.out.println(TimeZone.getDefault().getID());
+        long stdTimestamp = date.getTime();
+        System.out.println(timestamp == stdTimestamp);
+        log.info("{} 转为框架组件的标准时间 {}", date, new Datetime(stdTimestamp).asBaseDate());
+        log.info("{} 转为框架组件的时间戳 {}", date, new Datetime(stdTimestamp).timestamp);
+        log.info("{} 转为框架组件的日期格式 {}", date, new Datetime(stdTimestamp));
+        log.info("{} 转为框架组件的日期格式 {}", date, new Datetime(stdTimestamp).getFull());
+
+        System.out.println("============== date转成1 LocalDateTime ===============");
+        // 获取系统默认时区
+        ZoneId LocalZone = ZoneId.systemDefault();
+        // 将 Date 转换为 ZonedDateTime
+        Instant instant = Instant.ofEpochMilli(date.getTime());
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, LocalZone);
+        // 将 ZonedDateTime 转换为 LocalDateTime
+        System.out.println("Date: " + date);
+        System.out.println("Date: " + date.getTime());
+        System.out.println("Date: " + Date.from(instant));
+        System.out.println("LocalDateTime: " + localDateTime);
+        System.out.println("LocalDateTime: " + localDateTime.toLocalDate());
+        System.out.println("LocalDateTime: " + localDateTime.toLocalTime());
+        System.out.println("LocalDateTime: " + localDateTime.atZone(LocalZone).toInstant().toEpochMilli());
+
+        System.out.println("============== date转成2 LocalDateTime ===============");
+
+        // 定义时间格式
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        // 将字符串转换为 LocalDateTime
+        LocalDateTime localDateTime2 = LocalDateTime.parse(result, formatter);
+        System.out.println(localDateTime2);
+        System.out.println(localDateTime2.toLocalDate());
+        System.out.println(localDateTime2.toLocalTime());
+        long local_timestamp = localDateTime2.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        System.out.println(local_timestamp== timestamp);
+
+        System.out.println(ZoneId.systemDefault());
+        System.out.println(new Datetime(localDateTime2).asBaseDate());
+        System.out.println(new Datetime(localDateTime2).timestamp);
+
+        String format = localDateTime2.format(formatter);
+        System.out.println(format);
+        System.out.println(new Datetime(format).asBaseDate());
+        System.out.println(new Datetime(format).timestamp);
     }
 
     @Test
