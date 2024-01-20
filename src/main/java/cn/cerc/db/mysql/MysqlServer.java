@@ -67,7 +67,7 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
         this.tag = tag;
     }
 
-    protected static final Connection getPoolConnection(HikariDataSource dataSource) {
+    protected static Connection getPoolConnection(HikariDataSource dataSource) {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
@@ -94,7 +94,7 @@ public abstract class MysqlServer implements ISqlServer, AutoCloseable {
                 connection.close();
                 connection = null;
             } catch (SQLException e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
             }
         }
     }

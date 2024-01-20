@@ -150,7 +150,7 @@ public class MysqlSession implements ISession {
         this.response = response;
     }
 
-    public class MysqlServerCustom extends MysqlServer {
+    public static class MysqlServerCustom extends MysqlServer {
         private MysqlConfigImpl mysqlConfig;
 
         public MysqlServerCustom(MysqlConfigImpl config) {

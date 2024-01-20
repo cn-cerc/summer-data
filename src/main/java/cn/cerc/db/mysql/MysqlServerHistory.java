@@ -28,17 +28,14 @@ public class MysqlServerHistory extends MysqlServer {
     public Connection createConnection() {
         // 不使用线程池直接创建
         try {
-            var config = MysqlConfig.getMaster();
+            MysqlConfig config = MysqlConfig.getMaster();
             if (getConnection() == null) {
                 Class.forName(MysqlConfig.JdbcDriver);
                 setConnection(
                         DriverManager.getConnection(config.getConnectUrl(), config.username(), config.password()));
             }
             return getConnection();
-        } catch (ClassNotFoundException e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        } catch (SQLException e) {
+        } catch (ClassNotFoundException | SQLException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }

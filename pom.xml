@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns="http://maven.apache.org/POM/4.0.0"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -74,8 +74,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -170,15 +170,12 @@
             <artifactId>amqp-client</artifactId>
         </dependency>
         <dependency>
-           <groupId>org.elasticsearch.client</groupId>
-           <artifactId>elasticsearch-rest-high-level-client</artifactId>
-           <version>7.12.1</version>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-high-level-client</artifactId>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305 -->
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
-            <version>3.0.2</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

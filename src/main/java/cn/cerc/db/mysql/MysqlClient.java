@@ -3,9 +3,14 @@ package cn.cerc.db.mysql;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cn.cerc.db.core.ServerClient;
 
 public class MysqlClient implements ServerClient {
+    private static final Logger log = LoggerFactory.getLogger(MysqlClient.class);
+
     private int count = 0;
     private final MysqlServer mysql;
     private Connection connection;
@@ -34,7 +39,7 @@ public class MysqlClient implements ServerClient {
                         connection = null;
                     }
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    log.error(e.getMessage(), e);
                 }
             }
 //            System.out.println("referenced count(close) = " + count);

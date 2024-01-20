@@ -6,6 +6,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -115,10 +117,14 @@ public class DataRow implements Serializable, IRecord {
             search = this.dataSet.search();
 
         Object newValue = value;
-        if (value instanceof Datetime) // 将Datetime转化为Date存储
-            newValue = ((Datetime) value).asBaseDate();
-        else if (value instanceof Optional<?>)
-            newValue = ((Optional<?>) value).orElse(null);
+        if (value instanceof Datetime item) // 将 Datetime 转化为 Date 存储
+            newValue = item.asBaseDate();
+        else if (value instanceof LocalDateTime item) // 将 LocalDateTime 转化为 Date 存储
+            newValue = new Datetime(item).asBaseDate();
+        else if (value instanceof LocalDate item) // 将 LocalDate 转化为 Date 存储
+            newValue = new Datetime(item).asBaseDate();
+        else if (value instanceof Optional<?> item)
+            newValue = item.orElse(null);
         else if (value != null && value.getClass().isEnum())
             newValue = ((Enum<?>) value).ordinal();
 
@@ -182,7 +188,7 @@ public class DataRow implements Serializable, IRecord {
 
     @Override
     public Object getValue(String field) {
-        if (field == null || "".equals(field))
+        if (field == null || field.isEmpty())
             throw new RuntimeException("field is null!");
         return this.items.get(field);
     }
@@ -275,7 +281,7 @@ public class DataRow implements Serializable, IRecord {
 
     @Override
     public String toString() {
-        return json();
+        return this.json();
     }
 
     public String json() {
@@ -515,7 +521,7 @@ public class DataRow implements Serializable, IRecord {
                     else
                         variant.setValue(value).writeToEntity(entity, field);
                 } catch (IllegalArgumentException | IllegalAccessException e) {
-                    throw new RuntimeException(String.format("field %s error: %s as %s", field.getName(),
+                    throw new RuntimeException(String.format("field %s type error: %s -> %s", field.getName(),
                             value.getClass().getName(), field.getType().getName()));
                 }
             } else if (helper.strict())

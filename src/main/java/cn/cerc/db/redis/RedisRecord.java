@@ -6,16 +6,18 @@ import org.slf4j.LoggerFactory;
 import cn.cerc.db.core.DataRow;
 import cn.cerc.db.core.IRecord;
 
+import java.util.concurrent.TimeUnit;
+
 public class RedisRecord implements IRecord {
     private static final Logger log = LoggerFactory.getLogger(RedisRecord.class);
 
-    public static final int TIMEOUT = 3600;
+    public static final long TIMEOUT = TimeUnit.HOURS.toSeconds(1);
 
     private String key;
     private boolean existsData = false;
-    private int expires = RedisRecord.TIMEOUT; // 单位：秒
+    private long expires = RedisRecord.TIMEOUT; // 单位：秒
 
-    private DataRow record = new DataRow();
+    private final DataRow record = new DataRow();
     private boolean modified = false;
 
     // 缓存对象
@@ -32,21 +34,21 @@ public class RedisRecord implements IRecord {
 
     public RedisRecord(Object... keys) {
         super();
-        StringBuffer str = new StringBuffer();
+        StringBuilder builder = new StringBuilder();
         for (int i = 0; i < keys.length; i++) {
             if (i > 0) {
-                str.append(".");
+                builder.append(".");
             }
-            str.append(keys[i]);
+            builder.append(keys[i]);
         }
-        setKey(str.toString());
+        setKey(builder.toString());
     }
 
     public final void post() {
         if (this.modified) {
             try {
                 Redis.setValue(key, record.toString(), this.expires);
-                log.debug("cache set:" + key + ":" + record.toString());
+                log.debug("cache set:" + key + ":" + record.json());
                 this.modified = false;
             } catch (Exception e) {
                 log.error(e.getMessage());
@@ -80,13 +82,12 @@ public class RedisRecord implements IRecord {
         existsData = false;
         String recordStr = Redis.getValue(key);
         log.debug("cache get: {} - {}", key, recordStr);
-        if (recordStr != null && !"".equals(recordStr)) {
+        if (recordStr != null && !recordStr.isEmpty()) {
             try {
                 record.setJson(recordStr);
                 existsData = true;
             } catch (Exception e) {
-                log.error("cache data error：" + recordStr, e);
-                e.printStackTrace();
+                log.error("cache data error {}, error {}", recordStr, e.getMessage(), e);
             }
         }
         return this;
@@ -107,11 +108,11 @@ public class RedisRecord implements IRecord {
         return !isNull() && getString(field) != null && !"".equals(getString(field)) && !"{}".equals(getString(field));
     }
 
-    public int getExpires() {
+    public long getExpires() {
         return expires;
     }
 
-    public void setExpires(int expires) {
+    public void setExpires(long expires) {
         this.expires = expires;
     }
 
@@ -138,11 +139,7 @@ public class RedisRecord implements IRecord {
 
     @Override
     public String toString() {
-        if (record != null) {
-            return record.toString();
-        } else {
-            return null;
-        }
+        return record.toString();
     }
 
     public DataRow getRecord() {

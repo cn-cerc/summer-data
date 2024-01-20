@@ -179,8 +179,7 @@ public class MysqlConfig {
 //        config.addDataSourceProperty("cachePrepStmts", "true");// 启用缓存PreparedStatement对象
 //        config.addDataSourceProperty("prepStmtCacheSize", "250"); // 连接池中可以缓存的PreparedStatement对象的最大数量
 //        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048"); // 允许缓存的SQL语句的最大长度
-        HikariDataSource dataSource = new HikariDataSource(config);
-        return dataSource;
+        return new HikariDataSource(config);
     }
 
     /**
