@@ -7,9 +7,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -123,8 +123,11 @@ public class DataRow implements Serializable, IRecord {
             newValue = item.asBaseDate();
         else if (value instanceof LocalDateTime localDateTime) {
             // 将 LocalDateTime 转化为 Date 存储
-            Instant instant = localDateTime.atZone(Datetime.LocalZone).toInstant();
-            newValue = new Datetime(instant.toEpochMilli()).asBaseDate();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            if (Datetime.dateZero.equals(localDateTime.format(formatter)))
+                newValue = Datetime.zero().asBaseDate();
+            else
+                newValue = new Datetime(localDateTime).asBaseDate();
         } else if (value instanceof Timestamp item)
             newValue = new Datetime(item.getTime());
         else if (value instanceof LocalDate item) // 将 LocalDate 转化为 Date 存储
