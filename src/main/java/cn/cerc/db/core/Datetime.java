@@ -30,7 +30,15 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
     public static final EnumSet<DateType> HHmmss = EnumSet.of(DateType.Hour, DateType.Minute, DateType.Second);
     public static final EnumSet<DateType> HHmm = EnumSet.of(DateType.Hour, DateType.Minute);
 
-    public static final long StartPoint = -62135625943000l;
+    public static final long StartPoint = -62135625943000L;
+    /**
+     * Date 对象在 StartPoint 时间戳下UTC的日期时间
+     */
+    public static final String dateZero = "0001-01-02 23:54:17";
+    /**
+     * LocalDateTime 对象在时间戳下标准的显示日期时间
+     */
+    public static final String localZero = "0001-01-01 00:00:00";
     protected static final ZoneId LocalZone = ZoneId.systemDefault();
     private static final char[] DateCharList = new char[] { ' ', 'T', ':', '/', '-', '0', '1', '2', '3', '4', '5', '6',
             '7', '8', '9' };
@@ -300,22 +308,15 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
 
     public final int get(DateType dateType) {
         LocalDateTime ldt = this.asLocalDateTime();
-        switch (dateType) {
-        case Year:
-            return ldt.getYear();
-        case Month:
-            return ldt.getMonthValue();
-        case Day:
-            return ldt.getDayOfMonth();
-        case Hour:
-            return ldt.getHour();
-        case Minute:
-            return ldt.getMinute();
-        case Second:
-            return ldt.getSecond();
-        default:
-            return 0;
-        }
+        return switch (dateType) {
+        case Year -> ldt.getYear();
+        case Month -> ldt.getMonthValue();
+        case Day -> ldt.getDayOfMonth();
+        case Hour -> ldt.getHour();
+        case Minute -> ldt.getMinute();
+        case Second -> ldt.getSecond();
+        default -> 0;
+        };
     }
 
     // 返回农历日期
@@ -447,8 +448,8 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
             boolean found = false;
-            for (int j = 0; j < DateCharList.length; j++) {
-                if (ch == DateCharList[j]) {
+            for (char c : DateCharList) {
+                if (ch == c) {
                     found = true;
                     break;
                 }
@@ -459,7 +460,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
         switch (text.length()) {
         case 4: {
             this.setOptions(yyyyMMdd);
-            int year = Integer.valueOf(text);
+            int year = Integer.parseInt(text);
             return ldt.withYear(year == 0 ? 1 : year);
         }
         case 5: {
@@ -467,26 +468,26 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
             if (items.length != 2)
                 throw new DateFormatErrorException(text);
             this.setOptions(HHmmss);
-            return ldt.withHour(Integer.valueOf(items[0])).withMinute(Integer.valueOf(items[1]));
+            return ldt.withHour(Integer.parseInt(items[0])).withMinute(Integer.parseInt(items[1]));
         }
         case 6: {
             this.setOptions(yyyyMMdd);
-            int year = Integer.valueOf(text.substring(0, 4));
-            int month = Integer.valueOf(text.substring(4, 6));
+            int year = Integer.parseInt(text.substring(0, 4));
+            int month = Integer.parseInt(text.substring(4, 6));
             return ldt.withYear(year == 0 ? 1 : year).withMonth(month == 0 ? 1 : month);
         }
         case 8: {
             String[] items = text.split(":");
             if (items.length == 3) {
                 this.setOptions(HHmmss);
-                return ldt.withHour(Integer.valueOf(text.substring(0, 2)))
-                        .withMinute(Integer.valueOf(text.substring(3, 5)))
-                        .withSecond(Integer.valueOf(text.substring(6, 8)));
+                return ldt.withHour(Integer.parseInt(text.substring(0, 2)))
+                        .withMinute(Integer.parseInt(text.substring(3, 5)))
+                        .withSecond(Integer.parseInt(text.substring(6, 8)));
             } else {
                 this.setOptions(yyyyMMdd);
-                return ldt.withYear(Integer.valueOf(text.substring(0, 4)))
-                        .withMonth(Integer.valueOf(text.substring(4, 6)))
-                        .withDayOfMonth(Integer.valueOf(text.substring(6, 8)));
+                return ldt.withYear(Integer.parseInt(text.substring(0, 4)))
+                        .withMonth(Integer.parseInt(text.substring(4, 6)))
+                        .withDayOfMonth(Integer.parseInt(text.substring(6, 8)));
             }
         }
         case 10: {
@@ -497,9 +498,9 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
             else
                 throw new DateFormatErrorException(text);
             this.setOptions(yyyyMMdd);
-            int year = Integer.valueOf(text.substring(0, 4));
-            int month = Integer.valueOf(text.substring(5, 7));
-            int day = Integer.valueOf(text.substring(8, 10));
+            int year = Integer.parseInt(text.substring(0, 4));
+            int month = Integer.parseInt(text.substring(5, 7));
+            int day = Integer.parseInt(text.substring(8, 10));
             return ldt.withYear(year == 0 ? 1 : year)
                     .withMonth(month == 0 ? 1 : month)
                     .withDayOfMonth(day == 0 ? 1 : day);
@@ -507,7 +508,7 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
         case 16:
         case 19: {
             String date = text.substring(0, 10);
-            String time = text.substring(11, text.length());
+            String time = text.substring(11);
             String date_fmt = null;
             if (date.contains("-")) {
                 date_fmt = "yyyy-MM-dd";
@@ -537,9 +538,9 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
             String value = text.replace("T", " ");
             // 防止年月日均为0
             if ("0000-00-00".equals(text.substring(0, 10)))
-                value = "0001-01-01" + text.substring(10, text.length());
+                value = "0001-01-01" + text.substring(10);
             else if ("0000/00/00".equals(text.substring(0, 10)))
-                value = "0001/01/01" + text.substring(10, text.length());
+                value = "0001/01/01" + text.substring(10);
             DateTimeFormatter df = DateTimeFormatter.ofPattern(date_fmt + ' ' + time_fmt);
             return LocalDateTime.parse(value, df);
         }
@@ -609,18 +610,17 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
         if (this.dateKind == dateKind)
             return this;
         this.dateKind = dateKind;
-        switch (dateKind) {
-        case OnlyDate: {
+        return switch (dateKind) {
+        case OnlyDate -> {
             setOptions(yyyyMMdd);
-            return this;
+            yield this;
         }
-        case OnlyTime: {
+        case OnlyTime -> {
             setOptions(HHmmss);
-            return this;
+            yield this;
         }
-        default:
-            return this;
-        }
+        default -> this;
+        };
     }
 
     public final boolean isDateTime() {
