@@ -10,8 +10,8 @@ import java.util.Date;
 public class Main {
     public static void main(String[] args) {
         // 时间字符串--数据库存储的日期读取时用 LocalDateTime 存值，最终也要转换为 Date 的 Sun Jan 02 23:54:17 CST 1
-//        String dateTimeString = "0001-01-02 23:54:17";
-        String dateTimeString = new Datetime().toString();
+        String dateTimeString = "0001-01-02 23:54:17";// 当前 Date 对应 LocalDateTime 是 0001-01-01 00:00:00
+//        String dateTimeString = new Datetime().toString();
 
         // 定义时间格式
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
