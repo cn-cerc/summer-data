@@ -29,5 +29,14 @@ public class Main {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String result = sdf.format(date);
         System.out.println(result);
+
+        System.out.println(Datetime.zero().asBaseDate());
+        System.out.println(new Datetime("").asBaseDate());
+        System.out.println(new Datetime().asBaseDate());
+
+        System.out.println(Datetime.zero().getDateTime());
+        System.out.println(new Datetime("").getDateTime());
+        System.out.println(new Datetime().getDateTime());
+
     }
 }

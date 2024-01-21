@@ -159,6 +159,10 @@ public class Datetime implements Serializable, Comparable<Datetime>, Cloneable {
         return format("HH:mm:ss");
     }
 
+    public final String getDateTime() {
+        return format(String.format("yyyy%sMM%sdd HH:mm:ss", dateSeparator, dateSeparator));
+    }
+
     /**
      * @return 获取Java时间戳，一共13位，毫秒级
      */
