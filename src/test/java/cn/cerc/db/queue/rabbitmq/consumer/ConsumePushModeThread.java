@@ -53,10 +53,10 @@ public class ConsumePushModeThread implements Runnable {
                     String message = new String(body);
                     log.info("{} 接收到的消息 {}", Thread.currentThread().getName(), message);
                     // 手动返回一个回执确认
-                    /**
-                     * 1.要回执确认的消息的编号
-                     * 
-                     * 2.是否批量确认 true:批量确认 false:只确认当前消息
+                    /*
+                      1.要回执确认的消息的编号
+
+                      2.是否批量确认 true:批量确认 false:只确认当前消息
                      */
                     channel.basicAck(envelope.getDeliveryTag(), false);// 成功确认
                 }

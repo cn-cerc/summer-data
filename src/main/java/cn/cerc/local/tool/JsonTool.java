@@ -55,10 +55,6 @@ public class JsonTool {
 
     /**
      * 数据实体对象转MongoDB文档
-     * 
-     * @param <T>
-     * @param entity
-     * @return
      */
     public static <T extends EntityImpl> Document toDocument(T entity) {
         var doc = new Document();

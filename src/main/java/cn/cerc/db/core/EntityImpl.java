@@ -37,8 +37,6 @@ public interface EntityImpl {
 
     /**
      * 更新记录时自动更新时间戳
-     * 
-     * @param handle IHandle
      */
     default HistoryLoggerImpl getHistoryLogger() {
         return null;
@@ -46,9 +44,6 @@ public interface EntityImpl {
 
     /**
      * 输出时自动带出计算字段
-     * 
-     * @param DataRow    关连的数据源
-     * @param manyEntity 关连的对象
      */
     default void onJoinName(DataRow sender, Class<? extends EntityImpl> clazz, Map<String, String> items) {
 
@@ -56,9 +51,9 @@ public interface EntityImpl {
 
     /**
      * 用途：若post前，不能确认entity在query中的位置，可以先使用此功能进行确认及定位，然后再执行post
-     * 
+     * <p>
      * 此函数在执行时，会变更EntityQuery中的recNo值，确保post能够成功
-     * 
+     * <p>
      * 注意：如果EntityQuery不存在，则返回-1
      * 
      * @return 返回自身在 EntityQuery 中的序号，从1开始，若没有找到，则返回0
@@ -91,8 +86,6 @@ public interface EntityImpl {
 
     /**
      * 指定锁的状态是解锁还是锁定
-     * 
-     * @param flag
      */
     default void setLocked(boolean flag) {
 

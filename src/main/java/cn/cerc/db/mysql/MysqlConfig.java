@@ -118,7 +118,7 @@ public class MysqlConfig {
     /**
      * 检查连接池中所有连接的空闲，单位为秒。注意MySQL空闲超过8小时连接自动关闭） 默认为空闲2小时即自动断开，建议其值为
      * tomcat.session的生存时长(一般设置为120分钟) 加10分钟，即120 * 60 = 7200
-     *
+     * <p>
      * 单位毫秒， HikariCP 默认是 600000ms
      *
      * @return maxIdleTime

@@ -114,8 +114,8 @@ public class Utils {
     /**
      * 按照指定的编码格式进行url解码
      *
-     * @param value 原始字符串
-     * @param enc   编码格式 StandardCharsets.UTF_8
+     * @param value   原始字符串
+     * @param charset 编码格式 StandardCharsets.UTF_8
      * @return 解码后的字符串
      */
     public static String decode(String value, Charset charset) {

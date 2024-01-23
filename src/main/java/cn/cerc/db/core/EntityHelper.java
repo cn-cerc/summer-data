@@ -142,10 +142,6 @@ public class EntityHelper<T> {
 
     /**
      * 返回类的层级，从最上层类到当前类
-     * 
-     * @param clazz
-     * @param list
-     * @return
      */
     private List<Class<?>> getAncestors() {
         List<Class<?>> list = new ArrayList<>();
@@ -287,8 +283,6 @@ public class EntityHelper<T> {
 
     /**
      * 返回与之相关的全部类家族
-     * 
-     * @return
      */
     public <A extends Annotation> Set<Class<?>> getFamily(Class<A> annotationClass) {
         var result = new HashSet<Class<?>>();

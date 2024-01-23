@@ -101,7 +101,6 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
     /**
      * 在指定的位置插入记录，位置编号从0开始
      * 
-     * @param site
      * @return this
      */
     public final DataSet insert(int site) {
@@ -122,7 +121,6 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
     /**
      * 增加到指定的位置，请改使用insert
      * 
-     * @param site
      * @return this
      */
     @Deprecated
@@ -225,7 +223,7 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
 
     /**
      * 
-     * @param <T>
+     * @param <T>   实体类
      * @param clazz 数据实体类
      * @return 返回当前数据集的一条记录，并转化为指定的数据实体
      */
@@ -236,9 +234,6 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
 
     /**
      * 将Entity的值插入到当前数据集并立即执行保存post函数
-     * 
-     * @param <T>
-     * @param item
      */
     public <T extends EntityImpl> void insert(T item) {
         if (item instanceof EntityEvent entity) {
@@ -256,9 +251,6 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
 
     /**
      * 以Entity的值替换当前记录的值并立即执行保存post函数
-     * 
-     * @param <T>
-     * @param item
      */
     public <T extends EntityImpl> void update(T item) {
         if (item instanceof EntityEvent entity) {
