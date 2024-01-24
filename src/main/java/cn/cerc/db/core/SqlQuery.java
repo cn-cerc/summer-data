@@ -158,7 +158,7 @@ public class SqlQuery extends DataSet implements IHandle {
                 try {
                     client.close();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.error(e.getMessage(), e);
                 }
                 client = null;
             }

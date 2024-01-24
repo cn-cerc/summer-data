@@ -519,7 +519,7 @@ public class Utils {
                 record.setValue(dbField, value);
             } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException e) {
-                // e.printStackTrace();
+                // log.error(e.getMessage(), e);
             }
         }
     }

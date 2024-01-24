@@ -45,7 +45,7 @@ public class Lunar {
         try {
             baseDate = chineseDateFormat.parse("1900-01-31");
         } catch (ParseException e) {
-            e.printStackTrace(); // To change body of catch statement use
+            log.error(e.getMessage(), e); // To change body of catch statement use
             // Options | File Templates.
         }
 

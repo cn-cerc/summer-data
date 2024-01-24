@@ -124,7 +124,7 @@ public abstract class BigTable<T extends BigRecord> implements IHandle {
                         T value = (T) Utils.deserializeToObject(jedis.hget(this.getTableId(), key));
                         items.put(key, value);
                     } catch (ClassNotFoundException | IOException e) {
-                        e.printStackTrace();
+                        log.error(e.getMessage(), e);
                     }
                 }
             }
@@ -196,7 +196,7 @@ public abstract class BigTable<T extends BigRecord> implements IHandle {
                             BigOperator.copy(items, obj);
                             this.put(obj);
                         } catch (InstantiationException | IllegalAccessException e) {
-                            e.printStackTrace();
+                            log.error(e.getMessage(), e);
                         }
                     } while (rs.next());
                 }
@@ -213,7 +213,7 @@ public abstract class BigTable<T extends BigRecord> implements IHandle {
             try (MysqlClient client = this.getMysql().getClient()) {
                 BigInsertSql.exec(client.getConnection(), record, false);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
                 log.error(e.getMessage());
             }
         }
@@ -312,7 +312,7 @@ public abstract class BigTable<T extends BigRecord> implements IHandle {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
@@ -374,7 +374,7 @@ public abstract class BigTable<T extends BigRecord> implements IHandle {
             items.put(key, record);
             return (T) cloneObject(record);
         } catch (ClassNotFoundException | IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return null;
         }
     }
@@ -387,7 +387,7 @@ public abstract class BigTable<T extends BigRecord> implements IHandle {
                 String result = Utils.serializeToString(value);
                 jedis.hset(this.getTableId(), key, result);
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
             }
         }
     }
@@ -478,9 +478,9 @@ public abstract class BigTable<T extends BigRecord> implements IHandle {
                 }
             }
         } catch (IllegalArgumentException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
         return sb.toString();
     }
@@ -530,7 +530,7 @@ public abstract class BigTable<T extends BigRecord> implements IHandle {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
             }
         }
         storageThread = null;

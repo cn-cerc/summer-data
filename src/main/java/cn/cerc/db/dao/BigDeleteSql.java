@@ -47,7 +47,7 @@ public class BigDeleteSql {
             return ps.execute();
         } catch (SQLException e) {
             log.error(lastCommand);
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e.getMessage());
         }
     }

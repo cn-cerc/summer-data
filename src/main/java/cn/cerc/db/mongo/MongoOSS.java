@@ -61,7 +61,7 @@ public class MongoOSS {
         try (InputStream streamToUploadFrom = new FileInputStream(filename)) {
             upload(filename, streamToUploadFrom, null);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -146,7 +146,7 @@ public class MongoOSS {
                                     output.accept("file exists: " + filename);
                                 }
                             } catch (IOException e) {
-                                e.printStackTrace();
+                                log.error(e.getMessage(), e);
                             }
                         } else {
                             // 文件大小为0

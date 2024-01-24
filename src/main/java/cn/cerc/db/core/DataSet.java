@@ -924,7 +924,7 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
             try {
                 Thread.sleep(5);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
             }
             return item.setValue("amount", item.getValue("amount" + 1));
         }).allMatch(item -> true);

@@ -63,7 +63,7 @@ public class MssqlServer implements ISqlServer, AutoCloseable {
                 connection = null;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -82,7 +82,7 @@ public class MssqlServer implements ISqlServer, AutoCloseable {
             connection = DriverManager.getConnection(url, user, password);
             return connection;
         } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
 

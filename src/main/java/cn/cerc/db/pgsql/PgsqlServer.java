@@ -86,7 +86,7 @@ public class PgsqlServer implements ISqlServer, AutoCloseable {
                 connection = null;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 

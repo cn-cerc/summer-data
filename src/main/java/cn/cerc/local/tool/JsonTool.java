@@ -48,7 +48,7 @@ public class JsonTool {
         try {
             return mapper.writeValueAsString(clazz);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return null;
         }
     }
@@ -115,7 +115,7 @@ public class JsonTool {
         try {
             return mapper.readTree(json).get(fieldName);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return null;
         }
     }
@@ -133,7 +133,7 @@ public class JsonTool {
             JsonNode root = mapper.readTree(json);
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(root);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return null;
         }
     }

@@ -66,7 +66,7 @@ public class ProducerThread implements Runnable {
             connection.close();
             log.info("{} 线程发送完成，当前原子数值 {}", Thread.currentThread().getName(), atomic.get());
         } catch (IOException | TimeoutException | InterruptedException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 

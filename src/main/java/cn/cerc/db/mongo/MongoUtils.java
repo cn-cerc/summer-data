@@ -4,12 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
 public class MongoUtils {
+    private static final Logger log = LoggerFactory.getLogger(MongoUtils.class);
+
     private MongoDatabase database;
 
     public MongoUtils() {
@@ -59,7 +63,7 @@ public class MongoUtils {
                 list = coll.find(fileterBasiObject).projection(projection).sort(sort).into(new ArrayList<Document>());
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return list;
         }
         return list;
@@ -70,7 +74,7 @@ public class MongoUtils {
         try {
             coll.insertOne(doc);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -79,7 +83,7 @@ public class MongoUtils {
         try {
             coll.insertMany(listDoc);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -89,7 +93,7 @@ public class MongoUtils {
         try {
             coll.replaceOne(filterDoc, targetDoc);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -99,7 +103,7 @@ public class MongoUtils {
         try {
             coll.deleteOne(filterDoc);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 

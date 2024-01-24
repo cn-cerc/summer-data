@@ -115,7 +115,7 @@ public class BigUpdateSql {
             }
         } catch (Exception e) {
             log.error(lastCommand);
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             throw e;
         }
     }

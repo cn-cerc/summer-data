@@ -64,7 +64,7 @@ public class ConsumePushModeThread implements Runnable {
             // 监听队列，false表示手动返回完成状态，true表示自动
             channel.basicConsume(RabbitTestConfig.QUEUE_NAME, false, consumer);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 

@@ -683,7 +683,7 @@ public class DataRow implements Serializable, IRecord {
 //                return (T) constructor.newInstance(initArgs);
 //            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 //                    | InvocationTargetException e) {
-//                e.printStackTrace();
+//                log.error(e.getMessage(), e);
 //                throw new RuntimeException(e.getMessage());
 //            }
         } else

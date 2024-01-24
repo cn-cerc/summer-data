@@ -3,7 +3,11 @@ package cn.cerc.db.core;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class MD5 {
+    private static final Logger log = LoggerFactory.getLogger(MD5.class);
 
     public final static String get(String str) {
         MessageDigest md5;
@@ -21,7 +25,7 @@ public class MD5 {
             }
             return sb.toString();
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -42,7 +46,7 @@ public class MD5 {
             }
             return sb.toString();
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e.getMessage());
         }
     }

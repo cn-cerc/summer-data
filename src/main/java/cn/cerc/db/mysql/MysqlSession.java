@@ -7,6 +7,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -20,6 +22,8 @@ import cn.cerc.db.core.LanguageResource;
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MysqlSession implements ISession {
+    private static final Logger log = LoggerFactory.getLogger(MysqlSession.class);
+
     protected Map<String, Object> connections = new HashMap<>();
     private final Map<String, Object> params = new HashMap<>();
     protected String permissions = null;
@@ -94,7 +98,7 @@ public class MysqlSession implements ISession {
                     ((AutoCloseable) sess).close();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
             }
         }
         connections.clear();

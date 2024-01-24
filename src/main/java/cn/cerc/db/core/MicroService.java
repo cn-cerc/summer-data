@@ -2,10 +2,15 @@ package cn.cerc.db.core;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 public class MicroService extends Curl {
+    private static final Logger log = LoggerFactory.getLogger(MicroService.class);
+
     /**
      * 服务主机的地址
      */
@@ -70,7 +75,7 @@ public class MicroService extends Curl {
             }
             return this.result;
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("{} -> error {}", serviceCode, e.getMessage(), e);
             this.message = e.getMessage();
             return false;
         }

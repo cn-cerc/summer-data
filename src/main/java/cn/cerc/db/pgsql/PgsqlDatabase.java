@@ -16,6 +16,9 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cn.cerc.db.core.DataRow;
 import cn.cerc.db.core.DataSet;
 import cn.cerc.db.core.Datetime;
@@ -29,6 +32,8 @@ import cn.cerc.db.core.ISqlDatabase;
 import cn.cerc.db.core.Utils;
 
 public class PgsqlDatabase implements IHandle, ISqlDatabase {
+    private static final Logger log = LoggerFactory.getLogger(PgsqlDatabase.class);
+
     public static final String DefaultOID = "uid_";
     private Class<? extends EntityImpl> clazz;
     private EntityHelper<? extends EntityImpl> helper;
@@ -179,7 +184,7 @@ public class PgsqlDatabase implements IHandle, ISqlDatabase {
                 writer.write("}");
                 writer.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
             }
         }
         return true;

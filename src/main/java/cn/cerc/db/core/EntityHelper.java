@@ -221,7 +221,7 @@ public class EntityHelper<T> {
         try {
             return idField.get().get(entity);
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -245,7 +245,7 @@ public class EntityHelper<T> {
                     field.set(entity, 0);
             }
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
@@ -264,7 +264,7 @@ public class EntityHelper<T> {
                     field.set(entity, ((Integer) field.get(entity)) + 1);
             }
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }

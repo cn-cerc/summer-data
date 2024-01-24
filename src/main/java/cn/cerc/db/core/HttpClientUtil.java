@@ -37,7 +37,7 @@ public class HttpClientUtil {
             }
             return EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return null;
         }
     }

@@ -117,14 +117,14 @@ public class Curl {
                 result.append(line);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         } finally {
             try {
                 if (in != null) {
                     in.close();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
             }
         }
         return result.toString();
@@ -392,7 +392,7 @@ public class Curl {
                 sc.init(null, trustAllCerts, null);
                 HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
             } catch (NoSuchAlgorithmException | KeyManagementException e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
             }
         }
     }

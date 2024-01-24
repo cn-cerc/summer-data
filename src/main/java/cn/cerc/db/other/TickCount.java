@@ -19,7 +19,7 @@ public class TickCount {
                 Thread.sleep(100);
                 tick.print("test");
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
             }
         }
     }
