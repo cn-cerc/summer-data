@@ -91,7 +91,7 @@ public class SqlQuery extends DataSet implements IHandle {
             this.first();
         } catch (Exception e) {
             String message = String.format("%s -> message %s", sql, e.getMessage());
-            throw new RuntimeException(message);
+            throw new RuntimeException(message, e);
         }
     }
 
@@ -114,7 +114,8 @@ public class SqlQuery extends DataSet implements IHandle {
             this.doAfterOpen();
             return total;
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
+            String message = String.format("%s -> message %s", sqlText, e.getMessage());
+            throw new RuntimeException(message, e);
         }
     }
 
