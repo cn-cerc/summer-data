@@ -26,6 +26,19 @@ public class RabbitServer {
         return instance;
     }
 
+    /**
+     * RabbitServer初始化时存在一个已知bug
+     * <p>
+     * 当容器启动时
+     * <p>
+     * 线程一：触发 log.warn 或 log.error 进入 JayunLogAppender 方法， 线程一等待 RabbitServer
+     * 初始化，线程一进行阻塞
+     * <p>
+     * 主线程：对 RabbitServer 进行初始化执行到 log 输出时由于 org.apache.log4j.Category.callAppenders
+     * 方法存在同步代码块需要等待线程一的 JayunLogAppender 执行完成
+     * <p>
+     * 由此造成死锁，导致容器启动卡住
+     */
     private RabbitServer() {
         ConnectionFactory factory = RabbitFactory.getInstance().build();
         for (int i = 0; i < capacity; i++) {
@@ -36,12 +49,12 @@ public class RabbitServer {
                 connection.addShutdownListener(
                         cause -> log.info("{}:{} rabbitmq connection closed", factory.getHost(), factory.getPort()));
                 connections.add(connection);
-                log.debug("初始化连接 {}", i);
+//                log.debug("初始化连接 {}", i);
             } catch (IOException | TimeoutException e) {
                 throw new RuntimeException(e.getMessage());
             }
         }
-        log.info("初始化完成 {}", capacity);
+//        log.debug("初始化完成 {}", capacity);
     }
 
     /**
