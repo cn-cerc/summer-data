@@ -37,11 +37,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import cn.cerc.db.SummerDB;
-
 public class Utils {
     private static final Logger log = LoggerFactory.getLogger(Utils.class);
-    private static final ClassResource res = new ClassResource(Utils.class, SummerDB.ID);
 
     public static final String vbCrLf = "\r\n";
     public static final String separtor = System.lineSeparator();
@@ -553,19 +550,43 @@ public class Utils {
     /**
      * Utils.confused("13927470636", 2, 4) = 13*****0636
      *
-     * @param mobile     手机号码
+     * @param value      手机号码
      * @param fromLength 起始显示位数
      * @param endLength  倒数显示位数
      * @return 混淆字符串指定位置
      */
-    public static String confused(String mobile, int fromLength, int endLength) {
-        int length = mobile.length();
-        if (length < (fromLength + endLength)) {
-            throw new RuntimeException(res.getString(1, "字符串长度不符合要求"));
-        }
-        int len = mobile.length() - fromLength - endLength;
+    public static String confused(String value, int fromLength, int endLength) {
+        if (Utils.isEmpty(value))
+            return value;
+
+        if (Math.min(fromLength, endLength) < 0)
+            return confused(value);
+
+        int length = value.length();
+        if (length <= (fromLength + endLength))
+            return confused(value);
+
+        int len = length - fromLength - endLength;
         String star = "*".repeat(Math.max(0, len));// 需要复制的*个数
-        return mobile.substring(0, fromLength) + star + mobile.substring(mobile.length() - endLength);
+        return value.substring(0, fromLength) + star + value.substring(length - endLength);
+    }
+
+    /**
+     * 脱敏字符串只保留头尾
+     * Utils.confused("a") = "*"
+     * Utils.confused("ab") = "**"
+     * Utils.confused("abc") = "a*c"
+     * Utils.confused("abcd") = "a**d"
+     * 
+     * @param value 原始字符串
+     * @return 脱敏后字符串
+     */
+    public static String confused(String value) {
+        if (Utils.isEmpty(value))
+            return value;
+
+        int len = (value.length() - (value.length() / 2)) / 2;
+        return confused(value, len, len);
     }
 
     /**

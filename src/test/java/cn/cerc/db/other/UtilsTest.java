@@ -136,4 +136,22 @@ public class UtilsTest {
         assertEquals(3, groupList.size());
     }
 
+    @Test
+    public void test_confused() {
+        assertEquals("13*****0636", Utils.confused("13927470636", 2, 4));
+        assertEquals("***********", Utils.confused("13927470636", 0, 0));
+        assertEquals("139*****636", Utils.confused("13927470636", 1, -1));
+        assertEquals("139*****636", Utils.confused("13927470636", 0, 11));
+        assertEquals("139*****636", Utils.confused("13927470636", 11, 0));
+        assertEquals("139*****636", Utils.confused("13927470636", 6, 6));
+        assertEquals("139*****636", Utils.confused("13927470636", 9, 2));
+        assertEquals("139*****636", Utils.confused("13927470636", 2, 9));
+
+        assertEquals("*", Utils.confused("a"));
+        assertEquals("**", Utils.confused("ab"));
+        assertEquals("a*c", Utils.confused("abc"));
+        assertEquals("a**d", Utils.confused("abcd"));
+        assertEquals(" **** ", Utils.confused(" abcd "));
+    }
+
 }
