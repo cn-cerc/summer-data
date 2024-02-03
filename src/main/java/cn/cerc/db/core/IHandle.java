@@ -45,6 +45,7 @@ public interface IHandle {
     /**
      * 获取用户角色（包括用户自定义角色）
      */
+    @Deprecated
     default String getUserRole() {
         return getSession().getUserRole();
     }
