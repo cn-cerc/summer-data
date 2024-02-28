@@ -116,6 +116,7 @@ public class JayunLogParser {
             // 读取起源类修改人
             LastModified modified = clazz.getAnnotation(LastModified.class);
             if (modified != null) {
+                builder.mainName(modified.main());
                 builder.name(modified.name());
                 builder.date(modified.date());
             }
