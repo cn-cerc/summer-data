@@ -54,35 +54,33 @@ public interface IRecord {
         Object value = this.getValue(field);
         if (value == null) {
             return 0;
-        } else if ((value instanceof Boolean)) {
-            return (Boolean) value ? 1 : 0;
-        } else if ((value instanceof Short)) {
-            return ((Short) value).intValue();
-        } else if (value instanceof Integer) {
-            return (Integer) value;
-        } else if (value instanceof Long) {
-            Long tmp = (Long) value;
-            if (tmp < Integer.MIN_VALUE || tmp > Integer.MAX_VALUE)
+        } else if (value instanceof Boolean item) {
+            return item ? 1 : 0;
+        } else if (value instanceof Short item) {
+            return item.intValue();
+        } else if (value instanceof Integer item) {
+            return item;
+        } else if (value instanceof Long item) {
+            if (item < Integer.MIN_VALUE || item > Integer.MAX_VALUE)
                 throw new ClassCastException("Long to Integer is out of range");
-            return tmp.intValue();
-        } else if (value instanceof Float) {
-            Float tmp = (Float) value;
-            if (tmp < Integer.MIN_VALUE || tmp > Integer.MAX_VALUE)
+            return item.intValue();
+        } else if (value instanceof BigInteger item) {
+            return item.intValue();
+        } else if (value instanceof Float item) {
+            if (item < Integer.MIN_VALUE || item > Integer.MAX_VALUE)
                 throw new ClassCastException("Float to Integer is out of range");
-            if (tmp != tmp.intValue())
-                throw new ClassCastException("Float to Integer fail, value: " + tmp);
-            return tmp.intValue();
-        } else if (value instanceof Double) {
-            Double tmp = (Double) value;
-            if (tmp < Integer.MIN_VALUE || tmp > Integer.MAX_VALUE)
+            if (item != item.intValue())
+                throw new ClassCastException("Float to Integer fail, value: " + item);
+            return item.intValue();
+        } else if (value instanceof Double item) {
+            if (item < Integer.MIN_VALUE || item > Integer.MAX_VALUE)
                 throw new ClassCastException("Double to Integer is out of range");
-            if (tmp != tmp.intValue())
+            if (item != item.intValue())
                 throw new ClassCastException(
-                        String.format("Double to Integer fail, original %s -> %s ", tmp, tmp.intValue()));
-            return tmp.intValue();
-        } else if (value instanceof String) {
-            String str = (String) value;
-            if ("".equals(str))
+                        String.format("Double to Integer fail, original %s -> %s ", item, item.intValue()));
+            return item.intValue();
+        } else if (value instanceof String str) {
+            if (str.isEmpty())
                 return 0;
             return Double.valueOf(str).intValue();
         } else {
@@ -94,35 +92,34 @@ public interface IRecord {
         Object value = this.getValue(field);
         if (value == null) {
             return 0;
-        } else if ((value instanceof Boolean)) {
-            return (Boolean) value ? 1 : 0;
-        } else if ((value instanceof Short)) {
-            return ((Short) value);
-        } else if (value instanceof Integer) {
-            return (Integer) value;
-        } else if (value instanceof Long) {
-            return ((Long) value);
-        } else if (value instanceof Float) {
-            Float tmp = (Float) value;
-            if (tmp < Long.MIN_VALUE || tmp > Long.MAX_VALUE)
+        } else if (value instanceof Boolean item) {
+            return item ? 1 : 0;
+        } else if (value instanceof Short item) {
+            return item.longValue();
+        } else if (value instanceof Integer item) {
+            return item.longValue();
+        } else if (value instanceof Long item) {
+            return item;
+        } else if (value instanceof BigInteger item) {
+            return item.longValue();
+        } else if (value instanceof Float item) {
+            if (item < Long.MIN_VALUE || item > Long.MAX_VALUE)
                 throw new ClassCastException("Float to Long is out of range");
-            if (tmp != tmp.longValue())
+            if (item != item.longValue())
                 throw new ClassCastException(
-                        String.format("Float to Long fail, original %s -> %s ", tmp, tmp.longValue()));
-            return tmp.longValue();
-        } else if (value instanceof Double) {
-            Double tmp = (Double) value;
-            if (tmp < Long.MIN_VALUE || tmp > Long.MAX_VALUE)
+                        String.format("Float to Long fail, original %s -> %s ", item, item.longValue()));
+            return item.longValue();
+        } else if (value instanceof Double item) {
+            if (item < Long.MIN_VALUE || item > Long.MAX_VALUE)
                 throw new ClassCastException("Double to Long is out of range");
-            if (tmp != tmp.longValue())
+            if (item != item.longValue())
                 throw new ClassCastException(
-                        String.format("Double to Long fail, original %s -> %s ", tmp, tmp.longValue()));
-            return tmp.longValue();
-        } else if (value instanceof String) {
-            String str = (String) value;
-            if ("".equals(str))
+                        String.format("Double to Long fail, original %s -> %s ", item, item.longValue()));
+            return item.longValue();
+        } else if (value instanceof String item) {
+            if (item.isEmpty())
                 return 0;
-            return Long.parseLong(str);
+            return Long.parseLong(item);
         } else {
             throw new ClassCastException(String.format("not support class: %s", value.getClass().getName()));
         }
