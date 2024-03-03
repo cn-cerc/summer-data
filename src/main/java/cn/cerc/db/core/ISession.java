@@ -64,6 +64,7 @@ public interface ISession extends AutoCloseable {
         return "true".equals(getProperty(ISession.Visual_Design));
     }
 
+    @Deprecated
     default String getUserRole() {
         return (String) getProperty(ISession.USER_ROLE);
     }

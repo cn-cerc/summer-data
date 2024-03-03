@@ -27,16 +27,16 @@ public class ProducerThread implements Runnable {
             Connection connection = RabbitTestConfig.getConnection();
             // 创建信道
             Channel channel = connection.createChannel();
-            /**
-             * 1.队列名字
-             * 
-             * 2.是否持久化 true:持久话 false:非持久话
-             * 
-             * 3.是否独占模式 true:独占模式 false:非独占
-             * 
-             * 4.是否自动删除队列中的消息 true:断开连接删除消息 false:断开连接不会删除消息
-             * 
-             * 5.其他额外参数
+            /*
+              1.队列名字
+
+              2.是否持久化 true:持久话 false:非持久话
+
+              3.是否独占模式 true:独占模式 false:非独占
+
+              4.是否自动删除队列中的消息 true:断开连接删除消息 false:断开连接不会删除消息
+
+              5.其他额外参数
              */
             // 声明队列，如果队列已经存在，则使用这个队列
             channel.queueDeclare(RabbitTestConfig.QUEUE_NAME, true, false, false, null);
@@ -66,7 +66,7 @@ public class ProducerThread implements Runnable {
             connection.close();
             log.info("{} 线程发送完成，当前原子数值 {}", Thread.currentThread().getName(), atomic.get());
         } catch (IOException | TimeoutException | InterruptedException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 

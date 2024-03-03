@@ -61,6 +61,11 @@ public class JayunLogData {
     private long timestamp;
 
     /**
+     * 负责人
+     */
+    private String mainName;
+
+    /**
      * 修改人
      */
     private String name;
@@ -93,6 +98,7 @@ public class JayunLogData {
             Class<?> clazz = Class.forName(trigger);
             LastModified modified = clazz.getAnnotation(LastModified.class);
             if (modified != null) {
+                this.mainName = modified.main();
                 this.name = modified.name();
                 this.date = modified.date();
             }
@@ -119,6 +125,7 @@ public class JayunLogData {
         this.stack = builder.stack;
         this.args = builder.args;
         this.timestamp = builder.timestamp;
+        this.mainName = builder.mainName;
         this.name = builder.name;
         this.date = builder.date;
     }
@@ -136,6 +143,7 @@ public class JayunLogData {
         private String[] stack;
         private String args;
         private long timestamp;
+        private String mainName;
         private String name;
         private String date;
 
@@ -208,6 +216,11 @@ public class JayunLogData {
 
         public Builder timestamp(long timestamp) {
             this.timestamp = timestamp;
+            return this;
+        }
+
+        public Builder mainName(String mainName) {
+            this.mainName = mainName;
             return this;
         }
 
@@ -320,6 +333,14 @@ public class JayunLogData {
 
     public void setPort(String port) {
         this.port = port;
+    }
+
+    public String getMainName() {
+        return mainName;
+    }
+
+    public void setMainName(String mainName) {
+        this.mainName = mainName;
     }
 
     public String getName() {

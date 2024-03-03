@@ -27,7 +27,6 @@ public class MongoUtilsTest {
     /**
      * 单条添加
      *
-     * @Description
      * @author rick_zhou
      */
     @Test
@@ -59,7 +58,6 @@ public class MongoUtilsTest {
     /**
      * 批量添加数据
      *
-     * @Description
      * @author rick_zhou
      */
     @Test
@@ -77,7 +75,6 @@ public class MongoUtilsTest {
     /**
      * 修改数据
      *
-     * @Description
      * @author rick_zhou
      */
     @Test
@@ -122,7 +119,6 @@ public class MongoUtilsTest {
     /**
      * 列表查询
      *
-     * @Description
      * @author rick_zhou
      */
     @Test

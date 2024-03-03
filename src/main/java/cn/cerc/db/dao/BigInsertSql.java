@@ -78,7 +78,7 @@ public class BigInsertSql {
             return result > 0;
         } catch (SQLException e) {
             log.error(lastCommand);
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -100,7 +100,7 @@ public class BigInsertSql {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e.getMessage());
         } finally {
             try {
@@ -108,7 +108,7 @@ public class BigInsertSql {
                     rs.close();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
                 throw new RuntimeException(e.getMessage());
             }
             try {
@@ -116,7 +116,7 @@ public class BigInsertSql {
                     stmt.close();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
                 throw new RuntimeException(e.getMessage());
             }
         }
@@ -146,9 +146,9 @@ public class BigInsertSql {
                     field.setAccessible(true);
                     field.setLong(object, value);
                 } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
+                    log.error(e.getMessage(), e);
                 } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                    log.error(e.getMessage(), e);
                 }
             }
         }

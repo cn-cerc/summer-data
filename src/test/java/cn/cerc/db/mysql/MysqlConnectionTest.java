@@ -1,10 +1,14 @@
 package cn.cerc.db.mysql;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cn.cerc.db.core.Handle;
 import cn.cerc.db.core.IHandle;
 import cn.cerc.db.core.StubDatabaseSession;
 
 public class MysqlConnectionTest {
+    private static final Logger log = LoggerFactory.getLogger(MysqlConnectionTest.class);
 
     public static void main(String[] args) {
         Runnable task = new Runnable() {
@@ -24,7 +28,7 @@ public class MysqlConnectionTest {
                         Thread.sleep(500);
                     } catch (InterruptedException e) {
                         // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        log.error(e.getMessage(), e);
                     }
                     ds.append();
                     ds.setValue("code_", "a1");

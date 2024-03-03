@@ -30,7 +30,7 @@ public class BigOperator {
                 event.put(fieldCode, field.get(object));
             }
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
         // for (String key : items.keySet()) {
         // Object value = items.get(key);
@@ -101,7 +101,7 @@ public class BigOperator {
             if (msg != null) {
                 log.error("field: " + msg);
             }
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 

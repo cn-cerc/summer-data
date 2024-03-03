@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.Utils;
 
@@ -19,6 +22,8 @@ import cn.cerc.db.core.Utils;
  * @author 张弓
  */
 public class BuildStatement implements AutoCloseable {
+    private static final Logger log = LoggerFactory.getLogger(BuildStatement.class);
+
     private Connection connection;
     private StringBuilder build = new StringBuilder();
     private PreparedStatement ps = null;
@@ -93,7 +98,7 @@ public class BuildStatement implements AutoCloseable {
                 ps.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 

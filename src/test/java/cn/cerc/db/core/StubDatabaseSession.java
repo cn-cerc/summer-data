@@ -3,11 +3,16 @@ package cn.cerc.db.core;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cn.cerc.db.mssql.MssqlServer;
 import cn.cerc.db.mysql.MysqlServerMaster;
 import cn.cerc.db.oss.OssConnection;
 
 public class StubDatabaseSession implements ISession {
+    private static final Logger log = LoggerFactory.getLogger(StubDatabaseSession.class);
+
     private MysqlServerMaster mysql;
     private MssqlServer mssql;
 //    private MongoConfig mgConn;
@@ -68,7 +73,7 @@ public class StubDatabaseSession implements ISession {
             try {
                 mysql.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
             }
             mysql = null;
         }

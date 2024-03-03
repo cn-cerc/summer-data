@@ -48,17 +48,13 @@ public class JsonTool {
         try {
             return mapper.writeValueAsString(clazz);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return null;
         }
     }
 
     /**
      * 数据实体对象转MongoDB文档
-     * 
-     * @param <T>
-     * @param entity
-     * @return
      */
     public static <T extends EntityImpl> Document toDocument(T entity) {
         var doc = new Document();
@@ -119,7 +115,7 @@ public class JsonTool {
         try {
             return mapper.readTree(json).get(fieldName);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return null;
         }
     }
@@ -137,7 +133,7 @@ public class JsonTool {
             JsonNode root = mapper.readTree(json);
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(root);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return null;
         }
     }

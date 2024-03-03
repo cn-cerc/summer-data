@@ -38,8 +38,6 @@ public class Handle implements IHandle {
 
     /**
      * 仅用于单元测试
-     * 
-     * @return
      */
     public static IHandle getStub() {
         return new Handle(new StubSession());

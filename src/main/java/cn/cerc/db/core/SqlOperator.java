@@ -368,7 +368,7 @@ public class SqlOperator implements IHandle {
             return ps.execute();
         } catch (SQLException e) {
             log.error(lastCommand, e);
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -497,7 +497,7 @@ public class SqlOperator implements IHandle {
                     rs.close();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
                 throw new RuntimeException(e.getMessage());
             }
             try {
@@ -505,7 +505,7 @@ public class SqlOperator implements IHandle {
                     stmt.close();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
                 throw new RuntimeException(e.getMessage());
             }
         }

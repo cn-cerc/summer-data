@@ -78,7 +78,7 @@ public abstract class AbstractQueue implements OnStringMessage, Runnable {
     /**
      * 切换消息队列所指向的机群，如FPL/OBM/CSM等
      *
-     * @param original
+     * @param original 如FPL/OBM/CSM等
      */
     protected void setOriginal(String original) {
         Objects.requireNonNull(original);

@@ -13,6 +13,8 @@ import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -24,6 +26,7 @@ import cn.cerc.db.core.Utils;
  * 应用环境变量加载和配置列表
  */
 public class ApplicationEnvironment {
+    private static final Logger log = LoggerFactory.getLogger(ApplicationEnvironment.class);
 
     /**
      * 获取系统的环境变量
@@ -48,7 +51,7 @@ public class ApplicationEnvironment {
             InetAddress inet = InetAddress.getLocalHost();
             hostname = inet.getHostName();
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             hostname = "";
         }
         return hostname;
@@ -71,7 +74,7 @@ public class ApplicationEnvironment {
             InetAddress address = ApplicationEnvironment.getExtranetAddress();
             hostip = address.getHostAddress();
         } catch (UnknownHostException | SocketException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
         return hostip;
     }
@@ -148,7 +151,7 @@ public class ApplicationEnvironment {
             try {
                 doc = factory.newDocumentBuilder().parse(serverXmlPath);
             } catch (FileNotFoundException e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
                 return null;
             }
             // 查找Connector元素
@@ -163,7 +166,7 @@ public class ApplicationEnvironment {
             }
             return httpPort;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return "unknown";
         }
     }

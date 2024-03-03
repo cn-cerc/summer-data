@@ -6,7 +6,6 @@ public interface IConfig {
     /**
      * 从 properties 读取配置项
      * 
-     * @param key
      * @return 返回配置，可为null
      */
     default String getProperty(String key) {

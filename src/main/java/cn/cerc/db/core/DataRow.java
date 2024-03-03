@@ -364,12 +364,6 @@ public class DataRow implements Serializable, IRecord {
         return Utils.roundTo(value, scale);
     }
 
-    /**
-     * 防止注入攻击
-     *
-     * @param field 字段名
-     * @return 返回安全的字符串
-     */
 //    @Deprecated
 //    public final String getSafeString(String field) {
 //        String value = getString(field);
@@ -698,7 +692,7 @@ public class DataRow implements Serializable, IRecord {
 //                return (T) constructor.newInstance(initArgs);
 //            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 //                    | InvocationTargetException e) {
-//                e.printStackTrace();
+//                log.error(e.getMessage(), e);
 //                throw new RuntimeException(e.getMessage());
 //            }
         } else

@@ -28,7 +28,7 @@ public class BigStorage implements Runnable {
             }
             saveAll();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -39,7 +39,7 @@ public class BigStorage implements Runnable {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
             }
             count -= 100;
         }

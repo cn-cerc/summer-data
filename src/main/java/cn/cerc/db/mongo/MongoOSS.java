@@ -10,7 +10,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -62,7 +61,7 @@ public class MongoOSS {
         try (InputStream streamToUploadFrom = new FileInputStream(filename)) {
             upload(filename, streamToUploadFrom, null);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -80,11 +79,6 @@ public class MongoOSS {
 
     /**
      * 迁移使用
-     *
-     * @param url
-     * @param fileStream
-     * @param onsumer
-     * @return
      */
     public static String upload(String url, InputStream fileStream, Consumer<Document> onsumer) {
         Objects.requireNonNull(url);
@@ -112,11 +106,6 @@ public class MongoOSS {
 
     /**
      * 接收用户上传使用
-     *
-     * @param request
-     * @param fields
-     * @param output
-     * @return
      */
     public static int receive(HttpServletRequest request, List<String> fields, Consumer<String> output) {
         int total = 0;
@@ -157,7 +146,7 @@ public class MongoOSS {
                                     output.accept("file exists: " + filename);
                                 }
                             } catch (IOException e) {
-                                e.printStackTrace();
+                                log.error(e.getMessage(), e);
                             }
                         } else {
                             // 文件大小为0
@@ -222,8 +211,6 @@ public class MongoOSS {
 
     /**
      * 下载mongodb文件为输入流
-     *
-     * @param fileName
      */
     public static InputStream download(String fileName) {
         if (!fileName.startsWith("/"))
@@ -235,9 +222,6 @@ public class MongoOSS {
 
     /**
      * 下载web文件到指定的本地文件
-     *
-     * @param localFilename
-     * @throws IOException
      */
     public void download(String webfileUrl, String localFilename) throws IOException {
         var readStream = getWebfile(webfileUrl);
@@ -257,10 +241,6 @@ public class MongoOSS {
 
     /**
      * 传送数据流
-     *
-     * @param readStream
-     * @param writeStream
-     * @throws IOException
      */
     private void transmitStream(InputStream readStream, FileOutputStream writeStream) throws IOException {
         try (BufferedInputStream out = new BufferedInputStream(readStream);
@@ -274,10 +254,7 @@ public class MongoOSS {
     }
 
     /**
-     * @param webfileUrl
-     * @return 取得网络文件流
-     * @throws IOException
-     * @throws ProtocolException
+     * 取得网络文件流
      */
     public static Optional<InputStream> getWebfile(String webfileUrl) {
         try {
@@ -315,7 +292,7 @@ public class MongoOSS {
     }
 
     /**
-     * @param url https://4plc.oss-cn-hangzhou.aliyuncs.com/abc.jpg
+     * @param url http(s)://4plc.oss-cn-hangzhou.aliyuncs.com/abc.jpg
      * @return /abc.jpg
      */
     public static Optional<String> getChildUrl(String url) {

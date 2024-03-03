@@ -38,9 +38,6 @@ public class TestsqlServer implements ISqlServer {
 
     /**
      * 请改使用 build
-     * 
-     * @param b
-     * @return
      */
     @Deprecated
     public static TestsqlServer get(boolean value) {

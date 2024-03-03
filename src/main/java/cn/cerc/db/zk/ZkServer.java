@@ -168,8 +168,6 @@ public class ZkServer {
     }
 
     /**
-     * @param path
-     * @param value
      * @return 返回创建的节点名称
      */
     public String create(String path, String value, CreateMode createMode) {
@@ -196,7 +194,6 @@ public class ZkServer {
     /**
      * 删除节点
      *
-     * @param path
      * @return 成功否
      */
     public boolean delete(String path) {
@@ -216,7 +213,6 @@ public class ZkServer {
     /**
      * 判断节点是否存在
      *
-     * @param node
      * @return 存在否
      */
     public boolean exists(String node) {
@@ -254,7 +250,6 @@ public class ZkServer {
     }
 
     /**
-     * @param node
      * @return 返回所有的子节点
      */
     public List<String> getNodes(String node) {
@@ -267,7 +262,6 @@ public class ZkServer {
     }
 
     /**
-     * @param node
      * @return 取得指点节点的值，若不存在则为null
      */
     public String getValue(String node) {
@@ -286,8 +280,6 @@ public class ZkServer {
     }
 
     /**
-     * @param node
-     * @param value
      * @return 设置指定节点的值
      */
     public ZkServer setValue(String node, String value, CreateMode createMode) {

@@ -57,7 +57,7 @@ public class Locker implements Closeable {
             }
             return true;
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return false;
         }
     }

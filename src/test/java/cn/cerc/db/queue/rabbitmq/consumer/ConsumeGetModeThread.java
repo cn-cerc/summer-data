@@ -45,7 +45,7 @@ public class ConsumeGetModeThread {
             System.out.println(new String(response.getBody()));
             channel.basicAck(response.getEnvelope().getDeliveryTag(), false);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 
