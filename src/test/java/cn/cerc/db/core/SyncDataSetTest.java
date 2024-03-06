@@ -27,7 +27,7 @@ public class SyncDataSetTest {
     }
 
     @Test
-    public void test() throws ServiceException {
+    public void test() throws ServiceException, DataException {
         SyncDataSet sds = new SyncDataSet(src, tar, "code");
 
         int total = sds.execute(new ISyncDataSet() {
