@@ -96,7 +96,7 @@ public class MysqlEntityBuilder {
                 }
                 String def = dsColumn.getString("column_default");
                 if (!Utils.isEmpty(def)) {
-                    builder.append(String.format(", def = \"%s\"", def));
+                    builder.append(String.format("@Describe(def = \"%s\")\r\n", def));
                 }
                 builder.append(String.format("private %s %s;\r\n\r\n", codeType, field));
             }
