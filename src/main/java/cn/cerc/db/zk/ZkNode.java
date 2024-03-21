@@ -82,7 +82,7 @@ public class ZkNode implements Watcher {
             var value = server.getValue(node);
             if (value != null) {
                 items.put(node, value);
-                log.warn("节点 {} 值变更为 {}", node, value);
+                log.info("节点 {} 值变更为 {}", node, value);
                 server.watch(node, this); // 继续监视
             } else {
                 log.error("节点 {} 不应该找不到！！！", node);
