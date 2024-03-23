@@ -2,6 +2,7 @@ package cn.cerc.local.tool;
 
 import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.bson.Document;
 import org.slf4j.Logger;
@@ -88,8 +89,9 @@ public class JsonTool {
     }
 
     /**
-     * json 数据转泛型
+     * json 数据转泛型 -- 请使用升级版可以传递默认值的方法
      */
+    @Deprecated
     public static <T> T fromJson(String json, JavaType valueType) {
         if (Utils.isEmpty(json) || valueType == null) {
             return null;
@@ -99,6 +101,21 @@ public class JsonTool {
         } catch (JsonProcessingException e) {
             log.warn("json数据转实体失败 JavaType {} json {}", valueType, json, e);
             return null;
+        }
+    }
+
+    /**
+     * json 数据转泛型
+     */
+    public static <T> T fromJson(String json, JavaType valueType, Supplier<T> supplier) {
+        if (Utils.isEmpty(json) || valueType == null) {
+            return supplier.get();
+        }
+        try {
+            return mapper.readValue(json, valueType);
+        } catch (JsonProcessingException e) {
+            log.warn("json数据转实体失败 JavaType {} json {}", valueType, json, e);
+            return supplier.get();
         }
     }
 

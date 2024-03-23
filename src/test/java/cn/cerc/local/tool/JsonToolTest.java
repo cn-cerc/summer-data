@@ -29,8 +29,8 @@ public class JsonToolTest {
         TypeFactory typeFactory = new ObjectMapper().getTypeFactory();
         MapType mapType = typeFactory.constructMapType(LinkedHashMap.class, String.class, String.class);
 
-        LinkedHashMap<String, String> map = JsonTool.fromJson(value, mapType);
-        map.forEach((k, v) -> log.info("{} {}", k, v));
+        JsonTool.fromJson(value, mapType, () -> new LinkedHashMap<String, String>())
+                .forEach((k, v) -> log.info("{} -> {}", k, v));
     }
 
 //    @Test

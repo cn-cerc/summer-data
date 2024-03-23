@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.zip.GZIPInputStream;
@@ -69,7 +70,7 @@ public class Curl {
     /**
      * 调用参数
      */
-    private final Map<String, Object> parameters = new HashMap<>();
+    private final Map<String, Object> parameters = new LinkedHashMap<>();
     /**
      * 返回内容
      */
