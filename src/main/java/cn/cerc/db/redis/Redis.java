@@ -278,8 +278,15 @@ public class Redis implements AutoCloseable {
             redis.del(key);
         }
     }
-    
+
     public Jedis client() {
         return this.jedis;
+    }
+
+    public boolean exists(String key) {
+        if (jedis != null)
+            return jedis.exists(key);
+        else
+            return items.containsKey(key);
     }
 }
