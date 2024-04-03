@@ -1,12 +1,5 @@
 package cn.cerc.mis.log;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.spi.LocationInfo;
-import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.spi.ThrowableInformation;
-
-import cn.cerc.mis.core.LastModified;
-
 public class JayunLogData {
     public static final String info = "info";
     public static final String warn = "warn";
@@ -76,40 +69,6 @@ public class JayunLogData {
     private String date;
 
     public JayunLogData() {
-    }
-
-    public JayunLogData(LoggingEvent event) {
-        LocationInfo locationInfo = event.getLocationInformation();
-        this.id = locationInfo.getClassName();
-        this.line = locationInfo.getLineNumber();
-        if (event.getLevel() == Level.ERROR)
-            this.level = error;
-        else if (event.getLevel() == Level.WARN)
-            this.level = warn;
-        else
-            this.level = info;
-        this.message = event.getRenderedMessage();
-        ThrowableInformation throwableInfo = event.getThrowableInformation();
-        if (throwableInfo != null)
-            this.stack = throwableInfo.getThrowableStrRep();
-
-        try {
-            String trigger = event.getLoggerName();
-            Class<?> clazz = Class.forName(trigger);
-            LastModified modified = clazz.getAnnotation(LastModified.class);
-            if (modified != null) {
-                this.mainName = modified.main();
-                this.name = modified.name();
-                this.date = modified.date();
-            }
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        this.timestamp = event.getTimeStamp();
-        this.hostname = ApplicationEnvironment.hostname();
-        this.ip = ApplicationEnvironment.hostIP();
-        this.port = ApplicationEnvironment.hostPort();
     }
 
     private JayunLogData(Builder builder) {

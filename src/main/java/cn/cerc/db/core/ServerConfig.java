@@ -29,13 +29,13 @@ public enum ServerConfig implements IConfig {
     public static QueueServiceEnum getQueueService() {
         String value = config.getString("queue.service", "");
         var result = value.toLowerCase();
-        if ("redis".equals(result))
+        if ("redis".equalsIgnoreCase(result))
             return QueueServiceEnum.Redis;
-        else if ("aliyunmns".equals(result))
+        else if ("aliyunmns".equalsIgnoreCase(result))
             return QueueServiceEnum.AliyunMNS;
-        else if ("rabbitmq".equals(result))
+        else if ("rabbitmq".equalsIgnoreCase(result))
             return QueueServiceEnum.RabbitMQ;
-        else if ("sqlmq".equals(result))
+        else if ("sqlmq".equalsIgnoreCase(result))
             return QueueServiceEnum.Sqlmq;
         else
             return QueueServiceEnum.RabbitMQ;
@@ -71,17 +71,17 @@ public enum ServerConfig implements IConfig {
      */
     public static String getAppOriginal() {
         var result = config.getString("application.original", "csp").toLowerCase();
-        if ("center".equals(result))
+        if ("center".equalsIgnoreCase(result))
             result = "csp";
         return result;
     }
 
     public static boolean isCspOriginal() {
-        return "csp".equals(getAppOriginal());
+        return "csp".equalsIgnoreCase(getAppOriginal());
     }
 
     public static boolean isFplOriginal() {
-        return "fpl".equals(getAppOriginal());
+        return "fpl".equalsIgnoreCase(getAppOriginal());
     }
 
     public static boolean enableDocService() {
@@ -91,31 +91,41 @@ public enum ServerConfig implements IConfig {
     // 正式环境
     public static boolean isServerMaster() {
         String value = config.getString("version", "develop");
-        if ("release".equals(value))
+        if ("release".equalsIgnoreCase(value))
             return true;
-        if ("main".equals(value))
+        if ("main".equalsIgnoreCase(value))
             return true;
-        if ("gray".equals(value))
+        if ("gray".equalsIgnoreCase(value))
             return true;
-        return "master".equals(value);
+        return "master".equalsIgnoreCase(value);
     }
 
     // 灰度更新环境
     public static boolean isServerGray() {
         String value = config.getString("version", "develop");
-        if ("gray".equals(value))
+        if ("gray".equalsIgnoreCase(value))
             return true;
         return false;
     }
 
     // 测试环境
     public static boolean isServerBeta() {
-        return "beta".equals(config.getString("version", "develop"));
+        String value = config.getString("version", "develop");
+        if ("beta".equalsIgnoreCase(value))
+            return true;
+        if ("preview".equalsIgnoreCase(value))
+            return true;
+        return false;
     }
 
     // alpha环境
     public static boolean isServerAlpha() {
-        return "alpha".equals(config.getString("version", "develop"));
+        String value = config.getString("version", "develop");
+        if ("alpha".equalsIgnoreCase(value))
+            return true;
+        if ("canary".equalsIgnoreCase(value))
+            return true;
+        return false;
     }
 
     // 开发环境

@@ -30,7 +30,6 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 
 import cn.cerc.db.Alias;
-import cn.cerc.mis.log.JayunLogParser;
 
 public class DataRow implements Serializable, IRecord {
     private static final Logger log = LoggerFactory.getLogger(DataRow.class);
@@ -472,26 +471,22 @@ public class DataRow implements Serializable, IRecord {
         Map<String, Field> fieldsList = helper.fields();
         if (helper.strict()) {
             if (this.fields().size() > fieldsList.size()) {
-                String message = String.format("database fields.size %s > entity %s properties.size %s",
+                String message = String.format("数据表 %s fields.size %s > 实体类 %s properties.size %s", helper.tableName(),
                         this.fields().size(), entity.getClass().getName(), fieldsList.size());
                 RuntimeException throwable = new RuntimeException(message);
-                JayunLogParser.warn(entity.getClass(), throwable);
-                log.info("{}", message, throwable);
+                log.warn("{}", message, throwable);
             } else if (this.fields().size() < fieldsList.size()) {
                 for (var field : fieldsList.keySet()) {
                     if (!fields.exists(field)) {
-                        String message = String.format("实体类 %s 数据表 %s 缺字段 %s", entity.getClass().getName(),
+                        String message = String.format("实体类 %s 的数据表 %s 缺字段 %s", entity.getClass().getName(),
                                 helper.tableName(), field);
                         RuntimeException throwable = new RuntimeException(message);
-                        JayunLogParser.error(DataRow.class, throwable);
-                        log.info("{}", message, throwable);
+                        log.error("{}", message, throwable);
                     }
                 }
-                String message = String.format("database fields.size %s < entity %s properties.size %s",
-                        this.fields().size(), entity.getClass().getName(), fieldsList.size());
-                RuntimeException throwable = new RuntimeException(message);
-                JayunLogParser.error(entity.getClass(), throwable);
-                throw throwable;
+                String message = String.format("数据表 fields.size %s < 实体类 %s properties.size %s", this.fields().size(),
+                        entity.getClass().getName(), fieldsList.size());
+                throw new RuntimeException(message);
             }
         }
 

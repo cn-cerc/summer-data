@@ -123,7 +123,7 @@ public class ZkServer {
                 States state = server.client.getState();
                 String sessionId = Long.toHexString(server.client.getSessionId());
                 if (event.getState() == KeeperState.SyncConnected) {
-                    log.info("ZooKeeper 0x{} 已接入 {} state {}", sessionId, server.host, state);
+                    log.warn("ZooKeeper 0x{} 已接入 {} state {}", sessionId, server.host, state);
                 } else if (event.getState() == KeeperState.Disconnected) {
                     // 客户端断开连接，客户端会自动尝试重新连接
                     log.warn("Zookeeper 0x{} 已断开连接 {} state {}", sessionId, server.host, state);
@@ -134,7 +134,7 @@ public class ZkServer {
                     // 客户端在 会话过期时间 内未能重新连接服务端
                     log.warn("ZooKeeper 0x{} 会话过期 {} state {}", sessionId, server.host, state);
                 } else {
-                    log.error("ZooKeeper 0x{} 未处理事件 {} state {}", sessionId, event.getState().name(), state);
+                    log.warn("ZooKeeper 0x{} 未处理事件 {} state {}", sessionId, event.getState().name(), state);
                 }
             }
         }
@@ -270,7 +270,7 @@ public class ZkServer {
             if (stat != null)
                 return new String(client().getData(node, false, stat), StandardCharsets.UTF_8);
             else {
-                log.warn("not find node {} ", node);
+                log.warn("{} not find node {} ", host, node, new RuntimeException());
                 return null;
             }
         } catch (KeeperException | InterruptedException | IllegalArgumentException e) {

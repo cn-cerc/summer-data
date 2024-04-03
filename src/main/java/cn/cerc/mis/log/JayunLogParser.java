@@ -1,8 +1,10 @@
 package cn.cerc.mis.log;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -10,10 +12,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.DefaultThrowableRenderer;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.spi.LocationInfo;
+import org.apache.log4j.spi.LoggingEvent;
 
 import cn.cerc.db.core.DataException;
+import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
 import cn.cerc.mis.core.LastModified;
 import cn.cerc.mis.log.JayunLogData.Builder;
@@ -37,6 +43,15 @@ public class JayunLogParser {
         wanted.add("site.odm");
         wanted.add("site.fpl");
     }
+    /**
+     * 采样分级
+     */
+    private static final List<Level> levels = new ArrayList<>();
+    static {
+        levels.add(Level.ERROR);
+        levels.add(Level.WARN);
+        levels.add(Level.INFO);
+    }
 
     private JayunLogParser() {
         String loggerName = "";
@@ -53,8 +68,29 @@ public class JayunLogParser {
         this.loggerName = loggerName;
     }
 
-    public String getLoggerName() {
-        return loggerName;
+    public static void analyze(String appender, LoggingEvent event) {
+        executor.submit(() -> {
+            // 本地开发不发送日志到测试平台
+            if (ServerConfig.isServerDevelop())
+                return;
+            // 灰度发布不发送日志到测试平台
+            if (ServerConfig.isServerGray())
+                return;
+            // 将日志事件交给日志解析器处理
+            Level level = event.getLevel();
+            if (levels.stream().noneMatch(item -> level == item))
+                return;
+
+            // 解析日志事件并推送到消息队列
+            LocationInfo locationInfo = event.getLocationInformation();
+            JayunLogData.Builder builder = new JayunLogData.Builder(locationInfo.getClassName(),
+                    level.toString().toLowerCase(), event.getRenderedMessage()).line(locationInfo.getLineNumber())
+                    .project(appender);
+            String[] stack = event.getThrowableStrRep();
+            if (stack != null)
+                builder.stack(stack);
+            new QueueJayunLog().push(builder.build());
+        });
     }
 
     /**
@@ -70,9 +106,14 @@ public class JayunLogParser {
         return instance.getLoggerName();
     }
 
+    public String getLoggerName() {
+        return loggerName;
+    }
+
     /**
      * 警告类日志
      */
+    @Deprecated
     public static void warn(Class<?> clazz, Throwable throwable, String message) {
         JayunLogParser.analyze(clazz, throwable, JayunLogData.warn, message);
     }
@@ -80,6 +121,7 @@ public class JayunLogParser {
     /**
      * 警告类日志
      */
+    @Deprecated
     public static void warn(Class<?> clazz, Throwable throwable) {
         JayunLogParser.analyze(clazz, throwable, JayunLogData.warn, null);
     }
@@ -87,10 +129,12 @@ public class JayunLogParser {
     /**
      * 错误类日志
      */
+    @Deprecated
     public static void error(Class<?> clazz, Throwable throwable, String message) {
         JayunLogParser.analyze(clazz, throwable, JayunLogData.error, message);
     }
 
+    @Deprecated
     public static void error(Class<?> clazz, Throwable throwable) {
         JayunLogParser.analyze(clazz, throwable, JayunLogData.error, null);
     }
@@ -158,7 +202,7 @@ public class JayunLogParser {
         });
     }
 
-    public static String trigger(String line) {
+    private static String trigger(String line) {
         // 定义正则表达式模式来匹配类的包名
         Pattern pattern = Pattern.compile("at\\s+([\\w.]+)\\..+");
         Matcher matcher = pattern.matcher(line);
@@ -169,7 +213,7 @@ public class JayunLogParser {
         return null; // 如果没有匹配项，则返回null
     }
 
-    public static String lineNumber(String line) {
+    private static String lineNumber(String line) {
         String lineNumber = "?";
         int end = line.lastIndexOf(')');
         int begin = line.lastIndexOf(':', end - 1);

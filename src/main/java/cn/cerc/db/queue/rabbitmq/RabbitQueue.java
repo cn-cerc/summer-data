@@ -19,7 +19,6 @@ import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
 import cn.cerc.db.queue.OnStringMessage;
 import cn.cerc.db.queue.entity.CheckMQEntity;
-import cn.cerc.mis.log.JayunLogParser;
 
 public class RabbitQueue implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(RabbitQueue.class);
@@ -95,8 +94,7 @@ public class RabbitQueue implements AutoCloseable {
                             channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
                             String message = String.format("queueId %s, payload %s, message %s", queueId, msg,
                                     e.getMessage());
-                            JayunLogParser.error(RabbitQueue.class, e, message);
-                            log.info(message, e);
+                            log.error(message, e);
                         }
                     }
                 });
@@ -135,8 +133,7 @@ public class RabbitQueue implements AutoCloseable {
             } catch (Exception e) {
                 channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
                 String message = String.format("queueId %s, payload %s, message %s", queueId, msg, e.getMessage());
-                JayunLogParser.error(RabbitQueue.class, e, message);
-                log.info(message, e);
+                log.error(message, e);
             }
         }
     }

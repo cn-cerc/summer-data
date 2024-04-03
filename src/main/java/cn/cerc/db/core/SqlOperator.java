@@ -25,7 +25,6 @@ import cn.cerc.db.mysql.MysqlDatabase;
 import cn.cerc.db.mysql.MysqlServerMaster;
 import cn.cerc.db.pgsql.PgsqlDatabase;
 import cn.cerc.db.sqlite.SqliteDatabase;
-import cn.cerc.mis.log.JayunLogParser;
 
 public class SqlOperator implements IHandle {
     private static final ClassResource res = new ClassResource(SqlOperator.class, SummerDB.ID);
@@ -264,11 +263,8 @@ public class SqlOperator implements IHandle {
                 }
             }
             if (i == 0) {
-                String message = String.format("no field is update, %s table update error, dataRow is %s", this.table(),
-                        dataRow);
-                RuntimeException exception = new RuntimeException(message);
-                JayunLogParser.error(SqlOperator.class, exception);
-                throw exception;
+                String message = String.format(" %s no field update, dataRow %s", this.table(), dataRow);
+                throw new RuntimeException(message);
             }
 
             // 加入 where 条件
@@ -284,12 +280,12 @@ public class SqlOperator implements IHandle {
                         bs.append("=?", value);
                         pkCount++;
                     } else {
-                        throw new RuntimeException("serachKey not is null: " + field);
+                        throw new RuntimeException(String.format("%s field's value is null", field));
                     }
                 }
             }
             if (pkCount == 0)
-                throw new RuntimeException("serach keys value not exists");
+                throw new RuntimeException("search keys value not exists");
 
             if (versionField != null) {
                 bs.append(" and ").append(versionField);
@@ -323,10 +319,7 @@ public class SqlOperator implements IHandle {
             if (ps.executeUpdate() != 1) {
                 String message = String.format("%s, dataRow %s, sqlText %s", res.getString(1, "当前记录已被其它用户修改或不存在，更新失败"),
                         dataRow.json(), lastCommand);
-                RuntimeException exception = new RuntimeException(message);
-                JayunLogParser.error(SqlOperator.class, exception);
-                log.info(exception.getMessage(), exception);
-                throw exception;
+                throw new RuntimeException(message);
             }
             return true;
         } catch (SQLException e) {
@@ -356,7 +349,7 @@ public class SqlOperator implements IHandle {
             }
 
             if (count == 0)
-                throw new RuntimeException("serach keys value not exists");
+                throw new RuntimeException("search keys value not exists");
 
             lastCommand = bs.getPrepareCommand();
             log.debug(bs.getPrepareCommand());
@@ -404,7 +397,7 @@ public class SqlOperator implements IHandle {
             }
         }
 
-        if (this.searchKeys.size() == 0) {
+        if (this.searchKeys.isEmpty()) {
             try {
                 String result = getKeyByDB(connection, this.table());
                 if (!Utils.isEmpty(result)) {
@@ -421,7 +414,7 @@ public class SqlOperator implements IHandle {
             }
         }
 
-        if (searchKeys.size() == 0)
+        if (searchKeys.isEmpty())
             throw new RuntimeException("search key is empty");
     }
 
