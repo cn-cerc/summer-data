@@ -56,10 +56,10 @@ public class MongoConfig {
                 builder.append("?").append("maxPoolSize=").append(maxpoolsize);
                 builder.append("&").append("connectTimeoutMS=").append("3000");
                 builder.append("&").append("serverSelectionTimeoutMS=").append("3000");
-                log.info("Connect to the MongoDB sharded cluster {}", builder);
-
+                log.info("connect to the MongoDB sharded cluster {}", builder);
                 ConnectionString connection = new ConnectionString(builder.toString());
                 client = MongoClients.create(connection);
+                log.info("connect to the MongoDB sharded cluster success");
             }
         }
         return client;
