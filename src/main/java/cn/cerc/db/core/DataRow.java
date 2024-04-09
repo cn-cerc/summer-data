@@ -524,7 +524,6 @@ public class DataRow implements Serializable, IRecord {
             for (String fieldCode : fields.keySet())
                 this.setValue(fieldCode, fields.get(fieldCode).get(entity));
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
         return this;

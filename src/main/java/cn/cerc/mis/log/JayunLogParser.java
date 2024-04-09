@@ -86,6 +86,21 @@ public class JayunLogParser {
             JayunLogData.Builder builder = new JayunLogData.Builder(locationInfo.getClassName(),
                     level.toString().toLowerCase(), event.getRenderedMessage()).line(locationInfo.getLineNumber())
                     .project(appender);
+
+            // 读取起源类修改人
+            try {
+                String trigger = event.getLoggerName();
+                Class<?> clazz = Class.forName(trigger);
+                LastModified modified = clazz.getAnnotation(LastModified.class);
+                if (modified != null) {
+                    builder.mainName(modified.main());
+                    builder.name(modified.name());
+                    builder.date(modified.date());
+                }
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+
             String[] stack = event.getThrowableStrRep();
             if (stack != null)
                 builder.stack(stack);

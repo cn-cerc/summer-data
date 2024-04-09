@@ -77,7 +77,7 @@ public interface ISession extends AutoCloseable {
     }
 
     /**
-     * 获取标准角色代码
+     * 获取参考角色代码
      */
     default String getReferRole() {
         return (String) getProperty(ISession.refer_role);

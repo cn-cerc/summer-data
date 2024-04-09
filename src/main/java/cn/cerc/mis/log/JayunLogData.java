@@ -68,9 +68,6 @@ public class JayunLogData {
      */
     private String date;
 
-    public JayunLogData() {
-    }
-
     private JayunLogData(Builder builder) {
         this.hostname = builder.hostname;
         this.ip = builder.ip;

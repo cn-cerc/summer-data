@@ -29,14 +29,14 @@ import cn.cerc.db.core.FieldMeta.FieldKind;
 import cn.cerc.db.dao.EntityEvent;
 
 public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, IRecord {
+    private static final Logger log = LoggerFactory.getLogger(DataSet.class);
+    private static final long serialVersionUID = 873159747066855363L;
+    private static final ClassResource res = new ClassResource(DataSet.class, SummerDB.ID);
+
     // 执行成功
     public static final int OK = 1;
     // 以下为普通错误
     public static final int ERROR = 0;
-
-    private static final Logger log = LoggerFactory.getLogger(DataSet.class);
-    private static final long serialVersionUID = 873159747066855363L;
-    private static final ClassResource res = new ClassResource(DataSet.class, SummerDB.ID);
     private int recNo = 0;
     private int fetchNo = -1;
     private int state = 0;
@@ -174,7 +174,7 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
                 try {
                     deleteStorage(record);
                 } catch (Exception e) {
-                    log.error(e.getMessage(), e);
+                    log.warn(e.getMessage(), e);
                     throw new RuntimeException(e.getMessage());
                 }
             } else {
@@ -196,9 +196,9 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
                     insertStorage(row);
                 } catch (Exception e) {
                     if (e.getMessage() != null && e.getMessage().contains("Data too long"))
-                        log.error(row.toString(), e);
+                        log.warn(row.toString(), e);
                     else
-                        log.error(e.getMessage(), e);
+                        log.warn(e.getMessage(), e);
                     throw new RuntimeException(e);
                 }
             } else {
@@ -211,7 +211,7 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
                 try {
                     updateStorage(row);
                 } catch (Exception e) {
-                    log.error(e.getMessage(), e);
+                    log.warn(e.getMessage(), e);
                     throw new RuntimeException(e.getMessage());
                 }
             } else {
@@ -924,7 +924,7 @@ public class DataSet implements Serializable, DataRowSource, Iterable<DataRow>, 
             try {
                 Thread.sleep(5);
             } catch (InterruptedException e) {
-                log.error(e.getMessage(), e);
+                log.warn(e.getMessage(), e);
             }
             return item.setValue("amount", item.getValue("amount" + 1));
         }).allMatch(item -> true);
