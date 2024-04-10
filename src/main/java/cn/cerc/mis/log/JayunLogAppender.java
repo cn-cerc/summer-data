@@ -4,6 +4,7 @@ import org.apache.log4j.Appender;
 import org.apache.log4j.Layout;
 import org.apache.log4j.spi.ErrorHandler;
 import org.apache.log4j.spi.Filter;
+import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 
 public class JayunLogAppender implements Appender {
@@ -13,7 +14,7 @@ public class JayunLogAppender implements Appender {
 
     @Override
     public void doAppend(LoggingEvent event) {
-        JayunLogParser.analyze(this.getName(), event);
+        JayunLogParser.analyze(this.getName(), event, event.getLocationInformation());
     }
 
     @Override

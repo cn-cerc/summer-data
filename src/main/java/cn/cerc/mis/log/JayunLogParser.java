@@ -68,7 +68,7 @@ public class JayunLogParser {
         this.loggerName = loggerName;
     }
 
-    public static void analyze(String appender, LoggingEvent event) {
+    public static void analyze(String appender, final LoggingEvent event, final LocationInfo locationInfo) {
         executor.submit(() -> {
             // 本地开发不发送日志到测试平台
             if (ServerConfig.isServerDevelop())
@@ -81,11 +81,11 @@ public class JayunLogParser {
             if (levels.stream().noneMatch(item -> level == item))
                 return;
 
-            // 解析日志事件并推送到消息队列
-            LocationInfo locationInfo = event.getLocationInformation();
-            JayunLogData.Builder builder = new JayunLogData.Builder(locationInfo.getClassName(),
-                    level.toString().toLowerCase(), event.getRenderedMessage()).line(locationInfo.getLineNumber())
-                    .project(appender);
+            // 获取类名和行号
+            String className = locationInfo.getClassName();
+            String lineNumber = locationInfo.getLineNumber();
+            JayunLogData.Builder builder = new JayunLogData.Builder(className, level.toString().toLowerCase(),
+                    event.getRenderedMessage()).line(lineNumber).project(appender);
 
             // 读取起源类修改人
             try {
