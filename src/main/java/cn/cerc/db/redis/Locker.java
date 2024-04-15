@@ -3,6 +3,7 @@ package cn.cerc.db.redis;
 import java.io.Closeable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import cn.cerc.db.SummerDB;
 import cn.cerc.db.core.ClassResource;
 import cn.cerc.db.core.Datetime;
+import cn.cerc.db.core.Utils;
 import redis.clients.jedis.Jedis;
 
 public class Locker implements Closeable {
@@ -27,6 +29,14 @@ public class Locker implements Closeable {
         for (Object arg : args) {
             items.put(group + "-" + arg, false);
         }
+    }
+
+    public Locker(String group, Set<String> set) {
+        if (Utils.isEmpty(set))
+            throw new RuntimeException("创建锁失败，set为空");
+        this.group = group;
+        for (String str : set)
+            items.put(group + "-" + str, false);
     }
 
     @Deprecated
@@ -48,7 +58,6 @@ public class Locker implements Closeable {
         }
         try (Jedis jedis = JedisFactory.getJedis()) {
             for (String key : items.keySet()) {
-                // System.out.println("key: " + key);
                 if (!tryLock(jedis, key, flag, time / 100)) {
                     log.warn(this.message);
                     return false;
@@ -80,10 +89,7 @@ public class Locker implements Closeable {
                     if (System.currentTimeMillis() > lastTime) {
                         String oldValue = jedis.getSet(key, curTime + "," + flag);
                         if (oldValue != null && oldValue.equals(currentValue)) {
-                            // System.out.println("lastTime: " + lastTime);
-                            // System.out.println(" curTime: " + curTime);
                             this.message = String.format(res.getString(2, "[%s]%s强制锁定成功"), key, flag);
-                            // System.out.println(this.message);
                             result = true;
                             break;
                         }
@@ -96,7 +102,6 @@ public class Locker implements Closeable {
                 }
             }
             if (i < num) {
-                // System.out.println("try " + (i + 1));
                 Thread.sleep(100);
             }
         }

@@ -27,9 +27,9 @@ public class SqlmqQueueName {
      */
     public static void register(Class<? extends AbstractQueue> queueClazz) {
         String queueName = null;
-        Description annotaion = queueClazz.getAnnotation(Description.class);
-        if (annotaion != null)
-            queueName = annotaion.value();
+        Description annotation = queueClazz.getAnnotation(Description.class);
+        if (annotation != null)
+            queueName = annotation.value();
 
         if (Utils.isEmpty(queueName)) {
             String message = String.format("%s 缺少 Description 注解，请相关人员填上队列描述", queueClazz);
@@ -43,8 +43,15 @@ public class SqlmqQueueName {
         query.add("select * from %s", TABLE);
         query.addWhere().eq("queue_class_", queueClass).build();
         query.open();
-        if (!query.eof())
+        if (!query.eof()) {
+            String queryQueueName = query.getString("queue_name_");
+            if (!queueName.equals(queryQueueName)) {
+                query.edit();
+                query.setValue("queue_name_", queueName);
+                query.post();
+            }
             return;
+        }
         query.append();
         query.setValue("queue_class_", queueClass);
         query.setValue("queue_name_", queueName);
