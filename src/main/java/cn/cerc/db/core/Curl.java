@@ -179,16 +179,11 @@ public class Curl {
             } else {
                 in = new BufferedInputStream(fcon.getInputStream());
             }
+            int contentLength = fcon.getHeaderFieldInt("Content-Length", in.available());
+            byte[] bytes = new byte[contentLength];
+            in.read(bytes, 0, contentLength);
 
-            BufferedReader rd = new BufferedReader(new InputStreamReader(in, this.recvEncoding));
-            String tempLine = rd.readLine();
-            StringBuilder temp = new StringBuilder();
-            while (tempLine != null) {
-                temp.append(tempLine);
-                tempLine = rd.readLine();
-            }
-            responseContent = temp.toString();
-            rd.close();
+            responseContent = new String(bytes, this.recvEncoding);
             in.close();
         } catch (IOException e) {
             log.error("network error", e);
