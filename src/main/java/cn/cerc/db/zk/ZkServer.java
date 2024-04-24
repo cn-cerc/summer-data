@@ -123,7 +123,7 @@ public class ZkServer {
                 States state = server.client.getState();
                 String sessionId = Long.toHexString(server.client.getSessionId());
                 if (event.getState() == KeeperState.SyncConnected) {
-                    log.warn("ZooKeeper 0x{} 已接入 {} state {}", sessionId, server.host, state);
+                    log.info("ZooKeeper 0x{} 已接入 {} state {}", sessionId, server.host, state);
                 } else if (event.getState() == KeeperState.Disconnected) {
                     // 客户端断开连接，客户端会自动尝试重新连接
                     log.warn("Zookeeper 0x{} 已断开连接 {} state {}", sessionId, server.host, state);

@@ -68,6 +68,9 @@ public class JayunLogParser {
         this.loggerName = loggerName;
     }
 
+    /**
+     * 采集 log 默认的数据，不解析堆栈的业务对象
+     */
     public static void analyze(String appender, final LoggingEvent event, final LocationInfo locationInfo) {
         executor.submit(() -> {
             // 本地开发不发送日志到测试平台
@@ -128,7 +131,6 @@ public class JayunLogParser {
     /**
      * 警告类日志
      */
-    @Deprecated
     public static void warn(Class<?> clazz, Throwable throwable, String message) {
         JayunLogParser.analyze(clazz, throwable, JayunLogData.warn, message);
     }
@@ -136,7 +138,6 @@ public class JayunLogParser {
     /**
      * 警告类日志
      */
-    @Deprecated
     public static void warn(Class<?> clazz, Throwable throwable) {
         JayunLogParser.analyze(clazz, throwable, JayunLogData.warn, null);
     }
@@ -144,16 +145,17 @@ public class JayunLogParser {
     /**
      * 错误类日志
      */
-    @Deprecated
     public static void error(Class<?> clazz, Throwable throwable, String message) {
         JayunLogParser.analyze(clazz, throwable, JayunLogData.error, message);
     }
 
-    @Deprecated
     public static void error(Class<?> clazz, Throwable throwable) {
         JayunLogParser.analyze(clazz, throwable, JayunLogData.error, null);
     }
 
+    /**
+     * 根据堆栈信息解析业务类
+     */
     private static void analyze(Class<?> clazz, Throwable throwable, String level, String message) {
         executor.submit(() -> {
             // 异常类为空不采集
