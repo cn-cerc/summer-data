@@ -184,7 +184,7 @@ public interface IRecord {
             try {
                 return new BigDecimal(str).doubleValue();
             } catch (Exception e) {
-                throw new RuntimeException(String.format("Error converting value %s to double", str));
+                throw new NumberFormatException(String.format("Error converting value %s to double", str));
             }
         } else {
             throw new ClassCastException(String.format("not support class: %s", value.getClass().getName()));
