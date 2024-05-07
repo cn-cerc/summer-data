@@ -17,6 +17,7 @@ import com.rabbitmq.client.MessageProperties;
 import cn.cerc.db.core.Curl;
 import cn.cerc.db.core.ServerConfig;
 import cn.cerc.db.core.Utils;
+import cn.cerc.db.maintain.MaintainConfig;
 import cn.cerc.db.queue.OnStringMessage;
 import cn.cerc.db.queue.entity.CheckMQEntity;
 
@@ -96,6 +97,9 @@ public class RabbitQueue implements AutoCloseable {
                                     e.getMessage());
                             log.error(message, e);
                         }
+                        if (MaintainConfig.build().illegalConsume()) {
+                            log.warn("运维正在检修，异常消费 push 消息，队列编号 {}, 消息内容 {}", queueId, msg);
+                        }
                     }
                 });
             } catch (IOException e) {
@@ -130,9 +134,12 @@ public class RabbitQueue implements AutoCloseable {
                     channel.basicAck(envelope.getDeliveryTag(), false);// 通知服务端删除消息
                 else
                     channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
+                if (MaintainConfig.build().illegalConsume()) {
+                    log.warn("运维正在检修，异常消费 pull 消息，队列编号 {}, 消息内容 {}", this.queueId, msg);
+                }
             } catch (Exception e) {
                 channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
-                String message = String.format("queueId %s, payload %s, message %s", queueId, msg, e.getMessage());
+                String message = String.format("queueId %s, payload %s, message %s", this.queueId, msg, e.getMessage());
                 log.error(message, e);
             }
         }
@@ -142,6 +149,9 @@ public class RabbitQueue implements AutoCloseable {
      * 生产者发送消息
      */
     public String push(String msg) {
+        if (MaintainConfig.build().illegalProduce()) {
+            log.warn("运维正在检修，异常生产消息，队列编号 {}, 消息内容 {}", this.queueId, msg);
+        }
         initChannel();
         boolean result = false;
         try {

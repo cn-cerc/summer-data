@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.Datetime.DateType;
 import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.maintain.MaintainConfig;
 import cn.cerc.db.queue.rabbitmq.RabbitQueue;
 import cn.cerc.db.queue.sqlmq.SqlmqQueue;
 import cn.cerc.db.queue.sqlmq.SqlmqQueueName;
@@ -110,6 +111,10 @@ public abstract class AbstractQueue implements OnStringMessage, Runnable {
     }
 
     protected String push(String data) {
+        if (MaintainConfig.build().illegalProduce()) {
+            log.warn("运维正在检修，异常生产消息，队列编号 {}, 消息内容 {}", this.getId(), data);
+        }
+
         switch (getService()) {
         case Redis -> {
             try (Redis redis = new Redis()) {
@@ -145,6 +150,7 @@ public abstract class AbstractQueue implements OnStringMessage, Runnable {
             return null;
         }
         }
+
     }
 
     @Override
@@ -172,6 +178,9 @@ public abstract class AbstractQueue implements OnStringMessage, Runnable {
         }
         default -> log.error("{} 不支持消息拉取模式:", getService().name());
         }
+        if (MaintainConfig.build().illegalConsume()) {
+            log.warn("运维正在检修，异常消费消息，队列类型 {}, 队列编号 {}", this.getService(), this.getId());
+        }
     }
 
     public final QueueServiceEnum getService() {
@@ -197,7 +206,7 @@ public abstract class AbstractQueue implements OnStringMessage, Runnable {
                 executor.submit(this);// 使用线程池
             }
             case Sqlmq -> {
-                log.debug("{} sqlmq check job {}", Thread.currentThread(), this.getClass().getSimpleName());
+                log.debug("{} sqlMQ check job {}", Thread.currentThread(), this.getClass().getSimpleName());
                 this.run();
             }
             default -> {
