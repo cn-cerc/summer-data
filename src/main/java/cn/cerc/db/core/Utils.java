@@ -169,7 +169,7 @@ public class Utils {
             BigDecimal bigDecimal = new BigDecimal(Double.toString(val));
             return bigDecimal.setScale(-scale, RoundingMode.HALF_UP).doubleValue();
         } catch (NumberFormatException e) {
-            log.error(e.getMessage(), e);
+            log.error("val {}, scale {}, error {}", val, scale, e.getMessage(), e);
             return 0;
         }
     }
@@ -573,9 +573,13 @@ public class Utils {
 
     /**
      * 脱敏字符串只保留头尾
+     * 
      * Utils.confused("a") = "*"
+     * 
      * Utils.confused("ab") = "**"
+     * 
      * Utils.confused("abc") = "a*c"
+     * 
      * Utils.confused("abcd") = "a**d"
      * 
      * @param value 原始字符串
