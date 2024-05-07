@@ -243,7 +243,7 @@ public class DataSetGson<T extends DataSet> implements GsonInterface<T> {
             return root;
         };
 
-        GsonInterface<FieldMeta> gsonFieldMeta = new GsonInterface<FieldMeta>() {
+        GsonInterface<FieldMeta> gsonFieldMeta = new GsonInterface<>() {
             @Override
             public JsonElement serialize(FieldMeta src, Type typeOfSrc, JsonSerializationContext context) {
                 JsonObject json = new JsonObject();
