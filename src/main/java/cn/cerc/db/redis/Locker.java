@@ -23,20 +23,38 @@ public class Locker implements Closeable {
     private Map<String, Boolean> items = new HashMap<>();
     private int timeout = 10000; // 锁超时时间，默认10秒
 
-    public Locker(String group, Object first, Object... args) {
+    /**
+     * 创建一把锁，最终形成锁Key：group-child
+     * 
+     * @param group 锁前缀, 一般为类名
+     * @param child 锁后缀
+     */
+    public Locker(String group, String child) {
         this.group = group;
-        items.put(group + "-" + first, false);
-        for (Object arg : args) {
-            items.put(group + "-" + arg, false);
+        items.put(group + "-" + child, false);
+    }
+
+    @Deprecated // 多把锁请使用另一个同名函数
+    public Locker(String group, Object firstChild, Object... otherChildren) {
+        this.group = group;
+        items.put(group + "-" + firstChild, false);
+        for (Object child : otherChildren) {
+            items.put(group + "-" + child, false);
         }
     }
 
-    public Locker(String group, Set<String> set) {
-        if (Utils.isEmpty(set))
-            throw new RuntimeException("创建锁失败，set为空");
+    /**
+     * 创建多把锁，最终形成的锁类似于：group-1, group-2, group-3
+     * 
+     * @param group
+     * @param children
+     */
+    public Locker(String group, Set<String> children) {
+        if (Utils.isEmpty(children))
+            throw new RuntimeException("创建多层锁失败，set为空");
         this.group = group;
-        for (String str : set)
-            items.put(group + "-" + str, false);
+        for (String child : children)
+            items.put(group + "-" + child, false);
     }
 
     @Deprecated
