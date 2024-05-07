@@ -28,6 +28,9 @@ public class MaintainConfig implements Watcher {
     private MaintainConfig() {
         // path -> /4plc/alpha/maintain
         node = "/" + String.join("/", ServerConfig.getAppProduct(), ServerConfig.getAppVersion(), "maintain");
+        if (!ZkServer.get().exists(node)) {
+            ZkServer.get().create(node, "", CreateMode.PERSISTENT);
+        }
         String value = ZkServer.get().getValue(node);
         if (Utils.isNotEmpty(value))
             this.timestamp = Long.parseLong(value);
