@@ -510,11 +510,14 @@ public class DataRow implements Serializable, IRecord {
                     else
                         variant.setValue(value).writeToEntity(entity, field);
                 } catch (IllegalArgumentException | IllegalAccessException e) {
-                    throw new RuntimeException(String.format("field %s type error: %s -> %s", field.getName(),
-                            value.getClass().getName(), field.getType().getName()));
+                    if (value != null)
+                        throw new RuntimeException(
+                                String.format("实体类 %s, field %s, type error: %s -> %s", entity.getClass().getName(),
+                                        field.getName(), value.getClass().getName(), field.getType().getName()));
                 }
             } else if (helper.strict()) {
-                String message = String.format("not find property: %s", meta.code());
+                String message = String.format("实体类 %s, not find property: %s", entity.getClass().getName(),
+                        meta.code());
                 RuntimeException e = new RuntimeException(message);
                 log.warn("{}", message, e);
             }
