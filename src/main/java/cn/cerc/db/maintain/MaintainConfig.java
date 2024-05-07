@@ -1,16 +1,16 @@
 package cn.cerc.db.maintain;
 
+import java.util.concurrent.TimeUnit;
+
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.core.Utils;
 import cn.cerc.db.zk.ZkServer;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * 运维检修
@@ -28,27 +28,23 @@ public class MaintainConfig implements Watcher {
     private MaintainConfig() {
         // path -> /4plc/alpha/maintain
         node = "/" + String.join("/", ServerConfig.getAppProduct(), ServerConfig.getAppVersion(), "maintain");
-        if (!ZkServer.get().exists(node)) {
-            String value = new Datetime().toString();
-            ZkServer.get().create(node, value, CreateMode.PERSISTENT);
-        }
         String value = ZkServer.get().getValue(node);
-        this.timestamp = Long.parseLong(value);
+        if (Utils.isNotEmpty(value))
+            this.timestamp = Long.parseLong(value);
+        else
+            this.timestamp = 0L;
         ZkServer.get().watch(node, this);// 监听节点
+    }
+
+    public String node() {
+        return this.node;
     }
 
     /**
      * 开始停机维护
      */
     public void shutdown() {
-        ZkServer.get().setValue(node, String.valueOf(System.currentTimeMillis()), CreateMode.PERSISTENT);
-    }
-
-    /**
-     * 启动系统服务
-     */
-    public void startup() {
-        ZkServer.get().setValue(node, "0", CreateMode.PERSISTENT);
+        ZkServer.get().setValue(this.node, String.valueOf(System.currentTimeMillis()), CreateMode.PERSISTENT);
     }
 
     /**
@@ -62,14 +58,20 @@ public class MaintainConfig implements Watcher {
      * 03秒之外，非法生产
      */
     public boolean illegalProduce() {
-        return (System.currentTimeMillis() - this.timestamp)  > TimeUnit.SECONDS.toMillis(3);
+        if (this.isTerminated())
+            return (System.currentTimeMillis() - this.timestamp) > TimeUnit.SECONDS.toMillis(3);
+        else
+            return false;
     }
 
     /**
      * 15秒之外，非法消费
      */
     public boolean illegalConsume() {
-        return System.currentTimeMillis() - this.timestamp > TimeUnit.SECONDS.toMillis(15);
+        if (this.isTerminated())
+            return (System.currentTimeMillis() - this.timestamp) > TimeUnit.SECONDS.toMillis(15);
+        else
+            return false;
     }
 
     @Override
@@ -91,7 +93,10 @@ public class MaintainConfig implements Watcher {
             // 获取 /maintain 节点的最新值
             String value = ZkServer.get().getValue(path);
             log.info("{} node changed -> {}", path, value);
-            this.timestamp = Long.parseLong(value);
+            if (Utils.isNotEmpty(value))
+                this.timestamp = Long.parseLong(value);
+            else
+                this.timestamp = 0L;
         }
 
         // 监听节点 /singleton/menu/clear
