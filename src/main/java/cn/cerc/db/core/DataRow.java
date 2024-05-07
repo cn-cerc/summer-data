@@ -513,8 +513,11 @@ public class DataRow implements Serializable, IRecord {
                     throw new RuntimeException(String.format("field %s type error: %s -> %s", field.getName(),
                             value.getClass().getName(), field.getType().getName()));
                 }
-            } else if (helper.strict())
-                log.warn("not find property: {}", meta.code());
+            } else if (helper.strict()) {
+                String message = String.format("not find property: %s", meta.code());
+                RuntimeException throwable = new RuntimeException(message);
+                log.warn("{}", message, throwable);
+            }
         }
     }
 
