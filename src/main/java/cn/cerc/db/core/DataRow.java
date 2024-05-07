@@ -473,15 +473,15 @@ public class DataRow implements Serializable, IRecord {
             if (this.fields().size() > fieldsList.size()) {
                 String message = String.format("数据表 %s fields.size %s > 实体类 %s properties.size %s", helper.tableName(),
                         this.fields().size(), entity.getClass().getName(), fieldsList.size());
-                RuntimeException throwable = new RuntimeException(message);
-                log.warn("{}", message, throwable);
+                RuntimeException e = new RuntimeException(message);
+                log.warn("{}", message, e);
             } else if (this.fields().size() < fieldsList.size()) {
                 for (var field : fieldsList.keySet()) {
                     if (!fields.exists(field)) {
                         String message = String.format("实体类 %s 的数据表 %s 缺字段 %s", entity.getClass().getName(),
                                 helper.tableName(), field);
-                        RuntimeException throwable = new RuntimeException(message);
-                        log.error("{}", message, throwable);
+                        RuntimeException e = new RuntimeException(message);
+                        log.error("{}", message, e);
                     }
                 }
                 String message = String.format("数据表 fields.size %s < 实体类 %s properties.size %s", this.fields().size(),
@@ -515,8 +515,8 @@ public class DataRow implements Serializable, IRecord {
                 }
             } else if (helper.strict()) {
                 String message = String.format("not find property: %s", meta.code());
-                RuntimeException throwable = new RuntimeException(message);
-                log.warn("{}", message, throwable);
+                RuntimeException e = new RuntimeException(message);
+                log.warn("{}", message, e);
             }
         }
     }
