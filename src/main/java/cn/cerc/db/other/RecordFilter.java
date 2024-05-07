@@ -19,9 +19,9 @@ public class RecordFilter {
     public static DataSet execute(DataSet dataIn, DataSet dataOut, String recordFilter) {
         if (dataOut.state() < 1)
             return dataOut;
-        if (Utils.isEmpty(filter))
+        if (Utils.isEmpty(recordFilter))
             return dataOut;
-        return execute(dataOut, filter);
+        return execute(dataOut, recordFilter);
     }
 
     private static DataSet execute(DataSet dataOut, String sql) {
