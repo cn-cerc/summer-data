@@ -20,6 +20,7 @@ import java.util.List;
 import org.junit.Test;
 
 import cn.cerc.db.core.Utils;
+import cn.cerc.db.maintain.MaintainConfig;
 
 public class UtilsTest {
 
@@ -152,6 +153,13 @@ public class UtilsTest {
         assertEquals("a*c", Utils.confused("abc"));
         assertEquals("a**d", Utils.confused("abcd"));
         assertEquals(" **** ", Utils.confused(" abcd "));
+    }
+
+    public static void main(String[] args) {
+        MaintainConfig.build().shutdown();
+        System.out.println(MaintainConfig.build().illegalProduce());
+        System.out.println(MaintainConfig.build().illegalConsume());
+        System.out.println(MaintainConfig.build().isTerminated());
     }
 
 }
