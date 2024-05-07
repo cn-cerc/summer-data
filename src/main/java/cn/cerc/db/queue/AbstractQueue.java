@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import cn.cerc.db.core.Datetime;
 import cn.cerc.db.core.Datetime.DateType;
 import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.maintain.MaintainConfig;
 import cn.cerc.db.queue.rabbitmq.RabbitQueue;
 import cn.cerc.db.queue.sqlmq.SqlmqQueue;
 import cn.cerc.db.queue.sqlmq.SqlmqQueueName;
@@ -110,10 +111,18 @@ public abstract class AbstractQueue implements OnStringMessage, Runnable {
     }
 
     protected String push(String data) {
+        if (MaintainConfig.build().isTerminated()) {
+            log.warn("运维正在检修，禁止生产消息", new RuntimeException());
+            return "maintain";
+        }
+
         switch (getService()) {
         case Redis -> {
             try (Redis redis = new Redis()) {
                 redis.lpush(this.getId(), data);
+                if (MaintainConfig.build().illegalProduce()) {
+                    log.warn("运维正在检修，异常生产消息，队列编号 {}, 消息内容 {}", this.getId(), data);
+                }
                 return "push redis ok";
             }
         }
@@ -134,11 +143,19 @@ public abstract class AbstractQueue implements OnStringMessage, Runnable {
             sqlQueue.setShowTime(showTime);
             sqlQueue.setService(service);
             sqlQueue.setQueueClass(this.getClass().getSimpleName());
-            return sqlQueue.push(data, this.order, group, this.executionSequence);
+            String value = sqlQueue.push(data, this.order, group, this.executionSequence);
+            if (MaintainConfig.build().illegalProduce()) {
+                log.warn("运维正在检修，异常生产消息，队列编号 {}, 消息内容 {}", this.getId(), data);
+            }
+            return value;
         }
         case RabbitMQ -> {
             try (RabbitQueue queue = new RabbitQueue(this.getId())) {
-                return queue.push(data);
+                String result = queue.push(data);
+                if (MaintainConfig.build().illegalProduce()) {
+                    log.warn("运维正在检修，异常生产消息，队列编号 {}, 消息内容 {}", this.getId(), data);
+                }
+                return result;
             }
         }
         default -> {
@@ -149,6 +166,11 @@ public abstract class AbstractQueue implements OnStringMessage, Runnable {
 
     @Override
     public void run() {
+        if (MaintainConfig.build().isTerminated()) {
+            log.warn("运维正在检修，禁止消费消息", new RuntimeException());
+            return;
+        }
+
         switch (getService()) {
         case Redis -> {
             try (Redis redis = new Redis()) {
@@ -163,7 +185,7 @@ public abstract class AbstractQueue implements OnStringMessage, Runnable {
         }
         case Sqlmq -> SqlmqServer.getQueue(getId()).pop(100, this);
         case RabbitMQ -> {
-            try (var queue = new RabbitQueue(this.getId())) {
+            try (RabbitQueue queue = new RabbitQueue(this.getId())) {
                 queue.setMaximum(100);
                 queue.pop(this);
             } catch (IOException e) {
@@ -171,6 +193,9 @@ public abstract class AbstractQueue implements OnStringMessage, Runnable {
             }
         }
         default -> log.error("{} 不支持消息拉取模式:", getService().name());
+        }
+        if (MaintainConfig.build().illegalConsume()) {
+            log.warn("运维正在检修，异常消费消息，队列类型 {}, 队列编号 {}", this.getService(), this.getId());
         }
     }
 
@@ -187,6 +212,8 @@ public abstract class AbstractQueue implements OnStringMessage, Runnable {
      */
     @Scheduled(initialDelay = 30000, fixedRate = 300)
     public void defaultCheck() {
+        if (MaintainConfig.build().isTerminated())
+            return;
         if (this.isPushMode())
             return;
 
@@ -197,7 +224,7 @@ public abstract class AbstractQueue implements OnStringMessage, Runnable {
                 executor.submit(this);// 使用线程池
             }
             case Sqlmq -> {
-                log.debug("{} sqlmq check job {}", Thread.currentThread(), this.getClass().getSimpleName());
+                log.debug("{} sqlMQ check job {}", Thread.currentThread(), this.getClass().getSimpleName());
                 this.run();
             }
             default -> {

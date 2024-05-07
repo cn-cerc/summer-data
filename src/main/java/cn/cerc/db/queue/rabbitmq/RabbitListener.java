@@ -14,6 +14,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 import cn.cerc.db.core.ServerConfig;
+import cn.cerc.db.maintain.MaintainConfig;
 import cn.cerc.db.queue.AbstractQueue;
 import cn.cerc.db.queue.QueueServiceEnum;
 
@@ -24,6 +25,10 @@ public class RabbitListener implements ApplicationListener<ApplicationContextEve
 
     @Override
     public void onApplicationEvent(ApplicationContextEvent event) {
+        if (MaintainConfig.build().isTerminated()) {
+            log.warn("运维正在检修，禁止启动队列");
+            return;
+        }
         if (event instanceof ContextRefreshedEvent) {
             ApplicationContext context = event.getApplicationContext();
             if (context.getParent() == null) {
