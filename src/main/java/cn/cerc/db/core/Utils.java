@@ -475,14 +475,14 @@ public class Utils {
                         Method set = clazz.getMethod("set" + field, value.getClass());
                         set.invoke(obj, value);
                     } else {
-                        log.warn(String.format("field:%s, other type:%s", field, method.getType().getName()));
+                        log.warn("field {}, other type {}", field, method.getType().getName());
                         String value = record.getString(dbField);
                         Method set = clazz.getMethod("set" + field, value.getClass());
                         set.invoke(obj, value);
                     }
                 } catch (NoSuchMethodException | SecurityException | IllegalArgumentException
                         | InvocationTargetException | IllegalAccessException e) {
-                    log.warn(e.getMessage());
+                    log.warn(e.getMessage(), e);
                 }
             }
         }
