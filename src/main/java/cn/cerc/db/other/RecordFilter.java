@@ -16,11 +16,12 @@ import cn.cerc.db.core.Utils;
  */
 public class RecordFilter {
 
-    public static DataSet execute(DataSet dataIn, DataSet dataOut) {
-        String sql = dataIn.head().getString("_RecordFilter_");
-        if (Utils.isEmpty(sql) || dataOut.state() < 1)
+    public static DataSet execute(DataSet dataIn, DataSet dataOut, String recordFilter) {
+        if (dataOut.state() < 1)
             return dataOut;
-        return execute(dataOut, sql);
+        if (Utils.isEmpty(filter))
+            return dataOut;
+        return execute(dataOut, filter);
     }
 
     private static DataSet execute(DataSet dataOut, String sql) {
