@@ -4,14 +4,14 @@ import cn.cerc.db.core.LanguageResource;
 
 public class LockerTest {
 
-    // a:测试正常等待
+    // a: 正常执时
     private static Runnable job1_a = () -> {
         try (Locker locker = new Locker(LockerTest.class.getSimpleName(), "test")) {
             if (locker.requestLock("job1", 3000))
                 sleep(5000);
         }
     };
-    // b:测试超时锁定
+    // b: 超时锁定
     private static Runnable job1_b = () -> {
         try (Locker locker = new Locker(LockerTest.class.getSimpleName(), "test")) {
             if (locker.requestLock("job1", 3000)) {
@@ -19,7 +19,7 @@ public class LockerTest {
             }
         }
     };
-    // 正常等待
+    // c: 超长执行
     private static Runnable job1_c = () -> {
         try (Locker locker = new Locker(LockerTest.class.getSimpleName(), "test")) {
             if (locker.requestLock("job1", 3000)) {
