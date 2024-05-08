@@ -9,9 +9,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 import com.google.gson.Gson;
 
@@ -159,7 +162,17 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         List<String> items = null;
         if (names.length > 0)
             items = Arrays.asList(names);
-        for (Field field : clazz.getDeclaredFields()) {
+
+        List<Field> fields = Stream.of(clazz.getDeclaredFields()).filter(field -> {
+            return !Modifier.isStatic(field.getModifiers());
+        }).collect(Collectors.toList());
+        if (fields.size() == 0) {
+            Class<?> superClass = clazz.getSuperclass();
+            if (superClass != Object.class && superClass.isAnnotationPresent(Table.class))
+                fields.addAll(Arrays.asList(superClass.getDeclaredFields()));
+        }
+
+        for (Field field : fields) {
             if (Modifier.isStatic(field.getModifiers()))
                 continue;
             if (items != null && items.indexOf(field.getName()) == -1)
