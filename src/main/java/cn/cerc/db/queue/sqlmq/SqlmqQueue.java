@@ -21,6 +21,7 @@ import cn.cerc.db.queue.QueueGroup;
 import cn.cerc.db.queue.QueueServiceEnum;
 import cn.cerc.db.redis.JedisFactory;
 import cn.cerc.db.redis.Redis;
+import cn.cerc.mis.exception.TimeoutException;
 import redis.clients.jedis.Jedis;
 
 public class SqlmqQueue implements IHandle {
@@ -172,6 +173,7 @@ public class SqlmqQueue implements IHandle {
             var currSequence = query.getInt("execution_sequence_");
             if (!Utils.isEmpty(groupCode) && currSequence == 1)
                 SqlmqGroup.startExecute(groupCode);
+            long startTime = System.currentTimeMillis();
             try {
                 addLog(uid.getLong(), AckEnum.Read, content);
                 query.edit();
@@ -185,6 +187,10 @@ public class SqlmqQueue implements IHandle {
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 content = e.getMessage();
+            } finally {
+                long endTime = System.currentTimeMillis() - startTime;
+                if (endTime > TimeoutException.Timeout)
+                    log.warn(onConsume.getClass().getSimpleName(), row.getString("message_"), endTime);
             }
             addLog(uid.getLong(), result ? AckEnum.Ok : AckEnum.Error, content);
 
