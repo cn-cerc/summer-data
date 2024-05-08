@@ -8,9 +8,8 @@ public abstract class TimeoutException extends Exception implements IJayunArgsEx
 
     protected String[] args;
 
-    public TimeoutException(String message, String[] args) {
+    public TimeoutException(String message) {
         super(message);
-        this.args = args;
     }
 
     @Override
