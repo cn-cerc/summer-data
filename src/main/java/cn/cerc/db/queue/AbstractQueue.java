@@ -20,7 +20,6 @@ import cn.cerc.db.queue.sqlmq.SqlmqQueue;
 import cn.cerc.db.queue.sqlmq.SqlmqQueueName;
 import cn.cerc.db.queue.sqlmq.SqlmqServer;
 import cn.cerc.db.redis.Redis;
-import cn.cerc.mis.exception.TimeoutException;
 
 public abstract class AbstractQueue implements OnStringMessage, Runnable {
     private static final Logger log = LoggerFactory.getLogger(AbstractQueue.class);
@@ -177,15 +176,10 @@ public abstract class AbstractQueue implements OnStringMessage, Runnable {
             try (Redis redis = new Redis()) {
                 String data = redis.rpop(this.getId());
                 if (data != null) {
-                    long startTime = System.currentTimeMillis();
                     try {
                         this.consume(data, true);
                     } catch (Exception e) {
                         log.error(e.getMessage(), e);
-                    } finally {
-                        long endTime = System.currentTimeMillis() - startTime;
-                        if (endTime > TimeoutException.Timeout)
-                            log.warn(this.getClass().getSimpleName(), data, endTime);
                     }
                 }
             }
