@@ -1,4 +1,4 @@
-package cn.cerc.local.tool;
+package cn.cerc.db.tools;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
