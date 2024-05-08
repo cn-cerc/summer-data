@@ -122,6 +122,7 @@ public class Locker implements Closeable {
             i++;
             long curTime = System.currentTimeMillis() + timeout;
             if (redis.setnx(key, curTime + "," + jobDescription) == 1) {
+                redis.expire(key, this.timeout);
                 this.message = String.format(res.getString(1, "%s锁定成功"), jobDescription);
                 result = true;
                 break;
@@ -163,8 +164,10 @@ public class Locker implements Closeable {
         if (this.locked()) {
             String newValue = (System.currentTimeMillis() + timeout) + "," + this.description;
             try (Redis redis = new Redis()) {
-                for (String key : items.keySet())
+                for (String key : items.keySet()) {
                     redis.set(key, newValue);
+                    redis.expire(key, this.timeout);
+                }
             }
         }
     }
