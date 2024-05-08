@@ -29,7 +29,7 @@ public class LanguageResource {
     /**
      * 默认界面语言版本
      */
-    public static final String appLanguage;
+    public static String appLanguage;
 
     private String userLanguage;
     private String resourceFileName;
