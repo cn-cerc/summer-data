@@ -5,7 +5,7 @@ import cn.cerc.db.core.IHandle;
 public class FormTimeoutException extends TimeoutException {
 
     public FormTimeoutException(IHandle handle, String dataIn, long endTime) {
-        super(new String[] { handle.getCorpNo(), handle.getUserCode(), String.valueOf(endTime), dataIn });
+        super(new String[] { handle.getCorpNo(), handle.getUserCode(), dataIn, String.valueOf(endTime) });
     }
 
 }

@@ -20,6 +20,7 @@ import cn.cerc.db.core.Utils;
 import cn.cerc.db.maintain.MaintainConfig;
 import cn.cerc.db.queue.OnStringMessage;
 import cn.cerc.db.queue.entity.CheckMQEntity;
+import cn.cerc.mis.exception.QueueTimeoutException;
 import cn.cerc.mis.exception.TimeoutException;
 
 public class RabbitQueue implements AutoCloseable {
@@ -101,7 +102,7 @@ public class RabbitQueue implements AutoCloseable {
                         } finally {
                             long endTime = System.currentTimeMillis() - startTime;
                             if (endTime > TimeoutException.Timeout)
-                                log.warn(consumer.getClass().getSimpleName(), msg, endTime);
+                                log.warn(consumer.getClass().getSimpleName(), new QueueTimeoutException(msg, endTime));
                         }
                         if (MaintainConfig.build().illegalConsume()) {
                             log.warn("运维正在检修，异常消费 push 消息，队列编号 {}, 消息内容 {}", queueId, msg);
@@ -151,7 +152,7 @@ public class RabbitQueue implements AutoCloseable {
             } finally {
                 long endTime = System.currentTimeMillis() - startTime;
                 if (endTime > TimeoutException.Timeout)
-                    log.warn(resume.getClass().getSimpleName(), msg, endTime);
+                    log.warn(resume.getClass().getSimpleName(), new QueueTimeoutException(msg, endTime));
             }
         }
     }

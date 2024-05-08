@@ -20,6 +20,7 @@ import cn.cerc.db.queue.sqlmq.SqlmqQueue;
 import cn.cerc.db.queue.sqlmq.SqlmqQueueName;
 import cn.cerc.db.queue.sqlmq.SqlmqServer;
 import cn.cerc.db.redis.Redis;
+import cn.cerc.mis.exception.QueueTimeoutException;
 import cn.cerc.mis.exception.TimeoutException;
 
 public abstract class AbstractQueue implements OnStringMessage, Runnable {
@@ -185,7 +186,7 @@ public abstract class AbstractQueue implements OnStringMessage, Runnable {
                     } finally {
                         long endTime = System.currentTimeMillis() - startTime;
                         if (endTime > TimeoutException.Timeout)
-                            log.warn(this.getClass().getSimpleName(), data, endTime);
+                            log.warn(this.getClass().getSimpleName(), new QueueTimeoutException(data, endTime));
                     }
                 }
             }

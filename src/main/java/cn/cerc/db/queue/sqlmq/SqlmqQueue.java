@@ -21,6 +21,7 @@ import cn.cerc.db.queue.QueueGroup;
 import cn.cerc.db.queue.QueueServiceEnum;
 import cn.cerc.db.redis.JedisFactory;
 import cn.cerc.db.redis.Redis;
+import cn.cerc.mis.exception.QueueTimeoutException;
 import cn.cerc.mis.exception.TimeoutException;
 import redis.clients.jedis.Jedis;
 
@@ -174,6 +175,7 @@ public class SqlmqQueue implements IHandle {
             if (!Utils.isEmpty(groupCode) && currSequence == 1)
                 SqlmqGroup.startExecute(groupCode);
             long startTime = System.currentTimeMillis();
+            String message = row.getString("message_");
             try {
                 addLog(uid.getLong(), AckEnum.Read, content);
                 query.edit();
@@ -183,14 +185,14 @@ public class SqlmqQueue implements IHandle {
                 query.setValue("update_time_", new Datetime());
                 query.setValue("version_", query.getInt("version_") + 1);
                 query.post();
-                result = onConsume.consume(row.getString("message_"), true);
+                result = onConsume.consume(message, true);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 content = e.getMessage();
             } finally {
                 long endTime = System.currentTimeMillis() - startTime;
                 if (endTime > TimeoutException.Timeout)
-                    log.warn(onConsume.getClass().getSimpleName(), row.getString("message_"), endTime);
+                    log.warn(onConsume.getClass().getSimpleName(), new QueueTimeoutException(message, endTime));
             }
             addLog(uid.getLong(), result ? AckEnum.Ok : AckEnum.Error, content);
 
