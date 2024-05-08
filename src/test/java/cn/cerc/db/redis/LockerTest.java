@@ -14,9 +14,8 @@ public class LockerTest {
     // b: 超时锁定
     private static Runnable job1_b = () -> {
         try (Locker locker = new Locker(LockerTest.class.getSimpleName(), "test")) {
-            if (locker.requestLock("job1", 3000)) {
+            if (locker.requestLock("job1", 3000)) 
                 sleep(15000);
-            }
         }
     };
     // c: 超长执行
@@ -69,7 +68,6 @@ public class LockerTest {
         sleep(1000); // 等待执行完成
         new Thread(job2).start();
         sleep(20 * 1000); // 等待执行完成
-        
     }
 
 }
