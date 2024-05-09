@@ -100,7 +100,7 @@ public class Locker implements Closeable {
         try (Redis redis = new Redis()) {
             for (String key : items.keySet()) {
                 if (!tryLock(redis, key, description, maximumWaitTime / 100)) {
-                    log.warn(this.message);
+                    log.warn(this.message, new RuntimeException());
                     return false;
                 }
                 items.put(key, true);
@@ -135,7 +135,7 @@ public class Locker implements Closeable {
                         String oldValue = redis.getSet(key, curTime + "," + jobDescription);
                         if (oldValue != null && oldValue.equals(currentValue)) {
                             this.message = String.format(res.getString(2, "%s强制锁定成功"), jobDescription);
-                            log.error(this.message);
+                            log.error(this.message, new RuntimeException());
                             result = true;
                             break;
                         }
@@ -147,7 +147,7 @@ public class Locker implements Closeable {
                         log.debug(this.message);
                 } else {
                     this.message = String.format(res.getString(4, "%s锁定失败，待%s完成后再试"), jobDescription, currentValue);
-                    log.warn(this.message);
+                    log.warn(this.message, new RuntimeException());
                 }
             }
             if (i < num) {
