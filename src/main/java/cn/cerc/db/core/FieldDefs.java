@@ -9,8 +9,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -163,9 +161,13 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         if (names.length > 0)
             items = Arrays.asList(names);
 
-        List<Field> fields = Stream.of(clazz.getDeclaredFields()).filter(field -> {
-            return !Modifier.isStatic(field.getModifiers());
-        }).collect(Collectors.toList());
+        List<Field> fields = new ArrayList<Field>();
+        for (Field field : clazz.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers()))
+                continue;
+            fields.add(field);
+        }
+
         if (fields.size() == 0) {
             Class<?> superClass = clazz.getSuperclass();
             if (superClass != Object.class && superClass.isAnnotationPresent(Table.class))
