@@ -101,8 +101,10 @@ public class RabbitQueue implements AutoCloseable {
                             log.error(message, e);
                         } finally {
                             long endTime = System.currentTimeMillis() - startTime;
-                            if (endTime > TimeoutException.Timeout)
-                                log.warn(consumer.getClass().getSimpleName(), new QueueTimeoutException(msg, endTime));
+                            if (endTime > TimeoutException.Timeout) {
+                                QueueTimeoutException e = new QueueTimeoutException(consumer.getClass(), msg, endTime);
+                                log.warn(e.getMessage(), e);
+                            }
                         }
                         if (MaintainConfig.build().illegalConsume()) {
                             log.warn("运维正在检修，异常消费 push 消息，队列编号 {}, 消息内容 {}", queueId, msg);
@@ -151,8 +153,10 @@ public class RabbitQueue implements AutoCloseable {
                 log.error(message, e);
             } finally {
                 long endTime = System.currentTimeMillis() - startTime;
-                if (endTime > TimeoutException.Timeout)
-                    log.warn(resume.getClass().getSimpleName(), new QueueTimeoutException(msg, endTime));
+                if (endTime > TimeoutException.Timeout) {
+                    QueueTimeoutException e = new QueueTimeoutException(resume.getClass(), msg, endTime);
+                    log.warn(e.getMessage(), e);
+                }
             }
         }
     }

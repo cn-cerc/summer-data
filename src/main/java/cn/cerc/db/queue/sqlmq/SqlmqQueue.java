@@ -191,8 +191,10 @@ public class SqlmqQueue implements IHandle {
                 content = e.getMessage();
             } finally {
                 long endTime = System.currentTimeMillis() - startTime;
-                if (endTime > TimeoutException.Timeout)
-                    log.warn(onConsume.getClass().getSimpleName(), new QueueTimeoutException(message, endTime));
+                if (endTime > TimeoutException.Timeout) {
+                    QueueTimeoutException e = new QueueTimeoutException(onConsume.getClass(), message, endTime);
+                    log.warn(e.getMessage(), e);
+                }
             }
             addLog(uid.getLong(), result ? AckEnum.Ok : AckEnum.Error, content);
 

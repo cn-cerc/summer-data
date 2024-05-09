@@ -4,8 +4,8 @@ import cn.cerc.db.core.IHandle;
 
 public class FormTimeoutException extends TimeoutException {
 
-    public FormTimeoutException(IHandle handle, String dataIn, long endTime) {
-        super(String.format("页面执行耗时 %s 毫秒", endTime));
+    public FormTimeoutException(IHandle handle, String formId, String dataIn, long endTime) {
+        super(String.format("%s 页面执行耗时 %s 毫秒", formId, endTime));
         this.args = new String[] { handle.getCorpNo(), handle.getUserCode(), dataIn, String.valueOf(endTime) };
     }
 
