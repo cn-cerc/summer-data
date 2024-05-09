@@ -1,4 +1,4 @@
-package cn.cerc.local.tool;
+package cn.cerc.db.tools;
 
 import static org.junit.Assert.assertEquals;
 
@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+
+import cn.cerc.local.tool.JsonTool;
 
 public class JsonToolTest {
 

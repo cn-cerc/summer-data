@@ -20,6 +20,8 @@ import cn.cerc.db.core.Utils;
 import cn.cerc.db.maintain.MaintainConfig;
 import cn.cerc.db.queue.OnStringMessage;
 import cn.cerc.db.queue.entity.CheckMQEntity;
+import cn.cerc.mis.exception.QueueTimeoutException;
+import cn.cerc.mis.exception.TimeoutException;
 
 public class RabbitQueue implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(RabbitQueue.class);
@@ -80,6 +82,7 @@ public class RabbitQueue implements AutoCloseable {
                     public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties,
                             byte[] body) throws IOException {
                         String msg = new String(body);
+                        long startTime = System.currentTimeMillis();
                         try {
                             if (channel == null || !channel.isOpen())
                                 return;
@@ -96,6 +99,10 @@ public class RabbitQueue implements AutoCloseable {
                             String message = String.format("queueId %s, payload %s, message %s", queueId, msg,
                                     e.getMessage());
                             log.error(message, e);
+                        } finally {
+                            long endTime = System.currentTimeMillis() - startTime;
+                            if (endTime > TimeoutException.Timeout)
+                                log.warn(consumer.getClass().getSimpleName(), new QueueTimeoutException(msg, endTime));
                         }
                         if (MaintainConfig.build().illegalConsume()) {
                             log.warn("运维正在检修，异常消费 push 消息，队列编号 {}, 消息内容 {}", queueId, msg);
@@ -129,6 +136,7 @@ public class RabbitQueue implements AutoCloseable {
             // 手动设置消息已被读取
             String msg = new String(response.getBody());
             Envelope envelope = response.getEnvelope();
+            long startTime = System.currentTimeMillis();
             try {
                 if (resume.consume(msg, true))
                     channel.basicAck(envelope.getDeliveryTag(), false);// 通知服务端删除消息
@@ -141,6 +149,10 @@ public class RabbitQueue implements AutoCloseable {
                 channel.basicReject(envelope.getDeliveryTag(), true);// 拒绝本次消息，服务端二次发送
                 String message = String.format("queueId %s, payload %s, message %s", this.queueId, msg, e.getMessage());
                 log.error(message, e);
+            } finally {
+                long endTime = System.currentTimeMillis() - startTime;
+                if (endTime > TimeoutException.Timeout)
+                    log.warn(resume.getClass().getSimpleName(), new QueueTimeoutException(msg, endTime));
             }
         }
     }

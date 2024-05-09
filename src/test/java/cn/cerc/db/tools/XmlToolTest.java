@@ -1,4 +1,4 @@
-package cn.cerc.local.tool;
+package cn.cerc.db.tools;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +10,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+
+import cn.cerc.local.tool.XmlTool;
 
 public class XmlToolTest {
 
