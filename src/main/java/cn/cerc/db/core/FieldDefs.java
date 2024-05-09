@@ -12,6 +12,7 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 import com.google.gson.Gson;
 
@@ -159,7 +160,22 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
         List<String> items = null;
         if (names.length > 0)
             items = Arrays.asList(names);
+
+        List<Field> fields = new ArrayList<Field>();
         for (Field field : clazz.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers()))
+                continue;
+            fields.add(field);
+        }
+
+        // field为空，尝试获取父类的field
+        if (fields.size() == 0) {
+            Class<?> superClass = clazz.getSuperclass();
+            if (superClass != Object.class && superClass.isAnnotationPresent(Table.class))
+                fields.addAll(Arrays.asList(superClass.getDeclaredFields()));
+        }
+
+        for (Field field : fields) {
             if (Modifier.isStatic(field.getModifiers()))
                 continue;
             if (items != null && items.indexOf(field.getName()) == -1)
