@@ -4,7 +4,7 @@ import cn.cerc.db.core.ClassConfig;
 
 public abstract class TimeoutException extends Exception implements IJayunArgsException {
 
-    public static final int Timeout = new ClassConfig().getInt("performance.monitor.timeout", 1000);
+    public static final int Timeout = new ClassConfig().getInt("performance.monitor.timeout", 3000);
 
     protected String[] args;
 
