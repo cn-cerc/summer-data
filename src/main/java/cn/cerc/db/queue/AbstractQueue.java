@@ -185,8 +185,10 @@ public abstract class AbstractQueue implements OnStringMessage, Runnable {
                         log.error(e.getMessage(), e);
                     } finally {
                         long endTime = System.currentTimeMillis() - startTime;
-                        if (endTime > TimeoutException.Timeout)
-                            log.warn(this.getClass().getSimpleName(), new QueueTimeoutException(data, endTime));
+                        if (endTime > TimeoutException.Timeout) {
+                            QueueTimeoutException e = new QueueTimeoutException(this.getClass(), data, endTime);
+                            log.warn(e.getMessage(), e);
+                        }
                     }
                 }
             }
