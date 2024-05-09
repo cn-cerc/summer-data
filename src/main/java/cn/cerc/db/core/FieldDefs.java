@@ -168,6 +168,7 @@ public final class FieldDefs implements Serializable, Iterable<FieldMeta> {
             fields.add(field);
         }
 
+        // field为空，尝试获取父类的field
         if (fields.size() == 0) {
             Class<?> superClass = clazz.getSuperclass();
             if (superClass != Object.class && superClass.isAnnotationPresent(Table.class))
