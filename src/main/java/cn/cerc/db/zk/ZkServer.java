@@ -179,7 +179,7 @@ public class ZkServer {
         }
 
         try {
-            log.info("create node {}", path);
+            log.debug("create node {}", path);
             // 参数：1，节点路径； 2，要存储的数据； 3，节点的权限； 4，节点的类型
             String result = client().create(path, value.getBytes(), Ids.OPEN_ACL_UNSAFE, createMode);
             if (createMode.isEphemeral()) // 如果创建的是临时节点

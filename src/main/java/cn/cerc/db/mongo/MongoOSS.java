@@ -95,11 +95,11 @@ public class MongoOSS {
             var options = new GridFSUploadOptions().chunkSizeBytes(1048576).metadata(doc);
             ObjectId fileId = bucket().uploadFromStream(filename, fileStream, options);
             var result = fileId.toHexString();
-            log.info("append file id: {}", result);
+            log.debug("append file id: {}", result);
             return result;
         } else {
             var result = find.get().getObjectId().toHexString();
-            log.info("exists file id: {}", result);
+            log.debug("exists file id: {}", result);
             return result;
         }
     }
