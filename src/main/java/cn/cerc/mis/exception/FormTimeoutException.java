@@ -11,6 +11,6 @@ public class FormTimeoutException extends TimeoutException {
 
     @Override
     public String getGroup() {
-        return IKnowall.页面加载慢;
+        return IKnowall.Form执行慢;
     }
 }
