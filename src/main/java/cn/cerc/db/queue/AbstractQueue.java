@@ -176,19 +176,23 @@ public abstract class AbstractQueue implements OnStringMessage, Runnable {
         switch (getService()) {
         case Redis -> {
             try (Redis redis = new Redis()) {
-                String data = redis.rpop(this.getId());
-                if (data != null) {
-                    long startTime = System.currentTimeMillis();
-                    try {
-                        this.consume(data, true);
-                    } catch (Exception e) {
-                        log.error(e.getMessage(), e);
-                    } finally {
-                        long endTime = System.currentTimeMillis() - startTime;
-                        if (endTime > TimeoutException.Timeout) {
-                            QueueTimeoutException e = new QueueTimeoutException(this.getClass(), data, endTime);
-                            log.warn(e.getMessage(), e);
+                for (int i = 0; i < 100; i++) { // 拉取 100 条消息
+                    String data = redis.rpop(this.getId());
+                    if (data != null) {
+                        long startTime = System.currentTimeMillis();
+                        try {
+                            this.consume(data, true);
+                        } catch (Exception e) {
+                            log.error(e.getMessage(), e);
+                        } finally {
+                            long endTime = System.currentTimeMillis() - startTime;
+                            if (endTime > TimeoutException.Timeout) {
+                                QueueTimeoutException e = new QueueTimeoutException(this.getClass(), data, endTime);
+                                log.warn(e.getMessage(), e);
+                            }
                         }
+                    } else {
+                        break;
                     }
                 }
             }
