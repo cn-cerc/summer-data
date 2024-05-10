@@ -56,3 +56,16 @@ RabbitMQ
 ```shell
 docker run -d -p 15672:15672 -p 5672:5672 -e RABBITMQ_DEFAULT_USER=admin -e RABBITMQ_DEFAULT_PASS=admin --restart=always --name rabbitmq rabbitmq:management
 ```
+
+### KnowallLog 使用
+```java
+log.info("日志内容", KnowallLog.of("data1", "data2", "data3"));
+```
+
+```java
+KnowallLog log = new KnowallLog(this.getClass(), 10);
+log.setLevel("warn");
+log.setMessage("测试");
+log.addData("data0");
+log.post();
+```
