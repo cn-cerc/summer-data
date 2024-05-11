@@ -7,11 +7,4 @@ public interface IKnowall {
      */
     String[] getData();
 
-    /**
-     * @return 内置分组
-     */
-    default String getGroup() {
-        return this.getClass().getSimpleName();
-    }
-
 }
