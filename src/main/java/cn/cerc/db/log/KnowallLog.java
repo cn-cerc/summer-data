@@ -27,7 +27,7 @@ public class KnowallLog {
     private String origin;
     private String level;
     private String message;
-    private String group;
+    private String type;
     private ArrayList<String> data;
     private String machine;
 
@@ -65,12 +65,12 @@ public class KnowallLog {
         this.level = level;
     }
 
-    public String getGroup() {
-        return group;
+    public String getType() {
+        return type;
     }
 
-    public void setGroup(String group) {
-        this.group = group;
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getOrigin() {
@@ -143,8 +143,8 @@ public class KnowallLog {
                 curl.put("origin", this.origin);
                 curl.put("message", this.message);
                 curl.put("level", this.level);
-                if (this.group != null)
-                    curl.put("group", this.group);
+                if (this.type != null)
+                    curl.put("type", this.type);
                 if (this.machine != null)
                     curl.put("machine", this.machine);
                 curl.put("createTime", this.createTime);

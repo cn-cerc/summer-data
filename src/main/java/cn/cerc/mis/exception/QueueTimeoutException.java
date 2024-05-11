@@ -9,8 +9,4 @@ public class QueueTimeoutException extends TimeoutException {
         this.args = new String[] { clazz.getSimpleName(), dataIn, String.valueOf(endTime) };
     }
 
-    @Override
-    public String getGroup() {
-        return IKnowall.消息消费慢;
-    }
 }

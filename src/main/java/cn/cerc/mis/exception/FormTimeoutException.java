@@ -9,9 +9,4 @@ public class FormTimeoutException extends TimeoutException {
         super(String.format("%s 页面执行耗时 %s 毫秒", formId, endTime));
         this.args = new String[] { handle.getCorpNo(), handle.getUserCode(), dataIn, String.valueOf(endTime) };
     }
-
-    @Override
-    public String getGroup() {
-        return IKnowall.Form执行慢;
-    }
 }

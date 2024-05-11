@@ -11,8 +11,4 @@ public class ServiceTimeoutException extends TimeoutException {
         this.args = new String[] { handle.getCorpNo(), handle.getUserCode(), service, dataIn, String.valueOf(endTime) };
     }
 
-    @Override
-    public String getGroup() {
-        return IKnowall.服务速度慢;
-    }
 }
