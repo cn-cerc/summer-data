@@ -25,6 +25,7 @@ import cn.cerc.db.mysql.MysqlDatabase;
 import cn.cerc.db.mysql.MysqlServerMaster;
 import cn.cerc.db.pgsql.PgsqlDatabase;
 import cn.cerc.db.sqlite.SqliteDatabase;
+import cn.cerc.mis.exception.SqlOperatorException;
 
 public class SqlOperator implements IHandle {
     private static final ClassResource res = new ClassResource(SqlOperator.class, SummerDB.ID);
@@ -317,9 +318,8 @@ public class SqlOperator implements IHandle {
             }
 
             if (ps.executeUpdate() != 1) {
-                String message = String.format("%s, dataRow %s, sqlText %s", res.getString(1, "当前记录已被其它用户修改或不存在，更新失败"),
-                        dataRow.json(), lastCommand);
-                throw new RuntimeException(message);
+                String message = String.format("%s %s", this.table(), res.getString(1, "当前记录已被其它用户修改或不存在，更新失败"));
+                throw new SqlOperatorException(this, message, dataRow.json(), lastCommand);
             }
             return true;
         } catch (SQLException e) {
